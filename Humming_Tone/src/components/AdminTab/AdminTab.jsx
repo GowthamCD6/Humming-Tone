@@ -6,6 +6,8 @@ import ShoppingCartIcon from '@mui/icons-material/ShoppingCart'
 import OpenInNewIcon from '@mui/icons-material/OpenInNew'
 import LogoutIcon from '@mui/icons-material/Logout'
 import AccountCircleIcon from '@mui/icons-material/AccountCircle'
+import Dashboard from '../../Pages/AdminPanal/Dashboard/Dashboard'
+import ManageProduct from '../../Pages/AdminPanal/ManageProduct/ManageProduct'
 import './AdminTab.css'
 
 export default function AdminTab({ onLogout = () => {} }) {
@@ -18,6 +20,8 @@ export default function AdminTab({ onLogout = () => {} }) {
     { id: 'manage-orders', label: 'Manage Orders', Icon: ShoppingCartIcon },
     { id: 'view-store', label: 'View Store', Icon: OpenInNewIcon },
   ]
+
+  const activeTabLabel = menuItems.find(item => item.id === activeTab)?.label || 'Dashboard'
 
   return (
     <div className="admin-tab-layout">
@@ -62,7 +66,7 @@ export default function AdminTab({ onLogout = () => {} }) {
       <main className="admin-main">
         {/* Header */}
         <header className="admin-header">
-          <h1 className="page-title">Dashboard</h1>
+          <h1 className="page-title">{activeTabLabel}</h1>
           <div className="admin-user">
             <AccountCircleIcon className="user-avatar" />
             <span className="user-label">Administrator</span>
@@ -72,54 +76,9 @@ export default function AdminTab({ onLogout = () => {} }) {
         {/* Content Container */}
         <div className="admin-content">
           {/* Render based on activeTab */}
-          {activeTab === 'dashboard' && (
-            <section className="tab-content">
-              <h2 className="content-title">Dashboard</h2>
-              <h3 className="content-subtitle">Store Statistics</h3>
-              
-              {/* Stats Cards */}
-              <div className="stats-grid">
-                <div className="stat-card">
-                  <p className="stat-label">TOTAL PRODUCTS</p>
-                  <p className="stat-value">24</p>
-                </div>
-                <div className="stat-card">
-                  <p className="stat-label">ACTIVE PRODUCTS</p>
-                  <p className="stat-value">24</p>
-                </div>
-                <div className="stat-card">
-                  <p className="stat-label">OUT OF STOCK</p>
-                  <p className="stat-value">0</p>
-                </div>
-              </div>
+          {activeTab === 'dashboard' && <Dashboard />}
 
-              {/* Products by Category */}
-              <div className="section-container">
-                <h3 className="content-subtitle">Products by Category</h3>
-                <div className="category-grid">
-                  <div className="category-card">
-                    <p className="category-label">MEN</p>
-                    <p className="category-count">8</p>
-                  </div>
-                  <div className="category-card">
-                    <p className="category-label">WOMEN</p>
-                    <p className="category-count">8</p>
-                  </div>
-                  <div className="category-card">
-                    <p className="category-label">KIDS</p>
-                    <p className="category-count">8</p>
-                  </div>
-                </div>
-              </div>
-            </section>
-          )}
-
-          {activeTab === 'manage-products' && (
-            <section className="tab-content">
-              <h2 className="content-title">Manage Products</h2>
-              <p style={{ color: '#666', marginTop: '1rem' }}>Product management page will be added here</p>
-            </section>
-          )}
+          {activeTab === 'manage-products' && <ManageProduct />}
 
           {activeTab === 'add-product' && (
             <section className="tab-content">
