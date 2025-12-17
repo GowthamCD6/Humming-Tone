@@ -1,0 +1,278 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Georgia', 'Times New Roman', serif;
+  color: #1a1a1a;
+}
+
+/* Dashboard Container */
+.dashboard-container {
+  display: flex;
+  min-height: 100vh;
+  background-color: #f5f5f5;
+}
+
+/* Sidebar */
+.sidebar {
+  width: 280px;
+  background-color: #2b2b2b;
+  color: #ffffff;
+  padding: 2.5rem 0;
+  display: flex;
+  flex-direction: column;
+  position: fixed;
+  height: 100vh;
+  overflow-y: auto;
+}
+
+.sidebar-header {
+  padding: 0 2rem;
+  margin-bottom: 3rem;
+}
+
+.brand-title {
+  font-size: 2rem;
+  font-weight: 400;
+  letter-spacing: -0.02em;
+  margin-bottom: 0.5rem;
+  font-style: italic;
+}
+
+.brand-subtitle {
+  font-size: 0.75rem;
+  letter-spacing: 0.2em;
+  color: #999;
+  font-weight: 600;
+}
+
+/* Sidebar Navigation */
+.sidebar-nav {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding: 0 1rem;
+}
+
+.nav-item {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem 1rem;
+  background: none;
+  border: none;
+  color: #999;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border-radius: 0.5rem;
+  text-align: left;
+  width: 100%;
+}
+
+.nav-item:hover {
+  background-color: #3a3a3a;
+  color: #ffffff;
+}
+
+.nav-item.active {
+  background-color: #3a3a3a;
+  color: #ffffff;
+  border-left: 3px solid #ffffff;
+}
+
+.nav-item.logout {
+  margin-top: auto;
+}
+
+.nav-item span {
+  font-size: 0.95rem;
+}
+
+/* Main Content */
+.main-content {
+  flex: 1;
+  margin-left: 280px;
+  background-color: #f5f5f5;
+}
+
+/* Top Bar */
+.top-bar {
+  background-color: #ffffff;
+  padding: 1.5rem 3rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid #e5e5e5;
+}
+
+.page-title {
+  font-size: 2.5rem;
+  font-weight: 400;
+  color: #1a1a1a;
+  font-family: 'Georgia', 'Times New Roman', serif;
+}
+
+.user-profile {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.avatar {
+  width: 48px;
+  height: 48px;
+  background-color: #1a1a1a;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #ffffff;
+}
+
+.user-name {
+  font-size: 1rem;
+  color: #1a1a1a;
+  font-weight: 500;
+}
+
+/* Dashboard Content */
+.dashboard-content {
+  padding: 3rem;
+}
+
+.section-title {
+  font-size: 2.5rem;
+  font-weight: 400;
+  color: #1a1a1a;
+  margin-bottom: 2rem;
+  font-family: 'Georgia', 'Times New Roman', serif;
+}
+
+/* Statistics Section */
+.stats-section {
+  margin-bottom: 3rem;
+}
+
+.stats-heading {
+  font-size: 1.75rem;
+  font-weight: 400;
+  color: #1a1a1a;
+  margin-bottom: 1.5rem;
+  font-family: 'Georgia', 'Times New Roman', serif;
+}
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 2rem;
+}
+
+.stat-card {
+  background-color: #ffffff;
+  padding: 3rem 2rem;
+  border-radius: 0.5rem;
+  text-align: center;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.stat-label {
+  font-size: 0.85rem;
+  letter-spacing: 0.1em;
+  color: #999;
+  margin-bottom: 1.5rem;
+  font-weight: 500;
+}
+
+.stat-value {
+  font-size: 3.5rem;
+  font-weight: 400;
+  color: #1a1a1a;
+  font-family: 'Georgia', 'Times New Roman', serif;
+}
+
+/* Category Section */
+.category-section {
+  margin-top: 3rem;
+}
+
+.category-heading {
+  font-size: 1.75rem;
+  font-weight: 400;
+  color: #1a1a1a;
+  margin-bottom: 1.5rem;
+  font-family: 'Georgia', 'Times New Roman', serif;
+}
+
+.category-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 2rem;
+}
+
+.category-card {
+  background-color: #ffffff;
+  padding: 3rem 2rem;
+  border-radius: 0.5rem;
+  text-align: center;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.category-label {
+  font-size: 0.85rem;
+  letter-spacing: 0.1em;
+  color: #999;
+  margin-bottom: 1.5rem;
+  font-weight: 500;
+}
+
+.category-value {
+  font-size: 3.5rem;
+  font-weight: 400;
+  color: #1a1a1a;
+  font-family: 'Georgia', 'Times New Roman', serif;
+}
+
+/* Responsive Design */
+@media (max-width: 1200px) {
+  .stats-grid,
+  .category-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 768px) {
+  .sidebar {
+    width: 240px;
+  }
+
+  .main-content {
+    margin-left: 240px;
+  }
+
+  .top-bar {
+    padding: 1.5rem 2rem;
+  }
+
+  .dashboard-content {
+    padding: 2rem;
+  }
+
+  .stats-grid,
+  .category-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .page-title,
+  .section-title {
+    font-size: 2rem;
+  }
+
+  .stat-value,
+  .category-value {
+    font-size: 2.5rem;
+  }
+}
