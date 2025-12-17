@@ -8,6 +8,8 @@ import LogoutIcon from '@mui/icons-material/Logout'
 import AccountCircleIcon from '@mui/icons-material/AccountCircle'
 import Dashboard from '../../Pages/AdminPanal/Dashboard/Dashboard'
 import ManageProduct from '../../Pages/AdminPanal/ManageProduct/ManageProduct'
+import AddProduct from '../../Pages/AdminPanal/AddProduct/AddProduct'
+import ManageOrder from '../../Pages/AdminPanal/ManageOrder/ManageOrder'
 import './AdminTab.css'
 
 export default function AdminTab({ onLogout = () => {} }) {
@@ -80,19 +82,9 @@ export default function AdminTab({ onLogout = () => {} }) {
 
           {activeTab === 'manage-products' && <ManageProduct />}
 
-          {activeTab === 'add-product' && (
-            <section className="tab-content">
-              <h2 className="content-title">Add Product</h2>
-              <p style={{ color: '#666', marginTop: '1rem' }}>Add product form will be added here</p>
-            </section>
-          )}
+          {activeTab === 'add-product' && <AddProduct />}
 
-          {activeTab === 'manage-orders' && (
-            <section className="tab-content">
-              <h2 className="content-title">Manage Orders</h2>
-              <p style={{ color: '#666', marginTop: '1rem' }}>Orders management page will be added here</p>
-            </section>
-          )}
+          {activeTab === 'manage-orders' && <ManageOrder />}
 
           {activeTab === 'view-store' && (
             <section className="tab-content">
