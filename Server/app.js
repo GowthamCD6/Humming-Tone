@@ -5,7 +5,7 @@ const morgan = require("morgan");
 const createError = require("http-errors");
 const bodyParser = require("body-parser");
 
-const app = require("express");
+const app = express();
 const PORT = process.env.PORT || 5000;
 
 app.use(cors({
