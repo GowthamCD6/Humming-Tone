@@ -50,10 +50,6 @@ const AddProduct = () => {
     <div className="add-product-container">
       <header className="page-header">
         <h1>Add Product</h1>
-        <div className="user-info">
-          <div className="avatar">👤</div>
-          <span>Administrator</span>
-        </div>
       </header>
 
       <div className="product-form">

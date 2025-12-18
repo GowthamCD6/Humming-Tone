@@ -1,6 +1,7 @@
 /* ===== TAB CONTENT ===== */
 .tab-content {
   animation: fadeIn 0.3s ease-in;
+  margin-top: -25px;
 }
 
 @keyframes fadeIn {
@@ -16,13 +17,12 @@
 
 /* ===== CONTENT TITLES ===== */
 .content-title {
-  font-size: 2rem;
-  font-weight: 500;
+  font-size: 20px;
+  font-weight: 700;
   color: #1a1a1a;
   margin: 0 0 2.5rem;
   letter-spacing: -0.5px;
   font-family: 'Georgia', 'Times New Roman', serif;
-  margin-top: -10px;
 }
 
 .content-subtitle {

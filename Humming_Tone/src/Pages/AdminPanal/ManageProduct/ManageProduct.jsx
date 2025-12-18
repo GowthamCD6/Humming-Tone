@@ -3,13 +3,13 @@ import demoImage from '../../../assets/demo.jpeg'
 import './ManageProduct.css'
 
 // Sample product data
-const productsData = [
+const initialProductsData = [
   {
     id: 1,
     image: demoImage,
     name: 'Stitch set',
     sku: 'STICA1272',
-    price: '₹400.00',
+    price: 400,
     stock: 3,
     category: 'Winter sets',
     gender: 'Baby'
@@ -19,7 +19,7 @@ const productsData = [
     image: demoImage,
     name: 'Blue set',
     sku: 'BLUCA8637',
-    price: '₹400.00',
+    price: 400,
     stock: 4,
     category: 'Winter sets',
     gender: 'Baby'
@@ -29,7 +29,7 @@ const productsData = [
     image: demoImage,
     name: 'Mickey hoodie set',
     sku: 'MICCA7953',
-    price: '₹450.00',
+    price: 450,
     stock: 3,
     category: 'Winter sets',
     gender: 'Baby'
@@ -39,7 +39,7 @@ const productsData = [
     image: demoImage,
     name: 'Bear set',
     sku: 'BEACA3638',
-    price: '₹400.00',
+    price: 400,
     stock: 10,
     category: 'Winter sets',
     gender: 'Baby'
@@ -49,7 +49,7 @@ const productsData = [
     image: demoImage,
     name: 'Tinker bell frock',
     sku: 'TINCA7077',
-    price: '₹250.00',
+    price: 250,
     stock: 6,
     category: 'T Shirts',
     gender: 'Baby'
@@ -59,7 +59,7 @@ const productsData = [
     image: demoImage,
     name: 'Lion king sleeping bag',
     sku: 'LIOCA7769',
-    price: '₹300.00',
+    price: 300,
     stock: 12,
     category: 'Sleepingbags',
     gender: 'Baby'
@@ -67,19 +67,73 @@ const productsData = [
 ]
 
 // Sample promo codes data
-const promoCodesData = [
+const initialPromoCodesData = [
   {
+    id: 1,
     code: 'FIRST100',
     type: 'Fixed',
-    discount: '₹100.00',
-    minOrder: '₹0.00',
+    discount: 100,
+    minOrder: 0,
     usage: '0 / ∞',
     status: 'Active'
   }
 ]
 
 export default function ManageProducts() {
-  const [activeView, setActiveView] = useState('products') // 'products' or 'promoCodes'
+  const [products, setProducts] = useState(initialProductsData)
+  const [promoCodes, setPromoCodes] = useState(initialPromoCodesData)
+  const [editingProduct, setEditingProduct] = useState(null)
+  const [editingPromo, setEditingPromo] = useState(null)
+  const [showEditModal, setShowEditModal] = useState(false)
+  const [showPromoEditModal, setShowPromoEditModal] = useState(false)
+
+  // Product handlers
+  const handleEditProduct = (product) => {
+    setEditingProduct({ ...product })
+    setShowEditModal(true)
+  }
+
+  const handleDeleteProduct = (productId) => {
+    if (window.confirm('Are you sure you want to delete this product?')) {
+      setProducts(products.filter(p => p.id !== productId))
+    }
+  }
+
+  const handleSaveProduct = () => {
+    setProducts(products.map(p => 
+      p.id === editingProduct.id ? editingProduct : p
+    ))
+    setShowEditModal(false)
+    setEditingProduct(null)
+  }
+
+  const handleProductChange = (field, value) => {
+    setEditingProduct({ ...editingProduct, [field]: value })
+  }
+
+  // Promo handlers
+  const handleEditPromo = (promo) => {
+    setEditingPromo({ ...promo })
+    setShowPromoEditModal(true)
+  }
+
+  const handleDeletePromo = (promoId) => {
+    if (window.confirm('Are you sure you want to delete this promo code?')) {
+      setPromoCodes(promoCodes.filter(p => p.id !== promoId))
+    }
+  }
+
+  const handleSavePromo = () => {
+    setPromoCodes(promoCodes.map(p => 
+      p.id === editingPromo.id ? editingPromo : p
+    ))
+    setShowPromoEditModal(false)
+    setEditingPromo(null)
+  }
+
+  const handlePromoChange = (field, value) => {
+    setEditingPromo({ ...editingPromo, [field]: value })
+  }
 
   return (
     <section className="manage-products-container">
@@ -112,20 +166,30 @@ export default function ManageProducts() {
               </tr>
             </thead>
             <tbody>
-              {promoCodesData.map((promo, index) => (
-                <tr key={index}>
+              {promoCodes.map((promo) => (
+                <tr key={promo.id}>
                   <td className="promo-code">{promo.code}</td>
                   <td>{promo.type}</td>
-                  <td>{promo.discount}</td>
-                  <td>{promo.minOrder}</td>
+                  <td>₹{promo.discount}.00</td>
+                  <td>₹{promo.minOrder}.00</td>
                   <td>{promo.usage}</td>
                   <td>
                     <span className="status-badge status-active">{promo.status}</span>
                   </td>
                   <td>
                     <div className="action-btns">
-                      <button className="btn-deactivate">DEACTIVATE</button>
-                      <button className="btn-delete">DELETE</button>
+                      <button 
+                        className="btn-edit"
+                        onClick={() => handleEditPromo(promo)}
+                      >
+                        EDIT
+                      </button>
+                      <button 
+                        className="btn-delete"
+                        onClick={() => handleDeletePromo(promo.id)}
+                      >
+                        DELETE
+                      </button>
                     </div>
                   </td>
                 </tr>
@@ -133,6 +197,10 @@ export default function ManageProducts() {
             </tbody>
           </table>
         </div>
+      </div>
+
+      <div className='product-section'>
+        <h3 className="section-title">Active Products</h3>
       </div>
 
       {/* Products Table Section */}
@@ -148,26 +216,249 @@ export default function ManageProducts() {
                 <th>STOCK</th>
                 <th>CATEGORY</th>
                 <th>GENDER</th>
+                <th>ACTIONS</th>
               </tr>
             </thead>
             <tbody>
-              {productsData.map((product) => (
+              {products.map((product) => (
                 <tr key={product.id}>
                   <td>
                     <img src={product.image} alt={product.name} className="product-image" />
                   </td>
                   <td className="product-name">{product.name}</td>
                   <td className="product-sku">{product.sku}</td>
-                  <td className="product-price">{product.price}</td>
+                  <td className="product-price">₹{product.price}.00</td>
                   <td className="product-stock">{product.stock}</td>
                   <td className="product-category">{product.category}</td>
                   <td className="product-gender">{product.gender}</td>
+                  <td>
+                    <div className="action-btns">
+                      <button 
+                        className="btn-edit"
+                        onClick={() => handleEditProduct(product)}
+                      >
+                        EDIT
+                      </button>
+                      <button 
+                        className="btn-delete"
+                        onClick={() => handleDeleteProduct(product.id)}
+                      >
+                        DELETE
+                      </button>
+                    </div>
+                  </td>
                 </tr>
               ))}
             </tbody>
           </table>
         </div>
       </div>
+
+      {/* Edit Product Modal */}
+      {showEditModal && editingProduct && (
+        <div className="modal-overlay" onClick={() => setShowEditModal(false)}>
+          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header">
+              <h2 className="modal-title">Edit Product</h2>
+              <button 
+                className="modal-close"
+                onClick={() => setShowEditModal(false)}
+              >
+                ×
+              </button>
+            </div>
+            
+            <div className="modal-body">
+              <div className="form-group">
+                <label>PRODUCT NAME</label>
+                <input
+                  type="text"
+                  value={editingProduct.name}
+                  onChange={(e) => handleProductChange('name', e.target.value)}
+                  className="form-input"
+                />
+              </div>
+
+              <div className="form-group">
+                <label>SKU</label>
+                <input
+                  type="text"
+                  value={editingProduct.sku}
+                  onChange={(e) => handleProductChange('sku', e.target.value)}
+                  className="form-input"
+                />
+              </div>
+
+              <div className="form-row">
+                <div className="form-group">
+                  <label>PRICE (₹)</label>
+                  <input
+                    type="number"
+                    value={editingProduct.price}
+                    onChange={(e) => handleProductChange('price', parseFloat(e.target.value))}
+                    className="form-input"
+                  />
+                </div>
+
+                <div className="form-group">
+                  <label>STOCK</label>
+                  <input
+                    type="number"
+                    value={editingProduct.stock}
+                    onChange={(e) => handleProductChange('stock', parseInt(e.target.value))}
+                    className="form-input"
+                  />
+                </div>
+              </div>
+
+              <div className="form-row">
+                <div className="form-group">
+                  <label>CATEGORY</label>
+                  <select
+                    value={editingProduct.category}
+                    onChange={(e) => handleProductChange('category', e.target.value)}
+                    className="form-input"
+                  >
+                    <option value="Winter sets">Winter sets</option>
+                    <option value="T Shirts">T Shirts</option>
+                    <option value="Sleepingbags">Sleepingbags</option>
+                    <option value="Dresses">Dresses</option>
+                  </select>
+                </div>
+
+                <div className="form-group">
+                  <label>GENDER</label>
+                  <select
+                    value={editingProduct.gender}
+                    onChange={(e) => handleProductChange('gender', e.target.value)}
+                    className="form-input"
+                  >
+                    <option value="Baby">Mens</option>
+                    <option value="Boys">Children</option>
+                    <option value="Girls">Kids</option>
+                    <option value="Unisex">Sports</option>
+                  </select>
+                </div>
+              </div>
+
+              <div className="form-group">
+                <label>IMAGE URL</label>
+                <input
+                  type="text"
+                  value={editingProduct.image}
+                  onChange={(e) => handleProductChange('image', e.target.value)}
+                  className="form-input"
+                />
+              </div>
+            </div>
+
+            <div className="modal-footer">
+              <button 
+                className="btn-cancel"
+                onClick={() => setShowEditModal(false)}
+              >
+                CANCEL
+              </button>
+              <button 
+                className="btn-save"
+                onClick={handleSaveProduct}
+              >
+                SAVE CHANGES
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Edit Promo Modal */}
+      {showPromoEditModal && editingPromo && (
+        <div className="modal-overlay" onClick={() => setShowPromoEditModal(false)}>
+          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header">
+              <h2 className="modal-title">Edit Promo Code</h2>
+              <button 
+                className="modal-close"
+                onClick={() => setShowPromoEditModal(false)}
+              >
+                ×
+              </button>
+            </div>
+            
+            <div className="modal-body">
+              <div className="form-group">
+                <label>PROMO CODE</label>
+                <input
+                  type="text"
+                  value={editingPromo.code}
+                  onChange={(e) => handlePromoChange('code', e.target.value)}
+                  className="form-input"
+                />
+              </div>
+
+              <div className="form-group">
+                <label>TYPE</label>
+                <select
+                  value={editingPromo.type}
+                  onChange={(e) => handlePromoChange('type', e.target.value)}
+                  className="form-input"
+                >
+                  <option value="Fixed">Fixed</option>
+                  <option value="Percentage">Percentage</option>
+                </select>
+              </div>
+
+              <div className="form-row">
+                <div className="form-group">
+                  <label>DISCOUNT (₹)</label>
+                  <input
+                    type="number"
+                    value={editingPromo.discount}
+                    onChange={(e) => handlePromoChange('discount', parseFloat(e.target.value))}
+                    className="form-input"
+                  />
+                </div>
+
+                <div className="form-group">
+                  <label>MIN ORDER (₹)</label>
+                  <input
+                    type="number"
+                    value={editingPromo.minOrder}
+                    onChange={(e) => handlePromoChange('minOrder', parseFloat(e.target.value))}
+                    className="form-input"
+                  />
+                </div>
+              </div>
+
+              <div className="form-group">
+                <label>STATUS</label>
+                <select
+                  value={editingPromo.status}
+                  onChange={(e) => handlePromoChange('status', e.target.value)}
+                  className="form-input"
+                >
+                  <option value="Active">Active</option>
+                  <option value="Inactive">Inactive</option>
+                </select>
+              </div>
+            </div>
+
+            <div className="modal-footer">
+              <button 
+                className="btn-cancel"
+                onClick={() => setShowPromoEditModal(false)}
+              >
+                CANCEL
+              </button>
+              <button 
+                className="btn-save"
+                onClick={handleSavePromo}
+              >
+                SAVE CHANGES
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </section>
   )
 }
