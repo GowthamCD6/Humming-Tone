@@ -1,154 +1,127 @@
-import { useState } from 'react'
-import './Login.css'
+import React, { useState } from 'react';
+import './Login.css';
+import Visibility from '@mui/icons-material/Visibility';
+import VisibilityOff from '@mui/icons-material/VisibilityOff';
 
-const ADMIN_USERNAME = 'admin'
-const ADMIN_PASSWORD = 'admin123'
+export default function Login({ onSuccess }) {
+  // State for input fields
+  const [formData, setFormData] = useState({
+    username: 'admin',
+    password: 'admin123'
+  });
 
-export default function Login({ onSuccess = () => {} }) {
-  const [formData, setFormData] = useState({ username: '', password: '' })
-  const [errors, setErrors] = useState({ username: '', password: '' })
-  const [isLoading, setIsLoading] = useState(false)
-  const [showPassword, setShowPassword] = useState(false)
+  // State for error handling
+  const [error, setError] = useState('');
+  
+  // State for password visibility
+  const [showPassword, setShowPassword] = useState(false);
+
+  // Hardcoded credentials as requested
+  const VALID_USERNAME = 'admin';
+  const VALID_PASSWORD = 'admin123';
 
   const handleChange = (e) => {
-    const { name, value } = e.target
-    setFormData(prev => ({ ...prev, [name]: value }))
-    if (errors[name]) {
-      setErrors(prev => ({ ...prev, [name]: '' }))
-    }
-  }
+    const { name, value } = e.target;
+    setFormData(prev => ({
+      ...prev,
+      [name]: value
+    }));
+    
+    // Clear error when user starts typing again
+    if (error) setError('');
+  };
 
-  const validateForm = () => {
-    const newErrors = {}
-    
-    if (!formData.username.trim()) {
-      newErrors.username = 'Username is required'
-    } else if (formData.username.trim().toLowerCase() !== ADMIN_USERNAME) {
-      newErrors.username = 'Invalid username'
-    }
-    
-    if (!formData.password) {
-      newErrors.password = 'Password is required'
-    } else if (formData.password !== ADMIN_PASSWORD) {
-      newErrors.password = 'Invalid password'
-    }
-    
-    return newErrors
-  }
+  const handleSubmit = (e) => {
+    e.preventDefault();
 
-  const handleSubmit = async (e) => {
-    e.preventDefault()
-    
-    const newErrors = validateForm()
-    if (Object.keys(newErrors).length > 0) {
-      setErrors(newErrors)
-      return
+    // 1. Check for empty fields
+    if (!formData.username.trim() || !formData.password.trim()) {
+      setError('Please fill in all fields.');
+      return;
     }
 
-    setIsLoading(true)
-    setTimeout(() => {
-      setIsLoading(false)
-      setErrors({})
-      onSuccess({ username: ADMIN_USERNAME })
-    }, 800)
-  }
+    // 2. Validate Credentials
+    if (formData.username === VALID_USERNAME && formData.password === VALID_PASSWORD) {
+      setError('');
+      console.log('Login Successful');
+      // Trigger parent function to navigate to admin panel
+      if (onSuccess) onSuccess(); 
+    } else {
+      // 3. Set Error for invalid credentials
+      setError('Invalid username or password.');
+    }
+  };
+
+  const togglePasswordVisibility = () => {
+    setShowPassword(!showPassword);
+  };
 
   return (
-    <div className="login-wrapper">
-      <div className="login-container">
+    <div className="login-container">
+      <div className="login-card">
+        
         {/* Header */}
         <div className="login-header">
-          <div className="login-logo">
-            <svg className="logo-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08-1.29 1.94-3.5 3.22-6 3.22z"/>
-            </svg>
-          </div>
           <h1 className="login-title">Admin Portal</h1>
+          <p className="login-subtitle">Please log in to continue</p>
         </div>
 
-        {/* Login Card */}
-        <div className="login-card">
-          <form onSubmit={handleSubmit} className="login-form">
-            {/* Username Field */}
-            <div className="form-group">
-              <label htmlFor="username" className="login-label">Username</label>
-              <div className="input-wrapper">
-                <svg className="input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                  <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
-                  <circle cx="12" cy="7" r="4"/>
-                </svg>
-                <input
-                  id="username"
-                  name="username"
-                  type="text"
-                  placeholder="Enter your username"
-                  value={formData.username}
-                  onChange={handleChange}
-                  className={`login-input ${errors.username ? 'input-error' : ''}`}
-                  autoComplete="username"
-                />
-              </div>
-              {errors.username && <span className="error-message">{errors.username}</span>}
-            </div>
+        {/* Error Alert UI */}
+        {error && (
+          <div className="error-alert">
+            <span className="error-icon">!</span>
+            {error}
+          </div>
+        )}
 
-            {/* Password Field */}
-            <div className="form-group">
-              <label htmlFor="password" className="login-label">Password</label>
-              <div className="input-wrapper">
-                <svg className="input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                  <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
-                  <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
-                </svg>
-                <input
-                  id="password"
-                  name="password"
-                  type={showPassword ? 'text' : 'password'}
-                  placeholder="Enter your password"
-                  value={formData.password}
-                  onChange={handleChange}
-                  className={`login-input ${errors.password ? 'input-error' : ''}`}
-                  autoComplete="current-password"
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowPassword(!showPassword)}
-                  className="toggle-password"
-                  aria-label="Toggle password visibility"
-                >
-                  {showPassword ? (
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                      <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/>
-                      <line x1="1" y1="1" x2="23" y2="23"/>
-                    </svg>
-                  ) : (
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                      <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
-                      <circle cx="12" cy="12" r="3"/>
-                    </svg>
-                  )}
-                </button>
-              </div>
-              {errors.password && <span className="error-message">{errors.password}</span>}
-            </div>
+        {/* Form */}
+        <form onSubmit={handleSubmit} className="login-form">
+          <div className="form-group">
+            <label htmlFor="username">Username</label>
+            <input
+              type="text"
+              id="username"
+              name="username"
+              className={`form-input ${error ? 'input-error' : ''}`}
+              placeholder="Enter your username"
+              value={formData.username}
+              onChange={handleChange}
+              autoComplete="off"
+            />
+          </div>
 
-            {/* Submit Button */}
-            <button
-              type="submit"
-              disabled={isLoading}
-              className={`login-submit ${isLoading ? 'loading' : ''}`}
-            >
-              {isLoading ? (
-                <>
-                  <span className="spinner"></span>
-                  Signing in...
-                </>
-              ) : (
-                'Sign In'
-              )}
-            </button>
-          </form>
-        </div>
+          <div className="form-group">
+            <label htmlFor="password">Password</label>
+            <div className="password-input-container">
+              <input
+                type={showPassword ? "text" : "password"}
+                id="password"
+                name="password"
+                className={`form-input ${error ? 'input-error' : ''}`}
+                placeholder="Enter your password"
+                value={formData.password}
+                onChange={handleChange}
+              />
+              <button
+                type="button"
+                className="password-toggle-btn"
+                onClick={togglePasswordVisibility}
+                aria-label={showPassword ? "Hide password" : "Show password"}
+              >
+                {showPassword ? (
+                  <VisibilityOff className="password-icon" />
+                ) : (
+                  <Visibility className="password-icon" />
+                )}
+              </button>
+            </div>
+          </div>
+
+          <button type="submit" className="btn-login">
+            Log In
+          </button>
+        </form>
       </div>
     </div>
-  )
+  );
 }

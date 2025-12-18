@@ -1,20 +1,23 @@
-/* ===== LOGIN WRAPPER ===== */
-.login-wrapper {
-  min-height: 100vh;
+/* ===== LOGIN CONTAINER ===== */
+.login-container {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: #ffffff;
-  padding: 1rem;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
-    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
-    sans-serif;
+  min-height: 100vh;
+  background-color: #f9fafb; /* Light clean background */
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
 }
 
-.login-container {
+/* ===== LOGIN CARD ===== */
+.login-card {
+  background: #ffffff;
   width: 100%;
   max-width: 420px;
-  animation: slideUp 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+  padding: 3rem;
+  border-radius: 8px;
+  /* Matching the modal shadow from your previous code */
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
+  animation: slideUp 0.4s ease-out;
 }
 
 @keyframes slideUp {
@@ -34,319 +37,188 @@
   margin-bottom: 2.5rem;
 }
 
-.login-logo {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 70px;
-  height: 70px;
-  margin: 0 auto 1.5rem;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  border-radius: 50%;
-  box-shadow: 0 4px 15px rgba(102, 126, 234, 0.2);
-  animation: logoFloat 3s ease-in-out infinite;
-}
-
-.logo-icon {
-  width: 40px;
-  height: 40px;
-  color: white;
-  stroke-linecap: round;
-  stroke-linejoin: round;
-}
-
-@keyframes logoFloat {
-  0%, 100% {
-    transform: translateY(0px);
-  }
-  50% {
-    transform: translateY(-10px);
-  }
-}
-
 .login-title {
+  /* Matching your .page-heading font */
+  font-family: 'Georgia', 'Times New Roman', serif;
   font-size: 2.25rem;
-  font-weight: 700;
-  color: #1f2937;
-  margin: 0 0 0.5rem;
+  font-weight: 400;
+  color: #1a1a1a;
+  margin: 0 0 0.5rem 0;
   letter-spacing: -0.5px;
 }
 
-
-/* ===== LOGIN CARD ===== */
-.login-card {
-  background: white;
-  border-radius: 16px;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3),
-              0 0 1px rgba(0, 0, 0, 0.1);
-  padding: 2.5rem;
-  animation: cardAppear 0.6s cubic-bezier(0.4, 0, 0.2, 1) 0.1s both;
+.login-subtitle {
+  font-size: 0.875rem;
+  color: #666;
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
 }
 
-@keyframes cardAppear {
-  from {
-    opacity: 0;
-    transform: scale(0.95);
-  }
-  to {
-    opacity: 1;
-    transform: scale(1);
-  }
+/* ===== ERROR HANDLING UI ===== */
+.error-alert {
+  background-color: #fef2f2;
+  border: 1px solid #fee2e2;
+  color: #ef4444;
+  padding: 0.75rem 1rem;
+  border-radius: 4px;
+  margin-bottom: 1.5rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  animation: shake 0.3s ease-in-out;
 }
 
+.error-icon {
+  background: #ef4444;
+  color: white;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.75rem;
+  font-weight: bold;
+}
+
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-5px); }
+  75% { transform: translateX(5px); }
+}
+
+/* ===== FORM STYLES ===== */
 .login-form {
   display: flex;
   flex-direction: column;
-  gap: 1.5rem;
 }
 
-/* ===== FORM GROUPS ===== */
 .form-group {
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
+  margin-bottom: 1.5rem;
 }
 
-.login-label {
-  font-size: 0.875rem;
-  font-weight: 600;
-  color: #1f2937;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
+.form-group label {
   display: block;
+  font-size: 0.7rem;
+  letter-spacing: 1.5px;
+  color: #1a1a1a;
+  margin-bottom: 0.5rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
 }
 
-/* ===== INPUT WRAPPER ===== */
-.input-wrapper {
+.password-input-container {
   position: relative;
+  width: 100%;
   display: flex;
   align-items: center;
+  height: 44px;
 }
 
-.input-icon {
-  position: absolute;
-  left: 12px;
-  width: 20px;
-  height: 20px;
-  color: #9ca3af;
-  pointer-events: none;
-  transition: color 0.3s ease;
-}
-
-.login-input {
+.form-input {
   width: 100%;
-  padding: 12px 12px 12px 40px;
-  border: 2px solid #e5e7eb;
-  border-radius: 10px;
-  font-size: 0.95rem;
-  background: #f9fafb;
-  color: #1f2937;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  font-weight: 500;
+  padding: 0.875rem 2.75rem 0.875rem 1rem;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 1rem;
+  /* Matching your inputs: Serif font for text */
+  font-family: 'Georgia', serif;
+  color: #1a1a1a;
+  transition: all 0.3s ease;
+  box-sizing: border-box; /* Fixes padding issues */
+  height: 44px;
 }
 
-.login-input::placeholder {
-  color: #d1d5db;
-}
-
-.login-input:hover {
-  border-color: #d1d5db;
-  background: white;
-}
-
-.login-input:focus {
+.form-input:focus {
   outline: none;
-  border-color: #667eea;
-  background: white;
-  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1),
-              0 4px 12px rgba(102, 126, 234, 0.15);
+  border-color: #1a1a1a;
+  background-color: #fcfcfc;
 }
 
-.login-input:focus ~ .input-icon {
-  color: #667eea;
-}
-
-.login-input.input-error {
+.form-input.input-error {
   border-color: #ef4444;
-  background: #fef2f2;
+  background-color: #fffafa;
 }
 
-.login-input.input-error:focus {
-  box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1),
-              0 4px 12px rgba(239, 68, 68, 0.15);
+.form-input::placeholder {
+  color: #9ca3af;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-size: 0.9rem;
 }
 
-/* ===== PASSWORD TOGGLE ===== */
-.toggle-password {
+/* Password toggle button */
+.password-toggle-btn {
   position: absolute;
-  right: 12px;
+  right: 0.75rem;
+  top: 50%;
+  transform: translateY(-50%);
   background: none;
   border: none;
   cursor: pointer;
-  padding: 4px;
+  padding: 0.5rem;
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #9ca3af;
-  transition: color 0.3s ease;
+  color: #666;
+  transition: color 0.2s ease;
+  width: 40px;
+  height: 40px;
+  flex-shrink: 0;
 }
 
-.toggle-password:hover {
-  color: #667eea;
+.password-toggle-btn:hover {
+  color: #1a1a1a;
 }
 
-.toggle-password svg {
-  width: 20px;
-  height: 20px;
-  stroke-linecap: round;
-  stroke-linejoin: round;
+.password-toggle-btn:focus {
+  outline: none;
 }
 
-/* ===== ERROR MESSAGE ===== */
-.error-message {
-  font-size: 0.8rem;
-  color: #ef4444;
-  margin-top: -0.25rem;
-  display: flex;
-  align-items: center;
-  gap: 0.375rem;
-  animation: slideDown 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  font-weight: 500;
+.password-icon {
+  font-size: 1.25rem;
 }
 
-.error-message::before {
-  content: '⚠';
-  font-size: 0.75rem;
-}
-
-@keyframes slideDown {
-  from {
-    opacity: 0;
-    transform: translateY(-5px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-/* ===== SUBMIT BUTTON ===== */
-.login-submit {
-  padding: 12px 24px;
-  margin-top: 0.5rem;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  color: white;
+/* ===== LOGIN BUTTON ===== */
+/* Exact style match to your .btn-add-product */
+.btn-login {
+  width: 100%;
+  padding: 1rem;
+  background: #1a1a1a;
+  color: #ffffff;
   border: none;
-  border-radius: 10px;
-  font-size: 1rem;
+  font-size: 0.8rem;
   font-weight: 600;
-  cursor: pointer;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  letter-spacing: 2px;
   text-transform: uppercase;
-  letter-spacing: 0.5px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.5rem;
-  box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
-  position: relative;
-  overflow: hidden;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  border-radius: 4px;
+  margin-top: 0.5rem;
 }
 
-.login-submit:hover:not(:disabled) {
+.btn-login:hover {
+  background: #2a2a2a;
   transform: translateY(-2px);
-  box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
 }
 
-.login-submit:active:not(:disabled) {
+.btn-login:active {
   transform: translateY(0);
-  box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
-}
-
-.login-submit:disabled {
-  opacity: 0.8;
-  cursor: not-allowed;
-}
-
-.spinner {
-  display: inline-block;
-  width: 16px;
-  height: 16px;
-  border: 2px solid rgba(255, 255, 255, 0.3);
-  border-top-color: white;
-  border-radius: 50%;
-  animation: spin 0.8s linear infinite;
-}
-
-@keyframes spin {
-  to {
-    transform: rotate(360deg);
-  }
 }
 
 /* ===== RESPONSIVE ===== */
 @media (max-width: 480px) {
   .login-card {
     padding: 2rem 1.5rem;
+    box-shadow: none;
+    border: 1px solid #e5e7eb;
   }
-
-  .login-title {
-    font-size: 1.875rem;
-  }
-
-  .login-logo {
-    width: 60px;
-    height: 60px;
-  }
-
-  .logo-icon {
-    width: 32px;
-    height: 32px;
-  }
-
-  .login-submit {
-    font-size: 0.95rem;
-    padding: 11px 20px;
-  }
-}
-
-/* ===== DARK MODE SUPPORT ===== */
-@media (prefers-color-scheme: dark) {
-  .login-card {
-    background: #1f2937;
-    color: #f3f4f6;
-  }
-
-  .login-label {
-    color: #e5e7eb;
-  }
-
-  .login-input {
-    background: #111827;
-    border-color: #374151;
-    color: #f3f4f6;
-  }
-
-  .login-input::placeholder {
-    color: #6b7280;
-  }
-
-  .login-input:hover {
-    border-color: #4b5563;
-    background: #1f2937;
-  }
-
-  .login-input:focus {
-    background: #1f2937;
-  }
-
-  .demo-info {
-    border-top-color: #374151;
-    color: #9ca3af;
-  }
-
-  .demo-info code {
-    background: #111827;
-    color: #86efac;
+  
+  .password-toggle-btn {
+    right: 0.5rem;
   }
 }
