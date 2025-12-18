@@ -7,7 +7,28 @@ const userAuth = require("../middlewares/userAuth");
 
 exports.register = (req,res,next) => {
     try{
-
+      const {name, emailId, password, phone} = req.body;
+      if(!name?.trim() || !emailId?.trim() || !password?.trim() || !phone?.trim()){
+        return next(createError.BadRequest('User details missing'));
+      }
+      // check whether the user already exist
+      let checkSql = "select * from users where emailId = ? or phone = ?";
+      db.query(checkSql,[emailId, phone],(error,result) => {
+        if(error || result.length > 0){
+            return next(error || createError.BadRequest("User already exist!"));
+        }
+        // create password hash
+        bcrypt.hash(password,10,(err, hash) => {
+           if(err)return next(err);
+           // insert user
+           let insertSql = "insert into users(name, emailId, password_hash, phone) values (?, ?, ?, ?)";
+           db.query(insertSql,[name, emailId, hash, phone],(error,result) => {
+           if(error)return next(error);
+           res.send("User registered successfully!");
+        })
+           
+        })
+      })
     }
     catch(error){
         next(error);
@@ -17,7 +38,7 @@ exports.register = (req,res,next) => {
 exports.login = (req,res,next) => {
     try{
         const{emailId, password} = req.body;
-        if(!emailId.trim() || !password.trim()){
+        if(!emailId?.trim() || !password?.trim()){
             return next(createError.BadRequest("Email or password is empty!"));
         }
         let sql = "select id, password from users where emailId = ?";
