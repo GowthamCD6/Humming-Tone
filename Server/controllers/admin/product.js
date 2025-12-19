@@ -4,8 +4,19 @@ const createError = require("http-errors");
 // add product -> first call it, then call add_variant
 exports.add_product  = (req,res,next) => {
     try{
-      const{name, about, sku, category_id, subcategory, brand, color, material, care_instructions, gender, age_range, weight, dimensions, stock_quantity, is_featured, is_active} = req.body;
+      const{files} = req.files;
+      if (!files || files.length === 0) {
+        return res.status(400).json({ message: "At least one image is required" });
+      }
 
+      // first image = primary
+      const primary_image = files[0].path;
+
+      // all images
+      const image_paths = files.map(file => file.path);
+
+      const{name, about, sku, category_id, subcategory, brand, color, material, care_instructions, gender, age_range, weight, dimensions, stock_quantity, is_featured, is_active} = req.body;
+      
       const stringFields = {
         name, about, sku, subcategory, brand, color,
         material, care_instructions, gender, age_range, dimensions
@@ -19,32 +30,37 @@ exports.add_product  = (req,res,next) => {
        is_featured, is_active
       };
 
+      const featured = is_featured ? 1 : 0;
+      const active = is_active ? 1 : 0;
+
       for(const[key,value] of Object.entries(stringFields)){
-        if(typeof(value) !== "string" || value.trim() != ""){
+        if(typeof value !== "string" || value.trim() === ""){
             return res.status(400).json({ message: `${key} must be a non-empty string` });
         }
       }
       
       for(const[key,value] of Object.entries(numberFields)){
-        if(val == null || value === undefined || isNaN(value) || value < 0){
+        if(value == null || value === undefined || isNaN(value) || value < 0){
             return res.status(400).json({ message: `${key} must be a valid number` });
         }
       }
 
       for(const[key,value] of Object.entries(booleanFields)){
-        if(typeof(value) !== "boolean"){
+        if(typeof value !== "boolean"){
             return res.status(400).json({ message: `${key} must be boolean (true/false)` });
         }
       }
 
-      let insertSql = `insert into products(name, about sku, category_id, subcategory, brand,
+      let insertSql = `insert into products(name, about, sku, category_id, subcategory, brand,
                        color, material, care_instructions, gender, age_range, weight, dimensions, stock_quantity, 
-                       is_feautured, is_active, image_path) values(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`;
+                       is_featured, is_active, image_path) values(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`;
 
-      db.query(insertSql,[name, about, sku, category_id, subcategory, brand, color, material, care_instructions, gender, age_range, weight, dimensions, stock_quantity, is_featured, is_active, image_path], (err1,res1) => {
-        if(err1)return next(error);
+      db.query(insertSql,[name, about, sku, category_id, subcategory, brand, color, material, care_instructions, gender, age_range, weight, dimensions, stock_quantity, featured, active, primary_image], (err1,res1) => {
+        if(err1)return next(err1);
         if(res1.affectedRows === 0)return next(createError.BadGateway('Insert failed'));
-        res1.send('Product added successfully!');
+
+        // insert other image path's
+        res.send('Product added successfully!');
       })
       
     }
@@ -56,16 +72,16 @@ exports.add_product  = (req,res,next) => {
 exports.add_variant = (req,res,next) => {
     try{
       const{product_id,size,price,original_price,stock_quantity} = req.body;
-      if(!size.trim() == "" || typeof(size) !== "string"){
+      if(typeof size !== "string" || size.trim() === ""){
         return res.status(400).json({ message: `size must be a non-empty string` });
       }
       const numberFields = {product_id,price,original_price,stock_quantity};
-      for(const[key,val] of Object.entries(numberFields)){
-        if(val == null || val === undefined || isNaN(val)){
+      for(const[key,value] of Object.entries(numberFields)){
+        if(value == null || value === undefined || isNaN(value) || value < 0){
             return res.status(400).json({ message: `${key} must be a valid number` });
         }
       }
-      let insertSql = "insert into product_variants(prouduct_id, size, price, original_price, stock_quantity) values (?,?,?,?,?)";
+      let insertSql = "insert into product_variants(product_id, size, price, original_price, stock_quantity) values (?,?,?,?,?)";
       db.query(insertSql,[product_id, size, price, original_price, stock_quantity],(err1,res1) => {
         if(err1)return next(err1);
         if(res1.affectedRows === 0){
@@ -75,7 +91,7 @@ exports.add_variant = (req,res,next) => {
       })
     }
     catch(error){
-
+      next(error);
     }
 }
 
