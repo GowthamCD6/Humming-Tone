@@ -6,7 +6,8 @@ import WomanIcon from '@mui/icons-material/Woman';
 import ChildCareIcon from '@mui/icons-material/ChildCare';
 import BabyChangingStationIcon from '@mui/icons-material/BabyChangingStation';
 import ShoppingBagIcon from '@mui/icons-material/ShoppingBag';
-import './Navbar.css';
+import logo from '../../assets/logo.png';
+import './UserTab.css';
 
 const Navbar = () => {
   return (
@@ -14,7 +15,7 @@ const Navbar = () => {
       <div className="navbar-container">
         {/* Logo */}
         <div className="logo">
-          <img src="/assets/logo.png" alt="Fashion & More" className="logo-image" />
+          <img src={logo} alt="Fashion & More" className="logo-image" />
         </div>
 
         {/* Navigation Links */}
