@@ -19,6 +19,8 @@ export default function Login({ onSuccess }) {
   // Hardcoded credentials as requested
   const VALID_USERNAME = 'admin';
   const VALID_PASSWORD = 'admin123';
+  const USER_USERNAME = 'user';
+  const USER_PASSWORD = 'user123';
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -40,14 +42,22 @@ export default function Login({ onSuccess }) {
       return;
     }
 
-    // 2. Validate Credentials
+    // 2. Validate Admin Credentials
     if (formData.username === VALID_USERNAME && formData.password === VALID_PASSWORD) {
       setError('');
-      console.log('Login Successful');
+      console.log('Admin Login Successful');
       // Trigger parent function to navigate to admin panel
-      if (onSuccess) onSuccess(); 
-    } else {
-      // 3. Set Error for invalid credentials
+      if (onSuccess) onSuccess('admin'); 
+    } 
+    // 3. Validate User Credentials
+    else if (formData.username === USER_USERNAME && formData.password === USER_PASSWORD) {
+      setError('');
+      console.log('User Login Successful');
+      // Trigger parent function to navigate to user page
+      if (onSuccess) onSuccess('user');
+    } 
+    else {
+      // 4. Set Error for invalid credentials
       setError('Invalid username or password.');
     }
   };
