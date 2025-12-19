@@ -5,7 +5,7 @@ import AdminTab from './components/AdminTab/AdminTab.jsx'
 import './App.css'
 
 export default function App() {
-	const [isAuthenticated, setIsAuthenticated] = useState(false)
+	const [isAuthenticated, setIsAuthenticated] = useState(false);
 
 	const handleLogin = () => {
 		setIsAuthenticated(true)
