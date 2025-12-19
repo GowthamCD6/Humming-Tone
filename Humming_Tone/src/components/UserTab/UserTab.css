@@ -1,18 +1,9 @@
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
+/* UserTab Specific Styles - Scoped to prevent conflicts */
+.user-tab-container {
+  width: 100%;
 }
 
-body {
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
-    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
-    sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-}
-
-.navbar {
+.user-navbar {
   background-color: #ffffff;
   box-shadow: none;
   padding: 0;
@@ -22,7 +13,7 @@ body {
   border-bottom: 1px solid #e5e5e5;
 }
 
-.navbar-container {
+.user-navbar-container {
   max-width: 100%;
   margin: 0 auto;
   display: flex;
@@ -32,19 +23,19 @@ body {
   height: 70px;
 }
 
-.logo {
+.user-logo {
   display: flex;
   align-items: center;
   flex-shrink: 0;
 }
 
-.logo-image {
+.user-logo-image {
   height: 45px;
   width: auto;
   object-fit: contain;
 }
 
-.nav-menu {
+.user-nav-menu {
   display: flex;
   list-style: none;
   gap: 0;
@@ -56,7 +47,7 @@ body {
   height: 100%;
 }
 
-.nav-item {
+.user-nav-item {
   display: flex;
   align-items: center;
   gap: 0.4rem;
@@ -73,18 +64,18 @@ body {
   position: relative;
 }
 
-.nav-item:hover {
+.user-nav-item:hover {
   color: #000000;
   background-color: rgba(0, 0, 0, 0.02);
 }
 
-.nav-item.active {
+.user-nav-item.active {
   color: #000000;
   font-weight: 500;
   border-bottom: 2px solid #000000;
 }
 
-.nav-item.active::after {
+.user-nav-item.active::after {
   content: '';
   position: absolute;
   bottom: -1px;
@@ -94,12 +85,12 @@ body {
   background-color: #000000;
 }
 
-.nav-icon {
+.user-nav-icon {
   font-size: 1.15rem !important;
   color: currentColor;
 }
 
-.cart-icon {
+.user-cart-icon {
   position: relative;
   cursor: pointer;
   padding: 0.5rem;
@@ -110,16 +101,16 @@ body {
   justify-content: center;
 }
 
-.cart-icon:hover {
+.user-cart-icon:hover {
   opacity: 0.7;
 }
 
-.cart-icon svg {
+.user-cart-icon svg {
   font-size: 1.6rem;
   color: #000000;
 }
 
-.cart-count {
+.user-cart-count {
   position: absolute;
   top: 0px;
   right: 0px;
@@ -138,51 +129,51 @@ body {
 
 /* Responsive Design */
 @media (max-width: 1024px) {
-  .nav-menu {
+  .user-nav-menu {
     gap: 0;
   }
 
-  .nav-item {
+  .user-nav-item {
     padding: 0 1rem;
     font-size: 0.9rem;
   }
 }
 
 @media (max-width: 768px) {
-  .navbar-container {
+  .user-navbar-container {
     padding: 0 1rem;
     height: 60px;
   }
 
-  .nav-menu {
+  .user-nav-menu {
     gap: 0;
   }
 
-  .nav-item {
+  .user-nav-item {
     padding: 0 0.8rem;
     font-size: 0.85rem;
     height: 60px;
   }
 
-  .nav-item span {
+  .user-nav-item span {
     display: none;
   }
 
-  .nav-icon {
+  .user-nav-icon {
     font-size: 1.3rem !important;
   }
 
-  .logo-image {
+  .user-logo-image {
     height: 40px;
   }
 }
 
 @media (max-width: 480px) {
-  .navbar-container {
+  .user-navbar-container {
     padding: 0 0.5rem;
   }
 
-  .nav-item {
+  .user-nav-item {
     padding: 0 0.5rem;
   }
 }
