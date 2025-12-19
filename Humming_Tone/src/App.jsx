@@ -7,7 +7,6 @@ import './App.css'
 
 export default function App() {
 	const [isAuthenticated, setIsAuthenticated] = useState(false)
-	const [userType, setUserType] = useState(null)
 
 	const handleLogin = (type) => {
 		setIsAuthenticated(true)
