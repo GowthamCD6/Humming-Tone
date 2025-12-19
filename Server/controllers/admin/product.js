@@ -4,7 +4,7 @@ const createError = require("http-errors");
 // add product -> first call it, then call add_variant
 exports.add_product  = (req,res,next) => {
     try{
-      const{files} = req.files;
+      const files = req.files;
       if (!files || files.length === 0) {
         return res.status(400).json({ message: "At least one image is required" });
       }
@@ -33,6 +33,11 @@ exports.add_product  = (req,res,next) => {
       const featured = is_featured ? 1 : 0;
       const active = is_active ? 1 : 0;
 
+      const allowedGenders = ["men","women","kids","baby"];
+      if (!allowedGenders.includes(gender)) {
+        return res.status(400).json({ message: "Invalid gender value" });
+      }
+
       for(const[key,value] of Object.entries(stringFields)){
         if(typeof value !== "string" || value.trim() === ""){
             return res.status(400).json({ message: `${key} must be a non-empty string` });
@@ -56,11 +61,29 @@ exports.add_product  = (req,res,next) => {
                        is_featured, is_active, image_path) values(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`;
 
       db.query(insertSql,[name, about, sku, category_id, subcategory, brand, color, material, care_instructions, gender, age_range, weight, dimensions, stock_quantity, featured, active, primary_image], (err1,res1) => {
-        if(err1)return next(err1);
-        if(res1.affectedRows === 0)return next(createError.BadGateway('Insert failed'));
+        if(err1){
+            if (err1.code === "ER_DUP_ENTRY") {
+                return next(createError.Conflict("SKU already exists"));
+            }
+            return next(err1);
+        }
+        else if(res1.affectedRows === 0)return next(createError.BadGateway('Insert failed'));
 
         // insert other image path's
-        res.send('Product added successfully!');
+        let imagesSql = "insert into product_images(product_id, image_path, is_primary) values(?,?,?)";
+        const product_id = res1.insertId;
+        // inserting each image
+        let completed = 0;
+        for (const path of image_paths) {
+        db.query(imagesSql,[product_id, path, completed === 0 ? 1 : 0],(err2) => {
+            if (err2) return next(err2);
+            completed++;
+            if (completed === image_paths.length) {
+                return res.send("Product added successfully!");
+            }
+        }
+        );
+        }
       })
       
     }
