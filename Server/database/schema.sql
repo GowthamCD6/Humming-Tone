@@ -32,7 +32,7 @@ CREATE TABLE products (
   color VARCHAR(50),
   material VARCHAR(100),
   care_instructions TEXT,
-  gender ENUM('men','women','kids','baby'),
+  gender ENUM('men','children','babies','sports'),
   age_range VARCHAR(50),
   weight DECIMAL(8,2),
   dimensions VARCHAR(100),

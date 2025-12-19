@@ -50,11 +50,11 @@ exports.add_product  = (req,res,next) => {
         }
       }
 
-    //   for(const[key,value] of Object.entries(booleanFields)){
-    //     if(typeof value !== "boolean"){
-    //         return res.status(400).json({ message: `${key} must be boolean (true/false)` });
-    //     }
-    //   }
+      for(const[key,value] of Object.entries(booleanFields)){
+        if(typeof value !== "boolean"){
+            return res.status(400).json({ message: `${key} must be boolean (true/false)` });
+        }
+      }
 
       let categoryIdSql = "select id from categories where slug = ? limit 1";
       let category_id;
