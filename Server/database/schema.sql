@@ -25,7 +25,6 @@ CREATE TABLE products (
   id INT AUTO_INCREMENT PRIMARY KEY,
   name VARCHAR(255) NOT NULL,
   about TEXT,
-  original_price DECIMAL(10,2),
   sku VARCHAR(100) NOT NULL UNIQUE, -- stock keeping unit
   category_id INT,
   subcategory VARCHAR(100),
@@ -41,7 +40,6 @@ CREATE TABLE products (
   is_featured TINYINT(1) DEFAULT 0,
   is_active TINYINT(1) DEFAULT 1,
   image_path VARCHAR(500),
-  video_path VARCHAR(500),
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   FOREIGN KEY (category_id) REFERENCES categories(id)
