@@ -36,7 +36,6 @@ CREATE TABLE products (
   age_range VARCHAR(50),
   weight DECIMAL(8,2),
   dimensions VARCHAR(100),
-  stock_quantity INT DEFAULT 0,
   is_featured TINYINT(1) DEFAULT 0,
   is_active TINYINT(1) DEFAULT 1,
   image_path VARCHAR(500),

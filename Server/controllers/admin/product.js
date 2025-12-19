@@ -15,15 +15,15 @@ exports.add_product  = (req,res,next) => {
       // all images
       const image_paths = files.map(file => file.path);
 
-      const{name, about, sku, category_id, subcategory, brand, color, material, care_instructions, gender, age_range, weight, dimensions, stock_quantity, is_featured, is_active} = req.body;
+      const{name, about, sku, category, subcategory, brand, color, material, care_instructions, gender, age_range, weight, dimensions, is_featured, is_active} = req.body;
       
       const stringFields = {
-        name, about, sku, subcategory, brand, color,
+        name, about, sku, category, subcategory, brand, color, // category must be slug, not name
         material, care_instructions, gender, age_range, dimensions
       };
 
       const numberFields = {
-        category_id, weight, stock_quantity
+        weight
       };
 
       const booleanFields = {
@@ -34,12 +34,12 @@ exports.add_product  = (req,res,next) => {
       const active = is_active ? 1 : 0;
 
       const allowedGenders = ["men","women","kids","baby"];
-      if (!allowedGenders.includes(gender)) {
+      if (!gender || !allowedGenders.includes(gender)) {
         return res.status(400).json({ message: "Invalid gender value" });
       }
 
       for(const[key,value] of Object.entries(stringFields)){
-        if(typeof value !== "string" || value.trim() === ""){
+        if(value !== undefined && (typeof value !== "string" || value.trim() === "")){
             return res.status(400).json({ message: `${key} must be a non-empty string` });
         }
       }
@@ -50,40 +50,51 @@ exports.add_product  = (req,res,next) => {
         }
       }
 
-      for(const[key,value] of Object.entries(booleanFields)){
-        if(typeof value !== "boolean"){
-            return res.status(400).json({ message: `${key} must be boolean (true/false)` });
+    //   for(const[key,value] of Object.entries(booleanFields)){
+    //     if(typeof value !== "boolean"){
+    //         return res.status(400).json({ message: `${key} must be boolean (true/false)` });
+    //     }
+    //   }
+
+      let categoryIdSql = "select id from categories where slug = ? limit 1";
+      let category_id;
+      db.query(categoryIdSql,[category],(err0,res0) => {
+        if(err0)return next(err0);
+        if(res0.length === 0){
+            return next(createError.NotFound('slug not found'));
         }
-      }
-
-      let insertSql = `insert into products(name, about, sku, category_id, subcategory, brand,
-                       color, material, care_instructions, gender, age_range, weight, dimensions, stock_quantity, 
-                       is_featured, is_active, image_path) values(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`;
-
-      db.query(insertSql,[name, about, sku, category_id, subcategory, brand, color, material, care_instructions, gender, age_range, weight, dimensions, stock_quantity, featured, active, primary_image], (err1,res1) => {
-        if(err1){
-            if (err1.code === "ER_DUP_ENTRY") {
-                return next(createError.Conflict("SKU already exists"));
-            }
-            return next(err1);
-        }
-        else if(res1.affectedRows === 0)return next(createError.BadGateway('Insert failed'));
-
-        // insert other image path's
-        let imagesSql = "insert into product_images(product_id, image_path, is_primary) values(?,?,?)";
-        const product_id = res1.insertId;
-        // inserting each image
-        let completed = 0;
-        for (const path of image_paths) {
-        db.query(imagesSql,[product_id, path, completed === 0 ? 1 : 0],(err2) => {
-            if (err2) return next(err2);
-            completed++;
+        category_id = res0[0].id;
+        let insertSql = `insert into products(name, about, sku, category_id, subcategory, brand,
+                         color, material, care_instructions, gender, age_range, weight, dimensions,
+                         is_featured, is_active, image_path) values(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`;
+  
+        db.query(insertSql,[name, about, sku, category_id, subcategory, brand, color, material, care_instructions, gender, age_range, weight, dimensions, featured, active, primary_image], (err1,res1) => {
+          if(err1){
+              if (err1.code === "ER_DUP_ENTRY") {
+                  return next(createError.Conflict("SKU already exists"));
+              }
+              return next(err1);
+          }
+          else if(res1.affectedRows === 0)return next(createError.InternalServerError('Insert failed'));
+  
+          // insert other image path's
+          let imagesSql = "insert into product_images(product_id, image_path, is_primary) values(?,?,?)";
+          const product_id = res1.insertId;
+          // inserting each image
+          let completed = 0;
+          image_paths.forEach((path, index) => {
+          db.query(imagesSql,[product_id, path, index === 0 ? 1 : 0],(err2) => {
+            if (err2) return next(err2);  
+            completed++;  
             if (completed === image_paths.length) {
-                return res.send("Product added successfully!");
+                res.status(201).json({ message: "Product added successfully!" });
             }
-        }
-        );
-        }
+            }
+          );
+          });
+
+        })
+
       })
       
     }
@@ -100,10 +111,16 @@ exports.add_variant = (req,res,next) => {
       }
       const numberFields = {product_id,price,original_price,stock_quantity};
       for(const[key,value] of Object.entries(numberFields)){
-        if(value == null || value === undefined || isNaN(value) || value < 0){
+        if(value == null || value === undefined || isNaN(value) || value <= 0){
             return res.status(400).json({ message: `${key} must be a valid number` });
         }
       }
+      if (original_price < price) {
+        return res.status(400).json({
+            message: "original_price must be greater than or equal to price"
+        });
+      }
+
       let insertSql = "insert into product_variants(product_id, size, price, original_price, stock_quantity) values (?,?,?,?,?)";
       db.query(insertSql,[product_id, size, price, original_price, stock_quantity],(err1,res1) => {
         if(err1)return next(err1);
