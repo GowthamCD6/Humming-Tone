@@ -6,7 +6,6 @@ const createError = require("http-errors");
 const bodyParser = require("body-parser");
 const productRoute = require("./routes/admin/product");
 
-
 const app = express();
 const PORT = process.env.PORT || 5000;
 
