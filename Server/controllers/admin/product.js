@@ -172,7 +172,74 @@ exports.fetch_variants = (req,res,next) => {
 exports.update_product = (req,res,next) => {
   try{
     const{id} = req.params;
-    // const{}
+    const{name, about, subcategory, brand, color, material, care_instructions, gender, age_range, weight, dimensions, is_featured, is_active} = req.body;
+
+    if(!id || id.trim() === "")return next(createError.BadRequest('id required!'));
+
+    const stringFields = {
+      name, about, subcategory, brand, color, 
+      material, care_instructions, gender, age_range, dimensions
+    };
+
+    const numberFields = {
+      weight
+    };
+
+    const booleanFields = {
+      is_featured, is_active
+    };
+
+    for(const[key,value] of Object.entries(stringFields)){
+      if(typeof value != "string" || !value || value.trim() === ""){
+        return next(createError.BadRequest('Invalid String input!'));
+      }
+    }
+
+    for(const[key,value] of Object.entries(numberFields)){
+      if(value === null || value === undefined || isNaN(value)){
+        return next(createError.BadRequest(key,' - Invalid number input!'));
+      }
+    }
+
+    for(const[key,value] of Object.entries(booleanFields)){
+      if(typeof value != "boolean"){
+        return next(createError.BadRequest(key,' - Invalid boolean input!'));
+      }
+    }
+
+    let updateSql = "update products set name = ? and about = ? and subcategory = ? and brand = ? and color = ? and material = ? and care_instructions = ? and gender = ? and age_range = ? and weight = ? and dimensions = ? and is_featured = ? and is_active = ?";
+    db.query(updateSql,[name, about, subcategory, brand, color, material, care_instructions, gender, age_range, weight, dimensions, is_featured, is_active],(error, result) => {
+      if(error || result.affectedRows === 0){
+        return next(error || createError.InternalServerError('update failed'))
+      }
+      res.send('Fields updated successfully!');
+    })
+  }
+  catch(error){
+    next(error);
+  }
+}
+
+exports.update_variant = (req,res,next) => {
+  try{
+    const{id} = req.params;
+    if(!id || id.trim() === "" || isNaN(id)){
+      return next(createError.BadRequest("invalid id!"));
+    }
+    const{price, original_price, stock_quantity} = req.body;
+    const inputFields = {price, original_price, stock_quantity};
+    for(const[key,value] of Object.entries(inputFields)){
+      if(value === null || value === undefined || isNaN(value)){
+        return next(createError.BadRequest('Invalid input field'));
+      }
+    }
+    let updateSql = "update product_variants set price = ? and original_price = ? and stock_quantity = ? where product_id = ?";
+    db.query(updateSql,[price,original_price,stock_quantity,id],(error,result) => {
+      if(error || result.affectedRows === 0){
+        return next(error || createError.InternalServerError('update failed!'));
+      }
+      res.send('product variants updated successfully!');
+    })
   }
   catch(error){
     next(error);
@@ -190,15 +257,34 @@ exports.delete_product = (req,res,next) => {
       return next(createError.BadRequest('Invalid input type!'));
     }
     else if(deleteAll){
-      let deleteAllSql = "delete from products where id = ?";
-      db.query(deleteAllSql,[id],(err,res0) => {
-        if(err)return next(err);
-        if(res0.affectedRows === 0)return next(createError.NotFound('deletion failed, product not found'));
-        res.send('Product deleted successfully!');
+      return db.beginTransaction(TransctionError => {
+        if(TransctionError)return next(TransctionError);
+        let changeStatusSql = "update products set is_active = 0 where id = ?";
+        db.query(changeStatusSql,[id],(err0,res0) => {
+          if(err0 || res0.affectedRows === 0){
+            return db.rollback(() => {
+              next(err0 || createError.NotFound('deletion failed, product not found'));
+            }) 
+          }
+  
+          let deleteVariants = "delete from product_variants where product_id = ?";
+          db.query(deleteVariants,[id],(err,result) => {
+            if(err || result.affectedRows === 0){
+              return db.rollback(() => next(err || createError.NotFound('No variants found')));
+            }
+            db.commit(commitErr => {
+              if (commitErr) {
+                return db.rollback(() => next(commitErr));
+              }
+
+              return res.send("Product deleted successfully!");
+            })  
+          })
+        })
       })
     }
     else if(!Array.isArray(variants) || variants.length == 0){
-      return next(createError.BadRequest('Inalid Request!'));
+      return next(createError.BadRequest('Invalid Request!'));
     }
     else{
         let deleteSql = "delete from product_variants where size in (?) and product_id = ?";
