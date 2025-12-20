@@ -1,168 +1,133 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
-import homeImage from '../../../assets/HomeImage.jpg';
+import homeImage from '../../../assets/home1.png';
+import demoImage from '../../../assets/demo.jpeg';
 import './Home.css';
 
-const Home = () => {
-  const featuredProducts = [
-    { 
-      id: 1, 
-      name: "Stitch set", 
-      brand: "Care and Dare", 
-      price: "₹400.00",
-      image: "product1.jpg" 
-    },
-    { 
-      id: 2, 
-      name: "Blue set", 
-      brand: "Care and Dare", 
-      price: "₹400.00",
-      image: "product2.jpg"
-    },
-    { 
-      id: 3, 
-      name: "Mickey hoodie set", 
-      brand: "Care and Dare", 
-      price: "₹450.00",
-      image: "product3.jpg"
-    },
-    { 
-      id: 4, 
-      name: "Baby Romper", 
-      brand: "Care and Dare", 
-      price: "₹350.00",
-      image: "product4.jpg"
-    },
-    { 
-      id: 5, 
-      name: "Kids T-Shirt", 
-      brand: "Care and Dare", 
-      price: "₹300.00",
-      image: "product5.jpg"
-    },
-    { 
-      id: 6, 
-      name: "Sports Wear", 
-      brand: "Care and Dare", 
-      price: "₹500.00",
-      image: "product6.jpg"
-    },
-  ];
+// To integrate with backend later, you will just replace these arrays with state from an API
+const featuredProducts = [
+  { 
+    id: 1, 
+    name: "Stitch set", 
+    brand: "CARE AND DARE", 
+    price: 400.00, 
+    image: "demo" 
+  },
+  { 
+    id: 2, 
+    name: "Blue set", 
+    brand: "CARE AND DARE", 
+    price: 400.00, 
+    image: "demo" 
+  },
+  { 
+    id: 3, 
+    name: "Mickey hoodie set", 
+    brand: "CARE AND DARE", 
+    price: 450.00, 
+    image: "demo" 
+  },
+];
 
-  const newArrivals = [
-    { 
-      id: 7, 
-      name: "Christmas sleepsuit", 
-      brand: "Care and Dare", 
-      price: "₹180.00",
-      image: "arrival1.jpg"
-    },
-    { 
-      id: 8, 
-      name: "'Daddy's little one' sleepsuit", 
-      brand: "Care and Dare", 
-      price: "₹180.00",
-      image: "arrival2.jpg"
-    },
-    { 
-      id: 9, 
-      name: "Teddy sleepsuit", 
-      brand: "Care and Dare", 
-      price: "₹180.00",
-      image: "arrival3.jpg"
-    },
-    { 
-      id: 10, 
-      name: "Winter Jacket", 
-      brand: "Care and Dare", 
-      price: "₹650.00",
-      image: "arrival4.jpg"
-    },
-    { 
-      id: 11, 
-      name: "Cotton Onesie", 
-      brand: "Care and Dare", 
-      price: "₹220.00",
-      image: "arrival5.jpg"
-    },
-    { 
-      id: 12, 
-      name: "Baby Dress", 
-      brand: "Care and Dare", 
-      price: "₹380.00",
-      image: "arrival6.jpg"
-    },
-  ];
+const newArrivals = [
+  { 
+    id: 4, 
+    name: "Christmas sleepsuit", 
+    brand: "CARE AND DARE", 
+    price: 180.00, 
+    image: "demo" 
+  },
+  { 
+    id: 5, 
+    name: "Daddy's little one", 
+    brand: "CARE AND DARE", 
+    price: 180.00, 
+    image: "demo" 
+  },
+  { 
+    id: 6, 
+    name: "Teddy sleepsuit", 
+    brand: "CARE AND DARE", 
+    price: 180.00, 
+    image: "demo" 
+  },
+];
+
+const Home = () => {
+  
+  // Reusable Product Card Component for cleaner code
+  const ProductCard = ({ product }) => (
+    <div className="product-card">
+      <div className="product-image-container">
+        {/* Placeholder for actual product image */}
+        <img src={product.image === "demo" ? demoImage : product.image} alt={product.name} className="product-img" 
+             onError={(e) => { e.target.src = 'https://via.placeholder.com/400x500?text=Product+Image' }} />
+        
+        <div className="product-hover-overlay">
+          <button className="view-details-btn">VIEW DETAILS</button>
+        </div>
+      </div>
+      <div className="product-details">
+        <h3 className="product-title">{product.name}</h3>
+        <p className="product-brand-name">{product.brand}</p>
+        <p className="product-price-tag">₹{product.price.toFixed(2)}</p>
+      </div>
+    </div>
+  );
 
   return (
-    <div className="home-container">
+    <main className="home-static-page">
+      
       {/* Hero Section */}
-      <section className="hero-section">
-        <div className="hero-image">
-          <img src={homeImage} alt="Hero" className="hero-bg-image" />
+      <section className="hero-banner">
+        <div className="hero-visual">
+          <div className="hero-tint"></div>
+          {/* Replace with your local HomeImage path */}
+          <img src={homeImage} alt="Premium Collection" className="hero-main-img" />
         </div>
-        <div className="hero-content">
-          <h1 className="hero-title">Elevate Your Style</h1>
-          <p className="hero-subtitle">Discover our curated collection of premium clothing</p>
-          <button className="hero-button">SHOP BABY COLLECTION</button>
+        
+        <div className="hero-text-content">
+          <h1 className="hero-main-title">Elevate Your Style</h1>
+          <p className="hero-sub-text">Discover our curated collection of premium clothing</p>
+          <button className="hero-cta-button">SHOP BABY COLLECTION</button>
         </div>
-        <div className="scroll-indicator">
-          <KeyboardArrowDownIcon />
+
+        <div className="hero-scroll-down">
+          <KeyboardArrowDownIcon className="bounce-icon" />
         </div>
       </section>
 
       {/* Featured Products Section */}
-      <section className="featured-section">
-        <div className="section-header">
-          <h2 className="section-title">Featured Products</h2>
-          <p className="section-subtitle">Handpicked items from our collection</p>
+      <section className="product-section alt-bg">
+        <div className="section-intro">
+          <h2 className="section-heading">Featured Products</h2>
+          <div className="heading-accent"></div>
+          <p className="section-description">Handpicked items from our collection</p>
         </div>
 
-        <div className="products-grid">
-          {featuredProducts.map((product) => (
-            <div key={product.id} className="product-card">
-              <div className="product-image">
-                <span>Product Image</span>
-                <div className="product-overlay">
-                  <button className="view-details-btn">VIEW DETAILS</button>
-                </div>
-              </div>
-              <div className="product-info">
-                <h3 className="product-name">{product.name}</h3>
-                <p className="product-brand">{product.brand}</p>
-                <p className="product-price">{product.price}</p>
-              </div>
-            </div>
+        <div className="product-layout-grid">
+          {featuredProducts.map(item => (
+            <ProductCard key={item.id} product={item} />
           ))}
         </div>
       </section>
 
       {/* New Arrivals Section */}
-      <section className="arrivals-section">
-        <div className="section-header">
-          <h2 className="section-title">New Arrivals</h2>
-          <p className="section-subtitle">Fresh styles just for you</p>
+      <section className="product-section">
+        <div className="section-intro">
+          <h2 className="section-heading">New Arrivals</h2>
+          <div className="heading-accent"></div>
+          <p className="section-description">Fresh styles just for you</p>
         </div>
 
-        <div className="products-grid">
-          {newArrivals.map((product) => (
-            <div key={product.id} className="product-card">
-              <div className="product-image">
-                <span>Product Image</span>
-                <div className="product-overlay">
-                  <button className="view-details-btn">VIEW DETAILS</button>
-                </div>
-              </div>
-              <div className="product-info">
-                <h3 className="product-name">{product.name}</h3>
-                <p className="product-brand">{product.brand}</p>
-                <p className="product-price">{product.price}</p>
-              </div>
-            </div>
+        <div className="product-layout-grid">
+          {newArrivals.map(item => (
+            <ProductCard key={item.id} product={item} />
           ))}
         </div>
       </section>
-    </div>
+
+    </main>
   );
 };
 
