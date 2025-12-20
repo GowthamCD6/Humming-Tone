@@ -4,7 +4,10 @@ const cors = require("cors");
 const morgan = require("morgan");
 const createError = require("http-errors");
 const bodyParser = require("body-parser");
-const productRoute = require("./routes/admin/product");
+const adminProductRoute = require("./routes/admin/product");
+const adminAuthRoute = require("./routes/admin/auth");
+const adminDashboardRoute = require("./routes/admin/dashboard");
+const adminOrderRoute = require("./routes/admin/order")
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -18,7 +21,13 @@ app.use(cors({
 app.use(morgan('dev'));
 app.use(bodyParser.json());
 
-app.use("/",productRoute);
+// admin routes
+app.use("/",adminProductRoute);
+app.use("/",adminOrderRoute);
+app.use("/",adminDashboardRoute);
+app.use("/",adminAuthRoute);
+
+// user routes
 
 
 app.use((req,res,next) => {

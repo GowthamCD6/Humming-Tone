@@ -135,20 +135,81 @@ exports.add_variant = (req,res,next) => {
     }
 }
 
-//   name VARCHAR(255) NOT NULL,
-//   about TEXT,
-//   original_price DECIMAL(10,2),
-//   sku VARCHAR(100) NOT NULL UNIQUE, -- stock keeping unit
-//   category_id INT,
-//   subcategory VARCHAR(100),
-//   brand VARCHAR(100),
-//   color VARCHAR(50),
-//   material VARCHAR(100),
-//   care_instructions TEXT,
-//   gender ENUM('men','women','kids','baby'),
-//   age_range VARCHAR(50),
-//   weight DECIMAL(8,2),
-//   dimensions VARCHAR(100),
-//   stock_quantity INT DEFAULT 0,
-//   is_featured TINYINT(1) DEFAULT 0,
-//   is_active TINYINT(1) DEFAULT 1,
+// to show on manage products page
+exports.fetch_products = (req,res,next) => {
+  try{
+    let getSql = "select * from products";
+    db.query(getSql,(err1,res1) => {
+      if(err1)return next(err1);
+      if(res1.length == 0)return next(createError.NotFound('Products not found!'));
+      res.send(res1);
+    })
+  }
+  catch(error){
+    next(error);
+  }
+}
+
+// to fetch the product variants - edit, delete
+exports.fetch_variants = (req,res,next) => {
+  try{
+    const{id} = req.params;
+    if(!id || id.trim() === null){
+      return next(createError.BadRequest('id is required!'));
+    }
+    let fetchSql = "select * from products p left join product_variants v on p.id = v.product_id";
+    db.query(fetchSql,(err,res) => {
+      if(err)return next(err);
+      if(res.length == 0)return next(createError.NotFound('Variants'));
+      res.send(res);
+    })
+  }
+  catch(error){
+    next(error);
+  }
+}
+
+exports.update_product = (req,res,next) => {
+  try{
+    const{id} = req.params;
+    // const{}
+  }
+  catch(error){
+    next(error);
+  }
+}
+
+exports.delete_product = (req,res,next) => {
+  try{
+    const{id} = req.params;
+    const{variants, deleteAll} = req.body;
+    if(!id || id.trim() === "" || isNaN(id)){
+      return next(createError.BadRequest('Invalid product information!'));
+    }
+    else if(typeof deleteAll !== "boolean"){
+      return next(createError.BadRequest('Invalid input type!'));
+    }
+    else if(deleteAll){
+      let deleteAllSql = "delete from products where id = ?";
+      db.query(deleteAllSql,[id],(err,res0) => {
+        if(err)return next(err);
+        if(res0.affectedRows === 0)return next(createError.NotFound('deletion failed, product not found'));
+        res.send('Product deleted successfully!');
+      })
+    }
+    else if(!Array.isArray(variants) || variants.length == 0){
+      return next(createError.BadRequest('Inalid Request!'));
+    }
+    else{
+        let deleteSql = "delete from product_variants where size in (?) and product_id = ?";
+        db.query(deleteSql,[variants,id],(err1,res1) => {
+          if(err1)return next(err1);
+          if(res1.affectedRows === 0)return next(createError.NotFound('deletion failed, variant not found!'));
+          return res.send('Selected variants deleted successfully!');
+        })
+    }
+  }
+  catch(error){
+    next(error);
+  }
+}
