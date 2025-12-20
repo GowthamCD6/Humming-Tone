@@ -1,59 +1,77 @@
-import React from 'react';
+import React, { useState } from 'react';
 import HomeIcon from '@mui/icons-material/Home';
 import GridViewIcon from '@mui/icons-material/GridView';
 import ManIcon from '@mui/icons-material/Man';
-import WomanIcon from '@mui/icons-material/Woman';
 import ChildCareIcon from '@mui/icons-material/ChildCare';
 import BabyChangingStationIcon from '@mui/icons-material/BabyChangingStation';
-import ShoppingBagIcon from '@mui/icons-material/ShoppingBag';
+import SportsBasketballIcon from '@mui/icons-material/SportsBasketball';
+import TuneIcon from '@mui/icons-material/Tune';
+import ShoppingBagOutlinedIcon from '@mui/icons-material/ShoppingBagOutlined';
 import logo from '../../assets/logo.png';
 import './UserTab.css';
 
-const Navbar = () => {
-  return (
-    <nav className="user-navbar">
-      <div className="user-navbar-container">
-        {/* Logo */}
-        <div className="user-logo">
-          <img src={logo} alt="Fashion & More" className="user-logo-image" />
-        </div>
+const Header = () => {
+  const [activeNav, setActiveNav] = useState('home');
+  const [cartCount] = useState(0);
 
-        {/* Navigation Links */}
-        <ul className="user-nav-menu">
-          <li className="user-nav-item active">
-            <HomeIcon className="user-nav-icon" />
-            <span>Home</span>
-          </li>
-          <li className="user-nav-item">
-            <GridViewIcon className="user-nav-icon" />
-            <span>All Products</span>
-          </li>
-          <li className="user-nav-item">
-            <ManIcon className="user-nav-icon" />
-            <span>Men</span>
-          </li>
-          <li className="user-nav-item">
-            <WomanIcon className="user-nav-icon" />
-            <span>Women</span>
-          </li>
-          <li className="user-nav-item">
-            <ChildCareIcon className="user-nav-icon" />
-            <span>Kids</span>
-          </li>
-          <li className="user-nav-item">
-            <BabyChangingStationIcon className="user-nav-icon" />
-            <span>Baby</span>
-          </li>
-        </ul>
+  const navItems = [
+    { id: 'home', label: 'Home', Icon: HomeIcon },
+    { id: 'all-products', label: 'All Products', Icon: GridViewIcon },
+    { id: 'men', label: 'Men', Icon: ManIcon },
+    { id: 'children', label: 'Children', Icon: ChildCareIcon },
+    { id: 'baby', label: 'Baby', Icon: BabyChangingStationIcon },
+    { id: 'sports', label: 'Sports', Icon: SportsBasketballIcon },
+    { id: 'customize', label: 'Customize', Icon: TuneIcon },
+  ];
+
+  const handleNavClick = (id) => {
+    setActiveNav(id);
+  };
+
+  const handleCartClick = () => {
+    console.log('Cart clicked');
+  };
+
+  return (
+    <header className="header">
+      <div className="header-container">
+        {/* Logo Section */}
+        <a href="#" className="logo-section" onClick={() => handleNavClick('home')}>
+          <img src={logo} alt="Humming Tone" className="logo-image" />
+        </a>
+
+        {/* Navigation Menu */}
+        <nav className="nav">
+          <ul className="nav-menu">
+            {navItems.map((item) => {
+              const IconComponent = item.Icon;
+              return (
+                <li key={item.id} className="nav-item">
+                  <a
+                    href="#"
+                    className={`nav-link ${activeNav === item.id ? 'active' : ''}`}
+                    onClick={(e) => {
+                      e.preventDefault();
+                      handleNavClick(item.id);
+                    }}
+                  >
+                    <IconComponent className="nav-icon" />
+                    <span>{item.label}</span>
+                  </a>
+                </li>
+              );
+            })}
+          </ul>
+        </nav>
 
         {/* Cart Icon */}
-        <div className="user-cart-icon">
-          <ShoppingBagIcon />
-          <span className="user-cart-count">0</span>
+        <div className="cart-icon" onClick={handleCartClick}>
+          <ShoppingBagOutlinedIcon className="cart-bag" />
+          <span className="cart-badge">{cartCount}</span>
         </div>
       </div>
-    </nav>
+    </header>
   );
 };
 
-export default Navbar;
+export default Header;
