@@ -10,6 +10,7 @@ import ShoppingBagOutlinedIcon from '@mui/icons-material/ShoppingBagOutlined';
 import logo from '../../assets/logo.png';
 import Home from '../../Pages/UserPanal/HomePage/Home';
 import MensPage from '../../Pages/UserPanal/Men\'s-Page/Men\'s';
+import ChildrensPage from '../../Pages/UserPanal/Children\'s-Page/Children\'s'
 import './UserTab.css';
 
 const UserTab = () => {
@@ -59,7 +60,7 @@ const UserTab = () => {
       case 'men':
         return <MensPage />;
       case 'children':
-        return <div className="page-placeholder">Children's Collection</div>;
+        return <ChildrensPage />;
       case 'baby':
         return <div className="page-placeholder">Baby Collection</div>;
       case 'sports':

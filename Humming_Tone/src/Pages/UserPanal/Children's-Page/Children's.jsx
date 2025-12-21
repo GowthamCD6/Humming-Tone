@@ -1,46 +1,46 @@
 import React, { useState } from 'react';
 import demoImage from '../../../assets/demo.jpeg';
 import UserFooter from '../../../components/User-Footer-Card/UserFooter';
-import './Mens.css';
+import './Children\'s.css';
 
 // Sample products - will be replaced with API data later
 const sampleProducts = [
   { 
     id: 1, 
-    name: "Classic Polo Shirt", 
+    name: "Kids Graphic Tee", 
+    brand: "FASHION & MORE", 
+    price: 449.00, 
+    image: "demo" 
+  },
+  { 
+    id: 2, 
+    name: "Denim Shorts", 
     brand: "FASHION & MORE", 
     price: 599.00, 
     image: "demo" 
   },
   { 
-    id: 2, 
-    name: "Slim Fit Jeans", 
-    brand: "FASHION & MORE", 
-    price: 899.00, 
-    image: "demo" 
-  },
-  { 
     id: 3, 
-    name: "Casual Blazer", 
+    name: "Hooded Jacket", 
     brand: "FASHION & MORE", 
-    price: 1299.00, 
+    price: 999.00, 
     image: "demo" 
   },
   { 
     id: 4, 
-    name: "Cotton T-Shirt", 
+    name: "Casual Sneakers", 
     brand: "FASHION & MORE", 
-    price: 399.00, 
+    price: 799.00, 
     image: "demo" 
   },
 ];
 
 const CollectionPage = () => {
-  const [selectedGender, setSelectedGender] = useState('Men');
+  const [selectedGender, setSelectedGender] = useState('Children');
   const [selectedCategory, setSelectedCategory] = useState('All Categories');
   const [products, setProducts] = useState(sampleProducts); // Set sample products
 
-  const genderOptions = ['Men', 'Children',  'Baby', 'Sports', 'Customize'];
+  const genderOptions = ['Men', 'Children', 'Baby', 'Sports', 'Customize'];
   const categoryOptions = [
     'All Categories',
     'Shirts',
@@ -55,7 +55,7 @@ const CollectionPage = () => {
   };
 
   const handleClearAll = () => {
-    setSelectedGender('Men');
+    setSelectedGender('Children');
     setSelectedCategory('All Categories');
   };
 
@@ -66,47 +66,47 @@ const CollectionPage = () => {
 
   // Product Card Component
   const ProductCard = ({ product }) => (
-    <div className="mens-product-card">
-      <div className="mens-product-image-container">
+    <div className="childrens-product-card">
+      <div className="childrens-product-image-container">
         <img 
           src={product.image === "demo" ? demoImage : product.image} 
           alt={product.name} 
-          className="mens-product-img"
+          className="childrens-product-img"
           onError={(e) => { e.target.src = 'https://via.placeholder.com/400x500?text=Product+Image' }}
         />
-        <div className="mens-product-hover-overlay">
-          <button className="mens-view-details-btn">VIEW DETAILS</button>
+        <div className="childrens-product-hover-overlay">
+          <button className="childrens-view-details-btn">VIEW DETAILS</button>
         </div>
       </div>
-      <div className="mens-product-details">
-        <h3 className="mens-product-title">{product.name}</h3>
-        <p className="mens-product-brand">{product.brand}</p>
-        <p className="mens-product-price">₹{product.price.toFixed(2)}</p>
+      <div className="childrens-product-details">
+        <h3 className="childrens-product-title">{product.name}</h3>
+        <p className="childrens-product-brand">{product.brand}</p>
+        <p className="childrens-product-price">₹{product.price.toFixed(2)}</p>
       </div>
     </div>
   );
 
   return (
-    <div className="mens-collection-page">
+    <div className="childrens-collection-page">
       {/* Header Section */}
-      <div className="mens-header">
-        <h1 className="mens-title">Our Collection</h1>
-        <p className="mens-item-count">{products.length} ITEMS FOUND</p>
+      <div className="childrens-header">
+        <h1 className="childrens-title">Our Collection</h1>
+        <p className="childrens-item-count">{products.length} ITEMS FOUND</p>
       </div>
 
-      <div className="mens-divider"></div>
+      <div className="childrens-divider"></div>
 
       {/* Filter Section */}
-      <div className="mens-filter-container">
-        <h2 className="mens-filter-title">Refine Your Selection</h2>
+      <div className="childrens-filter-container">
+        <h2 className="childrens-filter-title">Refine Your Selection</h2>
         
-        <div className="mens-filter-row">
+        <div className="childrens-filter-row">
           {/* Gender Dropdown */}
-          <div className="mens-filter-group">
-            <label className="mens-filter-label">GENDER</label>
-            <div className="mens-select-wrapper">
+          <div className="childrens-filter-group">
+            <label className="childrens-filter-label">GENDER</label>
+            <div className="childrens-select-wrapper">
               <select 
-                className="mens-select"
+                className="childrens-select"
                 value={selectedGender}
                 onChange={(e) => setSelectedGender(e.target.value)}
               >
@@ -114,16 +114,16 @@ const CollectionPage = () => {
                   <option key={option} value={option}>{option}</option>
                 ))}
               </select>
-              <span className="mens-select-arrow">▼</span>
+              <span className="childrens-select-arrow">▼</span>
             </div>
           </div>
 
           {/* Category Dropdown */}
-          <div className="mens-filter-group">
-            <label className="mens-filter-label">CATEGORY</label>
-            <div className="mens-select-wrapper">
+          <div className="childrens-filter-group">
+            <label className="childrens-filter-label">CATEGORY</label>
+            <div className="childrens-select-wrapper">
               <select 
-                className="mens-select"
+                className="childrens-select"
                 value={selectedCategory}
                 onChange={(e) => setSelectedCategory(e.target.value)}
               >
@@ -131,20 +131,20 @@ const CollectionPage = () => {
                   <option key={option} value={option}>{option}</option>
                 ))}
               </select>
-              <span className="mens-select-arrow">▼</span>
+              <span className="childrens-select-arrow">▼</span>
             </div>
           </div>
 
           {/* Action Buttons */}
-          <div className="mens-button-group">
+          <div className="childrens-button-group">
             <button 
-              className="mens-apply-button"
+              className="childrens-apply-button"
               onClick={handleApplyFilters}
             >
               APPLY FILTERS
             </button>
             <button 
-              className="mens-clear-button"
+              className="childrens-clear-button"
               onClick={handleClearAll}
             >
               CLEAR ALL
@@ -155,27 +155,27 @@ const CollectionPage = () => {
 
       {/* Products Section - Conditional Rendering */}
       {products.length > 0 ? (
-        <div className="mens-products-section">
-          <div className="mens-section-intro">
-            <h2 className="mens-section-heading">Men's Collection</h2>
-            <div className="mens-heading-accent"></div>
-            <p className="mens-section-description">Explore our curated collection of premium men's wear</p>
+        <div className="childrens-products-section">
+          <div className="childrens-section-intro">
+            <h2 className="childrens-section-heading">Children's Collection</h2>
+            <div className="childrens-heading-accent"></div>
+            <p className="childrens-section-description">Explore our curated collection of premium children's wear</p>
           </div>
           
-          <div className="mens-product-grid">
+          <div className="childrens-product-grid">
             {products.map(product => (
               <ProductCard key={product.id} product={product} />
             ))}
           </div>
         </div>
       ) : (
-        <div className="mens-no-products-container">
-          <h2 className="mens-no-products-title">No Products Found</h2>
-          <p className="mens-no-products-text">
+        <div className="childrens-no-products-container">
+          <h2 className="childrens-no-products-title">No Products Found</h2>
+          <p className="childrens-no-products-text">
             Try adjusting your filters or browse our complete<br />collection.
           </p>
           <button 
-            className="mens-view-all-button"
+            className="childrens-view-all-button"
             onClick={handleViewAll}
           >
             VIEW ALL PRODUCTS
