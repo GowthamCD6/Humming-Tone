@@ -11,6 +11,7 @@ import logo from '../../assets/logo.png';
 import Home from '../../Pages/UserPanal/HomePage/Home';
 import MensPage from '../../Pages/UserPanal/Men\'s-Page/Men\'s';
 import ChildrensPage from '../../Pages/UserPanal/Children\'s-Page/Children\'s'
+import BabyPage from '../../Pages/UserPanal/Baby-Page/Baby'
 import './UserTab.css';
 
 const UserTab = () => {
@@ -62,7 +63,7 @@ const UserTab = () => {
       case 'children':
         return <ChildrensPage />;
       case 'baby':
-        return <div className="page-placeholder">Baby Collection</div>;
+        return <BabyPage /> 
       case 'sports':
         return <div className="page-placeholder">Sports Collection</div>;
       case 'customize':
