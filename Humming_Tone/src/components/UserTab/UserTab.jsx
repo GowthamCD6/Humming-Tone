@@ -13,6 +13,7 @@ import MensPage from '../../Pages/UserPanal/Men\'s-Page/Men\'s';
 import ChildrensPage from '../../Pages/UserPanal/Children\'s-Page/Children\'s';
 import BabyPage from '../../Pages/UserPanal/Baby-Page/Baby';
 import SportsPage from '../../Pages/UserPanal/Sports-Page/Sports';
+import AllProductPage from '../../Pages/UserPanal/All-Product/AllProduct';
 import './UserTab.css';
 
 const UserTab = () => {
@@ -58,7 +59,7 @@ const UserTab = () => {
       case 'home':
         return <Home />;
       case 'all-products':
-        return <div className="page-placeholder">All Products Page</div>;
+        return <AllProductPage />;
       case 'men':
         return <MensPage />;
       case 'children':

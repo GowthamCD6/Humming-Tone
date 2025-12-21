@@ -365,8 +365,9 @@
     font-size: 36px;
     font-weight: 400;
     color: #1a1a1a;
-    margin-bottom: 25px;
+    margin-bottom: 20px;
     letter-spacing: -0.01em;
+    margin-top: -30px;
 }
 
 .baby-no-products-text {

@@ -1,7 +1,7 @@
 @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&family=Poppins:wght@300;400;500;600;700&display=swap');
 
 /* Container */
-.mens-collection-page {
+.all-products-collection-page {
     max-width: 1400px;
     margin: 0 auto;
     padding: 60px 40px;
@@ -11,12 +11,12 @@
 }
 
 /* Header Section */
-.mens-header {
+.all-products-header {
     margin-bottom: 40px;
     animation: fadeInUp 0.8s ease-out;
 }
 
-.mens-title {
+.all-products-title {
     font-family: 'Playfair Display', serif;
     font-size: 48px;
     font-weight: 300;
@@ -26,7 +26,7 @@
     animation: fadeInUp 0.8s ease-out 0.1s both;
 }
 
-.mens-item-count {
+.all-products-item-count {
     font-size: 13px;
     color: #999;
     letter-spacing: 2px;
@@ -34,7 +34,7 @@
     animation: fadeInUp 0.8s ease-out 0.2s both;
 }
 
-.mens-divider {
+.all-products-divider {
     width: 100%;
     height: 1px;
     background-color: #d1d5db;
@@ -43,7 +43,7 @@
 }
 
 /* Filter Section */
-.mens-filter-container {
+.all-products-filter-container {
     background-color: #ffffff;
     padding: 50px;
     margin-bottom: 80px;
@@ -52,7 +52,7 @@
     animation: fadeInUp 0.8s ease-out 0.4s both;
 }
 
-.mens-filter-title {
+.all-products-filter-title {
     font-family: 'Playfair Display', serif;
     font-size: 36px;
     font-weight: 400;
@@ -62,31 +62,31 @@
     letter-spacing: -0.01em;
 }
 
-.mens-filter-row {
+.all-products-filter-row {
     display: grid;
     grid-template-columns: 1fr 1fr auto;
     gap: 30px;
     align-items: end;
 }
 
-.mens-filter-group {
+.all-products-filter-group {
     display: flex;
     flex-direction: column;
     gap: 12px;
 }
 
-.mens-filter-label {
+.all-products-filter-label {
     font-size: 11px;
     font-weight: 600;
     color: #1a1a1a;
     letter-spacing: 1.5px;
 }
 
-.mens-select-wrapper {
+.all-products-select-wrapper {
     position: relative;
 }
 
-.mens-select {
+.all-products-select {
     width: 100%;
     padding: 16px 20px;
     font-size: 15px;
@@ -101,12 +101,12 @@
     outline: none;
 }
 
-.mens-select:hover {
+.all-products-select:hover {
     border-color: #1a1a1a;
     background-color: #ffffff;
 }
 
-.mens-select-arrow {
+.all-products-select-arrow {
     position: absolute;
     right: 20px;
     top: 50%;
@@ -116,13 +116,13 @@
     color: #666;
 }
 
-.mens-button-group {
+.all-products-button-group {
     display: flex;
     gap: 15px;
     align-items: center;
 }
 
-.mens-apply-button {
+.all-products-apply-button {
     padding: 16px 36px;
     background-color: #1a1a1a;
     color: #ffffff;
@@ -136,12 +136,12 @@
     white-space: nowrap;
 }
 
-.mens-apply-button:hover {
+.all-products-apply-button:hover {
     transform: translateY(-2px);
     box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
 }
 
-.mens-clear-button {
+.all-products-clear-button {
     padding: 16px 36px;
     background-color: transparent;
     color: #666;
@@ -155,22 +155,22 @@
     white-space: nowrap;
 }
 
-.mens-clear-button:hover {
+.all-products-clear-button:hover {
     color: #1a1a1a;
 }
 
 /* Products Section */
-.mens-products-section {
+.all-products-products-section {
     animation: fadeInUp 0.8s ease-out 0.5s both;
 }
 
-.mens-section-intro {
+.all-products-section-intro {
     text-align: center;
     margin-bottom: 5rem;
     animation: fadeIn 0.8s ease-out;
 }
 
-.mens-section-heading {
+.all-products-section-heading {
     font-family: 'Playfair Display', serif;
     font-size: clamp(28px, 4vw, 42px);
     font-weight: 500;
@@ -179,7 +179,7 @@
     letter-spacing: -0.02em;
 }
 
-.mens-heading-accent {
+.all-products-heading-accent {
     width: 70px;
     height: 2px;
     background: linear-gradient(90deg, transparent, #1a1a1a, transparent);
@@ -187,7 +187,7 @@
     border-radius: 10px;
 }
 
-.mens-section-description {
+.all-products-section-description {
     color: #666;
     font-size: 16px;
     font-weight: 300;
@@ -196,7 +196,7 @@
     line-height: 1.8;
 }
 
-.mens-product-grid {
+.all-products-product-grid {
     display: grid;
     grid-template-columns: repeat(3, 320px);
     gap: 5.5rem;
@@ -205,7 +205,7 @@
 }
 
 /* Product Card */
-.mens-product-card {
+.all-products-product-card {
     background: #ffffff;
     border-radius: 0;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
@@ -219,14 +219,17 @@
     width: 100%;
 }
 
-.mens-product-card:nth-child(1) { animation-delay: 0.1s; }
-.mens-product-card:nth-child(2) { animation-delay: 0.2s; }
-.mens-product-card:nth-child(3) { animation-delay: 0.3s; }
-.mens-product-card:nth-child(4) { animation-delay: 0.4s; }
-.mens-product-card:nth-child(5) { animation-delay: 0.5s; }
-.mens-product-card:nth-child(6) { animation-delay: 0.6s; }
+.all-products-product-card:nth-child(1) { animation-delay: 0.1s; }
+.all-products-product-card:nth-child(2) { animation-delay: 0.2s; }
+.all-products-product-card:nth-child(3) { animation-delay: 0.3s; }
+.all-products-product-card:nth-child(4) { animation-delay: 0.4s; }
+.all-products-product-card:nth-child(5) { animation-delay: 0.5s; }
+.all-products-product-card:nth-child(6) { animation-delay: 0.6s; }
+.all-products-product-card:nth-child(7) { animation-delay: 0.7s; }
+.all-products-product-card:nth-child(8) { animation-delay: 0.8s; }
+.all-products-product-card:nth-child(9) { animation-delay: 0.9s; }
 
-.mens-product-card::before {
+.all-products-product-card::before {
     content: '';
     position: absolute;
     top: 0;
@@ -240,23 +243,23 @@
     z-index: 1;
 }
 
-.mens-product-card::before {
+.all-products-product-card:hover::before {
     opacity: 1;
 }
 
-.mens-product-card:hover {
+.all-products-product-card:hover {
     box-shadow: 0 24px 64px rgba(0, 0, 0, 0.12);
     transform: translateY(-12px);
 }
 
-.mens-product-image-container {
+.all-products-product-image-container {
     position: relative;
     height: 380px;
     background: linear-gradient(135deg, #f5f5f5 0%, #e8e8e8 100%);
     overflow: hidden;
 }
 
-.mens-product-img {
+.all-products-product-img {
     width: 100%;
     height: 100%;
     object-fit: cover;
@@ -265,12 +268,12 @@
     will-change: transform;
 }
 
-.mens-product-card:hover .mens-product-img {
+.all-products-product-card:hover .all-products-product-img {
     transform: scale(1.08);
     filter: grayscale(0);
 }
 
-.mens-product-hover-overlay {
+.all-products-product-hover-overlay {
     position: absolute;
     inset: 0;
     background: linear-gradient(180deg, transparent 0%, rgba(0,0,0,0.8) 100%);
@@ -283,11 +286,11 @@
     z-index: 2;
 }
 
-.mens-product-card:hover .mens-product-hover-overlay {
+.all-products-product-card:hover .all-products-product-hover-overlay {
     opacity: 1;
 }
 
-.mens-view-details-btn {
+.all-products-view-details-btn {
     background: #ffffff;
     color: #1a1a1a;
     border: none;
@@ -304,25 +307,25 @@
     transform: translateY(20px);
 }
 
-.mens-product-card:hover .mens-view-details-btn {
+.all-products-product-card:hover .all-products-view-details-btn {
     transform: translateY(0);
 }
 
-.mens-view-details-btn:hover {
+.all-products-view-details-btn:hover {
     transform: translateY(-3px);
     box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
     background: #1a1a1a;
     color: #ffffff;
 }
 
-.mens-product-details {
+.all-products-product-details {
     padding: 2rem;
     text-align: center;
     background-color: #ffffff;
     position: relative;
 }
 
-.mens-product-title {
+.all-products-product-title {
     font-family: 'Playfair Display', serif;
     font-size: 20px;
     font-weight: 500;
@@ -333,11 +336,11 @@
     transition: color 0.3s ease;
 }
 
-.mens-product-card:hover .mens-product-title {
+.all-products-product-card:hover .all-products-product-title {
     color: #666;
 }
 
-.mens-product-brand {
+.all-products-product-brand {
     font-size: 11px;
     color: #999;
     letter-spacing: 0.12em;
@@ -346,7 +349,7 @@
     font-weight: 500;
 }
 
-.mens-product-price {
+.all-products-product-price {
     font-size: 20px;
     font-weight: 600;
     color: #1a1a1a;
@@ -354,13 +357,13 @@
 }
 
 /* No Products Section */
-.mens-no-products-container {
+.all-products-no-products-container {
     text-align: center;
     padding: 100px 20px;
     animation: fadeInUp 0.8s ease-out 0.5s both;
 }
 
-.mens-no-products-title {
+.all-products-no-products-title {
     font-family: 'Playfair Display', serif;
     font-size: 36px;
     font-weight: 400;
@@ -368,10 +371,9 @@
     margin-bottom: 20px;
     letter-spacing: -0.01em;
     margin-top: -30px;
-
 }
 
-.mens-no-products-text {
+.all-products-no-products-text {
     font-size: 16px;
     color: #666;
     line-height: 1.8;
@@ -379,7 +381,7 @@
     font-weight: 300;
 }
 
-.mens-view-all-button {
+.all-products-view-all-button {
     padding: 18px 48px;
     background-color: #1a1a1a;
     color: #ffffff;
@@ -394,7 +396,25 @@
     overflow: hidden;
 }
 
-.mens-view-all-button:hover {
+.all-products-view-all-button::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 50%;
+    right: 50%;
+    bottom: 0;
+    background: #ffffff;
+    z-index: -1;
+    transition: all 0.4s ease;
+}
+
+.all-products-view-all-button:hover::before {
+    left: 0;
+    right: 0;
+}
+
+.all-products-view-all-button:hover {
+    color: #1a1a1a;
     transform: translateY(-2px);
     box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
 }
@@ -433,52 +453,57 @@
 
 /* Responsive */
 @media (max-width: 992px) {
-    .mens-filter-row {
+    .all-products-filter-row {
         grid-template-columns: 1fr;
         gap: 20px;
     }
     
-    .mens-button-group {
+    .all-products-button-group {
         justify-content: center;
         margin-top: 20px;
     }
     
-    .mens-collection-page {
+    .all-products-collection-page {
         padding: 40px 20px;
     }
     
-    .mens-title {
+    .all-products-title {
         font-size: 36px;
     }
     
-    .mens-filter-title {
+    .all-products-filter-title {
         font-size: 28px;
+    }
+    
+    .all-products-product-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 2.5rem;
     }
 }
 
 @media (max-width: 768px) {
-    .mens-product-grid {
+    .all-products-product-grid {
         grid-template-columns: repeat(2, 1fr);
         gap: 1.5rem;
     }
     
-    .mens-product-image-container {
+    .all-products-product-image-container {
         height: 300px;
     }
     
-    .mens-filter-container {
+    .all-products-filter-container {
         padding: 30px 20px;
     }
 }
 
 @media (max-width: 480px) {
-    .mens-product-grid {
+    .all-products-product-grid {
         grid-template-columns: 1fr;
     }
 }
 
 /* Footer Full Width - Break out of parent container */
-.mens-collection-page .footer-main-wrapper {
+.all-products-collection-page .footer-main-wrapper {
     width: 100vw;
     margin-left: calc(-50vw + 50%);
     margin-top: 80px;
@@ -487,6 +512,6 @@
 }
 
 /* Remove bottom padding from container */
-.mens-collection-page {
+.all-products-collection-page {
     padding-bottom: 0;
 }
