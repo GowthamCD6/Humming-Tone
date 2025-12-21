@@ -9,11 +9,12 @@ import TuneIcon from '@mui/icons-material/Tune';
 import ShoppingBagOutlinedIcon from '@mui/icons-material/ShoppingBagOutlined';
 import logo from '../../assets/logo.png';
 import Home from '../../Pages/UserPanal/HomePage/Home';
+import AllProductPage from '../../Pages/UserPanal/All-Product/AllProduct';
 import MensPage from '../../Pages/UserPanal/Men\'s-Page/Men\'s';
 import ChildrensPage from '../../Pages/UserPanal/Children\'s-Page/Children\'s';
 import BabyPage from '../../Pages/UserPanal/Baby-Page/Baby';
 import SportsPage from '../../Pages/UserPanal/Sports-Page/Sports';
-import AllProductPage from '../../Pages/UserPanal/All-Product/AllProduct';
+import CustomizePage from '../../Pages/UserPanal/Customize-Product/Customize'
 import './UserTab.css';
 
 const UserTab = () => {
@@ -69,7 +70,7 @@ const UserTab = () => {
       case 'sports':
         return <SportsPage />
       case 'customize':
-        return <div className="page-placeholder">Customize Page</div>;
+        return <CustomizePage />
       default:
         return <Home />;
     }

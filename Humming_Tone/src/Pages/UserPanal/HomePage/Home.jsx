@@ -90,7 +90,7 @@ const Home = () => {
         <div className="hero-text-content">
           <h1 className="hero-main-title">Elevate Your Style</h1>
           <p className="hero-sub-text">Discover our curated collection of premium clothing</p>
-          <button className="hero-cta-button">SHOP BABY COLLECTION</button>
+          <button className="hero-cta-button">SHOP CUSTOMIZE PRODUCT</button>
         </div>
 
         <div className="hero-scroll-down">
