@@ -579,3 +579,10 @@
 .product-card {
     will-change: transform;
 }
+
+/* Footer Full Width - Break out of parent container */
+.home-static-page .footer-main-wrapper {
+    width: 100vw;
+    margin-left: calc(-50vw + 50%);
+    box-sizing: border-box;
+}

@@ -2,6 +2,7 @@ import React, { useEffect } from 'react';
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 import homeImage from '../../../assets/home1.png';
 import demoImage from '../../../assets/demo.jpeg';
+import UserFooter from '../../../components/User-Footer-Card/UserFooter';
 import './Home.css';
 
 // To integrate with backend later, you will just replace these arrays with state from an API
@@ -126,6 +127,9 @@ const Home = () => {
           ))}
         </div>
       </section>
+
+      {/* Footer */}
+      <UserFooter />
 
     </main>
   );
