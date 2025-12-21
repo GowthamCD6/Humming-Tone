@@ -33,7 +33,7 @@ exports.add_product  = (req,res,next) => {
       const featured = is_featured ? 1 : 0;
       const active = is_active ? 1 : 0;
 
-      const allowedGenders = ["men","women","kids","baby"];
+      const allowedGenders = ['men','children','babies','sports'];
       if (!gender || !allowedGenders.includes(gender)) {
         return res.status(400).json({ message: "Invalid gender value" });
       }
@@ -51,7 +51,7 @@ exports.add_product  = (req,res,next) => {
       }
 
       for(const[key,value] of Object.entries(booleanFields)){
-        if(typeof value !== "boolean"){
+        if (![0, 1].includes(value)){
             return res.status(400).json({ message: `${key} must be boolean (true/false)` });
         }
       }
@@ -154,8 +154,8 @@ exports.fetch_products = (req,res,next) => {
 exports.fetch_variants = (req,res,next) => {
   try{
     const{id} = req.params;
-    if(!id || id.trim() === null){
-      return next(createError.BadRequest('id is required!'));
+    if (!/^\d+$/.test(id)) {
+      return next(createError.BadRequest("Invalid id"));
     }
     let fetchSql = "select * from products p left join product_variants v on p.id = v.product_id";
     db.query(fetchSql,(err,res) => {
@@ -174,11 +174,13 @@ exports.update_product = (req,res,next) => {
     const{id} = req.params;
     const{name, about, subcategory, brand, color, material, care_instructions, gender, age_range, weight, dimensions, is_featured, is_active} = req.body;
 
-    if(!id || id.trim() === "")return next(createError.BadRequest('id required!'));
+    if (!/^\d+$/.test(id)) {
+      return next(createError.BadRequest("Invalid id"));
+    }
 
     const stringFields = {
       name, about, subcategory, brand, color, 
-      material, care_instructions, gender, age_range, dimensions
+      material, care_instructions, age_range, dimensions
     };
 
     const numberFields = {
@@ -189,6 +191,9 @@ exports.update_product = (req,res,next) => {
       is_featured, is_active
     };
 
+    const featured = is_featured ? 1 : 0;
+    const active = is_active ? 1 : 0;
+
     for(const[key,value] of Object.entries(stringFields)){
       if(typeof value != "string" || !value || value.trim() === ""){
         return next(createError.BadRequest('Invalid String input!'));
@@ -197,18 +202,24 @@ exports.update_product = (req,res,next) => {
 
     for(const[key,value] of Object.entries(numberFields)){
       if(value === null || value === undefined || isNaN(value)){
-        return next(createError.BadRequest(key,' - Invalid number input!'));
+        return next(createError.BadRequest(`${key} - Invalid number input!`));
       }
     }
 
     for(const[key,value] of Object.entries(booleanFields)){
-      if(typeof value != "boolean"){
-        return next(createError.BadRequest(key,' - Invalid boolean input!'));
+      if (![0, 1].includes(value)){
+        return next(createError.BadRequest(`${key} - Invalid boolean input!`));
       }
     }
 
-    let updateSql = "update products set name = ? and about = ? and subcategory = ? and brand = ? and color = ? and material = ? and care_instructions = ? and gender = ? and age_range = ? and weight = ? and dimensions = ? and is_featured = ? and is_active = ?";
-    db.query(updateSql,[name, about, subcategory, brand, color, material, care_instructions, gender, age_range, weight, dimensions, is_featured, is_active],(error, result) => {
+    const allowedGenders = ['men','children','babies','sports'];
+
+    if(!allowedGenders.includes(gender)){
+      return next(createError.BadRequest('Invalid Gender'));
+    }
+
+    let updateSql = "update products set name = ?, about = ?, subcategory = ?, brand = ?, color = ?, material = ?, care_instructions = ?, gender = ?, age_range = ?, weight = ?, dimensions = ?, is_featured = ?, is_active = ? where id = ?";
+    db.query(updateSql,[name, about, subcategory, brand, color, material, care_instructions, gender, age_range, weight, dimensions, featured, active, id],(error, result) => {
       if(error || result.affectedRows === 0){
         return next(error || createError.InternalServerError('update failed'))
       }
@@ -222,19 +233,22 @@ exports.update_product = (req,res,next) => {
 
 exports.update_variant = (req,res,next) => {
   try{
-    const{id} = req.params;
-    if(!id || id.trim() === "" || isNaN(id)){
-      return next(createError.BadRequest("invalid id!"));
+    const{variant_id} = req.params;
+
+    if (!/^\d+$/.test(variant_id)) {
+      return next(createError.BadRequest("Invalid id"));
     }
+
     const{price, original_price, stock_quantity} = req.body;
     const inputFields = {price, original_price, stock_quantity};
+
     for(const[key,value] of Object.entries(inputFields)){
       if(value === null || value === undefined || isNaN(value)){
         return next(createError.BadRequest('Invalid input field'));
       }
     }
-    let updateSql = "update product_variants set price = ? and original_price = ? and stock_quantity = ? where product_id = ?";
-    db.query(updateSql,[price,original_price,stock_quantity,id],(error,result) => {
+    let updateSql = "update product_variants set price = ?, original_price = ?, stock_quantity = ? where id = ?";
+    db.query(updateSql,[price,original_price,stock_quantity,variant_id],(error,result) => {
       if(error || result.affectedRows === 0){
         return next(error || createError.InternalServerError('update failed!'));
       }
@@ -250,8 +264,9 @@ exports.delete_product = (req,res,next) => {
   try{
     const{id} = req.params;
     const{variants, deleteAll} = req.body;
-    if(!id || id.trim() === "" || isNaN(id)){
-      return next(createError.BadRequest('Invalid product information!'));
+
+    if (!/^\d+$/.test(id)) {
+      return next(createError.BadRequest("Invalid id"));
     }
     else if(typeof deleteAll !== "boolean"){
       return next(createError.BadRequest('Invalid input type!'));
