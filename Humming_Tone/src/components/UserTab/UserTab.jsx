@@ -10,8 +10,9 @@ import ShoppingBagOutlinedIcon from '@mui/icons-material/ShoppingBagOutlined';
 import logo from '../../assets/logo.png';
 import Home from '../../Pages/UserPanal/HomePage/Home';
 import MensPage from '../../Pages/UserPanal/Men\'s-Page/Men\'s';
-import ChildrensPage from '../../Pages/UserPanal/Children\'s-Page/Children\'s'
-import BabyPage from '../../Pages/UserPanal/Baby-Page/Baby'
+import ChildrensPage from '../../Pages/UserPanal/Children\'s-Page/Children\'s';
+import BabyPage from '../../Pages/UserPanal/Baby-Page/Baby';
+import SportsPage from '../../Pages/UserPanal/Sports-Page/Sports';
 import './UserTab.css';
 
 const UserTab = () => {
@@ -65,7 +66,7 @@ const UserTab = () => {
       case 'baby':
         return <BabyPage /> 
       case 'sports':
-        return <div className="page-placeholder">Sports Collection</div>;
+        return <SportsPage />
       case 'customize':
         return <div className="page-placeholder">Customize Page</div>;
       default:
