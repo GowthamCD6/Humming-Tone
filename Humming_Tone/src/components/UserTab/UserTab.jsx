@@ -15,10 +15,13 @@ import ChildrensPage from '../../Pages/UserPanal/Children\'s-Page/Children\'s';
 import BabyPage from '../../Pages/UserPanal/Baby-Page/Baby';
 import SportsPage from '../../Pages/UserPanal/Sports-Page/Sports';
 import CustomizePage from '../../Pages/UserPanal/Customize-Product/Customize'
+import CartPage from '../../Pages/UserPanal/Cart-Page/CartPage';
+import ProductDetail from '../../Pages/UserPanal/Prodect-Details/Details';
 import './UserTab.css';
 
 const UserTab = () => {
   const [activeNav, setActiveNav] = useState('home');
+  const [selectedProduct, setSelectedProduct] = useState(null);
   const [cartCount] = useState(0);
   const [isScrolled, setIsScrolled] = useState(false);
 
@@ -51,26 +54,35 @@ const UserTab = () => {
   };
 
   const handleCartClick = () => {
-    console.log('Cart clicked');
+    setActiveNav('cart');
+  };
+
+  const handleViewDetails = (product) => {
+    setSelectedProduct(product || null);
+    setActiveNav('details');
   };
 
   // Render content based on active nav
   const renderContent = () => {
     switch (activeNav) {
       case 'home':
-        return <Home />;
+        return <Home onViewDetails={handleViewDetails} />;
       case 'all-products':
-        return <AllProductPage />;
+        return <AllProductPage onViewDetails={handleViewDetails} />;
       case 'men':
-        return <MensPage />;
+        return <MensPage onViewDetails={handleViewDetails} />;
       case 'children':
-        return <ChildrensPage />;
+        return <ChildrensPage onViewDetails={handleViewDetails} />;
       case 'baby':
-        return <BabyPage /> 
+        return <BabyPage onViewDetails={handleViewDetails} /> 
       case 'sports':
-        return <SportsPage />
+        return <SportsPage onViewDetails={handleViewDetails} />
       case 'customize':
         return <CustomizePage />
+      case 'cart':
+        return <CartPage />
+      case 'details':
+        return <ProductDetail product={selectedProduct} />
       default:
         return <Home />;
     }

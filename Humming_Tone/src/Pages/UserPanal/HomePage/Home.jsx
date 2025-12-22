@@ -54,7 +54,7 @@ const newArrivals = [
   },
 ];
 
-const Home = () => {
+const Home = ({ onViewDetails = () => {} }) => {
   
   // Reusable Product Card Component for cleaner code
   const ProductCard = ({ product }) => (
@@ -65,7 +65,12 @@ const Home = () => {
              onError={(e) => { e.target.src = 'https://via.placeholder.com/400x500?text=Product+Image' }} />
         
         <div className="product-hover-overlay">
-          <button className="view-details-btn">VIEW DETAILS</button>
+          <button
+            className="view-details-btn"
+            onClick={() => onViewDetails(product)}
+          >
+            VIEW DETAILS
+          </button>
         </div>
       </div>
       <div className="product-details">
