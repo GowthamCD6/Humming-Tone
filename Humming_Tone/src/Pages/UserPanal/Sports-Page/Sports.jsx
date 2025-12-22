@@ -35,7 +35,7 @@ const sampleProducts = [
   },
 ];
 
-const CollectionPage = () => {
+const CollectionPage = ({ onViewDetails = () => {} }) => {
   const [selectedGender, setSelectedGender] = useState('Sports');
   const [selectedCategory, setSelectedCategory] = useState('All Categories');
   const [products, setProducts] = useState(sampleProducts); // Set sample products
@@ -75,7 +75,12 @@ const CollectionPage = () => {
           onError={(e) => { e.target.src = 'https://via.placeholder.com/400x500?text=Product+Image' }}
         />
         <div className="sports-product-hover-overlay">
-          <button className="sports-view-details-btn">VIEW DETAILS</button>
+          <button
+            className="sports-view-details-btn"
+            onClick={() => onViewDetails(product)}
+          >
+            VIEW DETAILS
+          </button>
         </div>
       </div>
       <div className="sports-product-details">

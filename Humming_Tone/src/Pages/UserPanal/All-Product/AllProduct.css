@@ -290,6 +290,7 @@
     opacity: 1;
 }
 
+/* Updated View Details Button with Ripple Effect */
 .all-products-view-details-btn {
     background: #ffffff;
     color: #1a1a1a;
@@ -305,17 +306,44 @@
     text-transform: uppercase;
     font-family: 'Poppins', sans-serif;
     transform: translateY(20px);
+    position: relative;
+    overflow: hidden;
+    z-index: 1;
+}
+
+/* Ripple effect matching .checkout-btn */
+.all-products-view-details-btn::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 0;
+    height: 0;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.2);
+    transform: translate(-50%, -50%);
+    transition: width 0.6s, height 0.6s;
+    z-index: -1;
+}
+
+.all-products-view-details-btn:hover::before {
+    width: 500px;
+    height: 500px;
+}
+
+.all-products-view-details-btn:hover {
+    transform: translateY(0) translateY(-3px);
+    box-shadow: 0 16px 48px rgba(26, 26, 26, 0.35);
+    background: #1a1a1a;
+    color: #ffffff;
 }
 
 .all-products-product-card:hover .all-products-view-details-btn {
     transform: translateY(0);
 }
 
-.all-products-view-details-btn:hover {
+.all-products-product-card:hover .all-products-view-details-btn:hover {
     transform: translateY(-3px);
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
-    background: #1a1a1a;
-    color: #ffffff;
 }
 
 .all-products-product-details {

@@ -35,7 +35,7 @@ const sampleProducts = [
   },
 ];
 
-const CollectionPage = () => {
+const CollectionPage = ({ onViewDetails = () => {} }) => {
   const [selectedGender, setSelectedGender] = useState('Baby');
   const [selectedCategory, setSelectedCategory] = useState('All Categories');
   const [products, setProducts] = useState([]); // Empty array for "No Products Found" state
@@ -77,7 +77,12 @@ const CollectionPage = () => {
           onError={(e) => { e.target.src = 'https://via.placeholder.com/400x500?text=Product+Image' }}
         />
         <div className="baby-product-hover-overlay">
-          <button className="baby-view-details-btn">VIEW DETAILS</button>
+          <button
+            className="baby-view-details-btn"
+            onClick={() => onViewDetails(product)}
+          >
+            VIEW DETAILS
+          </button>
         </div>
       </div>
       <div className="baby-product-details">
