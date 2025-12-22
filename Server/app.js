@@ -7,7 +7,8 @@ const bodyParser = require("body-parser");
 const adminProductRoute = require("./routes/admin/product");
 const adminAuthRoute = require("./routes/admin/auth");
 const adminDashboardRoute = require("./routes/admin/dashboard");
-const adminOrderRoute = require("./routes/admin/order")
+const adminOrderRoute = require("./routes/admin/order");
+const userProductRoute = require("./routes/user/product");
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -26,6 +27,7 @@ app.use("/",adminProductRoute);
 app.use("/",adminOrderRoute);
 app.use("/",adminDashboardRoute);
 app.use("/",adminAuthRoute);
+app.use("/",userProductRoute);
 
 // user routes
 
