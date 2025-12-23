@@ -73,7 +73,15 @@ exports.add_promo_code = (req,res,next) => {
 
 exports.remove_promo_code = (req,res,next) => {
     try{
-     
+      const{promo_id} = req.params;
+      if(!promo_id || isNaN(promo_id)){
+        return next(createError.BadRequest('Invalid promo id'));
+      }
+      let deleteSql = "update promo_codes set is_active = 0 where promo_id = ? and is_active = 1";
+      db.query(deleteSql,[promo_id],(error,result) => {
+        if(error || result.affectedRows === 0)return next(error || createError.NotFound('Promo code not found or already inactive'));
+        return res.send('Promo deactived successfully!');
+      })
     }
     catch(error){
         next(error);
