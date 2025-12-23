@@ -9,6 +9,7 @@ const adminAuthRoute = require("./routes/admin/auth");
 const adminDashboardRoute = require("./routes/admin/dashboard");
 const adminOrderRoute = require("./routes/admin/order");
 const userProductRoute = require("./routes/user/product");
+const adminPromoRoute = require("./routes/admin/promo");
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -27,9 +28,10 @@ app.use("/",adminProductRoute);
 app.use("/",adminOrderRoute);
 app.use("/",adminDashboardRoute);
 app.use("/",adminAuthRoute);
-app.use("/",userProductRoute);
+app.use("/",adminPromoRoute)
 
 // user routes
+app.use("/",userProductRoute);
 
 
 app.use((req,res,next) => {

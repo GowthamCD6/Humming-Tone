@@ -49,6 +49,7 @@ exports.fetch_new_arrivals = (req,res,next) => {
       if(error || result.length == 0){
         return createError.BadRequest(error || createError.NotFound('Products not found!'));
       }
+      res.send(result);
     })
   }
   catch(error){
