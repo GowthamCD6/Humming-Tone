@@ -186,38 +186,6 @@ exports.add_product  = (req,res,next) => {
     }
 }
 
-exports.add_variant = (req,res,next) => {
-    try{
-      const{product_id,size,price,original_price,stock_quantity} = req.body;
-      if(typeof size !== "string" || size.trim() === ""){
-        return res.status(400).json({ message: `size must be a non-empty string` });
-      }
-      const numberFields = {product_id,price,original_price,stock_quantity};
-      for(const[key,value] of Object.entries(numberFields)){
-        if(value == null || value === undefined || isNaN(value) || value <= 0){
-            return res.status(400).json({ message: `${key} must be a valid number` });
-        }
-      }
-      if (original_price < price) {
-        return res.status(400).json({
-            message: "original_price must be greater than or equal to price"
-        });
-      }
-
-      let insertSql = "insert into product_variants(product_id, size, price, original_price, stock_quantity) values (?,?,?,?,?)";
-      db.query(insertSql,[product_id, size, price, original_price, stock_quantity],(err1,res1) => {
-        if(err1)return next(err1);
-        if(res1.affectedRows === 0){
-            return next(createError.BadGateway('Insert failed'));
-        }
-        res.send('product variant added successfully!');
-      })
-    }
-    catch(error){
-      next(error);
-    }
-}
-
 // to show on manage products page
 exports.fetch_products = (req,res,next) => {
   try{
