@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import './AddProduct.css';
 import AddPhotoAlternateIcon from '@mui/icons-material/AddPhotoAlternate';
 import CloseIcon from '@mui/icons-material/Close';
+import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 
 const AddProduct = () => {
   const [productName, setProductName] = useState('');
@@ -24,11 +25,56 @@ const AddProduct = () => {
   const [ageRange, setAgeRange] = useState('');
   const [weight, setWeight] = useState('');
 
+  // Validation states
+  const [errors, setErrors] = useState({});
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
+
 
   // Predefined options
   const brandOptions = ['Humming Tone', 'Other'];
   const colorOptions = ['Red', 'Blue', 'Green', 'Yellow', 'Black', 'White', 'Pink', 'Purple', 'Orange', 'Brown', 'Gray', 'Multicolor'];
   const materialOptions = ['Cotton', 'Polyester', 'Wool', 'Silk', 'Denim', 'Leather', 'Linen', 'Nylon', 'Rayon', 'Velvet', 'Mixed'];
+
+  // Validation function
+  const validateForm = () => {
+    const newErrors = {};
+
+    if (!productName.trim()) newErrors.productName = 'Product name is required';
+    if (!about.trim()) newErrors.about = 'Product description is required';
+    if (!category) newErrors.category = 'Category is required';
+    if (!gender) newErrors.gender = 'Gender is required';
+    if (!brand) newErrors.brand = 'Brand is required';
+    if (!color.trim()) newErrors.color = 'Color is required';
+    if (!material.trim()) newErrors.material = 'Material is required';
+    if (!sku.trim()) newErrors.sku = 'SKU is required';
+    if (!dimensions.trim()) newErrors.dimensions = 'Dimensions are required';
+
+    // Validate at least one image
+    if (!images[0]) {
+      newErrors.mainImage = 'Main product image is required';
+    }
+
+    // Validate variants
+    variants.forEach((variant, index) => {
+      if (!variant.size.trim()) newErrors[`variant_${index}_size`] = 'Size is required';
+      if (!variant.price || parseFloat(variant.price) <= 0) newErrors[`variant_${index}_price`] = 'Valid price is required';
+      if (!variant.originalPrice || parseFloat(variant.originalPrice) <= 0) newErrors[`variant_${index}_originalPrice`] = 'Valid original price is required';
+      if (!variant.stock || parseInt(variant.stock) < 0) newErrors[`variant_${index}_stock`] = 'Valid stock quantity is required';
+    });
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
+  const clearFieldError = (fieldName) => {
+    if (errors[fieldName]) {
+      setErrors(prev => {
+        const newErrors = { ...prev };
+        delete newErrors[fieldName];
+        return newErrors;
+      });
+    }
+  };
 
   const addVariant = () => {
     setVariants([...variants, { size: '', price: '', originalPrice: '', stock: '' }]);
@@ -68,78 +114,104 @@ const AddProduct = () => {
   };
 
   const handleSubmit = () => {
-  const formData = new FormData();
+    // Validate form before submission
+    if (!validateForm()) {
+      return;
+    }
 
-  const categorySlugMap = {
-  "Winter sets": "winter_sets",
-  "T Shirts": "t_shirts",
-  "Sleepingbags": "sleeping_bags",
-  "Dresses": "dresses"
+    const formData = new FormData();
+
+    const categorySlugMap = {
+      "Winter sets": "winter_sets",
+      "T Shirts": "t_shirts",
+      "Sleepingbags": "sleeping_bags",
+      "Dresses": "dresses"
+    };
+
+    // basic fields
+    formData.append("name", productName);
+    formData.append("about", about);
+    formData.append("sku", sku);
+    if (category) formData.append("category", categorySlugMap[category]);
+    if (subcategory) formData.append("subcategory", subcategory);
+    formData.append("brand", brand);
+    formData.append("color", color);
+    formData.append("material", material);
+    if (careInstructions) formData.append("care_instructions", careInstructions);
+    formData.append("gender", gender.toLowerCase()); // backend expects lowercase
+    if (ageRange) formData.append("age_range", ageRange);
+    if (weight) formData.append("weight", Number(weight));
+    formData.append("dimensions", dimensions);
+
+    // booleans → backend uses 0 / 1
+    formData.append("is_featured", featuredProduct ? 1 : 0);
+    formData.append("is_active", active ? 1 : 0);
+
+    // variants (IMPORTANT)
+    const formattedVariants = variants.map(v => ({
+      size: v.size,
+      price: Number(v.price),
+      original_price: Number(v.originalPrice),
+      stock_quantity: Number(v.stock)
+    }));
+
+    formData.append("variants", JSON.stringify(formattedVariants));
+
+    // images
+    images.forEach(img => {
+      if (img?.file) {
+        formData.append("images", img.file); // must match multer field name
+      }
+    });
+
+    // DEBUG (very important)
+    for (let pair of formData.entries()) {
+      console.log(pair[0], pair[1]);
+    }
+
+    // SEND
+    fetch("http://localhost:5000/admin/add_product", {
+      method: "POST",
+      body: formData
+    })
+      .then(res => res.json())
+      .then(data => {
+        console.log(data);
+        setShowSuccessModal(true);
+        // Reset form after successful submission
+        setTimeout(() => {
+          resetForm();
+        }, 2000);
+      })
+      .catch(err => {
+        console.error(err);
+        alert("Failed to add product");
+      });
   };
 
-  // basic fields
-  formData.append("name", productName);
-  formData.append("about", about);
-  formData.append("sku", sku);
-  if (category)formData.append("category", categorySlugMap[category]);
-  if (subcategory) formData.append("subcategory", subcategory);
-  formData.append("brand", brand);
-  formData.append("color", color);
-  formData.append("material", material);
-  if (careInstructions) formData.append("care_instructions", careInstructions);
-  formData.append("gender", gender.toLowerCase()); // backend expects lowercase
-  if (ageRange) formData.append("age_range", ageRange);
-  if (weight) formData.append("weight", Number(weight));
-  formData.append("dimensions", dimensions);
-
-  // booleans → backend uses 0 / 1
-  formData.append("is_featured", featuredProduct ? 1 : 0);
-  formData.append("is_active", active ? 1 : 0);
-
-  // variants (IMPORTANT)
-  const formattedVariants = variants.map(v => ({
-    size: v.size,
-    price: Number(v.price),
-    original_price: Number(v.originalPrice),
-    stock_quantity: Number(v.stock)
-  }));
-
-  formData.append("variants", JSON.stringify(formattedVariants));
-
-  // images
-  images.forEach(img => {
-    if (img?.file) {
-      formData.append("images", img.file); // must match multer field name
-    }
-  });
-
-  // DEBUG (very important)
-  for (let pair of formData.entries()) {
-    console.log(pair[0], pair[1]);
-  }
-
-  // SEND
-  fetch("http://localhost:5000/admin/add_product", {
-    method: "POST",
-    body: formData
-  })
-    .then(res => res.json())
-    .then(data => {
-      console.log(data);
-      alert("Product added successfully");
-    })
-    .catch(err => {
-      console.error(err);
-      alert("Failed to add product");
-    });
-};
+  const resetForm = () => {
+    setProductName('');
+    setAbout('');
+    setVariants([{ size: '', price: '', originalPrice: '', stock: '' }]);
+    setCategory('');
+    setSku('');
+    setBrand('');
+    setGender('');
+    setDimensions('');
+    setColor('');
+    setMaterial('');
+    setFeaturedProduct(false);
+    setActive(true);
+    setImages([null, null, null, null, null]);
+    setSubcategory('');
+    setCareInstructions('');
+    setAgeRange('');
+    setWeight('');
+    setErrors({});
+  };
 
   return (
     <div className="add-product-container">
-      <header className="page-header">
-        <h1>Add New Product</h1>
-      </header>
-
       <div className="product-form">
         {/* Basic Information */}
         <section className="form-section">
@@ -153,8 +225,13 @@ const AddProduct = () => {
                 id="productName"
                 placeholder="Enter product name"
                 value={productName}
-                onChange={(e) => setProductName(e.target.value)}
+                onChange={(e) => {
+                  setProductName(e.target.value);
+                  clearFieldError('productName');
+                }}
+                className={errors.productName ? 'input-error' : ''}
               />
+              {errors.productName && <div className="field-error">{errors.productName}</div>}
             </div>
 
             <div className="form-group full-width">
@@ -163,9 +240,14 @@ const AddProduct = () => {
                 id="about"
                 placeholder="Enter detailed product description"
                 value={about}
-                onChange={(e) => setAbout(e.target.value)}
+                onChange={(e) => {
+                  setAbout(e.target.value);
+                  clearFieldError('about');
+                }}
                 rows="5"
+                className={errors.about ? 'input-error' : ''}
               />
+              {errors.about && <div className="field-error">{errors.about}</div>}
             </div>
           </div>
         </section>
@@ -180,7 +262,11 @@ const AddProduct = () => {
               <select
                 id="gender"
                 value={gender}
-                onChange={(e) => setGender(e.target.value)}
+                onChange={(e) => {
+                  setGender(e.target.value);
+                  clearFieldError('gender');
+                }}
+                className={errors.gender ? 'input-error' : ''}
               >
                 <option value="">Select Gender</option>
                 <option value="Men">Mens</option>
@@ -188,6 +274,7 @@ const AddProduct = () => {
                 <option value="Babies">Baby</option>
                 <option value="Sports">Sports</option>
               </select>
+              {errors.gender && <div className="field-error">{errors.gender}</div>}
             </div>
 
             <div className="form-group">
@@ -212,8 +299,6 @@ const AddProduct = () => {
               />
             </div>
 
-
-
             <div className="form-group">
               <label htmlFor="sku">SKU</label>
               <input
@@ -221,8 +306,13 @@ const AddProduct = () => {
                 id="sku"
                 placeholder="Enter SKU"
                 value={sku}
-                onChange={(e) => setSku(e.target.value)}
+                onChange={(e) => {
+                  setSku(e.target.value);
+                  clearFieldError('sku');
+                }}
+                className={errors.sku ? 'input-error' : ''}
               />
+              {errors.sku && <div className="field-error">{errors.sku}</div>}
             </div>
 
             <div className="form-group full-width">
@@ -236,13 +326,16 @@ const AddProduct = () => {
               />
             </div>
 
-
             <div className="form-group">
               <label htmlFor="brand">BRAND</label>
               <select
                 id="brand"
                 value={brand}
-                onChange={(e) => setBrand(e.target.value)}
+                onChange={(e) => {
+                  setBrand(e.target.value);
+                  clearFieldError('brand');
+                }}
+                className={errors.brand ? 'input-error' : ''}
               >
                 <option value="">Select Brand</option>
                 {brandOptions.map((brandOption) => (
@@ -251,6 +344,7 @@ const AddProduct = () => {
                   </option>
                 ))}
               </select>
+              {errors.brand && <div className="field-error">{errors.brand}</div>}
             </div>
 
             <div className="form-group">
@@ -258,7 +352,11 @@ const AddProduct = () => {
               <select
                 id="category"
                 value={category}
-                onChange={(e) => setCategory(e.target.value)}
+                onChange={(e) => {
+                  setCategory(e.target.value);
+                  clearFieldError('category');
+                }}
+                className={errors.category ? 'input-error' : ''}
               >
                 <option value="">Select Category</option>
                 <option value="Winter sets">Winter sets</option>
@@ -266,6 +364,7 @@ const AddProduct = () => {
                 <option value="Sleepingbags">Sleepingbags</option>
                 <option value="Dresses">Dresses</option>
               </select>
+              {errors.category && <div className="field-error">{errors.category}</div>}
             </div>
 
             <div className="form-group">
@@ -276,13 +375,18 @@ const AddProduct = () => {
                 list="color-options"
                 placeholder="Select or type color"
                 value={color}
-                onChange={(e) => setColor(e.target.value)}
+                onChange={(e) => {
+                  setColor(e.target.value);
+                  clearFieldError('color');
+                }}
+                className={errors.color ? 'input-error' : ''}
               />
               <datalist id="color-options">
                 {colorOptions.map((colorOption) => (
                   <option key={colorOption} value={colorOption} />
                 ))}
               </datalist>
+              {errors.color && <div className="field-error">{errors.color}</div>}
             </div>
 
             <div className="form-group">
@@ -293,13 +397,18 @@ const AddProduct = () => {
                 list="material-options"
                 placeholder="Select or type material"
                 value={material}
-                onChange={(e) => setMaterial(e.target.value)}
+                onChange={(e) => {
+                  setMaterial(e.target.value);
+                  clearFieldError('material');
+                }}
+                className={errors.material ? 'input-error' : ''}
               />
               <datalist id="material-options">
                 {materialOptions.map((materialOption) => (
                   <option key={materialOption} value={materialOption} />
                 ))}
               </datalist>
+              {errors.material && <div className="field-error">{errors.material}</div>}
             </div>
 
             <div className="form-group full-width">
@@ -309,8 +418,13 @@ const AddProduct = () => {
                 id="dimensions"
                 placeholder="Length x Width x Height"
                 value={dimensions}
-                onChange={(e) => setDimensions(e.target.value)}
+                onChange={(e) => {
+                  setDimensions(e.target.value);
+                  clearFieldError('dimensions');
+                }}
+                className={errors.dimensions ? 'input-error' : ''}
               />
+              {errors.dimensions && <div className="field-error">{errors.dimensions}</div>}
             </div>
 
             <div className="form-group">
@@ -354,8 +468,13 @@ const AddProduct = () => {
                     type="text"
                     placeholder="S, M, L, XL"
                     value={variant.size}
-                    onChange={(e) => updateVariant(index, 'size', e.target.value)}
+                    onChange={(e) => {
+                      updateVariant(index, 'size', e.target.value);
+                      clearFieldError(`variant_${index}_size`);
+                    }}
+                    className={errors[`variant_${index}_size`] ? 'input-error' : ''}
                   />
+                  {errors[`variant_${index}_size`] && <div className="field-error">{errors[`variant_${index}_size`]}</div>}
                 </div>
 
                 <div className="form-group">
@@ -365,8 +484,13 @@ const AddProduct = () => {
                     step="0.01"
                     placeholder="0.00"
                     value={variant.price}
-                    onChange={(e) => updateVariant(index, 'price', e.target.value)}
+                    onChange={(e) => {
+                      updateVariant(index, 'price', e.target.value);
+                      clearFieldError(`variant_${index}_price`);
+                    }}
+                    className={errors[`variant_${index}_price`] ? 'input-error' : ''}
                   />
+                  {errors[`variant_${index}_price`] && <div className="field-error">{errors[`variant_${index}_price`]}</div>}
                 </div>
 
                 <div className="form-group">
@@ -376,8 +500,13 @@ const AddProduct = () => {
                     step="0.01"
                     placeholder="0.00"
                     value={variant.originalPrice}
-                    onChange={(e) => updateVariant(index, 'originalPrice', e.target.value)}
+                    onChange={(e) => {
+                      updateVariant(index, 'originalPrice', e.target.value);
+                      clearFieldError(`variant_${index}_originalPrice`);
+                    }}
+                    className={errors[`variant_${index}_originalPrice`] ? 'input-error' : ''}
                   />
+                  {errors[`variant_${index}_originalPrice`] && <div className="field-error">{errors[`variant_${index}_originalPrice`]}</div>}
                 </div>
 
                 <div className="form-group">
@@ -386,8 +515,13 @@ const AddProduct = () => {
                     type="number"
                     placeholder="0"
                     value={variant.stock}
-                    onChange={(e) => updateVariant(index, 'stock', e.target.value)}
+                    onChange={(e) => {
+                      updateVariant(index, 'stock', e.target.value);
+                      clearFieldError(`variant_${index}_stock`);
+                    }}
+                    className={errors[`variant_${index}_stock`] ? 'input-error' : ''}
                   />
+                  {errors[`variant_${index}_stock`] && <div className="field-error">{errors[`variant_${index}_stock`]}</div>}
                 </div>
               </div>
             </div>
@@ -405,12 +539,15 @@ const AddProduct = () => {
           
           <div className="images-upload-grid">
             {/* Main Image */}
-            <div className="image-upload-box main-image">
+            <div className={`image-upload-box main-image ${errors.mainImage ? 'upload-error' : ''}`}>
               <input
                 type="file"
                 id="image-0"
                 accept="image/*"
-                onChange={(e) => handleImageUpload(0, e)}
+                onChange={(e) => {
+                  handleImageUpload(0, e);
+                  clearFieldError('mainImage');
+                }}
                 style={{ display: 'none' }}
               />
               {images[0] ? (
@@ -432,6 +569,7 @@ const AddProduct = () => {
                   <span className="upload-subtext">Required</span>
                 </label>
               )}
+              {errors.mainImage && <div className="field-error">{errors.mainImage}</div>}
             </div>
 
             {/* Secondary Images */}
@@ -508,6 +646,41 @@ const AddProduct = () => {
           </button>
         </div>
       </div>
+
+      {/* Success Modal */}
+      {showSuccessModal && (
+        <div className="ap-modal-overlay" onClick={() => setShowSuccessModal(false)}>
+          <div className="ap-modal" onClick={(e) => e.stopPropagation()}>
+            <div className="ap-modal-header">
+              <CheckCircleIcon className="success-icon" />
+              <h3 className="ap-modal-title">Product Added Successfully!</h3>
+              <button
+                className="ap-modal-close"
+                onClick={() => setShowSuccessModal(false)}
+              >
+                <CloseIcon />
+              </button>
+            </div>
+            <div className="ap-modal-body">
+              <p className="success-message">
+                Your product has been successfully added to the catalog.
+              </p>
+              <div className="success-details">
+                <span className="product-name-display">{productName}</span>
+                <span className="success-sub">has been saved and is now available for management.</span>
+              </div>
+            </div>
+            <div className="ap-modal-footer">
+              <button
+                className="btn-primary"
+                onClick={() => setShowSuccessModal(false)}
+              >
+                Continue
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
