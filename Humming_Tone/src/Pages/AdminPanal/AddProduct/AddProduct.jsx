@@ -19,6 +19,11 @@ const AddProduct = () => {
   const [featuredProduct, setFeaturedProduct] = useState(false);
   const [active, setActive] = useState(true);
   const [images, setImages] = useState([null, null, null, null, null]);
+  const [subcategory, setSubcategory] = useState('');
+  const [careInstructions, setCareInstructions] = useState('');
+  const [ageRange, setAgeRange] = useState('');
+  const [weight, setWeight] = useState('');
+
 
   // Predefined options
   const brandOptions = ['Humming Tone', 'Other'];
@@ -63,23 +68,71 @@ const AddProduct = () => {
   };
 
   const handleSubmit = () => {
-    console.log('Product data:', {
-      productName,
-      about,
-      variants,
-      category,
-      sku,
-      brand,
-      gender,
-      dimensions,
-      color,
-      material,
-      featuredProduct,
-      active,
-      images: images.filter(img => img !== null)
-    });
-    alert('Product data logged to console!');
+  const formData = new FormData();
+
+  const categorySlugMap = {
+  "Winter sets": "winter_sets",
+  "T Shirts": "t_shirts",
+  "Sleepingbags": "sleeping_bags",
+  "Dresses": "dresses"
   };
+
+  // basic fields
+  formData.append("name", productName);
+  formData.append("about", about);
+  formData.append("sku", sku);
+  if (category)formData.append("category", categorySlugMap[category]);
+  if (subcategory) formData.append("subcategory", subcategory);
+  formData.append("brand", brand);
+  formData.append("color", color);
+  formData.append("material", material);
+  if (careInstructions) formData.append("care_instructions", careInstructions);
+  formData.append("gender", gender.toLowerCase()); // backend expects lowercase
+  if (ageRange) formData.append("age_range", ageRange);
+  if (weight) formData.append("weight", Number(weight));
+  formData.append("dimensions", dimensions);
+
+  // booleans → backend uses 0 / 1
+  formData.append("is_featured", featuredProduct ? 1 : 0);
+  formData.append("is_active", active ? 1 : 0);
+
+  // variants (IMPORTANT)
+  const formattedVariants = variants.map(v => ({
+    size: v.size,
+    price: Number(v.price),
+    original_price: Number(v.originalPrice),
+    stock_quantity: Number(v.stock)
+  }));
+
+  formData.append("variants", JSON.stringify(formattedVariants));
+
+  // images
+  images.forEach(img => {
+    if (img?.file) {
+      formData.append("images", img.file); // must match multer field name
+    }
+  });
+
+  // DEBUG (very important)
+  for (let pair of formData.entries()) {
+    console.log(pair[0], pair[1]);
+  }
+
+  // SEND
+  fetch("http://localhost:5000/admin/add_product", {
+    method: "POST",
+    body: formData
+  })
+    .then(res => res.json())
+    .then(data => {
+      console.log(data);
+      alert("Product added successfully");
+    })
+    .catch(err => {
+      console.error(err);
+      alert("Failed to add product");
+    });
+};
 
   return (
     <div className="add-product-container">
@@ -130,12 +183,36 @@ const AddProduct = () => {
                 onChange={(e) => setGender(e.target.value)}
               >
                 <option value="">Select Gender</option>
-                <option value="Mens">Mens</option>
-                <option value="Childrens">Childrens</option>
-                <option value="Baby">Baby</option>
+                <option value="Men">Mens</option>
+                <option value="Children">Childrens</option>
+                <option value="Babies">Baby</option>
                 <option value="Sports">Sports</option>
               </select>
             </div>
+
+            <div className="form-group">
+              <label htmlFor="ageRange">AGE RANGE</label>
+              <input
+                type="text"
+                id="ageRange"
+                placeholder="e.g. 2-4 years, 6-8 years"
+                value={ageRange}
+                onChange={(e) => setAgeRange(e.target.value)}
+              />
+            </div>
+
+            <div className="form-group">
+              <label htmlFor="subcategory">SUBCATEGORY</label>
+              <input
+                type="text"
+                id="subcategory"
+                placeholder="e.g. Full Sleeve, Half Sleeve"
+                value={subcategory}
+                onChange={(e) => setSubcategory(e.target.value)}
+              />
+            </div>
+
+
 
             <div className="form-group">
               <label htmlFor="sku">SKU</label>
@@ -147,6 +224,18 @@ const AddProduct = () => {
                 onChange={(e) => setSku(e.target.value)}
               />
             </div>
+
+            <div className="form-group full-width">
+              <label htmlFor="careInstructions">CARE INSTRUCTIONS</label>
+              <textarea
+                id="careInstructions"
+                placeholder="Wash cold, do not bleach"
+                value={careInstructions}
+                onChange={(e) => setCareInstructions(e.target.value)}
+                rows="3"
+              />
+            </div>
+
 
             <div className="form-group">
               <label htmlFor="brand">BRAND</label>
@@ -223,6 +312,19 @@ const AddProduct = () => {
                 onChange={(e) => setDimensions(e.target.value)}
               />
             </div>
+
+            <div className="form-group">
+              <label htmlFor="weight">WEIGHT (kg)</label>
+              <input
+                type="number"
+                step="0.01"
+                id="weight"
+                placeholder="e.g. 0.75"
+                value={weight}
+                onChange={(e) => setWeight(e.target.value)}
+              />
+            </div>
+
           </div>
         </section>
 

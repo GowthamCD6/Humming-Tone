@@ -35,7 +35,7 @@ exports.add_product  = (req,res,next) => {
 
       const allowedGenders = ['men','children','babies','sports'];
       if (!gender || !allowedGenders.includes(gender)) {
-        return res.status(400).json({ message: "Invalid gender value" });
+        return res.status(400).json({ message: `Invalid gender value - ${gender}` });
       }
 
       for(const[key,value] of Object.entries(stringFields)){
@@ -50,88 +50,139 @@ exports.add_product  = (req,res,next) => {
         }
       }
 
-      for(const[key,value] of Object.entries(booleanFields)){
-        if (![0, 1].includes(value)){
-            return res.status(400).json({ message: `${key} must be boolean (true/false)` });
+      for (const [key, value] of Object.entries(booleanFields)) {
+        const num = Number(value);
+        if (![0, 1].includes(num)) {
+          return res.status(400).json({ message: `${key} must be boolean (true/false)` });
         }
       }
 
-      let categoryIdSql = "select id from categories where slug = ? limit 1";
-      let category_id;
-      db.query(categoryIdSql,[category],(err0,res0) => {
-        if(err0)return next(err0);
-        if(res0.length === 0){
-            return next(createError.NotFound('slug not found'));
-        }
-        category_id = res0[0].id;
-        let insertSql = `insert into products(name, about, sku, category_id, subcategory, brand,
-                         color, material, care_instructions, gender, age_range, weight, dimensions,
-                         is_featured, is_active, image_path) values(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`;
-  
-        db.query(insertSql,[name, about, sku, category_id, subcategory, brand, color, material, care_instructions, gender, age_range, weight, dimensions, featured, active, primary_image], (err1,res1) => {
-          if(err1){
-              if (err1.code === "ER_DUP_ENTRY") {
-                  return next(createError.Conflict("SKU already exists"));
+      db.getConnection((connectionError,connection) => {
+        if(connectionError)return next(connectionError);
+        connection.beginTransaction(TransactionError => {
+          if(TransactionError)return next(TransactionError);
+          let categoryIdSql = "select id from categories where slug = ? limit 1";
+          let category_id;
+          db.query(categoryIdSql,[category],(err0,res0) => {
+            if(err0 || res0.length === 0){
+                return connection.rollback(() => next(err0 || createError.NotFound('slug not found'))); 
+            }
+            category_id = res0[0].id;
+            let insertSql = `insert into products(name, about, sku, category_id, subcategory, brand,
+                             color, material, care_instructions, gender, age_range, weight, dimensions,
+                             is_featured, is_active, image_path) values(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`;
+      
+            db.query(insertSql,[name, about, sku, category_id, subcategory, brand, color, material, care_instructions, gender, age_range, weight, dimensions, featured, active, primary_image], (err1,res1) => {
+              if(err1){
+                  if (err1.code === "ER_DUP_ENTRY") {
+                      return connection.rollback(() => next(createError.Conflict("SKU already exists"))); 
+                  }
+                  return connection.rollback(() => next(err1));
               }
-              return next(err1);
-          }
-          else if(res1.affectedRows === 0)return next(createError.InternalServerError('Insert failed'));
+              else if(res1.affectedRows === 0)return connection.rollback(() => next(createError.InternalServerError('Insert failed'))); 
+      
+              // insert other image path's
+              let imagesSql = "insert into product_images(product_id, image_path, is_primary) values(?,?,?)";
+              const product_id = res1.insertId;
+              // inserting each image
+              let completed = 0;
+              image_paths.forEach((path, index) => {
+              db.query(imagesSql,[product_id, path, index === 0 ? 1 : 0],(err2) => {
+                if (err2) return connection.rollback(() => next(err2));  
+                completed++;  
+                if (completed === image_paths.length) { // insert variants
+                let { variants } = req.body;
   
-          // insert other image path's
-          let imagesSql = "insert into product_images(product_id, image_path, is_primary) values(?,?,?)";
-          const product_id = res1.insertId;
-          // inserting each image
-          let completed = 0;
-          image_paths.forEach((path, index) => {
-          db.query(imagesSql,[product_id, path, index === 0 ? 1 : 0],(err2) => {
-            if (err2) return next(err2);  
-            completed++;  
-            if (completed === image_paths.length) {
-                res.status(201).json({ message: "Product added successfully!" });
-            }
-            }
-          );
-          });
-
+                try {
+                  variants = JSON.parse(variants);
+                } catch {
+                  return connection.rollback(() =>
+                    res.status(400).json({ message: "Invalid variants format" })
+                  );
+                }
+  
+  
+                if (!variants || !Array.isArray(variants) || variants.length < 1) {
+                  return connection.rollback(() =>
+                    res.status(400).json({ message: "Give at least 1 variant" })
+                  );
+                }
+  
+                for (const variant of variants) {
+                  let { size, price, original_price, stock_quantity } = variant;
+  
+                  // size validation
+                  if (typeof size !== "string" || size.trim() === "") {
+                    return connection.rollback(() =>
+                      res.status(400).json({ message: "size must be a non-empty string" })
+                    );
+                  }
+  
+                  price = Number(variant.price);
+                  original_price = Number(variant.original_price);
+                  stock_quantity = Number(variant.stock_quantity);
+  
+                  // number validation
+                  const numberFields = { price, original_price, stock_quantity };
+                  for (const [key, value] of Object.entries(numberFields)) {
+                    if (value == null || isNaN(value) || value <= 0) {
+                      return connection.rollback(() =>
+                        res.status(400).json({ message: `${key} must be a valid number` })
+                      );
+                    }
+                  }
+  
+                  // price rule
+                  if (original_price < price) {
+                    return connection.rollback(() =>
+                      res.status(400).json({
+                        message: "original_price must be greater than or equal to price"
+                      })
+                    );
+                  }
+                }
+  
+                const insertSql =
+                  "INSERT INTO product_variants(product_id, size, price, original_price, stock_quantity) VALUES ?";
+  
+                const values = variants.map(v => [
+                  product_id,
+                  v.size.trim(),
+                  Number(v.price),
+                  Number(v.original_price),
+                  Number(v.stock_quantity)
+                ]);
+  
+                db.query(insertSql, [values], (err, result) => {
+                  if (err || result.affectedRows !== variants.length) {
+                    return connection.rollback(() =>
+                      next(createError.BadGateway("Variant insert failed"))
+                    );
+                  }
+  
+                  connection.commit(commitErr => {
+                    if (commitErr) return next(commitErr);
+                    res.status(201).json({ message: "Product & variants added successfully!" });
+                  });
+                });
+  
+                }
+                }
+              );
+              });
+    
+            })
+    
+          })
+  
         })
-
       })
+
+
       
     }
     catch(error){
         next(error);
-    }
-}
-
-exports.add_variant = (req,res,next) => {
-    try{
-      const{product_id,size,price,original_price,stock_quantity} = req.body;
-      if(typeof size !== "string" || size.trim() === ""){
-        return res.status(400).json({ message: `size must be a non-empty string` });
-      }
-      const numberFields = {product_id,price,original_price,stock_quantity};
-      for(const[key,value] of Object.entries(numberFields)){
-        if(value == null || value === undefined || isNaN(value) || value <= 0){
-            return res.status(400).json({ message: `${key} must be a valid number` });
-        }
-      }
-      if (original_price < price) {
-        return res.status(400).json({
-            message: "original_price must be greater than or equal to price"
-        });
-      }
-
-      let insertSql = "insert into product_variants(product_id, size, price, original_price, stock_quantity) values (?,?,?,?,?)";
-      db.query(insertSql,[product_id, size, price, original_price, stock_quantity],(err1,res1) => {
-        if(err1)return next(err1);
-        if(res1.affectedRows === 0){
-            return next(createError.BadGateway('Insert failed'));
-        }
-        res.send('product variant added successfully!');
-      })
-    }
-    catch(error){
-      next(error);
     }
 }
 

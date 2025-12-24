@@ -9,7 +9,8 @@ const adminAuthRoute = require("./routes/admin/auth");
 const adminDashboardRoute = require("./routes/admin/dashboard");
 const adminOrderRoute = require("./routes/admin/order");
 const userProductRoute = require("./routes/user/product");
-const orderRoutes = require('./routes/admin/order'); 
+const adminPromoRoute = require("./routes/admin/promo");
+const orderRoutes = require("./routes/admin/order")
 const app = express();
 const PORT = process.env.PORT || 5000;
 
@@ -31,6 +32,7 @@ app.use("/",userProductRoute);
 app.use("/api/orders", orderRoutes);
 
 // user routes
+app.use("/",userProductRoute);
 
 
 app.use((req,res,next) => {
@@ -47,5 +49,3 @@ app.use((error,req,res,next) => {
 })
 
 app.listen(PORT,() => console.log("Server runs on http://localhost:"+PORT));
-
-
