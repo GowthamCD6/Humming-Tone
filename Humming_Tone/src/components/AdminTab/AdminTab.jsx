@@ -10,6 +10,7 @@ import Dashboard from '../../Pages/AdminPanal/Dashboard/Dashboard'
 import ManageProduct from '../../Pages/AdminPanal/ManageProduct/ManageProduct'
 import AddProduct from '../../Pages/AdminPanal/AddProduct/AddProduct'
 import ManageOrder from '../../Pages/AdminPanal/ManageOrder/ManageOrder'
+import SiteContent from '../../Pages/AdminPanal/SiteContent/SiteContent'
 import './AdminTab.css'
 
 export default function AdminTab({ onLogout = () => {} }) {
@@ -20,6 +21,7 @@ export default function AdminTab({ onLogout = () => {} }) {
     { id: 'manage-products', label: 'Manage Products', Icon: ShoppingBagIcon },
     { id: 'add-product', label: 'Add Product', Icon: AddCircleIcon },
     { id: 'manage-orders', label: 'Manage Orders', Icon: ShoppingCartIcon },
+    { id: 'site-content', label: 'Site Content', Icon: AccountCircleIcon },
     { id: 'view-store', label: 'View Store', Icon: OpenInNewIcon },
   ]
 
@@ -85,6 +87,8 @@ export default function AdminTab({ onLogout = () => {} }) {
           {activeTab === 'add-product' && <AddProduct />}
 
           {activeTab === 'manage-orders' && <ManageOrder />}
+
+          {activeTab === 'site-content' && <SiteContent />}
 
           {activeTab === 'view-store' && (
             <section className="tab-content">

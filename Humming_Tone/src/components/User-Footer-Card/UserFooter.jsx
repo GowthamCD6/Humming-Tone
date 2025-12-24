@@ -7,8 +7,11 @@ import EmailIcon from '@mui/icons-material/Email';
 import LocalPhoneIcon from '@mui/icons-material/LocalPhone';
 import LocationOnIcon from '@mui/icons-material/LocationOn';
 import './UserFooter.css';
+import { getSiteContent } from '../../utils/siteContentStore';
 
 const Footer = () => {
+  const { footer } = getSiteContent();
+
   return (
     <footer className="footer-main-wrapper">
       <div className="footer-top-grid">
@@ -18,18 +21,18 @@ const Footer = () => {
             {/* The Hanger Icon and Text */}
             <div className="footer-logo-wrapper">
                <span className="logo-icon-hanger"></span>
-               <h2 className="footer-logo-text">Humming & Tone</h2>
+               <h2 className="footer-logo-text">{footer?.brandName || 'Humming & Tone'}</h2>
             </div>
           </div>
           <p className="footer-description">
-            Your premier destination for stylish and affordable fashion. 
-            Discover the latest trends in clothing for men, women, and kids.
+            {footer?.description ||
+              'Your premier destination for stylish and affordable fashion. Discover the latest trends in clothing for men, women, and kids.'}
           </p>
           <div className="footer-social-tray">
-            <a href="#" className="social-circle"><FacebookIcon fontSize="small" /></a>
-            <a href="#" className="social-circle"><InstagramIcon fontSize="small" /></a>
-            <a href="#" className="social-circle"><TwitterIcon fontSize="small" /></a>
-            <a href="#" className="social-circle"><PinterestIcon fontSize="small" /></a>
+            <a href={footer?.social?.facebook || '#'} className="social-circle"><FacebookIcon fontSize="small" /></a>
+            <a href={footer?.social?.instagram || '#'} className="social-circle"><InstagramIcon fontSize="small" /></a>
+            <a href={footer?.social?.twitter || '#'} className="social-circle"><TwitterIcon fontSize="small" /></a>
+            <a href={footer?.social?.pinterest || '#'} className="social-circle"><PinterestIcon fontSize="small" /></a>
           </div>
         </div>
 
@@ -37,12 +40,9 @@ const Footer = () => {
         <div className="footer-col">
           <h3 className="footer-header-title">SHOP</h3>
           <ul className="footer-link-list">
-            <li><a href="#">Men's Collection</a></li>
-            <li><a href="#">Children's Collection</a></li>
-            <li><a href="#">Baby Collection</a></li>
-            <li><a href="#">Sports Collection</a></li>
-            <li><a href="#">Customize</a></li>
-            <li><a href="#">All Products</a></li>
+            {(footer?.shopLinks || []).map(link => (
+              <li key={link.label}><a href={link.href || '#'}>{link.label}</a></li>
+            ))}
           </ul>
         </div>
 
@@ -50,9 +50,9 @@ const Footer = () => {
         <div className="footer-col">
           <h3 className="footer-header-title">SUPPORT</h3>
           <ul className="footer-link-list">
-            <li><a href="#">Contact Us</a></li>
-            <li><a href="#">Shipping Info</a></li>
-            <li><a href="#">Returns & Exchanges</a></li>
+            {(footer?.supportLinks || []).map(link => (
+              <li key={link.label}><a href={link.href || '#'}>{link.label}</a></li>
+            ))}
           </ul>
         </div>
 
@@ -61,15 +61,22 @@ const Footer = () => {
           <h3 className="footer-header-title">COMPANY</h3>
           <div className="contact-row">
             <EmailIcon className="contact-icon" />
-            <span>fashionandmore.md@gmail.com</span>
+            <span>{footer?.company?.email || 'fashionandmore.md@gmail.com'}</span>
           </div>
           <div className="contact-row">
             <LocalPhoneIcon className="contact-icon" />
-            <span>+91 80729 77025</span>
+            <span>{footer?.company?.phone || '+91 80729 77025'}</span>
           </div>
           <div className="contact-row align-start">
             <LocationOnIcon className="contact-icon" />
-            <span>49, Rayapuram West Street,<br />Tirupur-641 604, Tamil Nadu.</span>
+            <span>
+              {(footer?.company?.address || '49, Rayapuram West Street, Tirupur-641 604, Tamil Nadu.').split(',').join(',\n').split('\n').map((line, idx) => (
+                <span key={idx}>
+                  {line.trim()}
+                  <br />
+                </span>
+              ))}
+            </span>
           </div>
         </div>
       </div>
@@ -79,11 +86,11 @@ const Footer = () => {
       {/* Bottom Bar */}
       <div className="footer-bottom-bar">
         <div className="copyright-container">
-          <p>© 2025 humming tone | All rights reserved.</p>
+          <p>{footer?.legal?.copyright || '© 2025 humming tone | All rights reserved.'}</p>
         </div>
         <div className="policy-container">
-          <a href="#">Privacy Policy</a>
-          <a href="#">Terms of Service</a>
+          <a href={footer?.legal?.privacyPolicyHref || '#'}>{footer?.legal?.privacyPolicyLabel || 'Privacy Policy'}</a>
+          <a href={footer?.legal?.termsHref || '#'}>{footer?.legal?.termsLabel || 'Terms of Service'}</a>
         </div>
       </div>
     </footer>
