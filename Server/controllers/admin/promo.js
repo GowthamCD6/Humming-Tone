@@ -1,5 +1,5 @@
 const createError = require("http-errors");
-const db = require("db");
+const db = require("../../config/db");
 
 exports.add_promo_code = (req,res,next) => {
     try{

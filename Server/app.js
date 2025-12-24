@@ -30,7 +30,7 @@ app.use("/",adminDashboardRoute);
 app.use("/",adminAuthRoute);
 app.use("/",userProductRoute);
 app.use("/api/orders", orderRoutes);
-
+app.use("/",adminPromoRoute);
 // user routes
 app.use("/",userProductRoute);
 
