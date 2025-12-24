@@ -145,6 +145,7 @@
   letter-spacing: 2px;
   text-transform: uppercase;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+
 }
 
 .promo-table tbody tr {
@@ -243,6 +244,91 @@
   animation: fadeIn 0.6s ease-in;
 }
 
+/* ===== PRODUCTS FILTERS ===== */
+.products-filters {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  gap: 1rem;
+  margin: 0 0 1rem;
+}
+
+.filters-left {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.filter-item {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  min-width: 200px;
+}
+
+.filter-label {
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  color: #1a1a1a;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+}
+
+.filter-select {
+  width: 100%;
+  padding: 0.7rem 1rem;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  background: #fff;
+  font-size: 0.9rem;
+  font-family: 'Georgia', serif;
+  color: #1a1a1a;
+}
+
+.filter-select:focus {
+  outline: none;
+  border-color: #1a1a1a;
+}
+
+.filters-right {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+.filters-count {
+  font-size: 0.9rem;
+  color: #4b5563;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+}
+
+.btn-clear-filters {
+  padding: 0.625rem 1.25rem;
+  background: #e5e7eb;
+  color: #111827;
+  border: none;
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  border-radius: 6px;
+}
+
+.btn-clear-filters:hover {
+  background: #d1d5db;
+  transform: translateY(-1px);
+}
+
+.btn-clear-filters:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+
 .products-table-container {
   background: #ffffff;
   border-radius: 8px;
@@ -250,7 +336,8 @@
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
   flex: 1;
   scroll-behavior: smooth;
-  min-height: 600px;
+  min-height: 645px;
+  max-height: calc(100vh - 180px);
 }
 
 .products-table {
@@ -368,6 +455,16 @@
   animation: slideUp 0.3s ease-out;
 }
 
+/* Compact modal (used for short forms like Add Promo) */
+.modal-content--compact {
+  height: auto;
+  max-height: min(90vh, 720px);
+}
+
+.modal-content--compact .modal-body {
+  flex-grow: 0;
+}
+
 @keyframes slideUp {
   from {
     opacity: 0;
@@ -473,6 +570,33 @@
 .form-input:focus {
   outline: none;
   border-color: #1a1a1a;
+}
+
+.image-preview {
+  margin-top: 0.75rem;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.image-preview-img {
+  width: 96px;
+  height: 96px;
+  object-fit: cover;
+  border-radius: 8px;
+  border: 1px solid #e5e7eb;
+}
+
+.field-error {
+  margin: 0.5rem 0 0;
+  color: #dc2626;
+  font-size: 0.8rem;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+}
+
+.form-input.input-error {
+  border-color: #dc2626;
+  box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.15);
 }
 
 .form-row {
