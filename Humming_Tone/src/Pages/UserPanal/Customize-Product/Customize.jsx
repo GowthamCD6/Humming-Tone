@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState} from 'react';
 import UserFooter from '../../../components/User-Footer-Card/UserFooter';
 import './Customize.css';
 
