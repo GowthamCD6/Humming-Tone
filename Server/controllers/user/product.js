@@ -1,6 +1,7 @@
 const createError = require("http-errors");
 const db = require("../../config/db");
 
+// use same for featured_products
 exports.fetch_products = (req,res,next) => { // api request should be /user/fetch_products?gender=men
     const{gender} = req.query;
     if(gender === undefined || gender == null || !gender || gender.trim() === ""){
@@ -39,4 +40,19 @@ exports.fetch_products = (req,res,next) => { // api request should be /user/fetc
     catch(error){
         next(error);
     }
+}
+
+exports.fetch_new_arrivals = (req,res,next) => {
+  try{
+    let sql = "select * from products where is_active = 1 order by created_at DESC limit 10";
+    db.query(sql,(error,result) => {
+      if(error || result.length == 0){
+        return createError.BadRequest(error || createError.NotFound('Products not found!'));
+      }
+      res.send(result);
+    })
+  }
+  catch(error){
+    next(error);
+  }
 }
