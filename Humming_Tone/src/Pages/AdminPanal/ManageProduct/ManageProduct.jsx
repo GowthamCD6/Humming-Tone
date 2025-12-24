@@ -74,7 +74,8 @@ const initialPromoCodesData = [
     type: 'Fixed',
     discount: 100,
     minOrder: 0,
-    usage: '0 / ∞',
+    usedCount: 0,
+    usageLimit: Infinity,
     status: 'Active'
   }
 ]
@@ -86,6 +87,39 @@ export default function ManageProducts() {
   const [editingPromo, setEditingPromo] = useState(null)
   const [showEditModal, setShowEditModal] = useState(false)
   const [showPromoEditModal, setShowPromoEditModal] = useState(false)
+  const [showAddPromoModal, setShowAddPromoModal] = useState(false)
+  const [newPromo, setNewPromo] = useState({
+    code: '',
+    type: 'Fixed',
+    discount: 0,
+    minOrder: 0,
+    usageLimit: '',
+    status: 'Active'
+  })
+  const [newPromoErrors, setNewPromoErrors] = useState({})
+
+  const [filterGender, setFilterGender] = useState('All')
+  const [filterCategory, setFilterCategory] = useState('All')
+
+  const normalizeGender = (value) => {
+    const v = String(value || '').trim().toLowerCase()
+    if (!v) return ''
+    if (v === 'men' || v === "men's" || v === 'mens' || v === 'man') return 'Men'
+    if (v === 'child' || v === 'children' || v === 'kids' || v === 'boy' || v === 'boys' || v === 'girl' || v === 'girls') return 'Children'
+    if (v === 'baby' || v === 'babies') return 'Baby'
+    if (v === 'sports' || v === 'sport') return 'Sports'
+    return value
+  }
+
+  const categories = Array.from(new Set(products.map(p => p.category))).sort()
+  const genders = ['Men', 'Children', 'Baby', 'Sports']
+
+  const filteredProducts = products.filter((p) => {
+    const normalized = normalizeGender(p.gender)
+    const genderOk = filterGender === 'All' || normalized === filterGender
+    const categoryOk = filterCategory === 'All' || p.category === filterCategory
+    return genderOk && categoryOk
+  })
 
   // Product handlers
   const handleEditProduct = (product) => {
@@ -109,6 +143,19 @@ export default function ManageProducts() {
 
   const handleProductChange = (field, value) => {
     setEditingProduct({ ...editingProduct, [field]: value })
+  }
+
+  const handleProductImageUpload = (event) => {
+    const file = event.target.files?.[0]
+    if (!file) return
+    if (!file.type?.startsWith('image/')) return
+
+    const reader = new FileReader()
+    reader.onload = () => {
+      const dataUrl = String(reader.result || '')
+      setEditingProduct(prev => ({ ...prev, image: dataUrl }))
+    }
+    reader.readAsDataURL(file)
   }
 
   // Promo handlers
@@ -135,14 +182,60 @@ export default function ManageProducts() {
     setEditingPromo({ ...editingPromo, [field]: value })
   }
 
+  const handleOpenAddPromo = () => {
+    setNewPromo({
+      code: '',
+      type: 'Fixed',
+      discount: 0,
+      minOrder: 0,
+      usageLimit: '',
+      status: 'Active'
+    })
+    setNewPromoErrors({})
+    setShowAddPromoModal(true)
+  }
+
+  const handleNewPromoChange = (field, value) => {
+    setNewPromo({ ...newPromo, [field]: value })
+    if (newPromoErrors[field]) {
+      setNewPromoErrors({ ...newPromoErrors, [field]: undefined })
+    }
+  }
+
+  const handleSaveNewPromo = () => {
+    const trimmedCode = String(newPromo.code || '').trim()
+    if (!trimmedCode) {
+      setNewPromoErrors({ code: 'Promo code is required' })
+      return
+    }
+
+    const parsedLimit =
+      newPromo.usageLimit === '' || newPromo.usageLimit === null || typeof newPromo.usageLimit === 'undefined'
+        ? Infinity
+        : Math.max(0, Number(newPromo.usageLimit))
+
+    const newId = promoCodes.length ? Math.max(...promoCodes.map(p => p.id)) + 1 : 1
+    const createdPromo = {
+      id: newId,
+      code: trimmedCode,
+      type: newPromo.type,
+      discount: Number(newPromo.discount) || 0,
+      minOrder: Number(newPromo.minOrder) || 0,
+      usedCount: 0,
+      usageLimit: Number.isFinite(parsedLimit) ? parsedLimit : Infinity,
+      status: newPromo.status
+    }
+
+    setPromoCodes([createdPromo, ...promoCodes])
+    setShowAddPromoModal(false)
+  }
+
   return (
     <section className="manage-products-container">
-      <h2 className="page-heading">Manage Products</h2>
-
       {/* Action Buttons */}
       <div className="action-buttons">
         <button className="btn-add-product">ADD NEW PRODUCT</button>
-        <button className="btn-manage-promo">MANAGE PROMO CODES</button>
+        <button className="btn-manage-promo" onClick={handleOpenAddPromo}>ADD PROMO CODE</button>
       </div>
 
       {/* Promo Codes Section */}
@@ -172,7 +265,11 @@ export default function ManageProducts() {
                   <td>{promo.type}</td>
                   <td>₹{promo.discount}.00</td>
                   <td>₹{promo.minOrder}.00</td>
-                  <td>{promo.usage}</td>
+                  <td>
+                    {typeof promo.usedCount !== 'undefined' && typeof promo.usageLimit !== 'undefined'
+                      ? `${promo.usedCount} / ${Number.isFinite(promo.usageLimit) ? promo.usageLimit : '∞'}`
+                      : promo.usage}
+                  </td>
                   <td>
                     <span className="status-badge status-active">{promo.status}</span>
                   </td>
@@ -199,8 +296,55 @@ export default function ManageProducts() {
         </div>
       </div>
 
-      <div className='product-section'>
+      <div className="section-header products-header">
         <h3 className="section-title">Active Products</h3>
+      </div>
+
+      <div className="products-filters">
+        <div className="filters-left">
+          <div className="filter-item">
+            <label className="filter-label">CATEGORY</label>
+            <select
+              className="filter-select"
+              value={filterCategory}
+              onChange={(e) => setFilterCategory(e.target.value)}
+            >
+              <option value="All">All</option>
+              {categories.map((c) => (
+                <option key={c} value={c}>{c}</option>
+              ))}
+            </select>
+          </div>
+
+          <div className="filter-item">
+            <label className="filter-label">GENDER</label>
+            <select
+              className="filter-select"
+              value={filterGender}
+              onChange={(e) => setFilterGender(e.target.value)}
+            >
+              <option value="All">All</option>
+              {genders.map((g) => (
+                <option key={g} value={g}>{g}</option>
+              ))}
+            </select>
+          </div>
+        </div>
+
+        <div className="filters-right">
+          <span className="filters-count">Showing {filteredProducts.length} of {products.length}</span>
+          <button
+            type="button"
+            className="btn-clear-filters"
+            onClick={() => {
+              setFilterCategory('All')
+              setFilterGender('All')
+            }}
+            disabled={filterCategory === 'All' && filterGender === 'All'}
+          >
+            CLEAR FILTERS
+          </button>
+        </div>
       </div>
 
       {/* Products Table Section */}
@@ -220,7 +364,7 @@ export default function ManageProducts() {
               </tr>
             </thead>
             <tbody>
-              {products.map((product) => (
+              {filteredProducts.map((product) => (
                 <tr key={product.id}>
                   <td>
                     <img src={product.image} alt={product.name} className="product-image" />
@@ -230,7 +374,7 @@ export default function ManageProducts() {
                   <td className="product-price">₹{product.price}.00</td>
                   <td className="product-stock">{product.stock}</td>
                   <td className="product-category">{product.category}</td>
-                  <td className="product-gender">{product.gender}</td>
+                  <td className="product-gender">{normalizeGender(product.gender)}</td>
                   <td>
                     <div className="action-btns">
                       <button 
@@ -333,22 +477,31 @@ export default function ManageProducts() {
                     onChange={(e) => handleProductChange('gender', e.target.value)}
                     className="form-input"
                   >
-                    <option value="Baby">Mens</option>
-                    <option value="Boys">Children</option>
-                    <option value="Girls">Kids</option>
-                    <option value="Unisex">Sports</option>
+                    <option value="Men">Men</option>
+                    <option value="Children">Children</option>
+                    <option value="Baby">Baby</option>
+                    <option value="Sports">Sports</option>
                   </select>
                 </div>
               </div>
 
               <div className="form-group">
-                <label>IMAGE URL</label>
+                <label>IMAGE UPLOAD</label>
                 <input
-                  type="text"
-                  value={editingProduct.image}
-                  onChange={(e) => handleProductChange('image', e.target.value)}
+                  type="file"
+                  accept="image/*"
+                  onChange={handleProductImageUpload}
                   className="form-input"
                 />
+                {editingProduct.image && (
+                  <div className="image-preview">
+                    <img
+                      src={editingProduct.image}
+                      alt="Preview"
+                      className="image-preview-img"
+                    />
+                  </div>
+                )}
               </div>
             </div>
 
@@ -454,6 +607,117 @@ export default function ManageProducts() {
                 onClick={handleSavePromo}
               >
                 SAVE CHANGES
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Add Promo Modal */}
+      {showAddPromoModal && (
+        <div className="modal-overlay" onClick={() => setShowAddPromoModal(false)}>
+          <div className="modal-content modal-content--compact" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header">
+              <h2 className="modal-title">Add Promo Code</h2>
+              <button
+                className="modal-close"
+                onClick={() => setShowAddPromoModal(false)}
+              >
+                ×
+              </button>
+            </div>
+
+            <div className="modal-body">
+              <div className="form-group">
+                <label>PROMO CODE</label>
+                <input
+                  type="text"
+                  value={newPromo.code}
+                  onChange={(e) => handleNewPromoChange('code', e.target.value)}
+                  className={`form-input ${newPromoErrors.code ? 'input-error' : ''}`}
+                  placeholder="e.g. NEW50"
+                />
+                {newPromoErrors.code && (
+                  <p className="field-error">{newPromoErrors.code}</p>
+                )}
+              </div>
+
+              <div className="form-group">
+                <label>TYPE</label>
+                <select
+                  value={newPromo.type}
+                  onChange={(e) => handleNewPromoChange('type', e.target.value)}
+                  className="form-input"
+                >
+                  <option value="Fixed">Fixed</option>
+                  <option value="Percentage">Percentage</option>
+                </select>
+              </div>
+
+              <div className="form-row">
+                <div className="form-group">
+                  <label>DISCOUNT</label>
+                  <input
+                    type="number"
+                    value={newPromo.discount}
+                    onChange={(e) => handleNewPromoChange('discount', e.target.value)}
+                    className="form-input"
+                    min="0"
+                    step="1"
+                  />
+                </div>
+
+                <div className="form-group">
+                  <label>MIN ORDER (₹)</label>
+                  <input
+                    type="number"
+                    value={newPromo.minOrder}
+                    onChange={(e) => handleNewPromoChange('minOrder', e.target.value)}
+                    className="form-input"
+                    min="0"
+                    step="1"
+                  />
+                </div>
+              </div>
+
+              <div className="form-group">
+                <label>USAGE LIMIT</label>
+                <input
+                  type="number"
+                  value={newPromo.usageLimit}
+                  onChange={(e) => handleNewPromoChange('usageLimit', e.target.value)}
+                  className="form-input"
+                  min="0"
+                  step="1"
+                  placeholder="Leave empty for unlimited"
+                />
+              </div>
+
+              <div className="form-group">
+                <label>STATUS</label>
+                <select
+                  value={newPromo.status}
+                  onChange={(e) => handleNewPromoChange('status', e.target.value)}
+                  className="form-input"
+                >
+                  <option value="Active">Active</option>
+                  <option value="Inactive">Inactive</option>
+                </select>
+              </div>
+            </div>
+
+            <div className="modal-footer">
+              <button
+                className="btn-cancel"
+                onClick={() => setShowAddPromoModal(false)}
+              >
+                CANCEL
+              </button>
+              <button
+                className="btn-save"
+                onClick={handleSaveNewPromo}
+              >
+                ADD PROMO
               </button>
             </div>
           </div>
