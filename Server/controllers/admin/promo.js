@@ -1,5 +1,5 @@
 const createError = require("http-errors");
-const db = require("db");
+const db = require("../../config/db");
 
 exports.add_promo_code = (req,res,next) => {
     try{
@@ -88,6 +88,49 @@ exports.remove_promo_code = (req,res,next) => {
     }
 }
 
+exports.update_promo = (req,res,next) => {
+  try{
+    const{id} = req.params;
+    if(!id || id.trim() == "" || isNaN(id)){
+      return next(createError.BadRequest('Invalid id!'));
+    } 
+    let{code,discount_type,discount_value,min_order_amount,is_active} = req.body;
+    if(!code || code.trim() == ""){
+      return next("Invalid promo code!");
+    }
+    
+    if(!discount_type || !["fixed","percentage"].includes(discount_type)){
+      return next(createError.BadRequest('Invalid discount type!'));
+    }
+
+    discount_value = Number(discount_value);
+    if(discount_value < 0 || isNaN(discount_value)){
+      return next(createError.BadRequest('Invalid discount value!'));
+    }
+
+    min_order_amount = Number(min_order_amount);
+    if(isNaN(min_order_amount) || min_order_amount < 0){
+      return next(createError.BadRequest('Invalid minimum order amount'));
+    }
+
+    if(typeof is_active != "boolean"){
+      return next(createError.BadRequest('Inalid status'));
+    }
+
+    is_active = is_active ? 1 : 0;
+
+    let updateSql = "update promo_codes set code = ?, discount_type = ?, discount_value = ?, min_order_amount = ? , is_active = ? where id = ?";
+    db.query(updateSql,[code,discount_type,discount_value,min_order_amount,is_active,id],(error,result) => {
+      if(error || result.affectedRows === 0){
+        return next(error || next(createError.NotFound('Update failed, Data not found!')));
+      }
+      res.send('promo code updated successfully')
+    })
+  }
+  catch(error){
+    next(error);
+  }
+}
 
 //   id INT AUTO_INCREMENT PRIMARY KEY,
 //   code VARCHAR(50) NOT NULL UNIQUE,

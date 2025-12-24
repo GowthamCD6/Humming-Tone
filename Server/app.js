@@ -28,7 +28,7 @@ app.use("/",adminProductRoute);
 app.use("/",adminOrderRoute);
 app.use("/",adminDashboardRoute);
 app.use("/",adminAuthRoute);
-app.use("/",adminPromoRoute)
+app.use("/",adminPromoRoute);
 
 // user routes
 app.use("/",userProductRoute);

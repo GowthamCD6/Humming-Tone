@@ -323,30 +323,41 @@ exports.delete_product = (req,res,next) => {
       return next(createError.BadRequest('Invalid input type!'));
     }
     else if(deleteAll){
-      return db.beginTransaction(TransctionError => {
-        if(TransctionError)return next(TransctionError);
-        let changeStatusSql = "update products set is_active = 0 where id = ?";
-        db.query(changeStatusSql,[id],(err0,res0) => {
-          if(err0 || res0.affectedRows === 0){
-            return db.rollback(() => {
-              next(err0 || createError.NotFound('deletion failed, product not found'));
-            }) 
+      db.getConnection((connectionError,connection) => {
+        if(connectionError)return next(connectionError);
+        connection.beginTransaction(TransctionError => {
+          if(TransctionError){
+            connection.release();
+            return next(TransctionError);
           }
-  
-          let deleteVariants = "delete from product_variants where product_id = ?";
-          db.query(deleteVariants,[id],(err,result) => {
-            if(err || result.affectedRows === 0){
-              return db.rollback(() => next(err || createError.NotFound('No variants found')));
+          let changeStatusSql = "update products set is_active = 0 where id = ?";
+          connection.query(changeStatusSql,[id],(err0,res0) => {
+            if(err0 || res0.affectedRows === 0){
+              return connection.rollback(() => {
+                connection.release();
+                next(err0 || createError.NotFound('deletion failed, product not found'));
+              }) 
             }
-            db.commit(commitErr => {
-              if (commitErr) {
-                return db.rollback(() => next(commitErr));
+    
+            let deleteVariants = "delete from product_variants where product_id = ?";
+            connection.query(deleteVariants,[id],(err,result) => {
+              if(err || result.affectedRows === 0){
+                connection.release();
+                return connection.rollback(() => next(err || createError.NotFound('No variants found')));
               }
-
-              return res.send("Product deleted successfully!");
-            })  
+              connection.commit(commitErr => {
+                if (commitErr) {
+                  connection.release();
+                  return connection.rollback(() => next(commitErr));
+                }
+                
+                connection.release();
+                return res.send("Product deleted successfully!");
+              })  
+            })
           })
         })
+
       })
     }
     else if(!Array.isArray(variants) || variants.length == 0){
