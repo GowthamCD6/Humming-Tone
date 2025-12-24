@@ -1,8 +1,8 @@
 const express = require("express");
 const router = express.Router();
-const createError = require("http-errors");
-const userAuth = require("../../middlewares/userAuth");
-const order = require("../../controllers/admin/order");
+const orderController = require('../../controllers/admin/order');
 
+// Endpoint: GET /api/orders/manage
+router.get('/manage', orderController.getManageOrders);
 
 module.exports = router;
