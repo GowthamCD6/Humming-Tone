@@ -28,15 +28,9 @@ app.use("/",adminProductRoute);
 app.use("/",adminOrderRoute);
 app.use("/",adminDashboardRoute);
 app.use("/",adminAuthRoute);
-<<<<<<< HEAD
 app.use("/",userProductRoute);
-app.use("/api/orders", orderRoutes);
+app.use("/api/orders", adminorderRoutes);
 app.use("/",adminPromoRoute);
-=======
-app.use("/",adminPromoRoute);
-app.use("/", adminorderRoutes);
-
->>>>>>> df573da5988f38f9cecce1708cece2eecf0a1b9c
 // user routes
 app.use("/",userProductRoute);
 
