@@ -10,7 +10,8 @@ const adminDashboardRoute = require("./routes/admin/dashboard");
 const adminOrderRoute = require("./routes/admin/order");
 const userProductRoute = require("./routes/user/product");
 const adminPromoRoute = require("./routes/admin/promo");
-const adminorderRoutes = require("./routes/admin/order")
+const adminorderRoutes = require("./routes/admin/order");
+const userPromoRoutes = require("./routes/user/promo");
 const app = express();
 const PORT = process.env.PORT || 5000;
 
@@ -28,12 +29,12 @@ app.use("/",adminProductRoute);
 app.use("/",adminOrderRoute);
 app.use("/",adminDashboardRoute);
 app.use("/",adminAuthRoute);
-app.use("/",userProductRoute);
-app.use("/api/orders", adminorderRoutes);
+app.use("/",adminorderRoutes);
 app.use("/",adminPromoRoute);
+
 // user routes
 app.use("/",userProductRoute);
-
+app.use("/",userPromoRoutes);
 
 app.use((req,res,next) => {
     next(createError.NotFound("api not found"));
