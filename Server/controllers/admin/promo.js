@@ -77,10 +77,10 @@ exports.remove_promo_code = (req,res,next) => {
       if(!promo_id || isNaN(promo_id)){
         return next(createError.BadRequest('Invalid promo id'));
       }
-      let deleteSql = "update promo_codes set is_active = 0 where promo_id = ? and is_active = 1";
+      let deleteSql = "delete from promo_codes where id = ?";
       db.query(deleteSql,[promo_id],(error,result) => {
         if(error || result.affectedRows === 0)return next(error || createError.NotFound('Promo code not found or already inactive'));
-        return res.send('Promo deactived successfully!');
+        return res.send('Promo deleted successfully!');
       })
     }
     catch(error){
@@ -90,8 +90,8 @@ exports.remove_promo_code = (req,res,next) => {
 
 exports.update_promo = (req,res,next) => {
   try{
-    const{id} = req.params;
-    if(!id || id.trim() == "" || isNaN(id)){
+    const{promo_id} = req.params;
+    if(!promo_id || promo_id.trim() == "" || isNaN(promo_id)){
       return next(createError.BadRequest('Invalid id!'));
     } 
     let{code,discount_type,discount_value,min_order_amount,is_active} = req.body;
@@ -120,7 +120,7 @@ exports.update_promo = (req,res,next) => {
     is_active = is_active ? 1 : 0;
 
     let updateSql = "update promo_codes set code = ?, discount_type = ?, discount_value = ?, min_order_amount = ? , is_active = ? where id = ?";
-    db.query(updateSql,[code,discount_type,discount_value,min_order_amount,is_active,id],(error,result) => {
+    db.query(updateSql,[code,discount_type,discount_value,min_order_amount,is_active,promo_id],(error,result) => {
       if(error || result.affectedRows === 0){
         return next(error || next(createError.NotFound('Update failed, Data not found!')));
       }
