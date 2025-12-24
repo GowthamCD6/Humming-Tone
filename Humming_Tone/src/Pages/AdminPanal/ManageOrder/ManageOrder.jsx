@@ -1,94 +1,41 @@
-import React, { useState, useMemo } from 'react';
+
+
+import React, { useState, useMemo, useEffect } from 'react';
 import './ManageOrder.css';
 
 export default function ManageOrder() {
-  // Mock Data
-  const [orders] = useState([
-    {
-      id: 'ORD202511181328167362',
-      customer: {
-        name: 'Nirolin Nancy',
-        email: 'nirolinnancy2001@gmail.com',
-        phone: '9791447262'
-      },
-      date: '2025-11-18',
-      time: '7:58 AM',
-      items: '1 items',
-      qty: '1 total qty',
-      total: 230.00,
-      status: 'DELIVERED',
-      payment: 'PAID',
-      paymentId: 'pay_Rh82'
-    },
-    {
-      id: 'ORD202511071152391707',
-      customer: {
-        name: 'Aafiyah',
-        email: 'aafiyahish@gmail.com',
-        phone: '9994058273'
-      },
-      date: '2025-11-07',
-      time: '6:24 AM',
-      items: '1 items',
-      qty: '1 total qty',
-      total: 350.00,
-      status: 'DELIVERED',
-      payment: 'PAID',
-      paymentId: 'pay_RckZ'
-    },
-    {
-      id: 'ORD202510151234567890',
-      customer: {
-        name: 'Rajesh Kumar',
-        email: 'rajesh.k@example.com',
-        phone: '9876543210'
-      },
-      date: '2025-10-15',
-      time: '3:45 PM',
-      items: '3 items',
-      qty: '5 total qty',
-      total: 890.00,
-      status: 'PENDING',
-      payment: 'PAID',
-      paymentId: 'pay_Abc1'
-    }
-  ]);
-
+  const [orders, setOrders] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [filters, setFilters] = useState({
     status: 'All Statuses',
     startDate: '',
     endDate: ''
   });
 
-  // Filter orders based on criteria
-  const filteredOrders = useMemo(() => {
-    return orders.filter(order => {
-      // Status filter
-      if (filters.status !== 'All Statuses' && order.status !== filters.status.toUpperCase()) {
-        return false;
+  // Fetch data from backend
+  useEffect(() => {
+    const fetchOrders = async () => {
+      try {
+        const response = await fetch('http://localhost:5000/api/orders/manage');
+        if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+        const data = await response.json();
+        
+        if (Array.isArray(data)) {
+          setOrders(data);
+        } else {
+          setOrders([]);
+        }
+      } catch (error) {
+        console.error("Fetch error:", error);
+        setOrders([]); 
+      } finally {
+        setLoading(false);
       }
+    };
+    fetchOrders();
+  }, []);
 
-      // Start date filter
-      if (filters.startDate && order.date < filters.startDate) {
-        return false;
-      }
-
-      // End date filter
-      if (filters.endDate && order.date > filters.endDate) {
-        return false;
-      }
-
-      return true;
-    });
-  }, [orders, filters]);
-
-  // Calculate stats dynamically
-  const stats = useMemo(() => ({
-    total: filteredOrders.length,
-    pending: filteredOrders.filter(o => o.status === 'PENDING').length,
-    delivered: filteredOrders.filter(o => o.status === 'DELIVERED').length
-  }), [filteredOrders]);
-
+  // Handlers for the restored UI
   const handleFilterChange = (field, value) => {
     setFilters(prev => ({ ...prev, [field]: value }));
   };
@@ -101,16 +48,45 @@ export default function ManageOrder() {
     });
   };
 
+  // Filter Logic
+  const filteredOrders = useMemo(() => {
+    if (!Array.isArray(orders)) return [];
+    return orders.filter(order => {
+      if (filters.status !== 'All Statuses') {
+        if (order.status?.toLowerCase() !== filters.status.toLowerCase()) return false;
+      }
+      const orderDateStr = order.created_at ? order.created_at.split('T')[0] : '';
+      if (filters.startDate && orderDateStr < filters.startDate) return false;
+      if (filters.endDate && orderDateStr > filters.endDate) return false;
+      return true;
+    });
+  }, [orders, filters]);
+
+  // Calculate Stats
+  const stats = useMemo(() => ({
+    total: filteredOrders.length,
+    pending: filteredOrders.filter(o => o.status?.toLowerCase() === 'pending').length,
+    delivered: filteredOrders.filter(o => o.status?.toLowerCase() === 'delivered').length
+  }), [filteredOrders]);
+
+  // Formatting Helpers to match original mockup look
   const formatDate = (dateStr) => {
     const date = new Date(dateStr);
     return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
   };
 
+  const formatTime = (dateStr) => {
+    const date = new Date(dateStr);
+    return date.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true });
+  };
+
+  if (loading) return <div className="loading-container">Loading Orders...</div>;
+
   return (
     <section className="manage-orders-container">
       <h2 className="page-heading">Manage Order</h2>
 
-      {/* Filter Section */}
+      {/* RESTORED Filter Section UI */}
       <div className="filter-container">
         <h2 className="section-title">Filter Orders</h2>
         
@@ -127,6 +103,7 @@ export default function ManageOrder() {
               <option>All Statuses</option>
               <option>Pending</option>
               <option>Delivered</option>
+              <option>Cancelled</option>
             </select>
           </div>
 
@@ -206,31 +183,31 @@ export default function ManageOrder() {
               </tr>
             </thead>
             <tbody>
-              {filteredOrders.map((order, index) => (
+              {filteredOrders.map((order) => (
                 <tr key={order.id}>
-                  <td className="order-id">{order.id}</td>
+                  <td className="order-id">{order.order_number}</td>
                   <td className="customer-info">
-                    <div className="cust-name">{order.customer.name}</div>
-                    <div className="cust-email">{order.customer.email}</div>
-                    <div className="cust-phone">{order.customer.phone}</div>
+                    <div className="cust-name">{order.customer_name}</div>
+                    <div className="cust-email">{order.customer_email}</div>
+                    <div className="cust-phone">{order.customer_phone}</div>
                   </td>
                   <td className="date-info">
-                    <div className="date-main">{formatDate(order.date)}</div>
-                    <div className="date-time">{order.time}</div>
+                    <div className="date-main">{formatDate(order.created_at)}</div>
+                    <div className="date-time">{formatTime(order.created_at)}</div>
                   </td>
                   <td className="items-info">
-                    <div className="item-count">{order.items}</div>
-                    <div className="item-qty">{order.qty}</div>
+                    <div className="item-count">{order.unique_items_count} items</div>
+                    <div className="item-qty">{order.total_qty} total qty</div>
                   </td>
-                  <td className="total-price">₹{order.total.toFixed(2)}</td>
+                  <td className="total-price">₹{parseFloat(order.total_amount).toFixed(2)}</td>
                   <td>
-                    <span className={`status-badge ${order.status.toLowerCase()}`}>
+                    <span className={`status-badge ${order.status?.toLowerCase()}`}>
                       {order.status}
                     </span>
                   </td>
                   <td className="payment-info">
-                    <span className="payment-badge">{order.payment}</span>
-                    <div className="payment-id">ID: {order.paymentId}</div>
+                    <span className="payment-badge">{order.payment_id ? 'PAID' : 'UNPAID'}</span>
+                    <div className="payment-id">ID: {order.payment_id || 'N/A'}</div>
                   </td>
                 </tr>
               ))}
@@ -241,3 +218,4 @@ export default function ManageOrder() {
     </section>
   );
 }
+
