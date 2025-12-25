@@ -144,3 +144,15 @@ exports.update_promo = (req,res,next) => {
 //   end_date DATETIME,
 //   is_active TINYINT(1) DEFAULT 1,
 //   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+
+// Add this function to your promo controller
+exports.fetch_promos = async (req, res, next) => {
+  try {
+    const getSql = "SELECT * FROM promo_codes ORDER BY created_at DESC";
+    const [rows] = await db.query(getSql);
+    res.status(200).json(rows || []);
+  } catch (error) {
+    console.error("Fetch Promos Error:", error);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
+};
