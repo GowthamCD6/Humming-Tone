@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import demoImage from '../../../assets/demo.jpeg';
 import UserFooter from '../../../components/User-Footer-Card/UserFooter';
 import './AllProduct.css';
+import { getGenderOptions, getCategoryOptionsForGender } from '../../../utils/siteContentStore';
 
 // Sample products - will be replaced with API data later
 const sampleProducts = [
@@ -84,15 +85,8 @@ const AllProductPage = ({ onViewDetails = () => {} }) => {
   const [selectedCategory, setSelectedCategory] = useState('All Categories');
   const [products, setProducts] = useState(sampleProducts); // Set sample products
 
-  const genderOptions = ['All Gender', 'Men', 'Children', 'Baby', 'Sports', 'Customize'];
-  const categoryOptions = [
-    'All Categories',
-    'Shirts',
-    'Pants',
-    'Jackets',
-    'Shoes',
-    'Accessories'
-  ];
+  const genderOptions = ['All Gender', ...getGenderOptions()];
+  const categoryOptions = selectedGender === 'All' ? ['All Categories'] : getCategoryOptionsForGender(selectedGender);
 
   const handleApplyFilters = () => {
     console.log('Applying filters:', { selectedGender, selectedCategory });
