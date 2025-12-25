@@ -12,6 +12,7 @@ import AddProduct from '../../Pages/AdminPanal/AddProduct/AddProduct'
 import ManageOrder from '../../Pages/AdminPanal/ManageOrder/ManageOrder'
 import SiteContent from '../../Pages/AdminPanal/SiteContent/SiteContent'
 import './AdminTab.css'
+import ReactSnowfall from 'react-snowfall';
 
 export default function AdminTab({ onLogout = () => {} }) {
   const [activeTab, setActiveTab] = useState('dashboard')
@@ -32,6 +33,7 @@ export default function AdminTab({ onLogout = () => {} }) {
       {/* Sidebar */}
       <aside className="admin-sidebar">
         {/* Sidebar Header */}
+        <ReactSnowfall style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', pointerEvents: 'none' }} />
         <div className="sidebar-header">
           <h1 className="sidebar-brand">Humming Tone</h1>
           <p className="sidebar-subtitle">ADMIN PANEL</p>

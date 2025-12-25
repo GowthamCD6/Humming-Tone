@@ -1,92 +1,51 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import demoImage from '../../../assets/demo.jpeg';
 import UserFooter from '../../../components/User-Footer-Card/UserFooter';
 import './AllProduct.css';
 import { getGenderOptions, getCategoryOptionsForGender } from '../../../utils/siteContentStore';
 
 // Sample products - will be replaced with API data later
-const sampleProducts = [
-  { 
-    id: 1, 
-    name: "Classic Polo Shirt", 
-    brand: "FASHION & MORE", 
-    price: 599.00, 
-    image: "demo",
-    category: "Men"
-  },
-  { 
-    id: 2, 
-    name: "Kids Graphic Tee", 
-    brand: "FASHION & MORE", 
-    price: 449.00, 
-    image: "demo",
-    category: "Children"
-  },
-  { 
-    id: 3, 
-    name: "Baby Romper Set", 
-    brand: "FASHION & MORE", 
-    price: 399.00, 
-    image: "demo",
-    category: "Baby"
-  },
-  { 
-    id: 4, 
-    name: "Performance Running Shoes", 
-    brand: "FASHION & MORE", 
-    price: 1299.00, 
-    image: "demo",
-    category: "Sports"
-  },
-  { 
-    id: 5, 
-    name: "Slim Fit Jeans", 
-    brand: "FASHION & MORE", 
-    price: 899.00, 
-    image: "demo",
-    category: "Men"
-  },
-  { 
-    id: 6, 
-    name: "Denim Shorts", 
-    brand: "FASHION & MORE", 
-    price: 599.00, 
-    image: "demo",
-    category: "Children"
-  },
-  { 
-    id: 7, 
-    name: "Soft Cotton Onesie", 
-    brand: "FASHION & MORE", 
-    price: 349.00, 
-    image: "demo",
-    category: "Baby"
-  },
-  { 
-    id: 8, 
-    name: "Athletic Track Pants", 
-    brand: "FASHION & MORE", 
-    price: 899.00, 
-    image: "demo",
-    category: "Sports"
-  },
-  { 
-    id: 9, 
-    name: "Casual Blazer", 
-    brand: "FASHION & MORE", 
-    price: 1299.00, 
-    image: "demo",
-    category: "Men"
-  },
-];
-
 const AllProductPage = ({ onViewDetails = () => {} }) => {
   const [selectedGender, setSelectedGender] = useState('All');
   const [selectedCategory, setSelectedCategory] = useState('All Categories');
-  const [products, setProducts] = useState(sampleProducts); // Set sample products
+  const [products, setProducts] = useState([]); // Initialize with an empty array for fetched products
+
+  // States for errors and loading
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
 
   const genderOptions = ['All Gender', ...getGenderOptions()];
   const categoryOptions = selectedGender === 'All' ? ['All Categories'] : getCategoryOptionsForGender(selectedGender);
+
+  // Fetch products from API
+  const fetchProducts = async () => {
+    try {
+      setLoading(true);
+      const response = await fetch('http://localhost:5000/admin/fetch_products');
+      const data = await response.json();
+      
+      // Process the API data to match your required product structure
+      const formattedProducts = data.map(product => ({
+        id: product.id,
+        name: product.name,
+        brand: product.brand,
+        price: parseFloat(product.weight), // You can replace this with the actual price field if available
+        image: product.image_path, // Assuming image_path is the field for the product image
+        category: product.gender, // Replace with the correct field
+      }));
+
+      setProducts(formattedProducts);  // Set the fetched products in state
+    } catch (error) {
+      setError('Failed to fetch products');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Fetch products when component mounts
+  useEffect(() => {
+    fetchProducts();
+  }, []); // Empty dependency array to only run once when the component mounts
 
   const handleApplyFilters = () => {
     console.log('Applying filters:', { selectedGender, selectedCategory });
@@ -98,8 +57,7 @@ const AllProductPage = ({ onViewDetails = () => {} }) => {
   };
 
   const handleViewAll = () => {
-    console.log('View all products');
-    setProducts(sampleProducts);
+    fetchProducts();  // Reload products when "View All" is clicked
   };
 
   // Product Card Component
@@ -107,7 +65,7 @@ const AllProductPage = ({ onViewDetails = () => {} }) => {
     <div className="all-products-product-card">
       <div className="all-products-product-image-container">
         <img 
-          src={product.image === "demo" ? demoImage : product.image} 
+          src={product.image || demoImage} 
           alt={product.name} 
           className="all-products-product-img"
           onError={(e) => { e.target.src = 'https://via.placeholder.com/400x500?text=Product+Image' }}
@@ -196,8 +154,12 @@ const AllProductPage = ({ onViewDetails = () => {} }) => {
         </div>
       </div>
 
-      {/* Products Section - Conditional Rendering */}
-      {products.length > 0 ? (
+      {/* Products Section */}
+      {loading ? (
+        <p>Loading products...</p>
+      ) : error ? (
+        <p>{error}</p>
+      ) : (
         <div className="all-products-products-section">
           <div className="all-products-section-intro">
             <h2 className="all-products-section-heading">All Products</h2>
@@ -211,21 +173,8 @@ const AllProductPage = ({ onViewDetails = () => {} }) => {
             ))}
           </div>
         </div>
-      ) : (
-        <div className="all-products-no-products-container">
-          <h2 className="all-products-no-products-title">No Products Found</h2>
-          <p className="all-products-no-products-text">
-            Try adjusting your filters or browse our complete<br />collection.
-          </p>
-          <button 
-            className="all-products-view-all-button"
-            onClick={handleViewAll}
-          >
-            VIEW ALL PRODUCTS
-          </button>
-        </div>
       )}
-      
+
       {/* Footer */}
       <UserFooter />
     </div>
