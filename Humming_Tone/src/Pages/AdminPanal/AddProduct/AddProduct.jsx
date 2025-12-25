@@ -212,6 +212,7 @@ const AddProduct = () => {
 
   return (
     <div className="add-product-container">
+
       <div className="product-form">
         {/* Basic Information */}
         <section className="form-section">
