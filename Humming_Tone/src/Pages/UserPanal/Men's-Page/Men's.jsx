@@ -1,48 +1,37 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import demoImage from '../../../assets/demo.jpeg';
 import UserFooter from '../../../components/User-Footer-Card/UserFooter';
 import './Mens.css';
 import { getGenderOptions, getCategoryOptionsForGender } from '../../../utils/siteContentStore';
-
-// Sample products - will be replaced with API data later
-const sampleProducts = [
-  { 
-    id: 1, 
-    name: "Classic Polo Shirt", 
-    brand: "FASHION & MORE", 
-    price: 599.00, 
-    image: "demo" 
-  },
-  { 
-    id: 2, 
-    name: "Slim Fit Jeans", 
-    brand: "FASHION & MORE", 
-    price: 899.00, 
-    image: "demo" 
-  },
-  { 
-    id: 3, 
-    name: "Casual Blazer", 
-    brand: "FASHION & MORE", 
-    price: 1299.00, 
-    image: "demo" 
-  },
-  { 
-    id: 4, 
-    name: "Cotton T-Shirt", 
-    brand: "FASHION & MORE", 
-    price: 399.00, 
-    image: "demo" 
-  },
-];
+import axios from 'axios';  // Import axios
 
 const CollectionPage = ({ onViewDetails = () => {} }) => {
   const [selectedGender, setSelectedGender] = useState('Men');
   const [selectedCategory, setSelectedCategory] = useState('All Categories');
-  const [products, setProducts] = useState(sampleProducts); // Set sample products
+  const [products, setProducts] = useState([]);  // Initialize as empty array
 
   const genderOptions = getGenderOptions();
   const categoryOptions = getCategoryOptionsForGender(selectedGender);
+
+  // Fetch products from the API when the gender or category changes
+  useEffect(() => {
+    const fetchProducts = async () => {
+      try {
+        const response = await axios.get(`http://localhost:5000/user/fetch_products?gender=${selectedGender.toLowerCase()}`);
+        const fetchedProducts = response.data.map(product => ({
+          ...product,
+          price: parseFloat(product.price),  // Ensure price is a float
+          // Concatenate image path with base URL for correct image URL
+          image: product.image_path ? `http://localhost:5000/${product.image_path}` : demoImage,  // Correct the image URL
+        }));
+        setProducts(fetchedProducts);
+      } catch (error) {
+        console.error('Error fetching products:', error);
+      }
+    };
+
+    fetchProducts();
+  }, [selectedGender]);  // Trigger API call when gender changes
 
   const handleApplyFilters = () => {
     console.log('Applying filters:', { selectedGender, selectedCategory });
@@ -55,6 +44,7 @@ const CollectionPage = ({ onViewDetails = () => {} }) => {
 
   const handleViewAll = () => {
     console.log('View all products');
+    // If you want to display all products again (unfiltered)
     setProducts(sampleProducts);
   };
 
@@ -66,7 +56,7 @@ const CollectionPage = ({ onViewDetails = () => {} }) => {
           src={product.image === "demo" ? demoImage : product.image} 
           alt={product.name} 
           className="mens-product-img"
-          onError={(e) => { e.target.src = 'https://via.placeholder.com/400x500?text=Product+Image' }}
+          onError={(e) => { e.target.src = 'https://via.placeholder.com/400x500?text=Product+Image' }}  // Fallback for missing images
         />
         <div className="mens-product-hover-overlay">
           <button

@@ -4,7 +4,6 @@ import UserFooter from '../../../components/User-Footer-Card/UserFooter';
 import './AllProduct.css';
 import { getGenderOptions, getCategoryOptionsForGender } from '../../../utils/siteContentStore';
 
-// Sample products - will be replaced with API data later
 const AllProductPage = ({ onViewDetails = () => {} }) => {
   const [selectedGender, setSelectedGender] = useState('All');
   const [selectedCategory, setSelectedCategory] = useState('All Categories');
@@ -21,7 +20,7 @@ const AllProductPage = ({ onViewDetails = () => {} }) => {
   const fetchProducts = async () => {
     try {
       setLoading(true);
-      const response = await fetch('http://localhost:5000/admin/fetch_products');
+      const response = await fetch('http://localhost:5000/admin/fetch_products'); // it can be also used for users
       const data = await response.json();
       
       // Process the API data to match your required product structure
@@ -29,8 +28,8 @@ const AllProductPage = ({ onViewDetails = () => {} }) => {
         id: product.id,
         name: product.name,
         brand: product.brand,
-        price: parseFloat(product.weight), // You can replace this with the actual price field if available
-        image: product.image_path, // Assuming image_path is the field for the product image
+        price: parseFloat(product.weight), // Replace with actual price if available
+        image: `http://localhost:5000/${product.image_path.replace(/\\/g, '/')}`, // Correct image URL format
         category: product.gender, // Replace with the correct field
       }));
 
@@ -68,7 +67,7 @@ const AllProductPage = ({ onViewDetails = () => {} }) => {
           src={product.image || demoImage} 
           alt={product.name} 
           className="all-products-product-img"
-          onError={(e) => { e.target.src = 'https://via.placeholder.com/400x500?text=Product+Image' }}
+          onError={(e) => { e.target.src = 'https://via.placeholder.com/400x500?text=Product+Image' }} // Default placeholder for errors
         />
         <div className="all-products-product-hover-overlay">
           <button
