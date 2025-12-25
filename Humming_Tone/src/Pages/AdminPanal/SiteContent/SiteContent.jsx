@@ -1,5 +1,6 @@
 import { useMemo, useState } from "react";
 import "./SiteContent.css";
+import SuccessModal from "../../../components/SuccessModal/SuccessModal";
 import {
   getSiteContent,
   updateFooter,
@@ -22,7 +23,8 @@ import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 
 export default function SiteContent() {
   const initial = useMemo(() => getSiteContent(), []);
-  const [okMsg, setOkMsg] = useState("");
+  const [modalOpen, setModalOpen] = useState(false);
+  const [modalMessage, setModalMessage] = useState("");
   const [error, setError] = useState("");
   const [expandedCard, setExpandedCard] = useState(null);
 
@@ -72,9 +74,9 @@ export default function SiteContent() {
   const saveFooter = () => {
     try {
       setError("");
-      setOkMsg("");
       updateFooter(footerDraft);
-      setOkMsg("Footer saved successfully!");
+      setModalMessage("Footer saved successfully!");
+      setModalOpen(true);
     } catch (e) {
       setError(e?.message || "Failed to save footer");
     }
@@ -83,9 +85,9 @@ export default function SiteContent() {
   const saveGenderCategory = () => {
     try {
       setError("");
-      setOkMsg("");
       updateGenderCategory(genderCategoryDraft);
-      setOkMsg("Gender/Category mapping saved successfully!");
+      setModalMessage("Gender/Category mapping saved successfully!");
+      setModalOpen(true);
     } catch (e) {
       setError(e?.message || "Failed to save mapping");
     }
@@ -181,9 +183,9 @@ export default function SiteContent() {
   const saveGenderStatus = () => {
     try {
       setError("");
-      setOkMsg("");
       updateGenderStatus(genderStatusDraft);
-      setOkMsg("Gender visibility saved successfully!");
+      setModalMessage("Gender visibility saved successfully!");
+      setModalOpen(true);
     } catch (e) {
       setError(e?.message || "Failed to save gender visibility");
     }
@@ -195,7 +197,8 @@ export default function SiteContent() {
     const defaults = resetSiteContent();
     setFooterDraft(defaults.footer);
     setGenderCategoryDraft(defaults.genderCategory);
-    setOkMsg("All content reset to defaults successfully!");
+    setModalMessage("All content reset to defaults successfully!");
+    setModalOpen(true);
     setError("");
     setExpandedCard(null);
   }
@@ -223,20 +226,12 @@ export default function SiteContent() {
       {error && (
         <div className="sitecontent-alert sitecontent-alert-error">{error}</div>
       )}
-      {okMsg && (
-        <div className="sitecontent-alert sitecontent-alert-success">{okMsg}</div>
-      )}
 
-      <div className="section-container">
-        <h3 className="content-subtitle">Content Management</h3>
-        
-        <div className="sitecontent-actions">
-          <button className="sitecontent-btn danger" onClick={resetAll}>
-            <RestoreIcon />
-            Reset All to Defaults
-          </button>
-        </div>
-      </div>
+      <SuccessModal
+        isOpen={modalOpen}
+        message={modalMessage}
+        onClose={() => setModalOpen(false)}
+      />
 
       <div className="sitecontent-cards">
       {/* Business Information Card */}
@@ -572,7 +567,7 @@ export default function SiteContent() {
             <div className="sitecontent-card-status">
               <CheckCircleIcon className="status-icon complete" />
               <span>
-                {stats.totalGenders} Genders • {stats.totalCategories}{" "}
+                {stats.totalCategories}{" "}
                 Categories
               </span>
             </div>
