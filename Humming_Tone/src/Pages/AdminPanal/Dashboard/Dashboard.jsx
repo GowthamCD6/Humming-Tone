@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import './Dashboard.css'
 import { Package, CheckCircle, AlertCircle, TrendingUp, Users, ShoppingCart, DollarSign, Clock } from 'lucide-react'
 
@@ -10,9 +11,11 @@ const statsData = [
 
 const categoriesData = [
   { label: 'MEN', count: 8, percentage: 33 },
+  { label: 'WOMEN', count: 10, percentage: 42 },
   { label: 'CHILDREN', count: 8, percentage: 33 },
   { label: 'KIDS', count: 8, percentage: 33 },
   { label: 'SPORTS', count: 0, percentage: 0 },
+  { label: 'CUSTOMIZE', count: 5, percentage: 21 },
 ]
 
 const recentActivityData = [
@@ -36,14 +39,74 @@ const keyMetricsData = [
   { label: 'TOTAL CUSTOMERS', value: 87, icon: Users, color: 'blue' },
 ]
 
-const revenueAnalyticsData = [
-  { label: 'DAILY REVENUE', value: '₹2,450', change: '+12%', icon: DollarSign, color: 'blue' },
-  { label: 'WEEKLY REVENUE', value: '₹18,650', change: '+8%', icon: TrendingUp, color: 'green' },
-  { label: 'MONTHLY REVENUE', value: '₹78,240', change: '+15%', icon: DollarSign, color: 'purple' },
-  { label: 'TOTAL REVENUE', value: '₹2,45,800', change: '+22%', icon: TrendingUp, color: 'orange' },
-]
-
 export default function Dashboard() {
+  const [revenueView, setRevenueView] = useState('daily')
+  const [selectedDate, setSelectedDate] = useState(new Date())
+  
+  // Generate dynamic revenue data based on selected date
+  const generateRevenueData = (baseDate) => {
+    // Daily data - 7 days from selected date
+    const daily = []
+    for (let i = 6; i >= 0; i--) {
+      const date = new Date(baseDate)
+      date.setDate(date.getDate() - i)
+      daily.push({
+        label: date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
+        revenue: Math.floor(Math.random() * 2000) + 1500,
+        date: new Date(date)
+      })
+    }
+    
+    // Weekly data - 4 weeks from selected date
+    const weekly = []
+    for (let i = 3; i >= 0; i--) {
+      const date = new Date(baseDate)
+      date.setDate(date.getDate() - (i * 7))
+      const weekStart = date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+      weekly.push({
+        label: weekStart,
+        revenue: Math.floor(Math.random() * 8000) + 12000,
+        date: new Date(date)
+      })
+    }
+    
+    // Monthly data - 6 months from selected date
+    const monthly = []
+    for (let i = 5; i >= 0; i--) {
+      const date = new Date(baseDate)
+      date.setMonth(date.getMonth() - i)
+      monthly.push({
+        label: date.toLocaleDateString('en-US', { month: 'short', year: 'numeric' }),
+        revenue: Math.floor(Math.random() * 25000) + 60000,
+        date: new Date(date)
+      })
+    }
+    
+    return { daily, weekly, monthly }
+  }
+  
+  const revenueData = generateRevenueData(selectedDate)
+  
+  const getCurrentRevenueData = () => {
+    return revenueData[revenueView]
+  }
+  
+  const getMaxRevenue = () => {
+    const data = getCurrentRevenueData()
+    return Math.max(...data.map(d => d.revenue))
+  }
+  
+  const handleDateChange = (e) => {
+    setSelectedDate(new Date(e.target.value))
+  }
+  
+  const formatDateForInput = (date) => {
+    const year = date.getFullYear()
+    const month = String(date.getMonth() + 1).padStart(2, '0')
+    const day = String(date.getDate()).padStart(2, '0')
+    return `${year}-${month}-${day}`
+  }
+
   return (
     <section className="tab-content">
       <h3 className="content-subtitle">Store Statistics</h3>
@@ -87,66 +150,136 @@ export default function Dashboard() {
         </div>
       </div>
 
-      {/* Revenue Analytics Section */}
-      <div className="metrics-section">
-        <h3 className="section-title">Revenue Analytics</h3>
-        <div className="metrics-grid">
-          {revenueAnalyticsData.map((metric, index) => {
-            const Icon = metric.icon
-            return (
-              <div key={index} className={`metric-card metric-${metric.color}`}>
-                <div className="metric-icon">
-                  <Icon size={22} />
-                </div>
-                <div className="metric-content">
-                  <p className="metric-label">{metric.label}</p>
-                  <p className="metric-value">{metric.value}</p>
-                  <p className="metric-change" style={{ 
-                    fontSize: '0.75rem', 
-                    color: '#10b981', 
-                    fontWeight: 600,
-                    margin: '0.25rem 0 0 0'
-                  }}>{metric.change} from last period</p>
+      {/* Revenue Analytics Section - Graph View */}
+      <div className="dashboard-section">
+        <div className="section-header">
+          <div className="header-left">
+            <div className="title-with-revenue">
+              <div className="title-section">
+                <h3 className="section-title">Revenue Analytics</h3>
+                <p className="section-description">Revenue trends over time</p>
+              </div>
+              <div className="total-revenue-display">
+                <TrendingUp size={20} />
+                <div>
+                  <span className="revenue-display-label">Total Revenue</span>
+                  <span className="revenue-display-value">
+                    ₹{getCurrentRevenueData().reduce((sum, item) => sum + item.revenue, 0).toLocaleString()}
+                  </span>
                 </div>
               </div>
-            )
-          })}
+            </div>
+          </div>
+          <div className="revenue-controls">
+            <input 
+              type="date" 
+              value={formatDateForInput(selectedDate)}
+              onChange={handleDateChange}
+              className="date-picker"
+              max={formatDateForInput(new Date())}
+            />
+            <div className="revenue-toggle">
+              <button 
+                className={`toggle-btn ${revenueView === 'daily' ? 'active' : ''}`}
+                onClick={() => setRevenueView('daily')}
+              >
+                Daily
+              </button>
+              <button 
+                className={`toggle-btn ${revenueView === 'weekly' ? 'active' : ''}`}
+                onClick={() => setRevenueView('weekly')}
+              >
+                Weekly
+              </button>
+              <button 
+                className={`toggle-btn ${revenueView === 'monthly' ? 'active' : ''}`}
+                onClick={() => setRevenueView('monthly')}
+              >
+                Monthly
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div className="revenue-chart">
+          <div className="chart-bars">
+            {getCurrentRevenueData().map((item, index) => {
+              const height = (item.revenue / getMaxRevenue()) * 100
+              return (
+                <div key={index} className="chart-bar-container">
+                  <div className="chart-bar-wrapper">
+                    <div 
+                      className="chart-bar" 
+                      style={{ height: `${height}%` }}
+                      title={`₹${item.revenue.toLocaleString()}`}
+                    >
+                      <span className="bar-value">₹{(item.revenue / 1000).toFixed(1)}k</span>
+                    </div>
+                  </div>
+                  <span className="chart-label">{item.label}</span>
+                </div>
+              )
+            })}
+          </div>
         </div>
       </div>
 
-      {/* Two Column Section */}
-      <div className="dashboard-grid">
-        {/* Products by Category */}
-        <div className="dashboard-section">
-          <div className="section-header">
-            <h3 className="section-title">Products by Category</h3>
-            <p className="section-description">Distribution across categories</p>
-          </div>
-
-          <div className="category-grid">
-            {categoriesData.map((category, index) => (
-              <div key={index} className="category-card">
-                <div className="category-header">
-                  <h4 className="category-label">{category.label}</h4>
-                  <span className="category-badge">{category.count}</span>
-                </div>
-                <div className="progress-bar">
-                  <div 
-                    className="progress-fill" 
-                    style={{ width: `${category.percentage}%` }}
-                  ></div>
-                </div>
-                <p className="category-percentage">{category.percentage}%</p>
-              </div>
-            ))}
-          </div>
+      {/* Products by Category - Full Width */}
+      <div className="dashboard-section">
+        <div className="section-header">
+          <h3 className="section-title">Products by Category</h3>
+          <p className="section-description">Distribution across categories</p>
         </div>
 
+        <div className="category-grid">
+          {categoriesData.map((category, index) => (
+            <div key={index} className="category-card">
+              <div className="category-header">
+                <h4 className="category-label">{category.label}</h4>
+                <span className="category-badge">{category.count}</span>
+              </div>
+              <div className="progress-bar">
+                <div 
+                  className="progress-fill" 
+                  style={{ width: `${category.percentage}%` }}
+                ></div>
+              </div>
+              <p className="category-percentage">{category.percentage}%</p>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Two Column Section - Top Selling Products and Recently Added */}
+      <div className="dashboard-grid">
         {/* Top Products */}
         <div className="dashboard-section">
           <div className="section-header">
             <h3 className="section-title">Top Selling Products</h3>
             <p className="section-description">Best performing items</p>
+          </div>
+
+          <div className="products-list">
+            {topProductsData.map((product) => (
+              <div key={product.id} className="product-item">
+                <div className="product-rank">{product.id}</div>
+                <div className="product-info">
+                  <h4 className="product-name">{product.name}</h4>
+                  <p className="product-sales">{product.sales} sales • {product.percentage}% of revenue</p>
+                </div>
+                <div className="product-revenue">
+                  <p className="revenue-value">₹{product.revenue.toLocaleString()}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Recently Added Products */}
+        <div className="dashboard-section">
+          <div className="section-header">
+            <h3 className="section-title">Recently Added Products</h3>
+            <p className="section-description">Latest additions to store</p>
           </div>
 
           <div className="products-list">
