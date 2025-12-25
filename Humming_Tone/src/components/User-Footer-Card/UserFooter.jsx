@@ -40,17 +40,7 @@ const Footer = () => {
         <div className="footer-col">
           <h3 className="footer-header-title">SHOP</h3>
           <ul className="footer-link-list">
-            {(footer?.shopLinks || []).map(link => (
-              <li key={link.label}><a href={link.href || '#'}>{link.label}</a></li>
-            ))}
-          </ul>
-        </div>
-
-        {/* Support Column */}
-        <div className="footer-col">
-          <h3 className="footer-header-title">SUPPORT</h3>
-          <ul className="footer-link-list">
-            {(footer?.supportLinks || []).map(link => (
+            {(footer?.shopLinks || []).filter(link => link.active !== false).map(link => (
               <li key={link.label}><a href={link.href || '#'}>{link.label}</a></li>
             ))}
           </ul>
