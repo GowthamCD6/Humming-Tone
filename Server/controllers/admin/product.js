@@ -186,6 +186,7 @@ exports.add_product  = (req,res,next) => {
     }
 }
 
+
 // to show on manage products page
 exports.fetch_products = (req,res,next) => {
   try{

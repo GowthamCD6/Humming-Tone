@@ -185,7 +185,7 @@ const AddProduct = () => {
       })
       .catch(err => {
         console.error(err);
-        alert("Failed to add product");
+        alert("Failed to add product"+error);
       });
   };
 
