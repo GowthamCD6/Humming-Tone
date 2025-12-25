@@ -1,276 +1,661 @@
-import { useMemo, useState } from 'react'
-import './SiteContent.css'
+import { useMemo, useState } from "react";
+import "./SiteContent.css";
+import SuccessModal from "../../../components/SuccessModal/SuccessModal";
 import {
   getSiteContent,
   updateFooter,
   updateGenderCategory,
+  updateGenderStatus,
   resetSiteContent,
-} from '../../../utils/siteContentStore'
+} from "../../../utils/siteContentStore";
+import SettingsIcon from "@mui/icons-material/Settings";
+import BusinessIcon from "@mui/icons-material/Business";
+import CategoryIcon from "@mui/icons-material/Category";
+import LinkIcon from "@mui/icons-material/Link";
+import SocialIcon from "@mui/icons-material/Share";
+import InfoIcon from "@mui/icons-material/Info";
+import SaveIcon from "@mui/icons-material/Save";
+import RestoreIcon from "@mui/icons-material/Restore";
+import AddIcon from "@mui/icons-material/Add";
+import DeleteIcon from "@mui/icons-material/Delete";
+import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
+import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 
 export default function SiteContent() {
-  const initial = useMemo(() => getSiteContent(), [])
-  const [okMsg, setOkMsg] = useState('')
-  const [error, setError] = useState('')
-  const [expandedCard, setExpandedCard] = useState(null)
+  const initial = useMemo(() => getSiteContent(), []);
+  const [modalOpen, setModalOpen] = useState(false);
+  const [modalMessage, setModalMessage] = useState("");
+  const [error, setError] = useState("");
+  const [expandedCard, setExpandedCard] = useState(null);
 
-  const [footerDraft, setFooterDraft] = useState(initial.footer)
-  const [genderCategoryDraft, setGenderCategoryDraft] = useState(initial.genderCategory)
+  const [footerDraft, setFooterDraft] = useState(initial.footer);
+  const [genderCategoryDraft, setGenderCategoryDraft] = useState(
+    initial.genderCategory
+  );
+  const [genderStatusDraft, setGenderStatusDraft] = useState(
+    initial.genderStatus || {}
+  );
+
+  const genders = Object.keys(genderCategoryDraft || {}).sort();
+
+  // Statistics for dashboard-like overview
+  const stats = {
+    totalGenders: genders.length,
+    totalCategories: genders.reduce(
+      (acc, gender) => acc + (genderCategoryDraft[gender]?.length || 0),
+      0
+    ),
+    socialLinksConfigured: Object.values(footerDraft?.social || {}).filter(
+      (link) => link && link.trim()
+    ).length,
+    shopLinksCount: footerDraft?.shopLinks?.length || 0,
+    supportLinksCount: footerDraft?.supportLinks?.length || 0,
+  };
 
   const toggleCard = (cardId) => {
-    setExpandedCard(expandedCard === cardId ? null : cardId)
-    setError('')
-    setOkMsg('')
-  }
+    setExpandedCard(expandedCard === cardId ? null : cardId);
+    setError("");
+    setOkMsg("");
+  };
 
   const updateFooterField = (path, value) => {
-    setFooterDraft(prev => {
-      const next = { ...(prev || {}) }
-      if (path.includes('.')) {
-        const [k1, k2] = path.split('.')
-        next[k1] = { ...(next[k1] || {}), [k2]: value }
+    setFooterDraft((prev) => {
+      const next = { ...(prev || {}) };
+      if (path.includes(".")) {
+        const [k1, k2] = path.split(".");
+        next[k1] = { ...(next[k1] || {}), [k2]: value };
       } else {
-        next[path] = value
+        next[path] = value;
       }
-      return next
-    })
-  }
-
-  const genders = Object.keys(genderCategoryDraft || {}).sort()
-
-  const addGender = () => {
-    const name = prompt('Enter new gender name (example: Women)')
-    if (!name) return
-    setGenderCategoryDraft(prev => {
-      if (prev?.[name]) return prev
-      return { ...(prev || {}), [name]: ['All Categories'] }
-    })
-  }
-
-  const removeGender = gender => {
-    if (!confirm(`Remove gender "${gender}"?`)) return
-    setGenderCategoryDraft(prev => {
-      const next = { ...(prev || {}) }
-      delete next[gender]
-      return next
-    })
-  }
-
-  const addCategory = gender => {
-    const name = prompt(`Add category for ${gender}`)
-    if (!name) return
-    setGenderCategoryDraft(prev => {
-      const list = Array.isArray(prev?.[gender]) ? prev[gender] : []
-      if (list.includes(name)) return prev
-      return { ...(prev || {}), [gender]: [...list, name] }
-    })
-  }
-
-  const removeCategory = (gender, category) => {
-    setGenderCategoryDraft(prev => {
-      const list = Array.isArray(prev?.[gender]) ? prev[gender] : []
-      return { ...(prev || {}), [gender]: list.filter(c => c !== category) }
-    })
-  }
+      return next;
+    });
+  };
 
   const saveFooter = () => {
     try {
-      setError('')
-      setOkMsg('')
-      updateFooter(footerDraft)
-      setOkMsg('Footer saved successfully!')
+      setError("");
+      updateFooter(footerDraft);
+      setModalMessage("Footer saved successfully!");
+      setModalOpen(true);
     } catch (e) {
-      setError(e?.message || 'Failed to save footer')
+      setError(e?.message || "Failed to save footer");
     }
-  }
+  };
 
   const saveGenderCategory = () => {
     try {
-      setError('')
-      setOkMsg('')
-      updateGenderCategory(genderCategoryDraft)
-      setOkMsg('Gender/Category mapping saved successfully!')
+      setError("");
+      updateGenderCategory(genderCategoryDraft);
+      setModalMessage("Gender/Category mapping saved successfully!");
+      setModalOpen(true);
     } catch (e) {
-      setError(e?.message || 'Failed to save mapping')
+      setError(e?.message || "Failed to save mapping");
     }
-  }
+  };
+
+  const addGender = () => {
+    const name = prompt("Enter new gender name (example: Women)");
+    if (!name) return;
+    setGenderCategoryDraft((prev) => {
+      if (prev?.[name]) return prev;
+      return { ...(prev || {}), [name]: ["All Categories"] };
+    });
+  };
+
+  const removeGender = (gender) => {
+    if (!confirm(`Remove gender "${gender}"?`)) return;
+    setGenderCategoryDraft((prev) => {
+      const next = { ...(prev || {}) };
+      delete next[gender];
+      return next;
+    });
+  };
+
+  const addCategory = (gender) => {
+    const name = prompt(`Add category for ${gender}`);
+    if (!name) return;
+    setGenderCategoryDraft((prev) => {
+      const list = Array.isArray(prev?.[gender]) ? prev[gender] : [];
+      if (list.includes(name)) return prev;
+      return { ...(prev || {}), [gender]: [...list, name] };
+    });
+  };
+
+  const removeCategory = (gender, category) => {
+    setGenderCategoryDraft((prev) => {
+      const list = Array.isArray(prev?.[gender]) ? prev[gender] : [];
+      return { ...(prev || {}), [gender]: list.filter((c) => c !== category) };
+    });
+  };
+
+  const addShopLink = () => {
+    const label = prompt('Enter link label (e.g., "New Collection")');
+    if (!label) return;
+    const href = prompt('Enter link URL (e.g., "/new-collection")');
+    if (href === null) return;
+
+    setFooterDraft((prev) => ({
+      ...prev,
+      shopLinks: [...(prev?.shopLinks || []), { label, href: href || "#" }],
+    }));
+  };
+
+  const removeShopLink = (index) => {
+    setFooterDraft((prev) => ({
+      ...prev,
+      shopLinks: prev?.shopLinks?.filter((_, i) => i !== index) || [],
+    }));
+  };
+
+  const addSupportLink = () => {
+    const label = prompt('Enter support link label (e.g., "Size Guide")');
+    if (!label) return;
+    const href = prompt('Enter link URL (e.g., "/size-guide")');
+    if (href === null) return;
+
+    setFooterDraft((prev) => ({
+      ...prev,
+      supportLinks: [
+        ...(prev?.supportLinks || []),
+        { label, href: href || "#" },
+      ],
+    }));
+  };
+
+  const toggleShopLinkActive = (index) => {
+    setFooterDraft((prev) => {
+      const updated = [...(prev?.shopLinks || [])];
+      updated[index] = {
+        ...updated[index],
+        active: !updated[index].active,
+      };
+      return { ...prev, shopLinks: updated };
+    });
+  };
+
+  const toggleGenderStatus = (gender) => {
+    setGenderStatusDraft((prev) => ({
+      ...prev,
+      [gender]: !prev[gender],
+    }));
+  };
+
+  const saveGenderStatus = () => {
+    try {
+      setError("");
+      updateGenderStatus(genderStatusDraft);
+      setModalMessage("Gender visibility saved successfully!");
+      setModalOpen(true);
+    } catch (e) {
+      setError(e?.message || "Failed to save gender visibility");
+    }
+  };
 
   const resetAll = () => {
-    if (!confirm('Reset all content to defaults?')) return
-    const defaults = resetSiteContent()
-    setFooterDraft(defaults.footer)
-    setGenderCategoryDraft(defaults.genderCategory)
-    setOkMsg('All content reset to defaults!')
-    setError('')
-    setExpandedCard(null)
+    if (!confirm("Reset all content to defaults? This action cannot be undone."))
+      return;
+    const defaults = resetSiteContent();
+    setFooterDraft(defaults.footer);
+    setGenderCategoryDraft(defaults.genderCategory);
+    setModalMessage("All content reset to defaults successfully!");
+    setModalOpen(true);
+    setError("");
+    setExpandedCard(null);
   }
 
   return (
     <section className="tab-content">
-      <div className="sitecontent-header">
-        <div className="sitecontent-header-actions">
-          <button className="sitecontent-btn danger" onClick={resetAll}>
-            Reset All to Defaults
-          </button>
+      <h3 className="content-subtitle">Store Statistics</h3>
+      
+      {/* Stats Overview */}
+      <div className="stats-grid">
+        <div className="stat-card">
+          <p className="stat-label">GENDERS</p>
+          <p className="stat-value">{stats.totalGenders}</p>
+        </div>
+        <div className="stat-card">
+          <p className="stat-label">CATEGORIES</p>
+          <p className="stat-value">{stats.totalCategories}</p>
+        </div>
+        <div className="stat-card">
+          <p className="stat-label">FOOTER LINKS</p>
+          <p className="stat-value">{stats.shopLinksCount + stats.supportLinksCount}</p>
         </div>
       </div>
 
       {error && (
-        <div className="sitecontent-alert sitecontent-alert-error">
-          {error}
-        </div>
+        <div className="sitecontent-alert sitecontent-alert-error">{error}</div>
       )}
-      {okMsg && (
-        <div className="sitecontent-alert sitecontent-alert-success">
-          {okMsg}
-        </div>
-      )}
+
+      <SuccessModal
+        isOpen={modalOpen}
+        message={modalMessage}
+        onClose={() => setModalOpen(false)}
+      />
 
       <div className="sitecontent-cards">
-        {/* Footer Content Card */}
-        <div className={`sitecontent-main-card ${expandedCard === 'footer' ? 'expanded' : ''}`}>
-          <div className="sitecontent-card-header" onClick={() => toggleCard('footer')}>
-            <div className="sitecontent-card-info">
-              <h3 className="sitecontent-card-title">Footer Content</h3>
-              <p className="sitecontent-card-desc">Manage footer text, contact info, and social links</p>
-            </div>
-            <div className="sitecontent-card-toggle">
-              <span className={`sitecontent-arrow ${expandedCard === 'footer' ? 'rotated' : ''}`}>▼</span>
+      {/* Business Information Card */}
+      <div
+        className={`sitecontent-main-card ${
+          expandedCard === "business" ? "expanded" : ""
+        }`}
+      >
+        <div
+          className="sitecontent-card-header"
+          onClick={() => toggleCard("business")}
+        >
+          <div className="sitecontent-card-icon">
+            <BusinessIcon />
+          </div>
+          <div className="sitecontent-card-info">
+            <h3 className="sitecontent-card-title">Business Information</h3>
+            <p className="sitecontent-card-desc">
+              Brand identity, description and contact details
+            </p>
+            <div className="sitecontent-card-status">
+              <CheckCircleIcon className="status-icon complete" />
+              <span>Complete</span>
             </div>
           </div>
-
-          {expandedCard === 'footer' && (
-            <div className="sitecontent-card-content">
-              <div className="sitecontent-form">
-                <div className="sitecontent-row">
-                  <label>Brand Name</label>
-                  <input 
-                    value={footerDraft?.brandName || ''} 
-                    onChange={e => updateFooterField('brandName', e.target.value)}
-                    placeholder="Enter brand name"
-                  />
-                </div>
-
-                <div className="sitecontent-row">
-                  <label>Description</label>
-                  <textarea 
-                    value={footerDraft?.description || ''} 
-                    onChange={e => updateFooterField('description', e.target.value)}
-                    placeholder="Enter brand description"
-                  />
-                </div>
-
-                <div className="sitecontent-row">
-                  <label>Email</label>
-                  <input 
-                    type="email"
-                    value={footerDraft?.company?.email || ''} 
-                    onChange={e => updateFooterField('company.email', e.target.value)}
-                    placeholder="Enter contact email"
-                  />
-                </div>
-
-                <div className="sitecontent-row">
-                  <label>Phone</label>
-                  <input 
-                    type="tel"
-                    value={footerDraft?.company?.phone || ''} 
-                    onChange={e => updateFooterField('company.phone', e.target.value)}
-                    placeholder="Enter contact phone"
-                  />
-                </div>
-
-                <div className="sitecontent-row">
-                  <label>Address</label>
-                  <textarea 
-                    value={footerDraft?.company?.address || ''} 
-                    onChange={e => updateFooterField('company.address', e.target.value)}
-                    placeholder="Enter business address"
-                  />
-                </div>
-              </div>
-
-              <div className="sitecontent-card-actions">
-                <button className="sitecontent-btn primary" onClick={saveFooter}>
-                  Save Footer Content
-                </button>
-              </div>
-            </div>
-          )}
+          <div className="sitecontent-card-toggle">
+            <ExpandMoreIcon
+              className={`sitecontent-arrow ${
+                expandedCard === "business" ? "rotated" : ""
+              }`}
+            />
+          </div>
         </div>
 
-        {/* Gender Categories Card */}
-        <div className={`sitecontent-main-card ${expandedCard === 'categories' ? 'expanded' : ''}`}>
-          <div className="sitecontent-card-header" onClick={() => toggleCard('categories')}>
-            <div className="sitecontent-card-info">
-              <h3 className="sitecontent-card-title">Gender Categories</h3>
-              <p className="sitecontent-card-desc">Configure product categories for each gender type</p>
+        {expandedCard === "business" && (
+          <div className="sitecontent-card-content">
+            <div className="sitecontent-form-section">
+              <h4 className="sitecontent-section-title">Brand Identity</h4>
+              <div className="sitecontent-form-group">
+                <div className="sitecontent-row">
+                  <label>Brand Name</label>
+                  <input
+                    value={footerDraft?.brandName || ""}
+                    onChange={(e) =>
+                      updateFooterField("brandName", e.target.value)
+                    }
+                    placeholder="Enter your brand name"
+                  />
+                </div>
+                <div className="sitecontent-row">
+                  <label>Description</label>
+                  <textarea
+                    value={footerDraft?.description || ""}
+                    onChange={(e) =>
+                      updateFooterField("description", e.target.value)
+                    }
+                    placeholder="Describe your brand and what makes it unique"
+                    rows={3}
+                  />
+                </div>
+              </div>
             </div>
-            <div className="sitecontent-card-toggle">
-              <span className={`sitecontent-arrow ${expandedCard === 'categories' ? 'rotated' : ''}`}>▼</span>
+
+            <div className="sitecontent-form-section">
+              <h4 className="sitecontent-section-title">Contact Information</h4>
+              <div className="sitecontent-form-group">
+                <div className="sitecontent-row">
+                  <label>Email</label>
+                  <input
+                    type="email"
+                    value={footerDraft?.company?.email || ""}
+                    onChange={(e) =>
+                      updateFooterField("company.email", e.target.value)
+                    }
+                    placeholder="contact@yourstore.com"
+                  />
+                </div>
+                <div className="sitecontent-row">
+                  <label>Phone</label>
+                  <input
+                    type="tel"
+                    value={footerDraft?.company?.phone || ""}
+                    onChange={(e) =>
+                      updateFooterField("company.phone", e.target.value)
+                    }
+                    placeholder="+1 (555) 123-4567"
+                  />
+                </div>
+                <div className="sitecontent-row">
+                  <label>Address</label>
+                  <textarea
+                    value={footerDraft?.company?.address || ""}
+                    onChange={(e) =>
+                      updateFooterField("company.address", e.target.value)
+                    }
+                    placeholder="Your business address"
+                    rows={3}
+                  />
+                </div>
+              </div>
+            </div>
+
+            <div className="sitecontent-form-section">
+              <h4 className="sitecontent-section-title">Social Media</h4>
+              <div className="sitecontent-form-group">
+                <div className="sitecontent-row">
+                  <label>Facebook</label>
+                  <input
+                    type="url"
+                    value={footerDraft?.social?.facebook || ""}
+                    onChange={(e) =>
+                      updateFooterField("social.facebook", e.target.value)
+                    }
+                    placeholder="https://facebook.com/yourpage"
+                  />
+                </div>
+                <div className="sitecontent-row">
+                  <label>Instagram</label>
+                  <input
+                    type="url"
+                    value={footerDraft?.social?.instagram || ""}
+                    onChange={(e) =>
+                      updateFooterField("social.instagram", e.target.value)
+                    }
+                    placeholder="https://instagram.com/yourpage"
+                  />
+                </div>
+                <div className="sitecontent-row">
+                  <label>Twitter</label>
+                  <input
+                    type="url"
+                    value={footerDraft?.social?.twitter || ""}
+                    onChange={(e) =>
+                      updateFooterField("social.twitter", e.target.value)
+                    }
+                    placeholder="https://twitter.com/yourpage"
+                  />
+                </div>
+                <div className="sitecontent-row">
+                  <label>Pinterest</label>
+                  <input
+                    type="url"
+                    value={footerDraft?.social?.pinterest || ""}
+                    onChange={(e) =>
+                      updateFooterField("social.pinterest", e.target.value)
+                    }
+                    placeholder="https://pinterest.com/yourpage"
+                  />
+                </div>
+              </div>
+            </div>
+
+            <div className="sitecontent-card-actions">
+              <button className="sitecontent-btn primary" onClick={saveFooter}>
+                <SaveIcon />
+                Save Business Info
+              </button>
             </div>
           </div>
+        )}
+      </div>
 
-          {expandedCard === 'categories' && (
-            <div className="sitecontent-card-content">
-              <div className="sitecontent-categories-header">
-                <button className="sitecontent-btn secondary" onClick={addGender}>
-                  Add New Gender
-                </button>
+      {/* Footer Navigation Card */}
+      <div
+        className={`sitecontent-main-card ${
+          expandedCard === "navigation" ? "expanded" : ""
+        }`}
+      >
+        <div
+          className="sitecontent-card-header"
+          onClick={() => toggleCard("navigation")}
+        >
+          <div className="sitecontent-card-icon">
+            <LinkIcon />
+          </div>
+          <div className="sitecontent-card-info">
+            <h3 className="sitecontent-card-title">Footer Navigation</h3>
+            <p className="sitecontent-card-desc">
+              Manage shop and support links in footer
+            </p>
+            <div className="sitecontent-card-status">
+              <CheckCircleIcon className="status-icon complete" />
+              <span>
+                {stats.shopLinksCount + stats.supportLinksCount} Links
+              </span>
+            </div>
+          </div>
+          <div className="sitecontent-card-toggle">
+            <ExpandMoreIcon
+              className={`sitecontent-arrow ${
+                expandedCard === "navigation" ? "rotated" : ""
+              }`}
+            />
+          </div>
+        </div>
+
+        {expandedCard === "navigation" && (
+          <div className="sitecontent-card-content">
+            <div className="sitecontent-form-section">
+              <div className="sitecontent-section-header">
+                <h4 className="sitecontent-section-title">Shop Links</h4>
               </div>
-
-              <div className="sitecontent-categories-list">
-                {genders.map(gender => (
-                  <div key={gender} className="sitecontent-category-item">
-                    <div className="sitecontent-category-header">
-                      <span className="sitecontent-badge">{gender}</span>
-                      <button 
-                        className="sitecontent-btn danger small" 
-                        onClick={() => removeGender(gender)}
-                      >
-                        Remove Gender
-                      </button>
+              <div className="sitecontent-links-list">
+                {(footerDraft?.shopLinks || []).map((link, index) => (
+                  <div key={index} className="sitecontent-link-item">
+                    <div className="sitecontent-link-content">
+                      <span className="sitecontent-link-label">
+                        {link.label}
+                      </span>
+                      <span className="sitecontent-link-href">{link.href}</span>
                     </div>
-                    
-                    <div className="sitecontent-category-tags">
-                      {(genderCategoryDraft?.[gender] || []).map(cat => (
-                        <div key={cat} className="sitecontent-tag">
-                          <span className="sitecontent-tag-text">{cat}</span>
-                          <button
-                            className="sitecontent-tag-remove"
-                            onClick={() => removeCategory(gender, cat)}
-                            title="Remove category"
-                          >
-                            ×
-                          </button>
-                        </div>
-                      ))}
-                      <button 
-                        className="sitecontent-btn secondary small" 
-                        onClick={() => addCategory(gender)}
-                      >
-                        + Add Category
-                      </button>
-                    </div>
+                    <button
+                      className={`sitecontent-btn ${
+                        link.active === false ? "danger" : "primary"
+                      } small`}
+                      onClick={() => toggleShopLinkActive(index)}
+                      title={
+                        link.active === false ? "Inactive" : "Active"
+                      }
+                    >
+                      {link.active === false ? "Inactive" : "Active"}
+                    </button>
                   </div>
                 ))}
-
-                {genders.length === 0 && (
-                  <div className="sitecontent-empty-state">
-                    <p>No gender categories configured yet.</p>
-                    <p>Click "Add New Gender" to get started.</p>
+                {(!footerDraft?.shopLinks ||
+                  footerDraft.shopLinks.length === 0) && (
+                  <div className="sitecontent-empty-links">
+                    <p>No shop links configured</p>
                   </div>
                 )}
               </div>
+            </div>
 
-              <div className="sitecontent-card-actions">
-                <button className="sitecontent-btn primary" onClick={saveGenderCategory}>
-                  Save Categories
-                </button>
+            <div className="sitecontent-card-actions">
+              <button className="sitecontent-btn primary" onClick={saveFooter}>
+                <SaveIcon />
+                Save Navigation
+              </button>
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* Gender Visibility Card */}
+      <div
+        className={`sitecontent-main-card ${
+          expandedCard === "visibility" ? "expanded" : ""
+        }`}
+      >
+        <div
+          className="sitecontent-card-header"
+          onClick={() => toggleCard("visibility")}
+        >
+          <div className="sitecontent-card-icon">
+            <SettingsIcon />
+          </div>
+          <div className="sitecontent-card-info">
+            <h3 className="sitecontent-card-title">Gender Page Visibility</h3>
+            <p className="sitecontent-card-desc">
+              Control which gender pages are visible to users
+            </p>
+            <div className="sitecontent-card-status">
+              <CheckCircleIcon className="status-icon complete" />
+              <span>
+                {Object.values(genderStatusDraft || {}).filter((status) => status).length} of{" "}
+                {Object.keys(genderStatusDraft || {}).length} Active
+              </span>
+            </div>
+          </div>
+          <div className="sitecontent-card-toggle">
+            <ExpandMoreIcon
+              className={`sitecontent-arrow ${
+                expandedCard === "visibility" ? "rotated" : ""
+              }`}
+            />
+          </div>
+        </div>
+
+        {expandedCard === "visibility" && (
+          <div className="sitecontent-card-content">
+            <div className="sitecontent-form-section">
+              <h4 className="sitecontent-section-title">Manage Gender Visibility</h4>
+              <div className="sitecontent-visibility-list">
+                {genders.map((gender) => (
+                  <div key={gender} className="sitecontent-visibility-item">
+                    <div className="visibility-info">
+                      <h4 className="visibility-name">{gender}</h4>
+                      <p className="visibility-desc">
+                        {genderStatusDraft[gender] ? "Visible to users" : "Hidden from users"}
+                      </p>
+                    </div>
+                    <button
+                      className={`sitecontent-btn ${
+                        genderStatusDraft[gender] ? "primary" : "danger"
+                      } small`}
+                      onClick={() => toggleGenderStatus(gender)}
+                    >
+                      {genderStatusDraft[gender] ? "Active" : "Inactive"}
+                    </button>
+                  </div>
+                ))}
               </div>
             </div>
-          )}
-        </div>
+
+            <div className="sitecontent-card-actions">
+              <button className="sitecontent-btn primary" onClick={saveGenderStatus}>
+                <SaveIcon />
+                Save Gender Visibility
+              </button>
+            </div>
+          </div>
+        )}
       </div>
-    </section>
-  )
+
+      {/* Product Categories Card */}
+      <div
+        className={`sitecontent-main-card ${
+          expandedCard === "categories" ? "expanded" : ""
+        }`}
+      >
+        <div
+          className="sitecontent-card-header"
+          onClick={() => toggleCard("categories")}
+        >
+          <div className="sitecontent-card-icon">
+            <CategoryIcon />
+          </div>
+          <div className="sitecontent-card-info">
+            <h3 className="sitecontent-card-title">Product Categories</h3>
+            <p className="sitecontent-card-desc">
+              Configure gender types and their product categories
+            </p>
+            <div className="sitecontent-card-status">
+              <CheckCircleIcon className="status-icon complete" />
+              <span>
+                {stats.totalCategories}{" "}
+                Categories
+              </span>
+            </div>
+          </div>
+          <div className="sitecontent-card-toggle">
+            <ExpandMoreIcon
+              className={`sitecontent-arrow ${
+                expandedCard === "categories" ? "rotated" : ""
+              }`}
+            />
+          </div>
+        </div>
+
+        {expandedCard === "categories" && (
+          <div className="sitecontent-card-content">
+            <div className="sitecontent-categories-header">
+              <div className="sitecontent-categories-info">
+                <InfoIcon />
+                <span>
+                  Categories are used in product filtering across your store
+                </span>
+              </div>
+            </div>
+
+            <div className="sitecontent-categories-list">
+              {genders.map((gender) => (
+                <div key={gender} className="sitecontent-category-item">
+                  <div className="sitecontent-category-header">
+                    <div className="sitecontent-category-title">
+                      <span className="sitecontent-badge">{gender}</span>
+                      <span className="sitecontent-category-count">
+                        {genderCategoryDraft?.[gender]?.length || 0} categories
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className="sitecontent-category-tags">
+                    {(genderCategoryDraft?.[gender] || []).map((cat) => (
+                      <div key={cat} className="sitecontent-tag">
+                        <span className="sitecontent-tag-text">{cat}</span>
+                        <button
+                          className="sitecontent-tag-remove"
+                          onClick={() => removeCategory(gender, cat)}
+                          title="Remove category"
+                        >
+                          ×
+                        </button>
+                      </div>
+                    ))}
+                    <button
+                      className="sitecontent-btn secondary small add-category"
+                      onClick={() => addCategory(gender)}
+                    >
+                      <AddIcon />
+                      Add Category
+                    </button>
+                  </div>
+                </div>
+              ))}
+
+              {genders.length === 0 && (
+                <div className="sitecontent-empty-state">
+                  <CategoryIcon className="empty-icon" />
+                  <h3>No Gender Categories</h3>
+                  <p>
+                    Start by adding a gender type like "Men", "Women", or "Kids"
+                  </p>
+                  <p>
+                    Each gender can have multiple product categories for
+                    filtering
+                  </p>
+                </div>
+              )}
+            </div>
+
+            <div className="sitecontent-card-actions">
+              <button
+                className="sitecontent-btn primary"
+                onClick={saveGenderCategory}
+              >
+                <SaveIcon />
+                Save Categories
+              </button>
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  </section>
+)
 }

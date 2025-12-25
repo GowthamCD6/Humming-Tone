@@ -12,17 +12,19 @@ export const defaultSiteContent = {
       pinterest: '',
     },
     shopLinks: [
-      { label: "Men's Collection", href: '#' },
-      { label: "Children's Collection", href: '#' },
-      { label: "Baby Collection", href: '#' },
-      { label: 'Sports Collection', href: '#' },
-      { label: 'Customize', href: '#' },
-      { label: 'All Products', href: '#' },
+      { label: "Men's Collection", href: '/mens' },
+      { label: "Children's Collection", href: '/childrens' },
+      { label: "Baby Collection", href: '/baby' },
+      { label: 'Sports Collection', href: '/sports' },
+      { label: 'Customize', href: '/customize' },
+      { label: 'All Products', href: '/all-products' },
     ],
     supportLinks: [
-      { label: 'Contact Us', href: '#' },
-      { label: 'Shipping Info', href: '#' },
-      { label: 'Returns & Exchanges', href: '#' },
+      { label: 'Contact Us', href: '/contact' },
+      { label: 'Shipping Info', href: '/shipping' },
+      { label: 'Returns & Exchanges', href: '/returns' },
+      { label: 'Size Guide', href: '/size-guide' },
+      { label: 'FAQ', href: '/faq' },
     ],
     company: {
       email: 'fashionandmore.md@gmail.com',
@@ -44,6 +46,13 @@ export const defaultSiteContent = {
     Sports: ['All Categories', 'Running', 'Training', 'Outdoor', 'Shoes', 'Accessories'],
     Customize: ['All Categories', 'Printed', 'Embroidery'],
   },
+  genderStatus: {
+    Men: true,
+    Children: true,
+    Baby: true,
+    Sports: true,
+    Customize: true,
+  },
 }
 
 export function getSiteContent() {
@@ -56,6 +65,7 @@ export function getSiteContent() {
       ...parsed,
       footer: { ...defaultSiteContent.footer, ...(parsed.footer || {}) },
       genderCategory: { ...defaultSiteContent.genderCategory, ...(parsed.genderCategory || {}) },
+      genderStatus: { ...defaultSiteContent.genderStatus, ...(parsed.genderStatus || {}) },
     }
   } catch {
     return defaultSiteContent
@@ -76,6 +86,8 @@ export function updateFooter(partialFooter) {
       social: { ...current.footer.social, ...(partialFooter.social || {}) },
       company: { ...current.footer.company, ...(partialFooter.company || {}) },
       legal: { ...current.footer.legal, ...(partialFooter.legal || {}) },
+      shopLinks: partialFooter.shopLinks !== undefined ? partialFooter.shopLinks : current.footer.shopLinks,
+      supportLinks: partialFooter.supportLinks !== undefined ? partialFooter.supportLinks : current.footer.supportLinks,
     },
   }
   setSiteContent(next)
@@ -92,13 +104,28 @@ export function updateGenderCategory(partialGenderCategory) {
   return next
 }
 
+export function updateGenderStatus(genderStatusMap) {
+  const current = getSiteContent()
+  const next = {
+    ...current,
+    genderStatus: { ...current.genderStatus, ...genderStatusMap },
+  }
+  setSiteContent(next)
+  return next
+}
+
 export function resetSiteContent() {
   localStorage.removeItem(STORAGE_KEY)
   return defaultSiteContent
 }
 
 export function getGenderOptions() {
-  return Object.keys(getSiteContent().genderCategory)
+  const content = getSiteContent()
+  const allGenders = Object.keys(content.genderCategory)
+  const genderStatus = content.genderStatus || {}
+  
+  // Filter to only return active genders
+  return allGenders.filter(gender => genderStatus[gender] !== false)
 }
 
 export function getCategoryOptionsForGender(gender) {
