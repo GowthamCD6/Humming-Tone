@@ -730,266 +730,130 @@
 import { useState, useEffect } from 'react'
 import './ManageProduct.css'
 
-const BASE_URL = 'http://localhost:5000'; // Adjust to your backend port
+const BASE_URL = 'http://localhost:5000';
 
 export default function ManageProducts() {
   const [products, setProducts] = useState([])
   const [promoCodes, setPromoCodes] = useState([])
   const [editingProduct, setEditingProduct] = useState(null)
-  const [editingPromo, setEditingPromo] = useState(null)
   const [showEditModal, setShowEditModal] = useState(false)
-  const [showPromoEditModal, setShowPromoEditModal] = useState(false)
-  const [showAddPromoModal, setShowAddPromoModal] = useState(false)
   
-  const [newPromo, setNewPromo] = useState({
-    code: '',
-    type: 'Fixed',
-    discount: 0,
-    minOrder: 0,
-    usageLimit: '',
-    status: 'Active'
-  })
-  const [newPromoErrors, setNewPromoErrors] = useState({})
+  // Promo State
+  const [showAddPromoModal, setShowAddPromoModal] = useState(false)
+  const [newPromo, setNewPromo] = useState({ code: '', type: 'fixed', discount: 0, minOrder: 0, usageLimit: 100 })
+
   const [filterGender, setFilterGender] = useState('All')
   const [filterCategory, setFilterCategory] = useState('All')
 
-  // --- API FETCHING ---
-
   const loadData = async () => {
     try {
-      // Fetch Products
       const prodRes = await fetch(`${BASE_URL}/admin/fetch_products`);
       const prodData = await prodRes.json();
       if (Array.isArray(prodData)) {
         setProducts(prodData.map(p => ({
           ...p,
-          // Mapping DB fields to UI fields
           image: p.image_path ? `${BASE_URL}/${p.image_path.replace(/\\/g, '/')}` : '',
-          category: p.subcategory || 'General', // Backend uses subcategory/category_id
+          category: p.subcategory || 'General',
           gender: p.gender,
-          price: p.price || 0, // Note: price usually comes from variants in your SQL
+          price: p.price || 0,
           stock: p.stock_quantity || 0
         })));
       }
-
-      // Fetch Promos (Assuming you added a GET route for fetch_promos)
       const promoRes = await fetch(`${BASE_URL}/admin/fetch_promos`);
       const promoData = await promoRes.json();
       if (Array.isArray(promoData)) setPromoCodes(promoData);
-    } catch (err) {
-      console.error("Failed to load data:", err);
-    }
+    } catch (err) { console.error(err); }
   };
 
-  useEffect(() => {
-    loadData();
-  }, []);
+  useEffect(() => { loadData(); }, []);
 
-  // --- HELPERS ---
-
-  const normalizeGender = (value) => {
-    const v = String(value || '').trim().toLowerCase()
-    if (!v) return ''
-    if (v === 'men') return 'Men'
-    if (v === 'children' || v === 'kids') return 'Children'
-    if (v === 'babies' || v === 'baby') return 'Baby'
-    if (v === 'sports') return 'Sports'
-    return value
+  const normalizeGender = (v) => {
+    const s = String(v || '').toLowerCase();
+    if (s === 'men') return 'Men';
+    if (s === 'children') return 'Children';
+    if (s === 'babies' || s === 'baby') return 'Baby';
+    if (s === 'sports') return 'Sports';
+    return v;
   }
 
-  const categories = Array.from(new Set(products.map(p => p.category))).sort()
-  const genders = ['Men', 'Children', 'Baby', 'Sports']
-
   const filteredProducts = products.filter((p) => {
-    const normalized = normalizeGender(p.gender)
-    const genderOk = filterGender === 'All' || normalized === filterGender
-    const categoryOk = filterCategory === 'All' || p.category === filterCategory
-    return genderOk && categoryOk
+    const genOk = filterGender === 'All' || normalizeGender(p.gender) === filterGender
+    const catOk = filterCategory === 'All' || p.category === filterCategory
+    return genOk && catOk
   })
 
   // --- PRODUCT HANDLERS ---
-
-  const handleEditProduct = (product) => {
-    setEditingProduct({ ...product })
-    setShowEditModal(true)
-  }
-
-  const handleDeleteProduct = async (productId) => {
-    if (window.confirm('Are you sure you want to delete this product?')) {
-      try {
-        await fetch(`${BASE_URL}/admin/delete_product`, {
-          method: 'DELETE',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ id: productId, deleteAll: true })
-        });
-        loadData();
-      } catch (err) {
-        alert("Delete failed");
-      }
-    }
-  }
-
+  const handleEditProduct = (p) => { setEditingProduct({ ...p }); setShowEditModal(true); }
+  
   const handleSaveProduct = async () => {
-    try {
-      await fetch(`${BASE_URL}/admin/update_product/${editingProduct.id}`, {
-        method: 'PATCH',
+    const res = await fetch(`${BASE_URL}/admin/update_product/${editingProduct.id}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(editingProduct)
+    });
+    const data = await res.json();
+    if (data.success) { setShowEditModal(false); loadData(); }
+  }
+
+  const handleDeleteProduct = async (id) => {
+    if (window.confirm("Delete this product permanently?")) {
+      const res = await fetch(`${BASE_URL}/admin/delete_product`, {
+        method: 'DELETE',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          ...editingProduct,
-          gender: editingProduct.gender.toLowerCase() // Backend expects lowercase
-        })
+        body: JSON.stringify({ id })
       });
-      setShowEditModal(false)
-      loadData();
-    } catch (err) {
-      alert("Update failed");
+      const data = await res.json();
+      if (data.success) loadData();
     }
-  }
-
-  const handleProductChange = (field, value) => {
-    setEditingProduct({ ...editingProduct, [field]: value })
-  }
-
-  const handleProductImageUpload = (event) => {
-    // Note: Image upload in your backend requires Multi-part form data
-    // For "No UI Change", we handle preview here, but saving would require FormData
-    const file = event.target.files?.[0]
-    if (!file) return
-    const reader = new FileReader()
-    reader.onload = () => {
-      setEditingProduct(prev => ({ ...prev, image: String(reader.result) }))
-    }
-    reader.readAsDataURL(file)
   }
 
   // --- PROMO HANDLERS ---
-
-  const handleEditPromo = (promo) => {
-    setEditingPromo({ ...promo })
-    setShowPromoEditModal(true)
-  }
-
-  const handleDeletePromo = async (promoId) => {
-    if (window.confirm('Are you sure you want to delete this promo code?')) {
-      try {
-        await fetch(`${BASE_URL}/admin/remove_promo_code/${promoId}`, { method: 'PATCH' });
-        loadData();
-      } catch (err) {
-        alert("Delete failed");
-      }
-    }
-  }
-
-  const handleSavePromo = async () => {
-    try {
-      await fetch(`${BASE_URL}/admin/update_promo_code/${editingPromo.id}`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-            code: editingPromo.code,
-            discount_type: editingPromo.type.toLowerCase(),
-            discount_value: editingPromo.discount,
-            min_order_amount: editingPromo.minOrder,
-            is_active: editingPromo.status === 'Active'
-        })
-      });
-      setShowPromoEditModal(false)
-      loadData();
-    } catch (err) {
-      alert("Update failed");
-    }
-  }
-
-  const handleSaveNewPromo = async () => {
-    const trimmedCode = String(newPromo.code || '').trim()
-    if (!trimmedCode) {
-      setNewPromoErrors({ code: 'Promo code is required' })
-      return
-    }
-
-    try {
-      const body = {
-        code: trimmedCode,
-        discount_type: newPromo.type.toLowerCase(),
-        discount_value: Number(newPromo.discount),
-        min_order_amount: Number(newPromo.minOrder),
-        usage_limit: Number(newPromo.usageLimit) || 100,
-        start_date: new Date().toISOString(), // Default dates as backend requires them
-        end_date: new Date(Date.now() + 31536000000).toISOString(), 
-        is_active: newPromo.status === 'Active'
-      };
-
-      await fetch(`${BASE_URL}/admin/add_promo_code`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(body)
-      });
-      setShowAddPromoModal(false)
-      loadData();
-    } catch (err) {
-      alert("Failed to add promo");
-    }
-  }
-
-  const handleNewPromoChange = (field, value) => {
-    setNewPromo({ ...newPromo, [field]: value })
-  }
-
-  const handleOpenAddPromo = () => {
-    setNewPromo({ code: '', type: 'Fixed', discount: 0, minOrder: 0, usageLimit: '', status: 'Active' })
-    setNewPromoErrors({})
-    setShowAddPromoModal(true)
-  }
-
-  const handlePromoChange = (field, value) => {
-    setEditingPromo({ ...editingPromo, [field]: value })
+  const handleAddPromo = async () => {
+    const res = await fetch(`${BASE_URL}/admin/add_promo_code`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        ...newPromo,
+        discount_type: newPromo.type,
+        discount_value: newPromo.discount,
+        min_order_amount: newPromo.minOrder,
+        usage_limit: newPromo.usageLimit,
+        start_date: new Date().toISOString(),
+        end_date: new Date(Date.now() + 31536000000).toISOString(),
+        is_active: true
+      })
+    });
+    if (res.ok) { setShowAddPromoModal(false); loadData(); }
   }
 
   return (
     <section className="manage-products-container">
       <div className="action-buttons">
         <button className="btn-add-product">ADD NEW PRODUCT</button>
-        <button className="btn-manage-promo" onClick={handleOpenAddPromo}>ADD PROMO CODE</button>
+        <button className="btn-manage-promo" onClick={() => setShowAddPromoModal(true)}>ADD PROMO CODE</button>
       </div>
 
+      {/* PROMO TABLE */}
       <div className="promo-section">
         <div className="section-header">
           <h3 className="section-title">Active Promo Codes</h3>
           <button className="btn-view-all">VIEW ALL</button>
         </div>
-
         <div className="promo-table-container">
           <table className="promo-table">
             <thead>
-              <tr>
-                <th>CODE</th>
-                <th>TYPE</th>
-                <th>DISCOUNT</th>
-                <th>MIN ORDER</th>
-                <th>USAGE</th>
-                <th>STATUS</th>
-                <th>ACTIONS</th>
-              </tr>
+              <tr><th>CODE</th><th>TYPE</th><th>DISCOUNT</th><th>MIN ORDER</th><th>USAGE</th><th>STATUS</th><th>ACTIONS</th></tr>
             </thead>
             <tbody>
-              {promoCodes.map((promo) => (
-                <tr key={promo.id}>
-                  <td className="promo-code">{promo.code}</td>
-                  <td>{promo.discount_type || promo.type}</td>
-                  <td>₹{promo.discount_value || promo.discount}.00</td>
-                  <td>₹{promo.min_order_amount || promo.minOrder}.00</td>
-                  <td>{promo.used_count || 0} / {promo.usage_limit || '∞'}</td>
-                  <td>
-                    <span className={`status-badge ${promo.is_active ? 'status-active' : ''}`}>
-                        {promo.is_active ? 'Active' : 'Inactive'}
-                    </span>
-                  </td>
-                  <td>
-                    <div className="action-btns">
-                      <button className="btn-edit" onClick={() => handleEditPromo(promo)}>EDIT</button>
-                      <button className="btn-delete" onClick={() => handleDeletePromo(promo.id)}>DELETE</button>
-                    </div>
-                  </td>
+              {promoCodes.map((p) => (
+                <tr key={p.id}>
+                  <td className="promo-code">{p.code}</td>
+                  <td>{p.discount_type}</td>
+                  <td>₹{p.discount_value}.00</td>
+                  <td>₹{p.min_order_amount}.00</td>
+                  <td>{p.used_count || 0} / {p.usage_limit || '∞'}</td>
+                  <td><span className={`status-badge ${p.is_active ? 'status-active' : ''}`}>{p.is_active ? 'Active' : 'Inactive'}</span></td>
+                  <td><div className="action-btns"><button className="btn-edit">EDIT</button></div></td>
                 </tr>
               ))}
             </tbody>
@@ -997,24 +861,26 @@ export default function ManageProducts() {
         </div>
       </div>
 
-      <div className="section-header products-header">
-        <h3 className="section-title">Active Products</h3>
-      </div>
+      <div className="section-header products-header"><h3 className="section-title">Active Products</h3></div>
 
+      {/* FILTER UI (RESIZED TO ORIGINAL) */}
       <div className="products-filters">
         <div className="filters-left">
           <div className="filter-item">
             <label className="filter-label">CATEGORY</label>
             <select className="filter-select" value={filterCategory} onChange={(e) => setFilterCategory(e.target.value)}>
               <option value="All">All</option>
-              {categories.map((c) => <option key={c} value={c}>{c}</option>)}
+              {Array.from(new Set(products.map(p => p.category))).map(c => <option key={c} value={c}>{c}</option>)}
             </select>
           </div>
           <div className="filter-item">
             <label className="filter-label">GENDER</label>
             <select className="filter-select" value={filterGender} onChange={(e) => setFilterGender(e.target.value)}>
               <option value="All">All</option>
-              {genders.map((g) => <option key={g} value={g}>{g}</option>)}
+              <option value="Men">Men</option>
+              <option value="Children">Children</option>
+              <option value="Baby">Baby</option>
+              <option value="Sports">Sports</option>
             </select>
           </div>
         </div>
@@ -1028,160 +894,86 @@ export default function ManageProducts() {
         <div className="products-table-container">
           <table className="products-table">
             <thead>
-              <tr>
-                <th>IMAGE</th>
-                <th>NAME</th>
-                <th>SKU</th>
-                <th>PRICE</th>
-                <th>STOCK</th>
-                <th>CATEGORY</th>
-                <th>GENDER</th>
-                <th>ACTIONS</th>
-              </tr>
+              <tr><th>IMAGE</th><th>NAME</th><th>SKU</th><th>PRICE</th><th>STOCK</th><th>CATEGORY</th><th>GENDER</th><th>ACTIONS</th></tr>
             </thead>
             <tbody>
-              {filteredProducts.map((product) => (
-                <tr key={product.id}>
-                  <td><img src={product.image} alt={product.name} className="product-image" /></td>
-                  <td className="product-name">{product.name}</td>
-                  <td className="product-sku">{product.sku}</td>
-                  <td className="product-price">₹{product.price}.00</td>
-                  <td className="product-stock">{product.stock}</td>
-                  <td className="product-category">{product.category}</td>
-                  <td className="product-gender">{normalizeGender(product.gender)}</td>
-                  <td>
-                    <div className="action-btns">
-                      <button className="btn-edit" onClick={() => handleEditProduct(product)}>EDIT</button>
-                      <button className="btn-delete" onClick={() => handleDeleteProduct(product.id)}>DELETE</button>
-                    </div>
-                  </td>
-                </tr>
-              ))}
+              {filteredProducts.length > 0 ? (
+                filteredProducts.map((p) => (
+                  <tr key={p.id}>
+                    <td><img src={p.image} className="product-image" alt={p.name} onError={(e) => e.target.src='https://via.placeholder.com/50'} /></td>
+                    <td className="product-name">{p.name}</td>
+                    <td className="product-sku">{p.sku}</td>
+                    <td className="product-price">₹{p.price}.00</td>
+                    <td className="product-stock">{p.stock}</td>
+                    <td className="product-category">{p.category}</td>
+                    <td className="product-gender">{normalizeGender(p.gender)}</td>
+                    <td>
+                      <div className="action-btns">
+                        <button className="btn-edit" onClick={() => handleEditProduct(p)}>EDIT</button>
+                        <button className="btn-delete" onClick={() => handleDeleteProduct(p.id)}>DELETE</button>
+                      </div>
+                    </td>
+                  </tr>
+                ))
+              ) : (
+                <tr><td colSpan="8" style={{ textAlign: 'center', padding: '50px', color: '#666' }}>No active products found matching your filters.</td></tr>
+              )}
             </tbody>
           </table>
         </div>
       </div>
 
-      {/* MODALS REMAIN IDENTICAL TO YOUR CODE - Logic inside them uses the updated handlers above */}
+      {/* FULL EDIT MODAL (All Fields Restored) */}
       {showEditModal && editingProduct && (
         <div className="modal-overlay" onClick={() => setShowEditModal(false)}>
-            {/* ... Content is the same as your original code ... */}
-            <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-                <div className="modal-header">
-                    <h2 className="modal-title">Edit Product</h2>
-                    <button className="modal-close" onClick={() => setShowEditModal(false)}>×</button>
-                </div>
-                <div className="modal-body">
-                    <div className="form-group">
-                        <label>PRODUCT NAME</label>
-                        <input type="text" value={editingProduct.name} onChange={(e) => handleProductChange('name', e.target.value)} className="form-input" />
-                    </div>
-                    <div className="form-group">
-                        <label>SKU</label>
-                        <input type="text" value={editingProduct.sku} onChange={(e) => handleProductChange('sku', e.target.value)} className="form-input" />
-                    </div>
-                    <div className="form-row">
-                        <div className="form-group">
-                            <label>PRICE (₹)</label>
-                            <input type="number" value={editingProduct.price} onChange={(e) => handleProductChange('price', parseFloat(e.target.value))} className="form-input" />
-                        </div>
-                        <div className="form-group">
-                            <label>STOCK</label>
-                            <input type="number" value={editingProduct.stock} onChange={(e) => handleProductChange('stock', parseInt(e.target.value))} className="form-input" />
-                        </div>
-                    </div>
-                    <div className="form-group">
-                        <label>IMAGE UPLOAD</label>
-                        <input type="file" accept="image/*" onChange={handleProductImageUpload} className="form-input" />
-                        {editingProduct.image && (
-                        <div className="image-preview">
-                            <img src={editingProduct.image} alt="Preview" className="image-preview-img" />
-                        </div>
-                        )}
-                    </div>
-                </div>
-                <div className="modal-footer">
-                    <button className="btn-cancel" onClick={() => setShowEditModal(false)}>CANCEL</button>
-                    <button className="btn-save" onClick={handleSaveProduct}>SAVE CHANGES</button>
-                </div>
-            </div>
-        </div>
-      )}
-
-      {/* Edit Promo Modal */}
-      {showPromoEditModal && editingPromo && (
-        <div className="modal-overlay" onClick={() => setShowPromoEditModal(false)}>
           <div className="modal-content" onClick={(e) => e.stopPropagation()}>
             <div className="modal-header">
-              <h2 className="modal-title">Edit Promo Code</h2>
-              <button className="modal-close" onClick={() => setShowPromoEditModal(false)}>×</button>
+              <h2 className="modal-title">Edit Product</h2>
+              <button className="modal-close" onClick={() => setShowEditModal(false)}>×</button>
             </div>
             <div className="modal-body">
-              <div className="form-group">
-                <label>PROMO CODE</label>
-                <input type="text" value={editingPromo.code} onChange={(e) => handlePromoChange('code', e.target.value)} className="form-input" />
-              </div>
-              <div className="form-group">
-                <label>TYPE</label>
-                <select value={editingPromo.discount_type || editingPromo.type} onChange={(e) => handlePromoChange('type', e.target.value)} className="form-input">
-                  <option value="fixed">Fixed</option>
-                  <option value="percentage">Percentage</option>
-                </select>
+              <div className="form-group"><label>PRODUCT NAME</label><input type="text" value={editingProduct.name} onChange={(e) => setEditingProduct({...editingProduct, name: e.target.value})} className="form-input" /></div>
+              <div className="form-group"><label>SKU</label><input type="text" value={editingProduct.sku} onChange={(e) => setEditingProduct({...editingProduct, sku: e.target.value})} className="form-input" /></div>
+              <div className="form-row">
+                <div className="form-group"><label>PRICE (₹)</label><input type="number" value={editingProduct.price} onChange={(e) => setEditingProduct({...editingProduct, price: e.target.value})} className="form-input" /></div>
+                <div className="form-group"><label>STOCK</label><input type="number" value={editingProduct.stock} onChange={(e) => setEditingProduct({...editingProduct, stock: e.target.value})} className="form-input" /></div>
               </div>
               <div className="form-row">
-                <div className="form-group">
-                  <label>DISCOUNT (₹)</label>
-                  <input type="number" value={editingPromo.discount_value || editingPromo.discount} onChange={(e) => handlePromoChange('discount', parseFloat(e.target.value))} className="form-input" />
-                </div>
-                <div className="form-group">
-                  <label>MIN ORDER (₹)</label>
-                  <input type="number" value={editingPromo.min_order_amount || editingPromo.minOrder} onChange={(e) => handlePromoChange('minOrder', parseFloat(e.target.value))} className="form-input" />
+                <div className="form-group"><label>CATEGORY</label><input type="text" value={editingProduct.category} onChange={(e) => setEditingProduct({...editingProduct, category: e.target.value})} className="form-input" /></div>
+                <div className="form-group"><label>GENDER</label>
+                  <select value={editingProduct.gender} onChange={(e) => setEditingProduct({...editingProduct, gender: e.target.value})} className="form-input">
+                    <option value="men">Men</option><option value="children">Children</option><option value="babies">Baby</option><option value="sports">Sports</option>
+                  </select>
                 </div>
               </div>
+              <div className="form-group"><label>DESCRIPTION</label><textarea value={editingProduct.about} onChange={(e) => setEditingProduct({...editingProduct, about: e.target.value})} className="form-input" rows="3" /></div>
             </div>
             <div className="modal-footer">
-              <button className="btn-cancel" onClick={() => setShowPromoEditModal(false)}>CANCEL</button>
-              <button className="btn-save" onClick={handleSavePromo}>SAVE CHANGES</button>
+              <button className="btn-cancel" onClick={() => setShowEditModal(false)}>CANCEL</button>
+              <button className="btn-save" onClick={handleSaveProduct}>SAVE CHANGES</button>
             </div>
           </div>
         </div>
       )}
 
-      {/* Add Promo Modal */}
+      {/* ADD PROMO MODAL */}
       {showAddPromoModal && (
         <div className="modal-overlay" onClick={() => setShowAddPromoModal(false)}>
           <div className="modal-content modal-content--compact" onClick={(e) => e.stopPropagation()}>
-            <div className="modal-header">
-              <h2 className="modal-title">Add Promo Code</h2>
-              <button className="modal-close" onClick={() => setShowAddPromoModal(false)}>×</button>
-            </div>
+            <div className="modal-header"><h2 className="modal-title">Add Promo Code</h2><button className="modal-close" onClick={() => setShowAddPromoModal(false)}>×</button></div>
             <div className="modal-body">
-              <div className="form-group">
-                <label>PROMO CODE</label>
-                <input type="text" value={newPromo.code} onChange={(e) => handleNewPromoChange('code', e.target.value)} className="form-input" />
-              </div>
-              <div className="form-group">
-                <label>TYPE</label>
-                <select value={newPromo.type} onChange={(e) => handleNewPromoChange('type', e.target.value)} className="form-input">
-                  <option value="Fixed">Fixed</option>
-                  <option value="Percentage">Percentage</option>
+              <div className="form-group"><label>PROMO CODE</label><input type="text" value={newPromo.code} onChange={(e) => setNewPromo({...newPromo, code: e.target.value})} className="form-input" /></div>
+              <div className="form-group"><label>TYPE</label>
+                <select value={newPromo.type} onChange={(e) => setNewPromo({...newPromo, type: e.target.value})} className="form-input">
+                  <option value="fixed">Fixed</option><option value="percentage">Percentage</option>
                 </select>
               </div>
               <div className="form-row">
-                <div className="form-group">
-                  <label>DISCOUNT</label>
-                  <input type="number" value={newPromo.discount} onChange={(e) => handleNewPromoChange('discount', e.target.value)} className="form-input" />
-                </div>
-                <div className="form-group">
-                  <label>MIN ORDER (₹)</label>
-                  <input type="number" value={newPromo.minOrder} onChange={(e) => handleNewPromoChange('minOrder', e.target.value)} className="form-input" />
-                </div>
+                <div className="form-group"><label>DISCOUNT</label><input type="number" value={newPromo.discount} onChange={(e) => setNewPromo({...newPromo, discount: e.target.value})} className="form-input" /></div>
+                <div className="form-group"><label>MIN ORDER (₹)</label><input type="number" value={newPromo.minOrder} onChange={(e) => setNewPromo({...newPromo, minOrder: e.target.value})} className="form-input" /></div>
               </div>
             </div>
-            <div className="modal-footer">
-              <button className="btn-cancel" onClick={() => setShowAddPromoModal(false)}>CANCEL</button>
-              <button className="btn-save" onClick={handleSaveNewPromo}>ADD PROMO</button>
-            </div>
+            <div className="modal-footer"><button className="btn-cancel" onClick={() => setShowAddPromoModal(false)}>CANCEL</button><button className="btn-save" onClick={handleAddPromo}>ADD PROMO</button></div>
           </div>
         </div>
       )}
