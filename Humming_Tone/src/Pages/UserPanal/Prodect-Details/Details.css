@@ -28,10 +28,7 @@
 /* Product Gallery */
 .product-gallery {
   position: sticky;
-  top: 80px;
-  height: fit-content;
-  align-self: flex-start;
-  overflow: visible;
+  top: 2rem;
   animation: fadeInLeft 0.6s ease-out;
 }
 
@@ -626,6 +623,10 @@
     gap: 3rem;
   }
   
+  .product-gallery {
+    position: static;
+  }
+  
   .related-grid {
     grid-template-columns: repeat(2, 1fr);
   }
@@ -638,11 +639,6 @@
 @media (max-width: 768px) {
   .product-detail-container {
     padding: 2rem 30px;
-  }
-  
-  .product-gallery {
-    position: static;
-    top: auto;
   }
   
   .product-title {

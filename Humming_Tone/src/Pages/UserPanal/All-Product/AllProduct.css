@@ -294,7 +294,7 @@
 .all-products-view-details-btn {
     background: #ffffff;
     color: #1a1a1a;
-    border: none;
+    border: 2px solid transparent;
     padding: 12px 32px;
     font-weight: 600;
     font-size: 13px;
@@ -302,16 +302,15 @@
     cursor: pointer;
     box-shadow: 0 6px 20px rgba(0, 0, 0, 0.25);
     border-radius: 2px;
-    transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
     text-transform: uppercase;
     font-family: 'Poppins', sans-serif;
     transform: translateY(20px);
     position: relative;
     overflow: hidden;
-    z-index: 1;
 }
 
-/* Ripple effect matching .checkout-btn */
+/* Ripple effect matching hero button */
 .all-products-view-details-btn::before {
     content: '';
     position: absolute;
@@ -320,30 +319,35 @@
     width: 0;
     height: 0;
     border-radius: 50%;
-    background: rgba(255, 255, 255, 0.2);
+    background: rgba(255, 255, 255, 0.15);
     transform: translate(-50%, -50%);
     transition: width 0.6s, height 0.6s;
-    z-index: -1;
 }
 
 .all-products-view-details-btn:hover::before {
-    width: 500px;
-    height: 500px;
-}
-
-.all-products-view-details-btn:hover {
-    transform: translateY(0) translateY(-3px);
-    box-shadow: 0 16px 48px rgba(26, 26, 26, 0.35);
-    background: #1a1a1a;
-    color: #ffffff;
+    width: 300px;
+    height: 300px;
 }
 
 .all-products-product-card:hover .all-products-view-details-btn {
     transform: translateY(0);
 }
 
+.all-products-view-details-btn:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 16px 48px rgba(0, 0, 0, 0.5);
+    background: #1a1a1a;
+    color: #ffffff;
+}
+
+.all-products-view-details-btn:active {
+    transform: translateY(-2px);
+    background: #000;
+    color: #ffffff;
+}
+
 .all-products-product-card:hover .all-products-view-details-btn:hover {
-    transform: translateY(-3px);
+    transform: translateY(-4px);
 }
 
 .all-products-product-details {

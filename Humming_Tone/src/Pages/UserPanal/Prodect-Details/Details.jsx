@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import UserFooter from '../../../components/User-Footer-Card/UserFooter';
 import demoImage from '../../../assets/demo.jpeg';
 import './Details.css';
@@ -8,6 +8,11 @@ const ProductDetail = ({ product: selectedProduct }) => {
   const [quantity, setQuantity] = useState(1);
   const [selectedImage, setSelectedImage] = useState(0);
   const [showCartPopup, setShowCartPopup] = useState(false);
+
+  // Scroll to top when component mounts
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
 
   const baseProduct = {
     name: 'stitch set',
