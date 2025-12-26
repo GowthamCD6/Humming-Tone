@@ -1,72 +1,63 @@
-import React, { useState } from 'react';
-import demoImage from '../../../assets/demo.jpeg';
+import React, { useState, useEffect } from 'react';
 import UserFooter from '../../../components/User-Footer-Card/UserFooter';
 import './Sports.css';
 import { getGenderOptions, getCategoryOptionsForGender } from '../../../utils/siteContentStore';
-
-// Sample products - will be replaced with API data later
-const sampleProducts = [
-  { 
-    id: 1, 
-    name: "Performance Running Shoes", 
-    brand: "FASHION & MORE", 
-    price: 1299.00, 
-    image: "demo" 
-  },
-  { 
-    id: 2, 
-    name: "Athletic Track Pants", 
-    brand: "FASHION & MORE", 
-    price: 899.00, 
-    image: "demo" 
-  },
-  { 
-    id: 3, 
-    name: "Sports Jacket", 
-    brand: "FASHION & MORE", 
-    price: 1599.00, 
-    image: "demo" 
-  },
-  { 
-    id: 4, 
-    name: "Gym T-Shirt", 
-    brand: "FASHION & MORE", 
-    price: 499.00, 
-    image: "demo" 
-  },
-];
+import axios from 'axios';  // Import axios
 
 const CollectionPage = ({ onViewDetails = () => {} }) => {
-  const [selectedGender, setSelectedGender] = useState('Sports');
+  const [selectedGender, setSelectedGender] = useState('Sports');  // Default to 'Sports'
   const [selectedCategory, setSelectedCategory] = useState('All Categories');
-  const [products, setProducts] = useState(sampleProducts); // Set sample products
+  const [products, setProducts] = useState([]);  // Empty array for "No Products Found" state
 
   const genderOptions = getGenderOptions();
   const categoryOptions = getCategoryOptionsForGender(selectedGender);
 
+  // Fetch products from the API when the gender or category changes
+  useEffect(() => {
+    const fetchProducts = async () => {
+      try {
+        const response = await axios.get(`http://localhost:5000/user/fetch_products?gender=sports`);
+        const fetchedProducts = response.data.map(product => ({
+          ...product,
+          price: parseFloat(product.price),  // Ensure price is a float
+          // Correct the image URL if image_path is not available
+          image: product.image_path ? `http://localhost:5000/${product.image_path}` : '',  // Use image path from backend
+        }));
+        setProducts(fetchedProducts);  // Update the state with fetched products
+      } catch (error) {
+        console.error('Error fetching products:', error);
+      }
+    };
+
+    fetchProducts();
+  }, [selectedGender]);  // Trigger API call when gender changes
+
   const handleApplyFilters = () => {
     console.log('Applying filters:', { selectedGender, selectedCategory });
+    // You can add logic here to filter products based on category
   };
 
   const handleClearAll = () => {
     setSelectedGender('Sports');
     setSelectedCategory('All Categories');
+    setProducts([]); // Reset products when filters are cleared
   };
 
   const handleViewAll = () => {
     console.log('View all products');
-    setProducts(sampleProducts);
+    setProducts([]);  // Clear current product list if needed
   };
 
   // Product Card Component
   const ProductCard = ({ product }) => (
     <div className="sports-product-card">
       <div className="sports-product-image-container">
+        {/* Render the exact image from the backend */}
         <img 
-          src={product.image === "demo" ? demoImage : product.image} 
+          src={product.image || 'https://via.placeholder.com/400x500?text=Product+Image'} 
           alt={product.name} 
           className="sports-product-img"
-          onError={(e) => { e.target.src = 'https://via.placeholder.com/400x500?text=Product+Image' }}
+          onError={(e) => { e.target.src = 'https://via.placeholder.com/400x500?text=Product+Image' }}  // Fallback for missing images
         />
         <div className="sports-product-hover-overlay">
           <button
