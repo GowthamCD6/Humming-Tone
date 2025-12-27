@@ -18,6 +18,7 @@ import CustomizePage from '../../Pages/UserPanal/Customize-Product/Customize'
 import CartPage from '../../Pages/UserPanal/Cart-Page/CartPage';
 import ProductDetail from '../../Pages/UserPanal/Prodect-Details/Details';
 import './UserTab.css';
+import CheckOut from '../../Pages/UserPanal/CheckOut/CheckOut';
 
 const UserTab = () => {
   const [activeNav, setActiveNav] = useState('home');
@@ -80,9 +81,11 @@ const UserTab = () => {
       case 'customize':
         return <CustomizePage />
       case 'cart':
-        return <CartPage />
+        return <CartPage onCheckout={() => setActiveNav('checkout')} />;
       case 'details':
         return <ProductDetail product={selectedProduct} />
+      case 'checkout':
+        return <CheckOut/>
       default:
         return <Home />;
     }

@@ -3,7 +3,8 @@
 /* Container */
 .customize-page {
     max-width: 1200px;
-    margin: 0 auto;
+   
+ margin: 0 auto;
     padding: 60px 40px 0;
     background-color: #fafafa;
     min-height: 100vh;
