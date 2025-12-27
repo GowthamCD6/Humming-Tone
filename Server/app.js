@@ -11,6 +11,7 @@ const adminOrderRoute = require("./routes/admin/order");
 const userProductRoute = require("./routes/user/product");
 const adminPromoRoute = require("./routes/admin/promo");
 const userPromoRoutes = require("./routes/user/promo");
+const siteContent=require('./routes/admin/siteContent')
 const app = express();
 const PORT = process.env.PORT || 5000;
 const path = require('path');
@@ -34,7 +35,7 @@ app.use("/",adminPromoRoute);
 // user routes
 app.use("/",userProductRoute);
 app.use("/",userPromoRoutes);
-
+app.use("/", siteContent);
 app.use((req,res,next) => {
     next(createError.NotFound("api not found"));
 })
