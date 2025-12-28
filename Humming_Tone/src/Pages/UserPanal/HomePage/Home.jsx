@@ -41,25 +41,25 @@ const Home = ({ onViewDetails = () => {} }) => {
 
   // Reusable Product Card Component for cleaner code
   const ProductCard = ({ product }) => (
-    <div className="product-card">
-      <div className="product-image-container">
+    <div className="all-products-product-card">
+      <div className="all-products-product-image-container">
         {/* Placeholder for actual product image */}
-        <img src={product.image} alt={product.name} className="product-img"
+        <img src={product.image} alt={product.name} className="all-products-product-img"
              onError={(e) => { e.target.src = 'https://via.placeholder.com/400x500?text=Product+Image' }} />
         
-        <div className="product-hover-overlay">
+        <div className="all-products-product-hover-overlay">
           <button
-            className="view-details-btn"
+            className="all-products-view-details-btn"
             onClick={() => onViewDetails(product)}
           >
             VIEW DETAILS
           </button>
         </div>
       </div>
-      <div className="product-details">
-        <h3 className="product-title">{product.name}</h3>
-        <p className="product-brand-name">{product.brand}</p>
-        <p className="product-price-tag">₹{product.price.toFixed(2)}</p>
+      <div className="all-products-product-details">
+        <h3 className="all-products-product-title">{product.name}</h3>
+        <p className="all-products-product-brand">{product.brand}</p>
+        <p className="all-products-product-price">₹{product.price.toFixed(2)}</p>
       </div>
     </div>
   );
@@ -68,10 +68,8 @@ const Home = ({ onViewDetails = () => {} }) => {
     <main className="home-static-page">
       {/* Hero Section */}
       <section className="hero-banner">
-        <div className="hero-visual">
+        <div className="hero-visual" style={{ backgroundImage: `url(${homeImage})` }}>
           <div className="hero-tint"></div>
-          {/* Replace with your local HomeImage path */}
-          <img src={homeImage} alt="Premium Collection" className="hero-main-img" />
         </div>
         
         <div className="hero-text-content">
