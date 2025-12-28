@@ -11,6 +11,7 @@ import ManageProduct from '../../Pages/AdminPanal/ManageProduct/ManageProduct'
 import AddProduct from '../../Pages/AdminPanal/AddProduct/AddProduct'
 import ManageOrder from '../../Pages/AdminPanal/ManageOrder/ManageOrder'
 import SiteContent from '../../Pages/AdminPanal/SiteContent/SiteContent'
+import ProductData from '../../Pages/AdminPanal/ProductData/ProductData'
 import './AdminTab.css'
 import ReactSnowfall from 'react-snowfall';
 
@@ -23,6 +24,7 @@ export default function AdminTab({ onLogout = () => {} }) {
     { id: 'add-product', label: 'Add Product', Icon: AddCircleIcon },
     { id: 'manage-orders', label: 'Manage Orders', Icon: ShoppingCartIcon },
     { id: 'site-content', label: 'Site Content', Icon: AccountCircleIcon },
+    { id: 'all-products', label: 'Product Data', Icon: ShoppingBagIcon },
     { id: 'view-store', label: 'View Store', Icon: OpenInNewIcon },
   ]
 
@@ -91,6 +93,8 @@ export default function AdminTab({ onLogout = () => {} }) {
           {activeTab === 'manage-orders' && <ManageOrder />}
 
           {activeTab === 'site-content' && <SiteContent />}
+
+          {activeTab === 'all-products' && <ProductData />}
 
           {activeTab === 'view-store' && (
             <section className="tab-content">
