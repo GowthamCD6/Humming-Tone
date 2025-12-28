@@ -1,4 +1,5 @@
 import React from 'react';
+import { Link } from 'react-router-dom';
 import FacebookIcon from '@mui/icons-material/Facebook';
 import InstagramIcon from '@mui/icons-material/Instagram';
 import TwitterIcon from '@mui/icons-material/Twitter';
@@ -46,6 +47,18 @@ const Footer = () => {
           </ul>
         </div>
 
+        {/* Support Column */}
+        <div className="footer-col">
+          <h3 className="footer-header-title">SUPPORT</h3>
+          <ul className="footer-link-list">
+            {(footer?.supportLinks || [])
+              .filter(link => link.active !== false)
+              .map(link => (
+                <li key={link.label}><a href={link.href || '#'}>{link.label}</a></li>
+              ))}
+          </ul>
+        </div>
+
         {/* Company Column */}
         <div className="footer-col contact-details">
           <h3 className="footer-header-title">COMPANY</h3>
@@ -79,7 +92,7 @@ const Footer = () => {
           <p>{footer?.legal?.copyright || '© 2025 humming tone | All rights reserved.'}</p>
         </div>
         <div className="policy-container">
-          <a href={footer?.legal?.privacyPolicyHref || '#'}>{footer?.legal?.privacyPolicyLabel || 'Privacy Policy'}</a>
+          <Link to={footer?.legal?.privacyPolicyHref || '/privacy-policy'}>{footer?.legal?.privacyPolicyLabel || 'Privacy Policy'}</Link>
           <a href={footer?.legal?.termsHref || '#'}>{footer?.legal?.termsLabel || 'Terms of Service'}</a>
         </div>
       </div>

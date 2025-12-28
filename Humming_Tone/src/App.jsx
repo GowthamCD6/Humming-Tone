@@ -3,7 +3,9 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 import Login from './Pages/LoginPage/Login.jsx'
 import AdminTab from './components/AdminTab/AdminTab.jsx'
 import UserTab from './components/UserTab/UserTab.jsx'
+// import PrivacyPolicy from './Pages/SupportsPage/Privacy&Policy/Privacy&Policy.jsx'
 import './App.css'
+// import PrivacyPolicy from ''
 
 export default function App() {
 	const [isAuthenticated, setIsAuthenticated] = useState(false)
@@ -23,7 +25,6 @@ export default function App() {
 		<BrowserRouter>
 			<Routes>
 				<Route path="/" element={<Navigate to={isAuthenticated ? (userType === 'admin' ? '/dashboard' : '/usertab') : '/login'} replace />} />
-				
 				<Route
 					path="/login"
 					element={
@@ -49,6 +50,15 @@ export default function App() {
 					element={
 						<ProtectedRoute isAuthenticated={isAuthenticated} userType={userType} requiredType="user">
 							<UserTab onLogout={handleLogout} />
+						</ProtectedRoute>
+					}
+				/>
+
+				<Route
+					path="/privacy-policy"
+					element={
+						<ProtectedRoute isAuthenticated={isAuthenticated} userType={userType} requiredType="user">
+							<UserTab onLogout={handleLogout} initialNav="privacy-policy" />
 						</ProtectedRoute>
 					}
 				/>
