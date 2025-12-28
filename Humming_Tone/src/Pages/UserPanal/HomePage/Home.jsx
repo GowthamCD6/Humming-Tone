@@ -5,6 +5,7 @@ import demoImage from '../../../assets/demo.jpeg';
 import UserFooter from '../../../components/User-Footer-Card/UserFooter';
 import './Home.css';
 import axios from 'axios';  // Import axios
+import { Link } from 'react-router-dom';
 
 const Home = ({ onViewDetails = () => {} }) => {
   const [featuredProducts, setFeaturedProducts] = useState([]); // State for featured products
@@ -48,12 +49,7 @@ const Home = ({ onViewDetails = () => {} }) => {
              onError={(e) => { e.target.src = 'https://via.placeholder.com/400x500?text=Product+Image' }} />
         
         <div className="all-products-product-hover-overlay">
-          <button
-            className="all-products-view-details-btn"
-            onClick={() => onViewDetails(product)}
-          >
-            VIEW DETAILS
-          </button>
+          <Link  className="all-products-view-details-btn no-underline" to={`/usertab/details/${product.id}`}>VIEW DETAILS</Link>
         </div>
       </div>
       <div className="all-products-product-details">

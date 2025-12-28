@@ -20,6 +20,20 @@
   animation: fadeIn 0.8s ease-out;
 }
 
+.product-detail {
+  display: grid;
+  grid-template-columns: 1fr 1.2fr;
+  gap: 4rem;
+  align-items: flex-start;
+}
+
+/* 👇 THIS IS THE KEY */
+.product-gallery {
+  position: sticky;
+  top: 100px; /* adjust based on header height */
+  align-self: flex-start;
+}
+
 @keyframes fadeIn {
   from { opacity: 0; }
   to { opacity: 1; }
@@ -51,6 +65,8 @@
   margin-bottom: 2rem;
   position: relative;
   background: #f5f5f5;
+  max-height: 80vh;
+  object-fit: contain;
 }
 
 .product-main-image img {

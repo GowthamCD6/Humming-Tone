@@ -3,6 +3,7 @@ import UserFooter from '../../../components/User-Footer-Card/UserFooter';
 import './Children\'s.css';
 import { getGenderOptions, getCategoryOptionsForGender } from '../../../utils/siteContentStore';
 import axios from 'axios';  // Import axios
+import { Link } from 'react-router-dom';
 
 const Children = ({ onViewDetails = () => {} }) => {
   const [selectedGender, setSelectedGender] = useState('Children');  // Default to 'Children'
@@ -58,12 +59,7 @@ const Children = ({ onViewDetails = () => {} }) => {
           onError={(e) => { e.target.src = 'https://via.placeholder.com/400x500?text=Product+Image' }}  // Fallback for missing images
         />
         <div className="childrens-product-hover-overlay">
-          <button
-            className="childrens-view-details-btn"
-            onClick={() => onViewDetails(product)}
-          >
-            VIEW DETAILS
-          </button>
+          <Link  className="all-products-view-details-btn" to={`/usertab/details/${product.id}`}>VIEW DETAILS</Link>
         </div>
       </div>
       <div className="childrens-product-details">
@@ -162,12 +158,7 @@ const Children = ({ onViewDetails = () => {} }) => {
           <p className="childrens-no-products-text">
             Try adjusting your filters or browse our complete<br />collection.
           </p>
-          <button 
-            className="childrens-view-all-button"
-            onClick={handleViewAll}
-          >
-            VIEW ALL PRODUCTS
-          </button>
+          <Link className="mens-view-all-button no-underline" to="/usertab/all-products">VIEW ALL PRODUCTS</Link>
         </div>
       )}
       

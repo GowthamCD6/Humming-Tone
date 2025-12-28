@@ -3,6 +3,7 @@ import UserFooter from '../../../components/User-Footer-Card/UserFooter';
 import './Sports.css';
 import { getGenderOptions, getCategoryOptionsForGender } from '../../../utils/siteContentStore';
 import axios from 'axios';  // Import axios
+import { Link } from 'react-router-dom';
 
 const sports = ({ onViewDetails = () => {} }) => {
   const [selectedGender, setSelectedGender] = useState('Sports');  // Default to 'Sports'
@@ -60,12 +61,7 @@ const sports = ({ onViewDetails = () => {} }) => {
           onError={(e) => { e.target.src = 'https://via.placeholder.com/400x500?text=Product+Image' }}  // Fallback for missing images
         />
         <div className="sports-product-hover-overlay">
-          <button
-            className="sports-view-details-btn"
-            onClick={() => onViewDetails(product)}
-          >
-            VIEW DETAILS
-          </button>
+          <Link  className="all-products-view-details-btn" to={`/usertab/details/${product.id}`}>VIEW DETAILS</Link>
         </div>
       </div>
       <div className="sports-product-details">
@@ -164,12 +160,7 @@ const sports = ({ onViewDetails = () => {} }) => {
           <p className="sports-no-products-text">
             Try adjusting your filters or browse our complete<br />collection.
           </p>
-          <button 
-            className="sports-view-all-button"
-            onClick={handleViewAll}
-          >
-            VIEW ALL PRODUCTS
-          </button>
+          <Link className="mens-view-all-button no-underline" to="/usertab/all-products">VIEW ALL PRODUCTS</Link>
         </div>
       )}
       

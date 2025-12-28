@@ -4,6 +4,7 @@ import UserFooter from '../../../components/User-Footer-Card/UserFooter';
 import './Mens.css';
 import { getGenderOptions, getCategoryOptionsForGender } from '../../../utils/siteContentStore';
 import axios from 'axios';  // Import axios
+import { Link } from 'react-router-dom';
 
 const Men = ({ onViewDetails = () => {} }) => {
   const [selectedGender, setSelectedGender] = useState('Men');
@@ -42,12 +43,6 @@ const Men = ({ onViewDetails = () => {} }) => {
     setSelectedCategory('All Categories');
   };
 
-  const handleViewAll = () => {
-    console.log('View all products');
-    // If you want to display all products again (unfiltered)
-    setProducts(sampleProducts);
-  };
-
   // Product Card Component
   const ProductCard = ({ product }) => (
     <div className="mens-product-card">
@@ -59,12 +54,7 @@ const Men = ({ onViewDetails = () => {} }) => {
           onError={(e) => { e.target.src = 'https://via.placeholder.com/400x500?text=Product+Image' }}  // Fallback for missing images
         />
         <div className="mens-product-hover-overlay">
-          <button
-            className="mens-view-details-btn"
-            onClick={() => onViewDetails(product)}
-          >
-            VIEW DETAILS
-          </button>
+          <Link  className="all-products-view-details-btn" to={`/usertab/details/${product.id}`}>VIEW DETAILS</Link>
         </div>
       </div>
       <div className="mens-product-details">
@@ -163,12 +153,7 @@ const Men = ({ onViewDetails = () => {} }) => {
           <p className="mens-no-products-text">
             Try adjusting your filters or browse our complete<br />collection.
           </p>
-          <button 
-            className="mens-view-all-button"
-            onClick={handleViewAll}
-          >
-            VIEW ALL PRODUCTS
-          </button>
+          <Link className="mens-view-all-button no-underline" to="/usertab/all-products">VIEW ALL PRODUCTS</Link>
         </div>
       )}
       
