@@ -5,7 +5,7 @@ import './Mens.css';
 import { getGenderOptions, getCategoryOptionsForGender } from '../../../utils/siteContentStore';
 import axios from 'axios';  // Import axios
 
-const CollectionPage = ({ onViewDetails = () => {} }) => {
+const Men = ({ onViewDetails = () => {} }) => {
   const [selectedGender, setSelectedGender] = useState('Men');
   const [selectedCategory, setSelectedCategory] = useState('All Categories');
   const [products, setProducts] = useState([]);  // Initialize as empty array
@@ -178,4 +178,4 @@ const CollectionPage = ({ onViewDetails = () => {} }) => {
   );
 };
 
-export default CollectionPage;
+export default Men;

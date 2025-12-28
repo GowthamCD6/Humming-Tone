@@ -16,24 +16,37 @@ const Footer = () => {
   return (
     <footer className="footer-main-wrapper">
       <div className="footer-top-grid">
+
         {/* Brand Column */}
         <div className="footer-col brand-info">
           <div className="brand-logo-container">
-            {/* The Hanger Icon and Text */}
             <div className="footer-logo-wrapper">
-               <span className="logo-icon-hanger"></span>
-               <h2 className="footer-logo-text">{footer?.brandName || 'Humming & Tone'}</h2>
+              <span className="logo-icon-hanger"></span>
+              <h2 className="footer-logo-text">
+                {footer?.brandName || 'Humming & Tone'}
+              </h2>
             </div>
           </div>
+
           <p className="footer-description">
             {footer?.description ||
               'Your premier destination for stylish and affordable fashion. Discover the latest trends in clothing for men, women, and kids.'}
           </p>
+
+          {/* Social Icons (external → keep <a>) */}
           <div className="footer-social-tray">
-            <a href={footer?.social?.facebook || '#'} className="social-circle"><FacebookIcon fontSize="small" /></a>
-            <a href={footer?.social?.instagram || '#'} className="social-circle"><InstagramIcon fontSize="small" /></a>
-            <a href={footer?.social?.twitter || '#'} className="social-circle"><TwitterIcon fontSize="small" /></a>
-            <a href={footer?.social?.pinterest || '#'} className="social-circle"><PinterestIcon fontSize="small" /></a>
+            <a href={footer?.social?.facebook || '#'} className="social-circle" target="_blank" rel="noreferrer">
+              <FacebookIcon fontSize="small" />
+            </a>
+            <a href={footer?.social?.instagram || '#'} className="social-circle" target="_blank" rel="noreferrer">
+              <InstagramIcon fontSize="small" />
+            </a>
+            <a href={footer?.social?.twitter || '#'} className="social-circle" target="_blank" rel="noreferrer">
+              <TwitterIcon fontSize="small" />
+            </a>
+            <a href={footer?.social?.pinterest || '#'} className="social-circle" target="_blank" rel="noreferrer">
+              <PinterestIcon fontSize="small" />
+            </a>
           </div>
         </div>
 
@@ -41,9 +54,13 @@ const Footer = () => {
         <div className="footer-col">
           <h3 className="footer-header-title">SHOP</h3>
           <ul className="footer-link-list">
-            {(footer?.shopLinks || []).filter(link => link.active !== false).map(link => (
-              <li key={link.label}><a href={link.href || '#'}>{link.label}</a></li>
-            ))}
+            {(footer?.shopLinks || [])
+              .filter(link => link.active !== false)
+              .map(link => (
+                <li key={link.label}>
+                  <Link to={`/usertab/${link.href}`}>{link.label}</Link>
+                </li>
+              ))}
           </ul>
         </div>
 
@@ -54,7 +71,9 @@ const Footer = () => {
             {(footer?.supportLinks || [])
               .filter(link => link.active !== false)
               .map(link => (
-                <li key={link.label}><a href={link.href || '#'}>{link.label}</a></li>
+                <li key={link.label}>
+                  <Link to={`/usertab/${link.href}`}>{link.label}</Link>
+                </li>
               ))}
           </ul>
         </div>
@@ -62,23 +81,29 @@ const Footer = () => {
         {/* Company Column */}
         <div className="footer-col contact-details">
           <h3 className="footer-header-title">COMPANY</h3>
+
           <div className="contact-row">
             <EmailIcon className="contact-icon" />
             <span>{footer?.company?.email || 'fashionandmore.md@gmail.com'}</span>
           </div>
+
           <div className="contact-row">
             <LocalPhoneIcon className="contact-icon" />
             <span>{footer?.company?.phone || '+91 80729 77025'}</span>
           </div>
+
           <div className="contact-row align-start">
             <LocationOnIcon className="contact-icon" />
             <span>
-              {(footer?.company?.address || '49, Rayapuram West Street, Tirupur-641 604, Tamil Nadu.').split(',').join(',\n').split('\n').map((line, idx) => (
-                <span key={idx}>
-                  {line.trim()}
-                  <br />
-                </span>
-              ))}
+              {(footer?.company?.address ||
+                '49, Rayapuram West Street, Tirupur-641 604, Tamil Nadu.')
+                .split(',')
+                .map((line, idx) => (
+                  <span key={idx}>
+                    {line.trim()}
+                    <br />
+                  </span>
+                ))}
             </span>
           </div>
         </div>
@@ -89,11 +114,22 @@ const Footer = () => {
       {/* Bottom Bar */}
       <div className="footer-bottom-bar">
         <div className="copyright-container">
-          <p>{footer?.legal?.copyright || '© 2025 humming tone | All rights reserved.'}</p>
+          <p>
+            {footer?.legal?.copyright ||
+              '© 2025 humming tone | All rights reserved.'}
+          </p>
         </div>
+
         <div className="policy-container">
-          <Link to={footer?.legal?.privacyPolicyHref || '/privacy-policy'}>{footer?.legal?.privacyPolicyLabel || 'Privacy Policy'}</Link>
-          <a href={footer?.legal?.termsHref || '#'}>{footer?.legal?.termsLabel || 'Terms of Service'}</a>
+          {/* ✅ FIXED NESTED ROUTE */}
+          <Link to="/usertab/privacy_policy">
+            {footer?.legal?.privacyPolicyLabel || 'Privacy Policy'}
+          </Link>
+
+          {/* Terms is external or static */}
+          <a href={footer?.legal?.termsHref || '#'}>
+            {footer?.legal?.termsLabel || 'Terms of Service'}
+          </a>
         </div>
       </div>
     </footer>
