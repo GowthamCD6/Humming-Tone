@@ -28,7 +28,7 @@ const AllProductPage = ({ onViewDetails = () => {} }) => {
         id: product.id,
         name: product.name,
         brand: product.brand,
-        price: parseFloat(product.weight), // Replace with actual price if available
+        price: parseFloat(product.price), // Replace with actual price if available
         image: `http://localhost:5000/${product.image_path.replace(/\\/g, '/')}`, // Correct image URL format
         category: product.gender, // Replace with the correct field
       }));

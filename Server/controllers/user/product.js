@@ -41,23 +41,23 @@ exports.fetch_products = (req,res,next) => { // api request should be /user/fetc
     }
 }
 
-exports.fetch_new_arrivals = (req, res, next) => {
-  try {
-    let sql = "select * from products where is_active = 1 order by created_at DESC limit 9";
-    db.query(sql, (error, result) => {  
-      if (error || result.length === 0) {
-        return next(createError.BadRequest(error || createError.NotFound('Products not found!')));
-      }
-      res.send(result);
-    });
-  } catch (error) {
-    next(error);
-  }
-};
+  exports.fetch_new_arrivals = (req, res, next) => {
+    try {
+      let sql = "select * from products p join product_variants pv on p.id = pv.product_id where is_active = 1 order by created_at DESC limit 9";
+      db.query(sql, (error, result) => {  
+        if (error || result.length === 0) {
+          return next(createError.BadRequest(error || createError.NotFound('Products not found!')));
+        }
+        res.send(result);
+      });
+    } catch (error) {
+      next(error);
+    }
+  };
 
 exports.fetch_featured_products = (req, res, next) => {
   try {
-    let sql = "select * from products where is_featured = 1 and is_active = 1";
+    let sql = "select * from products p join product_variants pv on p.id = pv.product_id where is_featured = 1 and is_active = 1";
     db.query(sql, (error, result) => {  
       if (error || result.length === 0) {
         return next(createError.BadRequest(error || createError.NotFound('Products not found!')));
