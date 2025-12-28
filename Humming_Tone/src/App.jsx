@@ -3,6 +3,7 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 import Login from './Pages/LoginPage/Login.jsx'
 import AdminTab from './components/AdminTab/AdminTab.jsx'
 import UserTab from './components/UserTab/UserTab.jsx'
+import ContactUs from './Pages/SupportsPage/ContactUs/ContactUs.jsx'
 // import PrivacyPolicy from './Pages/SupportsPage/Privacy&Policy/Privacy&Policy.jsx'
 import './App.css'
 // import PrivacyPolicy from ''
@@ -59,6 +60,15 @@ export default function App() {
 					element={
 						<ProtectedRoute isAuthenticated={isAuthenticated} userType={userType} requiredType="user">
 							<UserTab onLogout={handleLogout} initialNav="privacy-policy" />
+						</ProtectedRoute>
+					}
+				/>
+
+				<Route
+					path="/contact-us"
+					element={
+						<ProtectedRoute isAuthenticated={isAuthenticated} userType={userType} requiredType="user">
+							<ContactUs />
 						</ProtectedRoute>
 					}
 				/>
