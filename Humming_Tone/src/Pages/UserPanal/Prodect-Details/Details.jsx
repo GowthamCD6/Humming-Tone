@@ -3,7 +3,7 @@ import UserFooter from '../../../components/User-Footer-Card/UserFooter';
 import demoImage from '../../../assets/demo.jpeg';
 import './Details.css';
 
-const ProductDetail = ({ product: selectedProduct }) => {
+const  ProductDetail = ({ product: selectedProduct }) => {
   const [selectedSize, setSelectedSize] = useState('');
   const [quantity, setQuantity] = useState(1);
   const [selectedImage, setSelectedImage] = useState(0);

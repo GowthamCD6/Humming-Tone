@@ -3,6 +3,7 @@ import demoImage from '../../../assets/demo.jpeg';
 import UserFooter from '../../../components/User-Footer-Card/UserFooter';
 import './AllProduct.css';
 import { getGenderOptions, getCategoryOptionsForGender } from '../../../utils/siteContentStore';
+import { Link } from 'react-router-dom';
 
 const AllProductPage = ({ onViewDetails = () => {} }) => {
   const [selectedGender, setSelectedGender] = useState('All');
@@ -70,12 +71,7 @@ const AllProductPage = ({ onViewDetails = () => {} }) => {
           onError={(e) => { e.target.src = 'https://via.placeholder.com/400x500?text=Product+Image' }} // Default placeholder for errors
         />
         <div className="all-products-product-hover-overlay">
-          <button
-            className="all-products-view-details-btn"
-            onClick={() => onViewDetails(product)}
-          >
-            VIEW DETAILS
-          </button>
+          <Link  className="all-products-view-details-btn" to={`/usertab/details/${product.id}`}>VIEW DETAILS</Link>
         </div>
       </div>
       <div className="all-products-product-details">
