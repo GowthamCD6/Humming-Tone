@@ -1,0 +1,540 @@
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&family=Poppins:wght@300;400;500;600;700&display=swap');
+
+/* Container */
+.baby-collection-page {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 60px 40px;
+    background-color: #fafafa;
+    min-height: 100vh;
+    font-family: 'Poppins', -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+/* Header Section */
+.baby-header {
+    margin-bottom: 40px;
+    animation: fadeInUp 0.8s ease-out;
+}
+
+.baby-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 48px;
+    font-weight: 300;
+    color: #1a1a1a;
+    margin-bottom: 15px;
+    letter-spacing: -0.02em;
+    animation: fadeInUp 0.8s ease-out 0.1s both;
+}
+
+.baby-item-count {
+    font-size: 13px;
+    color: #999;
+    letter-spacing: 2px;
+    font-weight: 400;
+    animation: fadeInUp 0.8s ease-out 0.2s both;
+}
+
+.baby-divider {
+    width: 100%;
+    height: 1px;
+    background-color: #d1d5db;
+    margin-bottom: 60px;
+    animation: fadeInUp 0.8s ease-out 0.3s both;
+}
+
+/* Filter Section */
+.baby-filter-container {
+    background-color: #ffffff;
+    padding: 50px;
+    margin-bottom: 80px;
+    border: 1px solid #e5e5e5;
+    border-top: 3px solid #1a1a1a;
+    animation: fadeInUp 0.8s ease-out 0.4s both;
+}
+
+.baby-filter-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 36px;
+    font-weight: 400;
+    color: #1a1a1a;
+    text-align: center;
+    margin-bottom: 50px;
+    letter-spacing: -0.01em;
+}
+
+.baby-filter-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr auto;
+    gap: 30px;
+    align-items: end;
+}
+
+.baby-filter-group {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.baby-filter-label {
+    font-size: 11px;
+    font-weight: 600;
+    color: #1a1a1a;
+    letter-spacing: 1.5px;
+}
+
+.baby-select-wrapper {
+    position: relative;
+}
+
+.baby-select {
+    width: 100%;
+    padding: 16px 20px;
+    font-size: 15px;
+    color: #1a1a1a;
+    background-color: #f8f8f8;
+    border: 1px solid #e0e0e0;
+    border-radius: 0;
+    appearance: none;
+    cursor: pointer;
+    font-family: 'Poppins', sans-serif;
+    transition: all 0.3s ease;
+    outline: none;
+}
+
+.baby-select:hover {
+    border-color: #1a1a1a;
+    background-color: #ffffff;
+}
+
+.baby-select-arrow {
+    position: absolute;
+    right: 20px;
+    top: 50%;
+    transform: translateY(-50%);
+    pointer-events: none;
+    font-size: 10px;
+    color: #666;
+}
+
+.baby-button-group {
+    display: flex;
+    gap: 15px;
+    align-items: center;
+}
+
+.baby-apply-button {
+    padding: 16px 36px;
+    background-color: #1a1a1a;
+    color: #ffffff;
+    border: none;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 1.5px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-family: 'Poppins', sans-serif;
+    white-space: nowrap;
+}
+
+.baby-apply-button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+}
+
+.baby-clear-button {
+    padding: 16px 36px;
+    background-color: transparent;
+    color: #666;
+    border: none;
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 1.5px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-family: 'Poppins', sans-serif;
+    white-space: nowrap;
+}
+
+.baby-clear-button:hover {
+    color: #1a1a1a;
+}
+
+/* Products Section */
+.baby-products-section {
+    animation: fadeInUp 0.8s ease-out 0.5s both;
+}
+
+.baby-section-intro {
+    text-align: center;
+    margin-bottom: 5rem;
+    animation: fadeIn 0.8s ease-out;
+}
+
+.baby-section-heading {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(28px, 4vw, 42px);
+    font-weight: 500;
+    color: #1a1a1a;
+    margin-bottom: 1rem;
+    letter-spacing: -0.02em;
+}
+
+.baby-heading-accent {
+    width: 70px;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, #1a1a1a, transparent);
+    margin: 0 auto 30px;
+    border-radius: 10px;
+}
+
+.baby-section-description {
+    color: #666;
+    font-size: 16px;
+    font-weight: 300;
+    max-width: 600px;
+    margin: 1.5rem auto 0;
+    line-height: 1.8;
+}
+
+.baby-product-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 320px);
+    gap: 5.5rem;
+    animation: fadeIn 0.8s ease-out;
+    justify-content: center;
+}
+
+/* Product Card */
+.baby-product-card {
+    background: #ffffff;
+    border-radius: 0;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+    transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+    overflow: hidden;
+    position: relative;
+    cursor: pointer;
+    opacity: 0;
+    animation: revealCard 0.6s ease-out forwards;
+    max-width: 320px;
+    width: 100%;
+}
+
+.baby-product-card:nth-child(1) { animation-delay: 0.1s; }
+.baby-product-card:nth-child(2) { animation-delay: 0.2s; }
+.baby-product-card:nth-child(3) { animation-delay: 0.3s; }
+.baby-product-card:nth-child(4) { animation-delay: 0.4s; }
+.baby-product-card:nth-child(5) { animation-delay: 0.5s; }
+.baby-product-card:nth-child(6) { animation-delay: 0.6s; }
+
+.baby-product-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(135deg, rgba(26,26,26,0.02), rgba(26,26,26,0));
+    opacity: 0;
+    transition: opacity 0.5s ease;
+    pointer-events: none;
+    z-index: 1;
+}
+
+.baby-product-card:hover::before {
+    opacity: 1;
+}
+
+.baby-product-card:hover {
+    box-shadow: 0 24px 64px rgba(0, 0, 0, 0.12);
+    transform: translateY(-12px);
+}
+
+.baby-product-image-container {
+    position: relative;
+    height: 380px;
+    background: linear-gradient(135deg, #f5f5f5 0%, #e8e8e8 100%);
+    overflow: hidden;
+}
+
+.baby-product-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.7s cubic-bezier(0.4, 0, 0.2, 1);
+    filter: grayscale(0.1);
+    will-change: transform;
+}
+
+.baby-product-card:hover .baby-product-img {
+    transform: scale(1.08);
+    filter: grayscale(0);
+}
+
+.baby-product-hover-overlay {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(180deg, transparent 0%, rgba(0,0,0,0.8) 100%);
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    opacity: 0;
+    transition: opacity 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+    padding: 2rem;
+    z-index: 2;
+}
+
+.baby-product-card:hover .baby-product-hover-overlay {
+    opacity: 1;
+}
+
+.baby-view-details-btn {
+    background: #ffffff;
+    color: #1a1a1a;
+    border: 2px solid transparent;
+    padding: 12px 32px;
+    font-weight: 600;
+    font-size: 13px;
+    letter-spacing: 0.08em;
+    cursor: pointer;
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.25);
+    border-radius: 2px;
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    text-transform: uppercase;
+    font-family: 'Poppins', sans-serif;
+    transform: translateY(20px);
+    position: relative;
+    overflow: hidden;
+}
+
+.baby-view-details-btn::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 0;
+    height: 0;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.15);
+    transform: translate(-50%, -50%);
+    transition: width 0.6s, height 0.6s;
+}
+
+.baby-view-details-btn:hover::before {
+    width: 300px;
+    height: 300px;
+}
+
+.baby-product-card:hover .baby-view-details-btn {
+    transform: translateY(0);
+}
+
+.baby-view-details-btn:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 16px 48px rgba(0, 0, 0, 0.5);
+    background: #1a1a1a;
+    color: #ffffff;
+}
+
+.baby-view-details-btn:active {
+    transform: translateY(-2px);
+    background: #000;
+    color: #ffffff;
+}
+
+.baby-product-details {
+    padding: 2rem;
+    text-align: center;
+    background-color: #ffffff;
+    position: relative;
+}
+
+.baby-product-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 20px;
+    font-weight: 500;
+    margin-bottom: 0.5rem;
+    color: #1a1a1a;
+    line-height: 1.3;
+    letter-spacing: -0.01em;
+    transition: color 0.3s ease;
+}
+
+.baby-product-card:hover .baby-product-title {
+    color: #666;
+}
+
+.baby-product-brand {
+    font-size: 11px;
+    color: #999;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    margin-bottom: 1rem;
+    font-weight: 500;
+}
+
+.baby-product-price {
+    font-size: 20px;
+    font-weight: 600;
+    color: #1a1a1a;
+    letter-spacing: -0.01em;
+}
+
+/* No Products Section */
+.baby-no-products-container {
+    text-align: center;
+    padding: 100px 20px;
+    animation: fadeInUp 0.8s ease-out 0.5s both;
+}
+
+.baby-no-products-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 36px;
+    font-weight: 400;
+    color: #1a1a1a;
+    margin-bottom: 20px;
+    letter-spacing: -0.01em;
+    margin-top: -30px;
+}
+
+.baby-no-products-text {
+    font-size: 16px;
+    color: #666;
+    line-height: 1.8;
+    margin-bottom: 40px;
+    font-weight: 300;
+}
+
+.baby-view-all-button {
+    padding: 18px 48px;
+    background-color: #1a1a1a;
+    color: #ffffff;
+    border: none;
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 1.8px;
+    cursor: pointer;
+    transition: all 0.4s ease;
+    font-family: 'Poppins', sans-serif;
+    position: relative;
+    overflow: hidden;
+}
+
+.baby-view-all-button::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 50%;
+    right: 50%;
+    bottom: 0;
+    background: #ffffff;
+    z-index: -1;
+    transition: all 0.4s ease;
+}
+
+.baby-view-all-button:hover::before {
+    left: 0;
+    right: 0;
+}
+
+.baby-view-all-button:hover {
+    color: #1a1a1a;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+}
+
+/* Animations */
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(40px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes fadeIn {
+    from { 
+        opacity: 0; 
+    }
+    to { 
+        opacity: 1; 
+    }
+}
+
+@keyframes revealCard {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Responsive */
+@media (max-width: 992px) {
+    .baby-filter-row {
+        grid-template-columns: 1fr;
+        gap: 20px;
+    }
+    
+    .baby-button-group {
+        justify-content: center;
+        margin-top: 20px;
+    }
+    
+    .baby-collection-page {
+        padding: 40px 20px;
+    }
+    
+    .baby-title {
+        font-size: 36px;
+    }
+    
+    .baby-filter-title {
+        font-size: 28px;
+    }
+    
+    .baby-product-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 2.5rem;
+    }
+}
+
+@media (max-width: 768px) {
+    .baby-product-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 1.5rem;
+    }
+    
+    .baby-product-image-container {
+        height: 300px;
+    }
+    
+    .baby-filter-container {
+        padding: 30px 20px;
+    }
+}
+
+@media (max-width: 480px) {
+    .baby-product-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* Footer Full Width - Break out of parent container */
+.baby-collection-page .footer-main-wrapper {
+    width: 100vw;
+    margin-left: calc(-50vw + 50%);
+    margin-top: 80px;
+    margin-bottom: -20px;
+    box-sizing: border-box;
+}
+
+/* Remove bottom padding from container */
+.baby-collection-page {
+    padding-bottom: 0;
+}
