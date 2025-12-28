@@ -711,7 +711,12 @@ export default function SiteContent() {
   }, []);
 
   const genders = useMemo(() => {
-    return genderCategoryDraft ? Object.keys(genderCategoryDraft).sort() : [];
+    // Filter out "Kids" from the gender list
+    return genderCategoryDraft 
+      ? Object.keys(genderCategoryDraft)
+          .filter(gender => gender.toLowerCase() !== 'kids')
+          .sort() 
+      : [];
   }, [genderCategoryDraft]);
 
   // Statistics for dashboard-like overview
@@ -776,6 +781,10 @@ export default function SiteContent() {
   const addGender = () => {
     const name = prompt("Enter new gender name (example: Women)");
     if (!name) return;
+    if (name.toLowerCase() === 'kids') {
+      alert('The "Kids" gender option is not available.');
+      return;
+    }
     setGenderCategoryDraft((prev) => {
       if (prev?.[name]) return prev;
       return { ...(prev || {}), [name]: ["All Categories"] };
@@ -828,9 +837,9 @@ export default function SiteContent() {
   };
 
   const addSupportLink = () => {
-    const label = prompt('Enter support link label (e.g., "Size Guide")');
+    const label = prompt('Enter support link label (e.g., "Contact Us")');
     if (!label) return;
-    const href = prompt('Enter link URL (e.g., "/size-guide")');
+    const href = prompt('Enter link URL (e.g., "/contact")');
     if (href === null) return;
 
     setFooterDraft((prev) => ({
@@ -862,6 +871,13 @@ export default function SiteContent() {
       };
       return { ...prev, supportLinks: updated };
     });
+  };
+
+  const removeSupportLink = (index) => {
+    setFooterDraft((prev) => ({
+      ...prev,
+      supportLinks: prev?.supportLinks?.filter((_, i) => i !== index) || [],
+    }));
   };
 
   const toggleGenderStatus = (gender) => {
@@ -907,10 +923,6 @@ export default function SiteContent() {
     <section className="tab-content">
       <div className="content-header">
         <h3 className="content-subtitle">Store Content Management</h3>
-        <button className="sitecontent-btn danger" onClick={resetAll}>
-          <RestoreIcon />
-          Reset to Defaults
-        </button>
       </div>
       
       {/* Stats Overview */}
@@ -1066,25 +1078,25 @@ export default function SiteContent() {
                     />
                   </div>
                   <div className="sitecontent-row">
-                    <label>Twitter</label>
+                    <label>WhatsApp</label>
                     <input
                       type="url"
-                      value={footerDraft?.social?.twitter || ""}
+                      value={footerDraft?.social?.whatsapp || ""}
                       onChange={(e) =>
-                        updateFooterField("social.twitter", e.target.value)
+                        updateFooterField("social.whatsapp", e.target.value)
                       }
-                      placeholder="https://twitter.com/yourpage"
+                      placeholder="https://wa.me/1234567890"
                     />
                   </div>
                   <div className="sitecontent-row">
-                    <label>Pinterest</label>
+                    <label>Meesho</label>
                     <input
                       type="url"
-                      value={footerDraft?.social?.pinterest || ""}
+                      value={footerDraft?.social?.meesho || ""}
                       onChange={(e) =>
-                        updateFooterField("social.pinterest", e.target.value)
+                        updateFooterField("social.meesho", e.target.value)
                       }
-                      placeholder="https://pinterest.com/yourpage"
+                      placeholder="https://meesho.com/yourstore"
                     />
                   </div>
                 </div>
@@ -1161,12 +1173,6 @@ export default function SiteContent() {
                           onClick={() => toggleShopLinkActive(index)}
                         >
                           {link.active === false ? "Inactive" : "Active"}
-                        </button>
-                        <button
-                          className="sitecontent-btn danger small"
-                          onClick={() => removeShopLink(index)}
-                        >
-                          Remove
                         </button>
                       </div>
                     </div>
@@ -1376,7 +1382,7 @@ export default function SiteContent() {
                     <CategoryIcon className="empty-icon" />
                     <h3>No Gender Categories</h3>
                     <p>
-                      Start by adding a gender type like "Men", "Women", or "Kids"
+                      Start by adding a gender type like "Men", "Women", or "Children"
                     </p>
                   </div>
                 )}

@@ -380,94 +380,204 @@
 const db = require("../../config/db");
 const createError = require("http-errors");
 
-exports.add_product = async (req, res, next) => {
-    const connection = await db.getConnection();
-    try {
-        const files = req.files;
-        if (!files || files.length === 0) throw createError.BadRequest("At least one image is required");
+// --- ADD PRODUCT ---
+exports.add_product = (req, res, next) => {
+    db.getConnection((err, connection) => {
+        if (err) return next(err);
 
-        const {
-            name, about, sku, category, subcategory, brand, color,
-            material, care_instructions, gender, age_range, weight,
-            dimensions, is_featured, is_active, variants: variantsRaw
-        } = req.body;
+        try {
+            const files = req.files;
+            if (!files || files.length === 0) {
+                connection.release();
+                return next(createError.BadRequest("At least one image is required"));
+            }
 
-        await connection.beginTransaction();
+            const {
+                name, about, sku, category, subcategory, brand, color,
+                material, care_instructions, gender, age_range, weight,
+                dimensions, is_featured, is_active, variants: variantsRaw
+            } = req.body;
 
-        // 1. Get Category ID (Fallback to ID 1 if not found to prevent 404)
-        const [catRows] = await connection.query("SELECT id FROM categories WHERE slug = ? LIMIT 1", [category]);
-        let category_id = catRows.length > 0 ? catRows[0].id : null;
+            connection.beginTransaction(err => {
+                if (err) {
+                    connection.release();
+                    return next(err);
+                }
 
-        // If category is missing, we check if ANY category exists to use as default
-        if (!category_id) {
-            const [allCats] = await connection.query("SELECT id FROM categories LIMIT 1");
-            if (allCats.length > 0) category_id = allCats[0].id;
-            else throw createError.NotFound("Please add categories to your database first!");
+                // 1. Get Category ID
+                connection.query(
+                    "SELECT id FROM categories WHERE slug = ? LIMIT 1",
+                    [category],
+                    (err, catRows) => {
+                        if (err) return rollback(err);
+
+                        let category_id = catRows.length > 0 ? catRows[0].id : null;
+
+                        // fallback category
+                        if (!category_id) {
+                            connection.query(
+                                "SELECT id FROM categories LIMIT 1",
+                                (err, allCats) => {
+                                    if (err) return rollback(err);
+                                    if (allCats.length === 0) {
+                                        return rollback(createError.NotFound("Please add categories to your database first!"));
+                                    }
+                                    category_id = allCats[0].id;
+                                    insertProduct(category_id);
+                                }
+                            );
+                        } else {
+                            insertProduct(category_id);
+                        }
+                    }
+                );
+
+                // 2. Insert Product
+                function insertProduct(category_id) {
+                    const primary_image = files[0].path;
+
+                    const insertProductSql = `
+                        INSERT INTO products 
+                        (name, about, sku, category_id, subcategory, brand, color,
+                         material, care_instructions, gender, age_range, weight, dimensions,
+                         is_featured, is_active, image_path)
+                        VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
+                    `;
+
+                    connection.query(
+                        insertProductSql,
+                        [
+                            name, about, sku, category_id, subcategory, brand, color,
+                            material, care_instructions, gender, age_range,
+                            weight ? Number(weight) : 0,
+                            dimensions,
+                            is_featured == '1' ? 1 : 0,
+                            is_active == '1' ? 1 : 0,
+                            primary_image
+                        ],
+                        (err, prodResult) => {
+                            if (err) return rollback(err);
+
+                            const product_id = prodResult.insertId;
+                            insertImages(product_id);
+                        }
+                    );
+                }
+
+                // 3. Insert Images
+                function insertImages(product_id) {
+                    const imageValues = files.map((file, index) => [
+                        product_id,
+                        file.path,
+                        index === 0 ? 1 : 0
+                    ]);
+
+                    connection.query(
+                        "INSERT INTO product_images (product_id, image_path, is_primary) VALUES ?",
+                        [imageValues],
+                        err => {
+                            if (err) return rollback(err);
+                            insertVariants(product_id);
+                        }
+                    );
+                }
+
+                // 4. Insert Variants
+                function insertVariants(product_id) {
+                    let variants;
+                    try {
+                        variants = JSON.parse(variantsRaw);
+                    } catch {
+                        return rollback(createError.BadRequest("Invalid variants format"));
+                    }
+
+                    const variantValues = variants.map(v => [
+                        product_id,
+                        v.size,
+                        v.price,
+                        v.original_price,
+                        v.stock_quantity
+                    ]);
+
+                    connection.query(
+                        "INSERT INTO product_variants (product_id, size, price, original_price, stock_quantity) VALUES ?",
+                        [variantValues],
+                        err => {
+                            if (err) return rollback(err);
+
+                            connection.commit(err => {
+                                if (err) return rollback(err);
+
+                                connection.release();
+                                res.status(201).json({
+                                    success: true,
+                                    message: "Product added!"
+                                });
+                            });
+                        }
+                    );
+                }
+
+                // Rollback helper
+                function rollback(error) {
+                    connection.rollback(() => {
+                        connection.release();
+                        console.error("DB Error:", error);
+                        next(error);
+                    });
+                }
+            });
+        } catch (error) {
+            connection.release();
+            next(error);
         }
-
-        // 2. Insert Product
-        const primary_image = files[0].path;
-        const insertProductSql = `
-            INSERT INTO products (name, about, sku, category_id, subcategory, brand, color, 
-            material, care_instructions, gender, age_range, weight, dimensions, 
-            is_featured, is_active, image_path) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`;
-
-        const [prodResult] = await connection.query(insertProductSql, [
-            name, about, sku, category_id, subcategory, brand, color,
-            material, care_instructions, gender, age_range, 
-            weight ? Number(weight) : 0, dimensions, 
-            is_featured == '1' ? 1 : 0, is_active == '1' ? 1 : 0, primary_image
-        ]);
-
-        const product_id = prodResult.insertId;
-
-        // 3. Images
-        const imageValues = files.map((file, index) => [product_id, file.path, index === 0 ? 1 : 0]);
-        await connection.query("INSERT INTO product_images (product_id, image_path, is_primary) VALUES ?", [imageValues]);
-
-        // 4. Variants
-        let variants = JSON.parse(variantsRaw);
-        const variantValues = variants.map(v => [product_id, v.size, v.price, v.original_price, v.stock_quantity]);
-        await connection.query("INSERT INTO product_variants (product_id, size, price, original_price, stock_quantity) VALUES ?", [variantValues]);
-
-        await connection.commit();
-        res.status(201).json({ success: true, message: "Product added!" });
-    } catch (error) {
-        await connection.rollback();
-        console.error("DB Error:", error);
-        next(error);
-    } finally {
-        connection.release();
-    }
+    });
 };
 
-
 // --- FETCH PRODUCTS ---
-exports.fetch_products = async (req, res, next) => {
+exports.fetch_products = (req, res, next) => {
     try {
         const getSql = `
             SELECT p.*, 
-            (SELECT price FROM product_variants WHERE product_id = p.id LIMIT 1) as price,
-            (SELECT SUM(stock_quantity) FROM product_variants WHERE product_id = p.id) as stock_quantity
+            (SELECT price FROM product_variants WHERE product_id = p.id LIMIT 1) AS price,
+            (SELECT SUM(stock_quantity) FROM product_variants WHERE product_id = p.id) AS stock_quantity
             FROM products p 
-            ORDER BY p.id DESC`;
-        const [rows] = await db.query(getSql);
-        res.status(200).json(rows || []);
+            ORDER BY p.id DESC
+        `;
+
+        db.query(getSql, (error, rows) => {
+            if (error) {
+                return next(error);
+            }
+
+            res.status(200).json(rows || []);
+        });
+
     } catch (error) {
         next(error);
     }
 };
 
+
 // --- FETCH VARIANTS ---
-exports.fetch_variants = async (req, res, next) => {
+exports.fetch_variants = (req, res, next) => {
     try {
         const { id } = req.params;
-        const [rows] = await db.query("SELECT * FROM product_variants WHERE product_id = ?", [id]);
-        res.status(200).json(rows);
+
+        db.query(
+            "SELECT * FROM product_variants WHERE product_id = ?",
+            [id],
+            (err, rows) => {
+                if (err) return next(err);
+
+                res.status(200).json(rows || []);
+            }
+        );
     } catch (error) {
         next(error);
     }
 };
+
 
 // --- UPDATE PRODUCT ---
 // exports.update_product = async (req, res, next) => {
@@ -486,69 +596,137 @@ exports.fetch_variants = async (req, res, next) => {
 // };
 
 // --- UPDATE VARIANT ---
-exports.update_variant = async (req, res, next) => {
+exports.update_variant = (req, res, next) => {
     try {
         const { id } = req.params;
         const { price, original_price, stock_quantity } = req.body;
-        const [result] = await db.query("UPDATE product_variants SET price=?, original_price=?, stock_quantity=? WHERE id=?", [price, original_price, stock_quantity, id]);
-        if (result.affectedRows === 0) throw createError.NotFound("Variant not found");
-        res.json({ message: "Variant updated" });
+
+        db.query(
+            "UPDATE product_variants SET price=?, original_price=?, stock_quantity=? WHERE id=?",
+            [price, original_price, stock_quantity, id],
+            (err, result) => {
+                if (err) return next(err);
+
+                if (result.affectedRows === 0) {
+                    return next(createError.NotFound("Variant not found"));
+                }
+
+                res.json({ message: "Variant updated" });
+            }
+        );
     } catch (error) {
         next(error);
     }
 };
 
-// --- DELETE PRODUCT ---
-exports.update_product = async (req, res, next) => {
-    let connection;
-    try {
-        const { id } = req.params;
-        const { name, sku, price, stock, category, gender, about } = req.body;
-        
-        connection = await db.getConnection();
-        await connection.beginTransaction();
 
-        // 1. Update Product Table
-        await connection.query(
-            "UPDATE products SET name = ?, sku = ?, subcategory = ?, gender = ?, about = ? WHERE id = ?",
-            [name, sku, category, gender, about, id]
-        );
+// --- UPDATE PRODUCT (WITH TRANSACTION) ---
+exports.update_product = (req, res, next) => {
+    const { id } = req.params;
+    const { name, sku, price, stock, category, gender, about } = req.body;
 
-        // 2. Update first variant (Price and Stock)
-        await connection.query(
-            "UPDATE product_variants SET price = ?, stock_quantity = ? WHERE product_id = ? LIMIT 1",
-            [Number(price), Number(stock), id]
-        );
+    db.getConnection((err, connection) => {
+        if (err) return next(err);
 
-        await connection.commit();
-        res.json({ success: true, message: "Product updated successfully!" });
-    } catch (error) {
-        if (connection) await connection.rollback();
-        console.error("Update Error:", error);
-        next(error);
-    } finally {
-        if (connection) connection.release();
-    }
+        connection.beginTransaction(err => {
+            if (err) {
+                connection.release();
+                return next(err);
+            }
+
+            // 1. Update products table
+            connection.query(
+                "UPDATE products SET name=?, sku=?, subcategory=?, gender=?, about=? WHERE id=?",
+                [name, sku, category, gender, about, id],
+                err => {
+                    if (err) return rollback(err);
+
+                    // 2. Update first variant
+                    connection.query(
+                        "UPDATE product_variants SET price=?, stock_quantity=? WHERE product_id=? LIMIT 1",
+                        [Number(price), Number(stock), id],
+                        err => {
+                            if (err) return rollback(err);
+
+                            connection.commit(err => {
+                                if (err) return rollback(err);
+
+                                connection.release();
+                                res.json({
+                                    success: true,
+                                    message: "Product updated successfully!"
+                                });
+                            });
+                        }
+                    );
+                }
+            );
+
+            function rollback(error) {
+                connection.rollback(() => {
+                    connection.release();
+                    console.error("Update Error:", error);
+                    next(error);
+                });
+            }
+        });
+    });
 };
 
-// --- DELETE PRODUCT (Permanently) ---
-exports.delete_product = async (req, res, next) => {
-    let connection;
-    try {
-        const { id } = req.body;
-        connection = await db.getConnection();
-        await connection.beginTransaction();
 
-        await connection.query("DELETE FROM product_images WHERE product_id = ?", [id]);
-        await connection.query("DELETE FROM product_variants WHERE product_id = ?", [id]);
-        await connection.query("DELETE FROM products WHERE id = ?", [id]);
+// --- DELETE PRODUCT (WITH TRANSACTION) ---
+exports.delete_product = (req, res, next) => {
+    const { id } = req.body;
 
-        await connection.commit();
-        res.json({ success: true, message: "Product deleted" });
-    } catch (error) {
-        if (connection) await connection.rollback();
-        next(error);
-    } finally {
-        if (connection) connection.release();
-    }
+    db.getConnection((err, connection) => {
+        if (err) return next(err);
+
+        connection.beginTransaction(err => {
+            if (err) {
+                connection.release();
+                return next(err);
+            }
+
+            connection.query(
+                "DELETE FROM product_images WHERE product_id=?",
+                [id],
+                err => {
+                    if (err) return rollback(err);
+
+                    connection.query(
+                        "DELETE FROM product_variants WHERE product_id=?",
+                        [id],
+                        err => {
+                            if (err) return rollback(err);
+
+                            connection.query(
+                                "DELETE FROM products WHERE id=?",
+                                [id],
+                                err => {
+                                    if (err) return rollback(err);
+
+                                    connection.commit(err => {
+                                        if (err) return rollback(err);
+
+                                        connection.release();
+                                        res.json({
+                                            success: true,
+                                            message: "Product deleted"
+                                        });
+                                    });
+                                }
+                            );
+                        }
+                    );
+                }
+            );
+
+            function rollback(error) {
+                connection.rollback(() => {
+                    connection.release();
+                    next(error);
+                });
+            }
+        });
+    });
 };

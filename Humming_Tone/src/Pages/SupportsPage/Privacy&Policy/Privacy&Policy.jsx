@@ -17,12 +17,27 @@ const PrivacyPolicy = () => {
             background: linear-gradient(135deg, rgba(0,0,0,0.75) 0%, rgba(0,0,0,0.6) 50%, rgba(0,0,0,0.75) 100%), 
                         url('https://images.unsplash.com/photo-1441986300917-64674bd600d8?ixlib=rb-4.0.3&auto=format&fit=crop&w=1950&q=80');
             background-size: cover;
-            background-position: center;
-            background-attachment: fixed;
+          background-position: center;
+          background-repeat: no-repeat;
+          background-attachment: fixed;
+          width: 100%;
+          max-width: 1200px;
+          margin: 0 auto;
+          min-height: 560px;
+          height: clamp(340px, 55vh, 560px);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          box-sizing: border-box;
             color: white;
             padding: 8rem 0 6rem;
             text-align: center;
             margin-bottom: 0;
+        }
+
+        .hero-content {
+          max-width: 700px;
+          margin: 0 auto;
         }
 
         .policy-hero h1 {

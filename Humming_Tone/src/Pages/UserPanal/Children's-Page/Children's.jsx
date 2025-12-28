@@ -4,7 +4,7 @@ import './Children\'s.css';
 import { getGenderOptions, getCategoryOptionsForGender } from '../../../utils/siteContentStore';
 import axios from 'axios';  // Import axios
 
-const CollectionPage = ({ onViewDetails = () => {} }) => {
+const Children = ({ onViewDetails = () => {} }) => {
   const [selectedGender, setSelectedGender] = useState('Children');  // Default to 'Children'
   const [selectedCategory, setSelectedCategory] = useState('All Categories');
   const [products, setProducts] = useState([]);  // Set products to empty initially
@@ -177,4 +177,4 @@ const CollectionPage = ({ onViewDetails = () => {} }) => {
   );
 };
 
-export default CollectionPage;
+export default Children;
