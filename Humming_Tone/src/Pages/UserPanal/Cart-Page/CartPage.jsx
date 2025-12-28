@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { Link } from 'react-router-dom';
 
 const PremiumCart = ({ onCheckout }) => {
   const [cartItems, setCartItems] = useState([
@@ -109,9 +110,10 @@ const PremiumCart = ({ onCheckout }) => {
         <div className="empty-cart">
           <h2>Your cart is empty</h2>
           <p>Looks like you haven't added anything to your cart yet. Start shopping to fill it up!</p>
-          <button className="btn btn-primary" onClick={() => alert('Redirecting to shop...')}>
+          {/* <button className="btn btn-primary" onClick={() => Navigate("")}>
             Continue Shopping
-          </button>
+          </button> */}
+          <Link className='btn btn-primary' to="all-products">Continue Shopping</Link>
         </div>
       </div>
     );
