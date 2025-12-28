@@ -1,4 +1,141 @@
-const STORAGE_KEY = 'humming-tone:site-content:v1'
+// const STORAGE_KEY = 'humming-tone:site-content:v1'
+
+// export const defaultSiteContent = {
+//   footer: {
+//     brandName: 'Humming & Tone',
+//     description:
+//       'Your premier destination for stylish and affordable fashion. Discover the latest trends in clothing for men, women, and kids.',
+//     social: {
+//       facebook: '',
+//       instagram: '',
+//       twitter: '',
+//       pinterest: '',
+//     },
+//     shopLinks: [
+//       { label: "Men's Collection", href: '/mens' },
+//       { label: "Children's Collection", href: '/childrens' },
+//       { label: "Baby Collection", href: '/baby' },
+//       { label: 'Sports Collection', href: '/sports' },
+//       { label: 'Customize', href: '/customize' },
+//       { label: 'All Products', href: '/all-products' },
+//     ],
+//     supportLinks: [
+//       { label: 'Contact Us', href: '/contact' },
+//       { label: 'Shipping Info', href: '/shipping' },
+//       { label: 'Returns & Exchanges', href: '/returns' },
+//       { label: 'Size Guide', href: '/size-guide' },
+//       { label: 'FAQ', href: '/faq' },
+//     ],
+//     company: {
+//       email: 'fashionandmore.md@gmail.com',
+//       phone: '+91 80729 77025',
+//       address: '49, Rayapuram West Street, Tirupur-641 604, Tamil Nadu.',
+//     },
+//     legal: {
+//       copyright: '© 2025 humming tone | All rights reserved.',
+//       privacyPolicyLabel: 'Privacy Policy',
+//       privacyPolicyHref: '#',
+//       termsLabel: 'Terms of Service',
+//       termsHref: '#',
+//     },
+//   },
+//   genderCategory: {
+//     Men: ['All Categories', 'Shirts', 'Pants', 'Jackets', 'Shoes', 'Accessories'],
+//     Children: ['All Categories', 'Tops', 'Bottoms', 'Winter sets'],
+//     Baby: ['All Categories', 'Baby Sets', 'Winter sets'],
+//     Sports: ['All Categories', 'Running', 'Training', 'Outdoor', 'Shoes', 'Accessories'],
+//     Customize: ['All Categories', 'Printed', 'Embroidery'],
+//   },
+//   genderStatus: {
+//     Men: true,
+//     Children: true,
+//     Baby: true,
+//     Sports: true,
+//     Customize: true,
+//   },
+// }
+
+// export function getSiteContent() {
+//   try {
+//     const raw = localStorage.getItem(STORAGE_KEY)
+//     if (!raw) return defaultSiteContent
+//     const parsed = JSON.parse(raw)
+//     return {
+//       ...defaultSiteContent,
+//       ...parsed,
+//       footer: { ...defaultSiteContent.footer, ...(parsed.footer || {}) },
+//       genderCategory: { ...defaultSiteContent.genderCategory, ...(parsed.genderCategory || {}) },
+//       genderStatus: { ...defaultSiteContent.genderStatus, ...(parsed.genderStatus || {}) },
+//     }
+//   } catch {
+//     return defaultSiteContent
+//   }
+// }
+
+// export function setSiteContent(next) {
+//   localStorage.setItem(STORAGE_KEY, JSON.stringify(next))
+// }
+
+// export function updateFooter(partialFooter) {
+//   const current = getSiteContent()
+//   const next = {
+//     ...current,
+//     footer: {
+//       ...current.footer,
+//       ...partialFooter,
+//       social: { ...current.footer.social, ...(partialFooter.social || {}) },
+//       company: { ...current.footer.company, ...(partialFooter.company || {}) },
+//       legal: { ...current.footer.legal, ...(partialFooter.legal || {}) },
+//       shopLinks: partialFooter.shopLinks !== undefined ? partialFooter.shopLinks : current.footer.shopLinks,
+//       supportLinks: partialFooter.supportLinks !== undefined ? partialFooter.supportLinks : current.footer.supportLinks,
+//     },
+//   }
+//   setSiteContent(next)
+//   return next
+// }
+
+// export function updateGenderCategory(partialGenderCategory) {
+//   const current = getSiteContent()
+//   const next = {
+//     ...current,
+//     genderCategory: { ...current.genderCategory, ...partialGenderCategory },
+//   }
+//   setSiteContent(next)
+//   return next
+// }
+
+// export function updateGenderStatus(genderStatusMap) {
+//   const current = getSiteContent()
+//   const next = {
+//     ...current,
+//     genderStatus: { ...current.genderStatus, ...genderStatusMap },
+//   }
+//   setSiteContent(next)
+//   return next
+// }
+
+// export function resetSiteContent() {
+//   localStorage.removeItem(STORAGE_KEY)
+//   return defaultSiteContent
+// }
+
+// export function getGenderOptions() {
+//   const content = getSiteContent()
+//   const allGenders = Object.keys(content.genderCategory)
+//   const genderStatus = content.genderStatus || {}
+  
+//   // Filter to only return active genders
+//   return allGenders.filter(gender => genderStatus[gender] !== false)
+// }
+
+// export function getCategoryOptionsForGender(gender) {
+//   const map = getSiteContent().genderCategory
+//   if (map?.[gender] && Array.isArray(map[gender])) return map[gender]
+//   return ['All Categories']
+// }
+
+
+const API_URL = 'http://localhost:5000/api/site-content';
 
 export const defaultSiteContent = {
   footer: {
@@ -12,19 +149,19 @@ export const defaultSiteContent = {
       pinterest: '',
     },
     shopLinks: [
-      { label: "Men's Collection", href: '/mens' },
-      { label: "Children's Collection", href: '/childrens' },
-      { label: "Baby Collection", href: '/baby' },
-      { label: 'Sports Collection', href: '/sports' },
-      { label: 'Customize', href: '/customize' },
-      { label: 'All Products', href: '/all-products' },
+      { label: "Men's Collection", href: '/mens', active: true },
+      { label: "Children's Collection", href: '/childrens', active: true },
+      { label: "Baby Collection", href: '/baby', active: true },
+      { label: 'Sports Collection', href: '/sports', active: true },
+      { label: 'Customize', href: '/customize', active: true },
+      { label: 'All Products', href: '/all-products', active: true },
     ],
     supportLinks: [
-      { label: 'Contact Us', href: '/contact' },
-      { label: 'Shipping Info', href: '/shipping' },
-      { label: 'Returns & Exchanges', href: '/returns' },
-      { label: 'Size Guide', href: '/size-guide' },
-      { label: 'FAQ', href: '/faq' },
+      { label: 'Contact Us', href: '/contact', active: true },
+      { label: 'Shipping Info', href: '/shipping', active: true },
+      { label: 'Returns & Exchanges', href: '/returns', active: true },
+      { label: 'Size Guide', href: '/size-guide', active: true },
+      { label: 'FAQ', href: '/faq', active: true },
     ],
     company: {
       email: 'fashionandmore.md@gmail.com',
@@ -34,9 +171,9 @@ export const defaultSiteContent = {
     legal: {
       copyright: '© 2025 humming tone | All rights reserved.',
       privacyPolicyLabel: 'Privacy Policy',
-      privacyPolicyHref: '#',
+      privacyPolicyHref: '/privacy-policy',
       termsLabel: 'Terms of Service',
-      termsHref: '#',
+      termsHref: '/terms',
     },
   },
   genderCategory: {
@@ -53,83 +190,142 @@ export const defaultSiteContent = {
     Sports: true,
     Customize: true,
   },
-}
+};
 
-export function getSiteContent() {
+// In-memory cache
+let cachedContent = null;
+let isInitialized = false;
+
+// Fetch content from API
+export async function fetchSiteContent() {
   try {
-    const raw = localStorage.getItem(STORAGE_KEY)
-    if (!raw) return defaultSiteContent
-    const parsed = JSON.parse(raw)
-    return {
-      ...defaultSiteContent,
-      ...parsed,
-      footer: { ...defaultSiteContent.footer, ...(parsed.footer || {}) },
-      genderCategory: { ...defaultSiteContent.genderCategory, ...(parsed.genderCategory || {}) },
-      genderStatus: { ...defaultSiteContent.genderStatus, ...(parsed.genderStatus || {}) },
+    const response = await fetch(API_URL);
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
     }
-  } catch {
-    return defaultSiteContent
+    const data = await response.json();
+    
+    // Merge with defaults to ensure all fields exist
+    cachedContent = {
+      ...defaultSiteContent,
+      ...data,
+      footer: { ...defaultSiteContent.footer, ...(data.footer || {}) },
+      genderCategory: { ...defaultSiteContent.genderCategory, ...(data.genderCategory || {}) },
+      genderStatus: { ...defaultSiteContent.genderStatus, ...(data.genderStatus || {}) },
+    };
+    
+    isInitialized = true;
+    return cachedContent;
+  } catch (error) {
+    console.error('Error fetching site content:', error);
+    // Return default content on error
+    cachedContent = defaultSiteContent;
+    isInitialized = true;
+    return defaultSiteContent;
   }
 }
 
-export function setSiteContent(next) {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(next))
-}
-
-export function updateFooter(partialFooter) {
-  const current = getSiteContent()
-  const next = {
-    ...current,
-    footer: {
-      ...current.footer,
-      ...partialFooter,
-      social: { ...current.footer.social, ...(partialFooter.social || {}) },
-      company: { ...current.footer.company, ...(partialFooter.company || {}) },
-      legal: { ...current.footer.legal, ...(partialFooter.legal || {}) },
-      shopLinks: partialFooter.shopLinks !== undefined ? partialFooter.shopLinks : current.footer.shopLinks,
-      supportLinks: partialFooter.supportLinks !== undefined ? partialFooter.supportLinks : current.footer.supportLinks,
-    },
+// Get site content synchronously (returns cached or default)
+export function getSiteContent() {
+  if (!isInitialized) {
+    // Initialize with default and trigger async fetch
+    cachedContent = defaultSiteContent;
+    fetchSiteContent().catch(console.error);
   }
-  setSiteContent(next)
-  return next
+  return cachedContent || defaultSiteContent;
 }
 
-export function updateGenderCategory(partialGenderCategory) {
-  const current = getSiteContent()
-  const next = {
-    ...current,
-    genderCategory: { ...current.genderCategory, ...partialGenderCategory },
+// Update footer in database
+export async function updateFooter(partialFooter) {
+  try {
+    const response = await fetch(`${API_URL}/footer`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(partialFooter)
+    });
+    
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.error || 'Failed to update footer');
+    }
+    
+    // Refresh cache from server
+    await fetchSiteContent();
+    return cachedContent;
+  } catch (error) {
+    console.error('Error updating footer:', error);
+    throw error;
   }
-  setSiteContent(next)
-  return next
 }
 
-export function updateGenderStatus(genderStatusMap) {
-  const current = getSiteContent()
-  const next = {
-    ...current,
-    genderStatus: { ...current.genderStatus, ...genderStatusMap },
+// Update gender category mapping in database
+export async function updateGenderCategory(partialGenderCategory) {
+  try {
+    const response = await fetch(`${API_URL}/gender-category`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(partialGenderCategory)
+    });
+    
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.error || 'Failed to update gender categories');
+    }
+    
+    // Refresh cache from server
+    await fetchSiteContent();
+    return cachedContent;
+  } catch (error) {
+    console.error('Error updating gender categories:', error);
+    throw error;
   }
-  setSiteContent(next)
-  return next
 }
 
+// Update gender visibility status in database
+export async function updateGenderStatus(genderStatusMap) {
+  try {
+    const response = await fetch(`${API_URL}/gender-status`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(genderStatusMap)
+    });
+    
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.error || 'Failed to update gender status');
+    }
+    
+    // Refresh cache from server
+    await fetchSiteContent();
+    return cachedContent;
+  } catch (error) {
+    console.error('Error updating gender status:', error);
+    throw error;
+  }
+}
+
+// Reset to defaults (client-side only - for UI reset)
 export function resetSiteContent() {
-  localStorage.removeItem(STORAGE_KEY)
-  return defaultSiteContent
+  cachedContent = JSON.parse(JSON.stringify(defaultSiteContent));
+  return cachedContent;
 }
 
+// Get active gender options
 export function getGenderOptions() {
-  const content = getSiteContent()
-  const allGenders = Object.keys(content.genderCategory)
-  const genderStatus = content.genderStatus || {}
+  const content = getSiteContent();
+  const allGenders = Object.keys(content.genderCategory);
+  const genderStatus = content.genderStatus || {};
   
   // Filter to only return active genders
-  return allGenders.filter(gender => genderStatus[gender] !== false)
+  return allGenders.filter(gender => genderStatus[gender] !== false);
 }
 
+// Get category options for a specific gender
 export function getCategoryOptionsForGender(gender) {
-  const map = getSiteContent().genderCategory
-  if (map?.[gender] && Array.isArray(map[gender])) return map[gender]
-  return ['All Categories']
+  const map = getSiteContent().genderCategory;
+  if (map?.[gender] && Array.isArray(map[gender])) return map[gender];
+  return ['All Categories'];
 }
+
+// Initialize content on module load
+fetchSiteContent().catch(console.error);

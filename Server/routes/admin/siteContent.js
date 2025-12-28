@@ -1,9 +1,11 @@
-const express = require("express");
+const express = require('express');
 const router = express.Router();
-const siteController = require("../../controllers/admin/siteContent");
+const siteController = require('../../controllers/admin/siteContent');
 
-router.get("/admin/site-content", siteController.get_site_content);
-router.post("/admin/site-content", siteController.update_site_content);
+// Fixed: functions are explicitly passed
+router.get('/', siteController.getSiteContent);
+router.post('/footer', siteController.updateFooter);
+router.post('/gender-status', siteController.updateGenderStatus);
+router.post('/gender-category', siteController.updateGenderCategory);
 
 module.exports = router;
-

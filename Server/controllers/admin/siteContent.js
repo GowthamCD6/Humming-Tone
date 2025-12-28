@@ -1,42 +1,259 @@
-const db = require("../../config/db");
-const createError = require("http-errors");
+const db = require('../../config/db');
 
-// GET current settings
-exports.get_site_content = async (req, res, next) => {
-    try {
-        const [rows] = await db.query("SELECT * FROM site_settings WHERE id = 1");
-        if (rows.length === 0) throw createError.NotFound("Settings not found");
+exports.getSiteContent = (req, res) => {
+    console.log('Fetching site content...');
+    
+    // Use callbacks instead of promises
+    db.query("SELECT * FROM site_settings WHERE id = 1", (err, settings) => {
+        if (err) {
+            console.error('getSiteContent error:', err);
+            return res.status(500).json({ error: err.message });
+        }
         
-        const s = rows[0];
-        res.json({
-            footer: {
-                brandName: s.brand_name,
-                description: s.description,
-                company: typeof s.contact_info === 'string' ? JSON.parse(s.contact_info) : s.contact_info,
-                social: typeof s.social_links === 'string' ? JSON.parse(s.social_links) : s.social_links,
-                shopLinks: typeof s.shop_links === 'string' ? JSON.parse(s.shop_links) : s.shop_links,
-            },
-            genderCategory: typeof s.gender_categories === 'string' ? JSON.parse(s.gender_categories) : s.gender_categories,
-            genderStatus: typeof s.gender_status === 'string' ? JSON.parse(s.gender_status) : s.gender_status
+        db.query("SELECT * FROM footer_links ORDER BY display_order", (err, links) => {
+            if (err) {
+                console.error('getSiteContent error:', err);
+                return res.status(500).json({ error: err.message });
+            }
+            
+            db.query("SELECT * FROM genders ORDER BY display_order", (err, genders) => {
+                if (err) {
+                    console.error('getSiteContent error:', err);
+                    return res.status(500).json({ error: err.message });
+                }
+                
+                db.query("SELECT * FROM categories", (err, categories) => {
+                    if (err) {
+                        console.error('getSiteContent error:', err);
+                        return res.status(500).json({ error: err.message });
+                    }
+                    
+                    const brandData = settings[0] || {};
+                    
+                    // Parse JSON fields safely
+                    const socialLinks = brandData.social_links 
+                        ? (typeof brandData.social_links === 'string' 
+                            ? JSON.parse(brandData.social_links) 
+                            : brandData.social_links)
+                        : {};
+                        
+                    const legalInfo = brandData.legal_info
+                        ? (typeof brandData.legal_info === 'string'
+                            ? JSON.parse(brandData.legal_info)
+                            : brandData.legal_info)
+                        : { copyright: '© 2025 humming tone | All rights reserved.' };
+                    
+                    // Prepare gender data
+                    const genderCategory = {};
+                    genders.forEach(g => {
+                        genderCategory[g.name] = categories
+                            .filter(c => c.gender_name === g.name)
+                            .map(c => c.name);
+                    });
+                    
+                    const genderStatus = {};
+                    genders.forEach(g => { 
+                        genderStatus[g.name] = !!g.is_active; 
+                    });
+
+                    // Build response
+                    const response = {
+                        footer: {
+                            brandName: brandData.brand_name || 'Humming & Tone',
+                            description: brandData.description || 'Your premier destination for stylish and affordable fashion.',
+                            company: { 
+                                email: brandData.email || 'fashionandmore.md@gmail.com', 
+                                phone: brandData.phone || '+91 80729 77025', 
+                                address: brandData.address || '49, Rayapuram West Street, Tirupur-641 604, Tamil Nadu.' 
+                            },
+                            social: socialLinks,
+                            legal: legalInfo,
+                            shopLinks: links
+                                .filter(l => l.type === 'shop')
+                                .map(l => ({
+                                    label: l.label,
+                                    href: l.href,
+                                    active: !!l.active
+                                })),
+                            supportLinks: links
+                                .filter(l => l.type === 'support')
+                                .map(l => ({
+                                    label: l.label,
+                                    href: l.href,
+                                    active: !!l.active
+                                }))
+                        },
+                        genderCategory,
+                        genderStatus
+                    };
+                    
+                    console.log('Sending response successfully');
+                    res.json(response);
+                });
+            });
         });
-    } catch (error) { next(error); }
+    });
 };
 
-// UPDATE settings from Admin Panel
-exports.update_site_content = async (req, res, next) => {
-    try {
-        const { footer, genderCategory, genderStatus } = req.body;
-        const updateSql = `UPDATE site_settings SET brand_name=?, description=?, contact_info=?, social_links=?, shop_links=?, gender_categories=?, gender_status=? WHERE id=1`;
+exports.updateFooter = (req, res) => {
+    console.log('Updating footer...');
+    const { brandName, description, company, social, legal, shopLinks, supportLinks } = req.body;
+    
+    // Update site settings
+    db.query(`
+        INSERT INTO site_settings (id, brand_name, description, email, phone, address, social_links, legal_info)
+        VALUES (1, ?, ?, ?, ?, ?, ?, ?)
+        ON DUPLICATE KEY UPDATE 
+        brand_name=VALUES(brand_name), 
+        description=VALUES(description), 
+        email=VALUES(email), 
+        phone=VALUES(phone), 
+        address=VALUES(address), 
+        social_links=VALUES(social_links),
+        legal_info=VALUES(legal_info)`,
+        [
+            brandName, 
+            description, 
+            company?.email, 
+            company?.phone, 
+            company?.address, 
+            JSON.stringify(social || {}),
+            JSON.stringify(legal || {})
+        ],
+        (err) => {
+            if (err) {
+                console.error('updateFooter error:', err);
+                return res.status(500).json({ error: err.message });
+            }
+            
+            // Delete old links
+            db.query("DELETE FROM footer_links", (err) => {
+                if (err) {
+                    console.error('updateFooter error:', err);
+                    return res.status(500).json({ error: err.message });
+                }
+                
+                const allLinks = [
+                    ...(shopLinks || []).map((l, idx) => ['shop', l.label, l.href || '#', l.active !== false, idx]),
+                    ...(supportLinks || []).map((l, idx) => ['support', l.label, l.href || '#', l.active !== false, idx])
+                ];
+                
+                if (allLinks.length > 0) {
+                    db.query(
+                        "INSERT INTO footer_links (type, label, href, active, display_order) VALUES ?", 
+                        [allLinks],
+                        (err) => {
+                            if (err) {
+                                console.error('updateFooter error:', err);
+                                return res.status(500).json({ error: err.message });
+                            }
+                            console.log('Footer updated successfully');
+                            res.json({ message: "Footer saved successfully" });
+                        }
+                    );
+                } else {
+                    console.log('Footer updated successfully');
+                    res.json({ message: "Footer saved successfully" });
+                }
+            });
+        }
+    );
+};
 
-        await db.query(updateSql, [
-            footer.brandName,
-            footer.description,
-            JSON.stringify(footer.company),
-            JSON.stringify(footer.social),
-            JSON.stringify(footer.shopLinks),
-            JSON.stringify(genderCategory),
-            JSON.stringify(genderStatus)
-        ]);
-        res.json({ success: true, message: "Updated successfully" });
-    } catch (error) { next(error); }
+exports.updateGenderStatus = (req, res) => {
+    console.log('Updating gender status...');
+    const entries = Object.entries(req.body);
+    let completed = 0;
+    let hasError = false;
+    
+    if (entries.length === 0) {
+        return res.json({ message: "Gender visibility saved successfully" });
+    }
+    
+    entries.forEach(([name, status]) => {
+        db.query(
+            "UPDATE genders SET is_active = ? WHERE name = ?", 
+            [status, name],
+            (err) => {
+                if (err && !hasError) {
+                    hasError = true;
+                    console.error('updateGenderStatus error:', err);
+                    return res.status(500).json({ error: err.message });
+                }
+                
+                completed++;
+                if (completed === entries.length && !hasError) {
+                    console.log('Gender status updated successfully');
+                    res.json({ message: "Gender visibility saved successfully" });
+                }
+            }
+        );
+    });
+};
+
+exports.updateGenderCategory = (req, res) => {
+    console.log('Updating gender categories...');
+    const genders = Object.keys(req.body);
+    let completed = 0;
+    let hasError = false;
+    
+    if (genders.length === 0) {
+        return res.json({ message: "Gender/Category mapping saved successfully" });
+    }
+    
+    genders.forEach(gender => {
+        // Insert gender if doesn't exist
+        db.query(
+            "INSERT INTO genders (name) VALUES (?) ON DUPLICATE KEY UPDATE name = name", 
+            [gender],
+            (err) => {
+                if (err && !hasError) {
+                    hasError = true;
+                    console.error('updateGenderCategory error:', err);
+                    return res.status(500).json({ error: err.message });
+                }
+                
+                // Delete old categories
+                db.query("DELETE FROM categories WHERE gender_name = ?", [gender], (err) => {
+                    if (err && !hasError) {
+                        hasError = true;
+                        console.error('updateGenderCategory error:', err);
+                        return res.status(500).json({ error: err.message });
+                    }
+                    
+                    const cats = req.body[gender].map(n => [
+                        n, 
+                        n.toLowerCase().replace(/ /g, '-'), 
+                        gender
+                    ]);
+                    
+                    if (cats.length > 0) {
+                        db.query(
+                            "INSERT INTO categories (name, slug, gender_name) VALUES ?", 
+                            [cats],
+                            (err) => {
+                                if (err && !hasError) {
+                                    hasError = true;
+                                    console.error('updateGenderCategory error:', err);
+                                    return res.status(500).json({ error: err.message });
+                                }
+                                
+                                completed++;
+                                if (completed === genders.length && !hasError) {
+                                    console.log('Gender categories updated successfully');
+                                    res.json({ message: "Gender/Category mapping saved successfully" });
+                                }
+                            }
+                        );
+                    } else {
+                        completed++;
+                        if (completed === genders.length && !hasError) {
+                            console.log('Gender categories updated successfully');
+                            res.json({ message: "Gender/Category mapping saved successfully" });
+                        }
+                    }
+                });
+            }
+        );
+    });
 };
