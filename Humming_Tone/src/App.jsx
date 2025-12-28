@@ -94,6 +94,7 @@ export default function App() {
           <Route path="product/:id" element={<ProductDetail />} />
           <Route path="checkout" element={<CheckOut />} />
           <Route path="privacy_policy" element={<PrivacyPolicy />} />
+		  <Route path="details/:id" element={<ProductDetail/>}></Route>
         </Route>
 
         <Route path="*" element={<Navigate to="/" replace />} />

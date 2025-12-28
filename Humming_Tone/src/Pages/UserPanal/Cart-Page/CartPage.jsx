@@ -110,10 +110,9 @@ const PremiumCart = ({ onCheckout }) => {
         <div className="empty-cart">
           <h2>Your cart is empty</h2>
           <p>Looks like you haven't added anything to your cart yet. Start shopping to fill it up!</p>
-          {/* <button className="btn btn-primary" onClick={() => Navigate("")}>
+          <button className="btn btn-primary" onClick={() => Navigate("")}>
             Continue Shopping
-          </button> */}
-          <Link className='btn btn-primary' to="all-products">Continue Shopping</Link>
+          </button>
         </div>
       </div>
     );
@@ -211,9 +210,7 @@ const PremiumCart = ({ onCheckout }) => {
           </div>
 
           <div className="cart-actions">
-            <button className="btn btn-outline" onClick={() => alert('Redirecting to shop...')}>
-              Continue Shopping
-            </button>
+            <Link className='btn btn-outline' to="/usertab/all-products">Continue Shopping</Link>
             <button className="btn btn-secondary" onClick={clearCart}>
               Clear Cart
             </button>
