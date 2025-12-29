@@ -198,7 +198,7 @@
 
 .sports-product-grid {
     display: grid;
-    grid-template-columns: repeat(3, 320px);
+    grid-template-columns: repeat(3, 380px);
     gap: 5.5rem;
     animation: fadeIn 0.8s ease-out;
     justify-content: center;
@@ -215,7 +215,7 @@
     cursor: pointer;
     opacity: 0;
     animation: revealCard 0.6s ease-out forwards;
-    max-width: 320px;
+    max-width: 380px;
     width: 100%;
 }
 
@@ -251,7 +251,7 @@
 
 .sports-product-image-container {
     position: relative;
-    height: 380px;
+    height: 440px;
     background: linear-gradient(135deg, #f5f5f5 0%, #e8e8e8 100%);
     overflow: hidden;
 }

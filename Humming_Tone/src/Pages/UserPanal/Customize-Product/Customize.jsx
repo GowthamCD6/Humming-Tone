@@ -1,13 +1,12 @@
-import React, { useState} from 'react';
-import UserFooter from '../../../components/User-Footer-Card/UserFooter';
-import './Customize.css';
+import React, { useState } from 'react';
+// import UserFooter from '../../../components/User-Footer-Card/UserFooter';
+import './customize.css';
 
 const CustomizePage = () => {
-  // Step tracking
   const [currentStep, setCurrentStep] = useState(1);
   
-  // Customization options
-  const [selectedType, setSelectedType] = useState('');
+  const [selectedType, setSelectedType] = useState(''); 
+  const [selectedVariant, setSelectedVariant] = useState(''); 
   const [selectedColor, setSelectedColor] = useState('');
   const [customColor, setCustomColor] = useState('#FFFFFF');
   const [selectedMaterial, setSelectedMaterial] = useState('');
@@ -17,19 +16,44 @@ const CustomizePage = () => {
   const [selectedGalleryDesign, setSelectedGalleryDesign] = useState('');
   const [customText, setCustomText] = useState('');
 
-  // Product options with Material Icons
-  const tshirtTypes = [
-    { id: 'round', name: 'Round Neck', icon: 'checkroom', description: 'Classic everyday style' },
-    { id: 'collar', name: 'Collar T-Shirt', icon: 'business_center', description: 'Professional look' },
-    { id: 'vneck', name: 'V-Neck', icon: 'airline_seat_recline_normal', description: 'Modern & trendy' },
-    { id: 'polo', name: 'Polo Shirt', icon: 'sports_golf', description: 'Smart casual' },
-    { id: 'henley', name: 'Henley', icon: 'sentiment_satisfied', description: 'Buttoned placket' },
-    { id: 'raglan', name: 'Raglan', icon: 'sports_baseball', description: 'Athletic style' },
-    { id: 'tank', name: 'Tank Top', icon: 'fitness_center', description: 'Sleeveless comfort' },
-    { id: 'long', name: 'Long Sleeve', icon: 'air', description: 'Full coverage' },
+  // Placeholder Image URL
+  const placeholderImg = "https://cdn-icons-png.flaticon.com/512/892/892458.png";
+
+  // Product Data
+  const productCategories = [
+    { id: 'tshirts', name: 'T-SHIRTS', image: "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?auto=format&fit=crop&w=600&q=80", description: 'Classic cotton essentials', 
+      variants: [
+        { id: 'round', name: 'Round Neck', image: null },
+        { id: 'vneck', name: 'V-Neck', image: null },
+        { id: 'collar', name: 'Collar/Polo', image: null },
+        { id: 'henley', name: 'Henley', image: null },
+        { id: 'scoop', name: 'Scoop Neck', image: null },
+        { id: 'sleeveless_t', name: 'Sleeveless', image: null },
+      ]
+    },
+    { id: 'hoodies', name: 'HOODIES', image: null, description: 'Cozy & stylish outerwear',
+      variants: [
+        { id: 'pullover', name: 'Pullover', image: null },
+        { id: 'zipup', name: 'Zip-Up', image: null },
+        { id: 'sleeveless_h', name: 'Sleeveless/Gilet', image: null },
+        { id: 'oversized', name: 'Oversized', image: null },
+        { id: 'cropped_h', name: 'Cropped', image: null },
+        { id: 'crop_hoodie', name: 'Crop Hoodie', image: null },
+      ]
+    },
+    { id: 'sweatshirts', name: 'SWEATSHIRTS', image: null, description: 'Premium crew neck comfort',
+      variants: [
+        { id: 'crew', name: 'Crew Neck Standard', image: null },
+      ]
+    },
+    { id: 'sportswear', name: 'SPORTSWEAR', image: null, description: 'High performance gear',
+      variants: [
+        { id: 'dryfit', name: 'Dry-fit Jersey T-Shirts', image: null },
+        { id: 'athletic', name: 'Athletic Tops', image: null },
+      ]
+    },
   ];
 
-  // Preset colors with custom option
   const colors = [
     { id: 'white', name: 'White', hex: '#FFFFFF' },
     { id: 'black', name: 'Black', hex: '#000000' },
@@ -45,13 +69,14 @@ const CustomizePage = () => {
     { id: 'custom', name: 'Custom Color', hex: null },
   ];
 
+  // Materials updated with Image property instead of icon
   const materials = [
-    { id: 'cotton', name: 'Pure Cotton', desc: 'Soft & Breathable', icon: 'eco' },
-    { id: 'polyester', name: 'Polyester', desc: 'Durable & Quick-dry', icon: 'water_drop' },
-    { id: 'blend', name: 'Cotton Blend', desc: 'Best of Both', icon: 'merge' },
-    { id: 'premium', name: 'Premium Cotton', desc: 'Luxury Feel', icon: 'workspace_premium' },
-    { id: 'organic', name: 'Organic Cotton', desc: '100% Natural', icon: 'nature' },
-    { id: 'bamboo', name: 'Bamboo Fabric', desc: 'Eco-friendly', icon: 'forest' },
+    { id: 'cotton', name: 'Pure Cotton', desc: 'Soft & Breathable', image: null },
+    { id: 'polyester', name: 'Polyester', desc: 'Durable & Quick-dry', image: null },
+    { id: 'blend', name: 'Cotton Blend', desc: 'Best of Both', image: null },
+    { id: 'premium', name: 'Premium Cotton', desc: 'Luxury Feel', image: null },
+    { id: 'organic', name: 'Organic Cotton', desc: '100% Natural', image: null },
+    { id: 'bamboo', name: 'Bamboo Fabric', desc: 'Eco-friendly', image: null },
   ];
 
   const sizes = [
@@ -65,14 +90,14 @@ const CustomizePage = () => {
   ];
 
   const galleryDesigns = [
-    { id: 'design1', name: 'Abstract Art', icon: 'palette', preview: null },
-    { id: 'design2', name: 'Geometric', icon: 'change_history', preview: null },
-    { id: 'design3', name: 'Nature', icon: 'nature_people', preview: null },
-    { id: 'design4', name: 'Typography', icon: 'text_fields', preview: null },
-    { id: 'design5', name: 'Minimal', icon: 'circle', preview: null },
-    { id: 'design6', name: 'Vintage', icon: 'radio', preview: null },
-    { id: 'design7', name: 'Sports', icon: 'sports_soccer', preview: null },
-    { id: 'design8', name: 'Music', icon: 'music_note', preview: null },
+    { id: 'design1', name: 'Abstract Art', image: 'https://images.unsplash.com/photo-1541961017774-22349e4a1262?w=200&h=200&fit=crop', preview: null },
+    { id: 'design2', name: 'Geometric', image: 'https://images.unsplash.com/photo-1557804506-669a67965ba0?w=200&h=200&fit=crop', preview: null },
+    { id: 'design3', name: 'Nature', image: 'https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=200&h=200&fit=crop', preview: null },
+    { id: 'design4', name: 'Typography', image: 'https://images.unsplash.com/photo-1586953208448-b95a79798f07?w=200&h=200&fit=crop', preview: null },
+    { id: 'design5', name: 'Minimal', image: 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=200&h=200&fit=crop', preview: null },
+    { id: 'design6', name: 'Vintage', image: 'https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=200&h=200&fit=crop', preview: null },
+    { id: 'design7', name: 'Sports', image: 'https://images.unsplash.com/photo-1461896836934-ffe607ba8211?w=200&h=200&fit=crop', preview: null },
+    { id: 'design8', name: 'Music', image: 'https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=200&h=200&fit=crop', preview: null },
   ];
 
   const handleImageUpload = (e) => {
@@ -100,10 +125,11 @@ const CustomizePage = () => {
   const canProceedToNext = () => {
     switch(currentStep) {
       case 1: return selectedType !== '';
-      case 2: return selectedColor !== '';
-      case 3: return selectedMaterial !== '';
-      case 4: return selectedSize !== '';
-      case 5: return designOption !== '' && (
+      case 2: return selectedVariant !== '';
+      case 3: return selectedColor !== '';
+      case 4: return selectedMaterial !== '';
+      case 5: return selectedSize !== '';
+      case 6: return designOption !== '' && (
         (designOption === 'upload' && (uploadedImage || customText)) ||
         (designOption === 'gallery' && selectedGalleryDesign)
       );
@@ -112,7 +138,7 @@ const CustomizePage = () => {
   };
 
   const handleNext = () => {
-    if (canProceedToNext() && currentStep < 5) {
+    if (canProceedToNext() && currentStep < 6) {
       setCurrentStep(currentStep + 1);
     }
   };
@@ -126,6 +152,7 @@ const CustomizePage = () => {
   const handleFinish = () => {
     const customization = {
       type: selectedType,
+      variant: selectedVariant,
       color: selectedColor === 'custom' ? customColor : selectedColor,
       material: selectedMaterial,
       size: selectedSize,
@@ -135,56 +162,78 @@ const CustomizePage = () => {
     alert('Your custom product has been created! Redirecting to cart...');
   };
 
+  const getCurrentVariants = () => {
+    const category = productCategories.find(c => c.id === selectedType);
+    return category ? category.variants : [];
+  };
+
+  const addDefaultSrc = (ev) => {
+    ev.target.src = placeholderImg;
+  };
+
   return (
     <div className="customize-page">
-      {/* Header */}
       <div className="customize-header">
         <h1 className="customize-title">Customize Your Product</h1>
-        <p className="customize-subtitle">Create your unique design in 5 easy steps</p>
+        <p className="customize-subtitle">Create your unique design in 6 easy steps</p>
       </div>
 
       <div className="customize-divider"></div>
 
-      {/* Progress Indicator */}
       <div className="progress-container">
         <div className="progress-steps">
-          {[1, 2, 3, 4, 5].map((step) => (
+          {[1, 2, 3, 4, 5, 6].map((step) => (
             <div key={step} className={`progress-step ${currentStep >= step ? 'active' : ''} ${currentStep === step ? 'current' : ''}`}>
               <div className="progress-circle">
                 <span className="material-icons">
-                  {currentStep > step ? 'check_circle' : step === 1 ? 'checkroom' : step === 2 ? 'palette' : step === 3 ? 'category' : step === 4 ? 'straighten' : 'brush'}
+                  {currentStep > step ? 'check_circle' : 
+                   step === 1 ? 'category' : 
+                   step === 2 ? 'style' : 
+                   step === 3 ? 'palette' : 
+                   step === 4 ? 'texture' : 
+                   step === 5 ? 'straighten' : 'brush'}
                 </span>
               </div>
               <span className="progress-label">
                 {step === 1 && 'Type'}
-                {step === 2 && 'Color'}
-                {step === 3 && 'Material'}
-                {step === 4 && 'Size'}
-                {step === 5 && 'Design'}
+                {step === 2 && 'Variant'}
+                {step === 3 && 'Color'}
+                {step === 4 && 'Material'}
+                {step === 5 && 'Size'}
+                {step === 6 && 'Design'}
               </span>
             </div>
           ))}
         </div>
         <div className="progress-bar">
-          <div className="progress-fill" style={{ width: `${(currentStep / 5) * 100}%` }}></div>
+          <div className="progress-fill" style={{ width: `${(currentStep / 6) * 100}%` }}></div>
         </div>
       </div>
 
-      {/* Main Content */}
       <div className="customize-content">
         
         {/* Step 1: Type Selection */}
         {currentStep === 1 && (
           <div className="step-content">
-            <h2 className="step-title">Select T-Shirt Type</h2>
+            <h2 className="step-title">Select Product Category</h2>
             <div className="options-grid type-grid">
-              {tshirtTypes.map((type) => (
+              {productCategories.map((type) => (
                 <div
                   key={type.id}
                   className={`option-card ${selectedType === type.id ? 'selected' : ''}`}
-                  onClick={() => setSelectedType(type.id)}
+                  onClick={() => {
+                    setSelectedType(type.id);
+                    setSelectedVariant(''); 
+                  }}
                 >
-                  <span className="material-icons option-icon">{type.icon}</span>
+                  <div className="option-image-wrapper">
+                    <img 
+                      src={type.image || placeholderImg} 
+                      alt={type.name} 
+                      onError={addDefaultSrc}
+                      className="option-card-image"
+                    />
+                  </div>
                   <div className="option-name">{type.name}</div>
                   <div className="option-desc">{type.description}</div>
                   {selectedType === type.id && (
@@ -196,8 +245,37 @@ const CustomizePage = () => {
           </div>
         )}
 
-        {/* Step 2: Color Selection */}
+        {/* Step 2: Variant Selection */}
         {currentStep === 2 && (
+          <div className="step-content">
+            <h2 className="step-title">Choose Your {selectedType.toUpperCase()} Variant</h2>
+            <div className="options-grid type-grid">
+              {getCurrentVariants().map((variant) => (
+                <div
+                  key={variant.id}
+                  className={`option-card ${selectedVariant === variant.id ? 'selected' : ''}`}
+                  onClick={() => setSelectedVariant(variant.id)}
+                >
+                  <div className="option-image-wrapper">
+                    <img 
+                      src={variant.image || placeholderImg} 
+                      alt={variant.name} 
+                      onError={addDefaultSrc}
+                      className="option-card-image"
+                    />
+                  </div>
+                  <div className="option-name">{variant.name}</div>
+                  {selectedVariant === variant.id && (
+                    <span className="material-icons check-icon">check_circle</span>
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Step 3: Color Selection */}
+        {currentStep === 3 && (
           <div className="step-content">
             <h2 className="step-title">Choose Color</h2>
             <div className="options-grid color-grid">
@@ -247,8 +325,8 @@ const CustomizePage = () => {
           </div>
         )}
 
-        {/* Step 3: Material Selection */}
-        {currentStep === 3 && (
+        {/* Step 4: Material Selection (Updated to show images) */}
+        {currentStep === 4 && (
           <div className="step-content">
             <h2 className="step-title">Select Material</h2>
             <div className="options-grid material-grid">
@@ -258,7 +336,14 @@ const CustomizePage = () => {
                   className={`option-card material-card ${selectedMaterial === material.id ? 'selected' : ''}`}
                   onClick={() => setSelectedMaterial(material.id)}
                 >
-                  <span className="material-icons option-icon">{material.icon}</span>
+                  <div className="option-image-wrapper">
+                    <img 
+                      src={material.image || placeholderImg} 
+                      alt={material.name} 
+                      onError={addDefaultSrc}
+                      className="option-card-image"
+                    />
+                  </div>
                   <div className="option-name">{material.name}</div>
                   <div className="option-desc">{material.desc}</div>
                   {selectedMaterial === material.id && (
@@ -270,8 +355,8 @@ const CustomizePage = () => {
           </div>
         )}
 
-        {/* Step 4: Size Selection */}
-        {currentStep === 4 && (
+        {/* Step 5: Size Selection */}
+        {currentStep === 5 && (
           <div className="step-content">
             <h2 className="step-title">Choose Size</h2>
             <div className="size-guide-note">
@@ -298,12 +383,11 @@ const CustomizePage = () => {
           </div>
         )}
 
-        {/* Step 5: Design Selection */}
-        {currentStep === 5 && (
+        {/* Step 6: Design Selection */}
+        {currentStep === 6 && (
           <div className="step-content">
             <h2 className="step-title">Add Your Design</h2>
             
-            {/* Design Option Selector */}
             <div className="design-options">
               <button
                 className={`design-option-btn ${designOption === 'upload' ? 'active' : ''}`}
@@ -321,7 +405,6 @@ const CustomizePage = () => {
               </button>
             </div>
 
-            {/* Upload Section */}
             {designOption === 'upload' && (
               <div className="upload-section">
                 <div className="upload-area">
@@ -372,7 +455,6 @@ const CustomizePage = () => {
               </div>
             )}
 
-            {/* Gallery Section */}
             {designOption === 'gallery' && (
               <div className="gallery-section">
                 <div className="gallery-grid">
@@ -382,7 +464,12 @@ const CustomizePage = () => {
                       className={`gallery-card ${selectedGalleryDesign === design.id ? 'selected' : ''}`}
                       onClick={() => setSelectedGalleryDesign(design.id)}
                     >
-                      <span className="material-icons gallery-preview">{design.icon}</span>
+                      <img 
+                        src={design.image} 
+                        alt={design.name} 
+                        className="gallery-preview-image"
+                        onError={(e) => e.target.src = 'https://via.placeholder.com/200x200?text=Design'}
+                      />
                       <div className="gallery-name">{design.name}</div>
                       {selectedGalleryDesign === design.id && (
                         <span className="material-icons check-icon">check_circle</span>
@@ -396,7 +483,6 @@ const CustomizePage = () => {
         )}
       </div>
 
-      {/* Navigation Buttons */}
       <div className="navigation-buttons">
         {currentStep > 1 && (
           <button className="nav-btn back-btn" onClick={handleBack}>
@@ -405,7 +491,7 @@ const CustomizePage = () => {
           </button>
         )}
         
-        {currentStep < 5 ? (
+        {currentStep < 6 ? (
           <button 
             className={`nav-btn next-btn ${!canProceedToNext() ? 'disabled' : ''}`}
             onClick={handleNext}
@@ -425,9 +511,6 @@ const CustomizePage = () => {
           </button>
         )}
       </div>
-
-      {/* Footer */}
-      <UserFooter />
     </div>
   );
 };
