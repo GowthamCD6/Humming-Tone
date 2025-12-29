@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import demoImage from '../../../assets/demo.jpeg';
 
 const ProductDetailPage = () => {
   const [selectedSize, setSelectedSize] = useState(null);
@@ -36,13 +37,13 @@ const ProductDetailPage = () => {
           <div className="product-gallery-container">
             <div className="sticky-wrapper">
               <div className="product-main-image">
-                <img src="https://images.unsplash.com/photo-1522771917647-7bc2c7ee9fde?q=80&w=2000&auto=format&fit=crop" alt="Blue set main" />
+                <img src={demoImage} alt="Blue set main" />
               </div>
               <div className="thumbnail-gallery">
-                <div className="thumbnail active"><img src="https://images.unsplash.com/photo-1522771917647-7bc2c7ee9fde?w=150" alt="thumb1" /></div>
-                <div className="thumbnail"><img src="https://images.unsplash.com/photo-1621451537084-482c73073a0f?w=150" alt="thumb2" /></div>
-                <div className="thumbnail"><img src="https://images.unsplash.com/photo-1519233912133-fa669f984627?w=150" alt="thumb3" /></div>
-                <div className="thumbnail"><img src="https://images.unsplash.com/photo-1555009393-f20bdb245c4d?w=150" alt="thumb4" /></div>
+                <div className="thumbnail active"><img src={demoImage} alt="thumb1" /></div>
+                <div className="thumbnail"><img src={demoImage} alt="thumb2" /></div>
+                <div className="thumbnail"><img src={demoImage} alt="thumb3" /></div>
+                <div className="thumbnail"><img src={demoImage} alt="thumb4" /></div>
               </div>
             </div>
           </div>
@@ -132,12 +133,20 @@ const ProductDetailPage = () => {
           <div className="related-grid">
             {relatedProducts.map(item => (
               <div className="related-card" key={item.id}>
-                <div className="related-img-holder"></div>
-                <div className="related-body">
-                  <h4>{item.name}</h4>
-                  <p className="rel-price">₹{item.price}</p>
-                  <p className="rel-brand">{item.brand}</p>
-                  <button className="view-details-btn">VIEW DETAILS</button>
+                <div className="related-product-image-container">
+                  <img 
+                    src={demoImage} 
+                    alt={item.name} 
+                    className="related-product-img"
+                  />
+                  <div className="related-product-hover-overlay">
+                    <button className="related-view-details-btn">VIEW DETAILS</button>
+                  </div>
+                </div>
+                <div className="related-product-details">
+                  <h3 className="related-product-title">{item.name}</h3>
+                  <p className="related-product-brand">{item.brand}</p>
+                  <p className="related-product-price">₹{item.price}</p>
                 </div>
               </div>
             ))}
@@ -292,30 +301,186 @@ const pageStyles = `
     text-align: center; 
   }
 
-  .related-heading { font-family: 'Playfair Display', serif; font-size: 2.8rem; font-weight: 400; margin-bottom: 15px; }
-  .related-divider { width: 60px; height: 2px; background: #1a1a1a; margin: 0 auto 50px; }
-
-  .related-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 30px; margin-bottom: 60px; }
-  
-  .related-card { text-align: left; background: #fff; border: 1px solid #f9f9f9; transition: 0.4s; }
-  .related-card:hover { transform: translateY(-10px); box-shadow: 0 15px 35px rgba(0,0,0,0.05); }
-  
-  .related-img-holder { width: 100%; height: 380px; background: #f5f5f5; }
-  .related-body { padding: 25px; }
-  .related-body h4 { font-size: 1.3rem; margin: 0 0 10px 0; }
-  .rel-price { font-size: 1.5rem; font-weight: 700; margin-bottom: 10px; }
-  .rel-brand { color: #888; font-size: 0.9rem; margin-bottom: 20px; }
-  
-  .view-details-btn { 
-    width: 100%; 
-    padding: 12px; 
-    background: white; 
-    border: 1px solid #1a1a1a; 
-    font-weight: 600; 
-    cursor: pointer; 
-    transition: 0.3s;
+  .related-heading { 
+    font-family: 'Playfair Display', serif; 
+    font-size: 2.8rem; 
+    font-weight: 400; 
+    margin-bottom: 15px; 
   }
-  .view-details-btn:hover { background: #1a1a1a; color: white; }
+  
+  .related-divider { 
+    width: 60px; 
+    height: 2px; 
+    background: #1a1a1a; 
+    margin: 0 auto 50px; 
+  }
+
+  .related-grid { 
+    display: grid; 
+    grid-template-columns: repeat(3, 380px); 
+    gap: 5.5rem; 
+    margin-bottom: 60px;
+    justify-content: center;
+  }
+  
+  .related-card {
+    background: #ffffff;
+    border-radius: 0;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+    transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+    overflow: hidden;
+    position: relative;
+    cursor: pointer;
+    max-width: 380px;
+    width: 100%;
+  }
+
+  .related-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(135deg, rgba(26,26,26,0.02), rgba(26,26,26,0));
+    opacity: 0;
+    transition: opacity 0.5s ease;
+    pointer-events: none;
+    z-index: 1;
+  }
+
+  .related-card:hover::before {
+    opacity: 1;
+  }
+
+  .related-card:hover {
+    box-shadow: 0 24px 64px rgba(0, 0, 0, 0.12);
+    transform: translateY(-12px);
+  }
+
+  .related-product-image-container {
+    position: relative;
+    height: 440px;
+    background: linear-gradient(135deg, #f5f5f5 0%, #e8e8e8 100%);
+    overflow: hidden;
+  }
+
+  .related-product-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.7s cubic-bezier(0.4, 0, 0.2, 1);
+    filter: grayscale(0.1);
+    will-change: transform;
+  }
+
+  .related-card:hover .related-product-img {
+    transform: scale(1.08);
+    filter: grayscale(0);
+  }
+
+  .related-product-hover-overlay {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(180deg, transparent 0%, rgba(0,0,0,0.8) 100%);
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    opacity: 0;
+    transition: opacity 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+    padding: 2rem;
+    z-index: 2;
+  }
+
+  .related-card:hover .related-product-hover-overlay {
+    opacity: 1;
+  }
+
+  .related-view-details-btn {
+    background: #ffffff;
+    color: #1a1a1a;
+    border: 2px solid transparent;
+    padding: 12px 32px;
+    font-weight: 600;
+    font-size: 13px;
+    letter-spacing: 0.08em;
+    cursor: pointer;
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.25);
+    border-radius: 2px;
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    text-transform: uppercase;
+    font-family: 'Poppins', sans-serif;
+    transform: translateY(20px);
+    position: relative;
+    overflow: hidden;
+  }
+
+  .related-view-details-btn::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 0;
+    height: 0;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.15);
+    transform: translate(-50%, -50%);
+    transition: width 0.6s, height 0.6s;
+  }
+
+  .related-view-details-btn:hover::before {
+    width: 300px;
+    height: 300px;
+  }
+
+  .related-card:hover .related-view-details-btn {
+    transform: translateY(0);
+  }
+
+  .related-view-details-btn:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 16px 48px rgba(0, 0, 0, 0.5);
+    background: #1a1a1a;
+    color: #ffffff;
+  }
+
+  .related-product-details {
+    padding: 2rem;
+    text-align: center;
+    background-color: #ffffff;
+    position: relative;
+  }
+
+  .related-product-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 20px;
+    font-weight: 500;
+    margin-bottom: 0.5rem;
+    color: #1a1a1a;
+    line-height: 1.3;
+    letter-spacing: -0.01em;
+    transition: color 0.3s ease;
+  }
+
+  .related-card:hover .related-product-title {
+    color: #666;
+  }
+
+  .related-product-brand {
+    font-size: 11px;
+    color: #999;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    margin-bottom: 1rem;
+    font-weight: 500;
+  }
+
+  .related-product-price {
+    font-size: 20px;
+    font-weight: 600;
+    color: #1a1a1a;
+    letter-spacing: -0.01em;
+  }
 
   .view-more-products {
     background: #1a1a1a;
