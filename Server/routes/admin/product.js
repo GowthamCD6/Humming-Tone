@@ -12,4 +12,9 @@ router.patch("/admin/update_product/:id",product.update_product);
 router.patch("/admin/update_variant/:id",product.update_variant);
 router.delete("/admin/delete_product",product.delete_product);
 
+
 module.exports = router;
+
+
+
+
