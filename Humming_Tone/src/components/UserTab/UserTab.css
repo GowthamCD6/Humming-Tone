@@ -26,7 +26,7 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  height: 120px;
+  height: 100px;
 }
 
 .logo-section {
@@ -46,7 +46,7 @@
 .logo-image {
   height: 190px;
   width: 380px;
-  margin-left: -200px;
+  margin-left: -120px;
   object-fit: contain;
   transition: transform 0.3s ease;
 }
@@ -85,7 +85,7 @@
 .nav-menu {
   display: flex;
   align-items: center;
-  gap: -4px;
+  gap: -8px;
   list-style: none;
   margin: 0;
   padding: 0;
@@ -105,7 +105,7 @@
   gap: -3px;
   text-decoration: none;
   color: #666666;
-  font-size: 14px; /* Increased font size */
+  font-size: 13px; /* Reduced font size */
   font-weight: 500;
   padding: 4px 6px;
   height: 100%;
@@ -167,7 +167,7 @@
   transition: all 0.3s ease;
   border-radius: 50%;
   background-color: #f8f9fa;
-  margin-right: -70px;
+  margin-right: -10px;
 }
 
 .cart-icon:hover {
@@ -222,12 +222,12 @@
   }
 
   .nav-menu {
-    gap: 0;
+    gap: -4px;
   }
 
   .nav-link {
     padding: 10px 14px;
-    font-size: 13px;
+    font-size: 12px;
   }
 }
 
@@ -268,12 +268,12 @@
   }
 
   .nav-menu {
-    gap: 0;
+    gap: -4px;
     padding: 2px;
   }
 
   .nav-link {
-    font-size: 12px;
+    font-size: 11px;
     gap: 5px;
     padding: 7px 10px;
   }
