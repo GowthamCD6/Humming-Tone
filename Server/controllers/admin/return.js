@@ -3,7 +3,7 @@ const createError = require("http-errors");
 
 exports.get_return_requests = (req,res,next) => {
     try{
-      let sql = "select * from return_requests where return_status = requested";
+      let sql = "select * from return_requests where return_status = 'requested'";
       db.query(sql,(error,result) => {
         if(error)return next(error);
         if(result.length === 0)return next(createError.NotFound('return requests not found!'));
@@ -19,7 +19,7 @@ exports.get_return_requests = (req,res,next) => {
 exports.change_status = (req,res,next) => {
     try{
       const{id,status} = req.body;
-      if(!id || !id.trim() == ""){
+      if(id === undefined || isNaN(id)){
         return next(createError.BadRequest('Not found!'));
       }
 

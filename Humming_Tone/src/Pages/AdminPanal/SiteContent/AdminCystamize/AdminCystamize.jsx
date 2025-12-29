@@ -19,7 +19,8 @@ import StraightenIcon from '@mui/icons-material/Straighten';
 import CollectionsIcon from '@mui/icons-material/Collections';
 
 // Input Modal Component
-const InputModal = ({ isOpen, title, fields, onClose, onSubmit, initialData = {} }) => {
+const InputModal = ({ isOpen, title, fields, onClose, onSubmit,
+initialData = {} }) => {
   const [formData, setFormData] = useState(() => {
     const data = {};
     fields.forEach(field => {
@@ -94,21 +95,28 @@ const InputModal = ({ isOpen, title, fields, onClose, onSubmit, initialData = {}
                     accept={field.accept || "image/*"}
                     required={field.required && !formData[field.name]}
                   />
-                  {formData[field.name] && typeof formData[field.name] === 'string' && (
+                  {formData[field.name] && typeof formData[field.name]
+=== 'string' && (
                     <div className="admin-file-preview">
                       <img src={formData[field.name]} alt="Current" />
                       <div className="admin-file-preview-info">
-                        <span className="admin-file-preview-label">Current Image</span>
-                        <span className="admin-file-preview-name">Click to change</span>
+                        <span
+className="admin-file-preview-label">Current Image</span>
+                        <span
+className="admin-file-preview-name">Click to change</span>
                       </div>
                     </div>
                   )}
-                  {formData[field.name] && formData[field.name] instanceof File && (
+                  {formData[field.name] && formData[field.name]
+instanceof File && (
                     <div className="admin-file-preview">
                       <ImageIcon style={{fontSize: 40, color: '#667eea'}} />
                       <div className="admin-file-preview-info">
-                        <span className="admin-file-preview-label">New Image</span>
-                        <span className="admin-file-preview-name">{formData[field.name]. name}</span>
+                        <span className="admin-file-preview-label">New
+Image</span>
+                        <span
+className="admin-file-preview-name">{formData[field.name].
+name}</span>
                       </div>
                     </div>
                   )}
@@ -127,7 +135,8 @@ const InputModal = ({ isOpen, title, fields, onClose, onSubmit, initialData = {}
             </div>
           ))}
           <div className="admin-input-modal-actions">
-            <button type="button" className="admin-customize-btn secondary" onClick={onClose}>
+            <button type="button" className="admin-customize-btn
+secondary" onClick={onClose}>
               Cancel
             </button>
             <button type="submit" className="admin-customize-btn primary">
@@ -145,39 +154,39 @@ const AdminCystamize = ({ onBack }) => {
   const [modalOpen, setModalOpen] = useState(false);
   const [modalMessage, setModalMessage] = useState('');
   const [error, setError] = useState('');
-  
+
   // State for different modals
   const [productCategoryModal, setProductCategoryModal] = useState({
     open: false,
     data: null,
     index: null
   });
-  
+
   const [variantModal, setVariantModal] = useState({
     open: false,
     categoryIndex: null,
     data: null,
     index: null
   });
-  
+
   const [colorModal, setColorModal] = useState({
     open: false,
     data: null,
     index: null
   });
-  
+
   const [materialModal, setMaterialModal] = useState({
     open: false,
     data: null,
     index: null
   });
-  
+
   const [sizeModal, setSizeModal] = useState({
     open: false,
     data: null,
     index: null
   });
-  
+
   const [galleryModal, setGalleryModal] = useState({
     open:  false,
     data: null,
@@ -234,7 +243,7 @@ const AdminCystamize = ({ onBack }) => {
 
   const handleSubmitProductCategory = async (formData) => {
     const id = formData.name.toLowerCase().replace(/\s+/g, '_');
-    
+
     // Handle image upload
     let imageUrl = formData.image;
     if (formData.image instanceof File) {
@@ -244,7 +253,7 @@ const AdminCystamize = ({ onBack }) => {
         reader.readAsDataURL(formData.image);
       });
     }
-    
+
     if (productCategoryModal.index !== null) {
       // Edit existing category
       setCustomizeDraft(prev => {
@@ -298,14 +307,15 @@ const AdminCystamize = ({ onBack }) => {
     setVariantModal({
       open:  true,
       categoryIndex,
-      data: customizeDraft. productCategories[categoryIndex].variants[variantIndex],
+      data: customizeDraft.
+productCategories[categoryIndex].variants[variantIndex],
       index: variantIndex
     });
   };
 
   const handleSubmitVariant = async (formData) => {
     const id = formData.name.toLowerCase().replace(/\s+/g, '_');
-    
+
     // Handle image upload
     let imageUrl = formData.image;
     if (formData.image instanceof File) {
@@ -315,11 +325,11 @@ const AdminCystamize = ({ onBack }) => {
         reader.readAsDataURL(formData.image);
       });
     }
-    
+
     setCustomizeDraft(prev => {
       const categories = [...prev. productCategories];
       const variants = [...categories[variantModal.categoryIndex].variants];
-      
+
       if (variantModal.index !== null) {
         // Edit existing variant
         variants[variantModal.index] = {
@@ -336,7 +346,7 @@ const AdminCystamize = ({ onBack }) => {
           image: imageUrl,
         });
       }
-      
+
       categories[variantModal.categoryIndex]. variants = variants;
       return { ...prev, productCategories: categories };
     });
@@ -346,7 +356,8 @@ const AdminCystamize = ({ onBack }) => {
     if (!confirm('Remove this variant?')) return;
     setCustomizeDraft(prev => {
       const categories = [...prev. productCategories];
-      categories[categoryIndex].variants = categories[categoryIndex].variants.filter(
+      categories[categoryIndex].variants =
+categories[categoryIndex].variants.filter(
         (_, i) => i !== variantIndex
       );
       return { ...prev, productCategories: categories };
@@ -372,7 +383,7 @@ const AdminCystamize = ({ onBack }) => {
 
   const handleSubmitColor = (formData) => {
     const id = formData.name.toLowerCase().replace(/\s+/g, '_');
-    
+
     if (colorModal.index !== null) {
       // Edit existing color
       setCustomizeDraft(prev => {
@@ -428,7 +439,7 @@ const AdminCystamize = ({ onBack }) => {
 
   const handleSubmitMaterial = async (formData) => {
     const id = formData.name. toLowerCase().replace(/\s+/g, '_');
-    
+
     // Handle image upload
     let imageUrl = formData.image;
     if (formData.image instanceof File) {
@@ -438,7 +449,7 @@ const AdminCystamize = ({ onBack }) => {
         reader.readAsDataURL(formData.image);
       });
     }
-    
+
     if (materialModal.index !== null) {
       // Edit existing material
       setCustomizeDraft(prev => {
@@ -504,7 +515,8 @@ const AdminCystamize = ({ onBack }) => {
           id: formData.name,
           name: formData.name,
           chest: formData.chest,
-          icon: 'looks_' + (formData.name.length === 1 ? formData.name. toLowerCase() : 'one')
+          icon: 'looks_' + (formData.name.length === 1 ?
+formData.name. toLowerCase() : 'one')
         };
         return { ... prev, sizes };
       });
@@ -518,7 +530,8 @@ const AdminCystamize = ({ onBack }) => {
             id:  formData.name,
             name: formData.name,
             chest: formData.chest,
-            icon: 'looks_' + (formData.name.length === 1 ? formData. name.toLowerCase() : 'one'),
+            icon: 'looks_' + (formData.name.length === 1 ? formData.
+name.toLowerCase() : 'one'),
           },
         ],
       }));
@@ -552,7 +565,7 @@ const AdminCystamize = ({ onBack }) => {
 
   const handleSubmitGalleryDesign = async (formData) => {
     const id = formData.id || 'design' + Date.now();
-    
+
     // Handle image upload
     let imageUrl = formData.image;
     if (formData.image instanceof File) {
@@ -562,7 +575,7 @@ const AdminCystamize = ({ onBack }) => {
         reader.readAsDataURL(formData.image);
       });
     }
-    
+
     if (galleryModal.index !== null) {
       // Edit existing design
       setCustomizeDraft(prev => {
@@ -606,11 +619,13 @@ const AdminCystamize = ({ onBack }) => {
           <ArrowBackIcon />
           Back to Site Content
         </button>
-        <h2 className="admin-customize-title">Customize Page Content Management</h2>
+        <h2 className="admin-customize-title">Customize Page Content
+Management</h2>
       </div>
 
       {error && (
-        <div className="admin-customize-alert admin-customize-alert-error">{error}</div>
+        <div className="admin-customize-alert
+admin-customize-alert-error">{error}</div>
       )}
 
       <SuccessModal
@@ -624,30 +639,31 @@ const AdminCystamize = ({ onBack }) => {
         isOpen={productCategoryModal.open}
         title={productCategoryModal.index !== null ? "Edit Product Category" : "Add Product Category"}
         fields={[
-          { 
-            name: 'name', 
-            label:  'Category Name', 
+          {
+            name: 'name',
+            label:  'Category Name',
             placeholder: 'e.g., T-SHIRTS',
-            required: true 
+            required: true
           },
-          { 
-            name: 'description', 
-            label: 'Description', 
+          {
+            name: 'description',
+            label: 'Description',
             placeholder: 'Enter category description',
             type: 'textarea',
             rows: 3,
-            required: true 
+            required: true
           },
-          { 
-            name: 'image', 
-            label: 'Category Image (Horizontal Rectangle)', 
+          {
+            name: 'image',
+            label: 'Category Image (Horizontal Rectangle)',
             type: 'file',
             accept: 'image/*',
             required:  productCategoryModal.index === null
           },
         ]}
         initialData={productCategoryModal.data || {}}
-        onClose={() => setProductCategoryModal({ open: false, data: null, index: null })}
+        onClose={() => setProductCategoryModal({ open: false, data:
+null, index: null })}
         onSubmit={handleSubmitProductCategory}
       />
 
@@ -656,22 +672,23 @@ const AdminCystamize = ({ onBack }) => {
         isOpen={variantModal.open}
         title={variantModal. index !== null ? "Edit Variant" : "Add Variant"}
         fields={[
-          { 
-            name: 'name', 
-            label: 'Variant Name', 
+          {
+            name: 'name',
+            label: 'Variant Name',
             placeholder:  'e.g., Round Neck',
-            required: true 
+            required: true
           },
-          { 
-            name: 'image', 
-            label: 'Variant Image (Horizontal Rectangle)', 
+          {
+            name: 'image',
+            label: 'Variant Image (Horizontal Rectangle)',
             type: 'file',
             accept: 'image/*',
             required: variantModal.index === null
           },
         ]}
         initialData={variantModal.data || {}}
-        onClose={() => setVariantModal({ open: false, categoryIndex: null, data: null, index: null })}
+        onClose={() => setVariantModal({ open: false, categoryIndex:
+null, data: null, index: null })}
         onSubmit={handleSubmitVariant}
       />
 
@@ -680,21 +697,22 @@ const AdminCystamize = ({ onBack }) => {
         isOpen={colorModal.open}
         title={colorModal.index !== null ? "Edit Color" : "Add Color"}
         fields={[
-          { 
-            name: 'name', 
-            label:  'Color Name', 
+          {
+            name: 'name',
+            label:  'Color Name',
             placeholder: 'e.g., White',
-            required: true 
+            required: true
           },
-          { 
-            name: 'hex', 
-            label: 'Hex Color Code', 
+          {
+            name: 'hex',
+            label: 'Hex Color Code',
             placeholder: '#FFFFFF',
-            required: true 
+            required: true
           },
         ]}
         initialData={colorModal. data || {}}
-        onClose={() => setColorModal({ open:  false, data: null, index:  null })}
+        onClose={() => setColorModal({ open:  false, data: null,
+index:  null })}
         onSubmit={handleSubmitColor}
       />
 
@@ -703,30 +721,31 @@ const AdminCystamize = ({ onBack }) => {
         isOpen={materialModal.open}
         title={materialModal.index !== null ? "Edit Material" :  "Add Material"}
         fields={[
-          { 
-            name: 'name', 
-            label: 'Material Name', 
+          {
+            name: 'name',
+            label: 'Material Name',
             placeholder: 'e. g., Pure Cotton',
-            required: true 
+            required: true
           },
-          { 
-            name: 'desc', 
-            label: 'Description', 
+          {
+            name: 'desc',
+            label: 'Description',
             placeholder: 'Enter material description',
             type: 'textarea',
             rows: 3,
-            required: true 
+            required: true
           },
-          { 
-            name: 'image', 
-            label: 'Material Image (Horizontal Rectangle - Optional)', 
+          {
+            name: 'image',
+            label: 'Material Image (Horizontal Rectangle - Optional)',
             type: 'file',
             accept: 'image/*',
-            required: false 
+            required: false
           },
         ]}
         initialData={materialModal. data || {}}
-        onClose={() => setMaterialModal({ open: false, data: null, index: null })}
+        onClose={() => setMaterialModal({ open: false, data: null,
+index: null })}
         onSubmit={handleSubmitMaterial}
       />
 
@@ -735,17 +754,17 @@ const AdminCystamize = ({ onBack }) => {
         isOpen={sizeModal.open}
         title={sizeModal.index !== null ? "Edit Size" : "Add Size"}
         fields={[
-          { 
-            name: 'name', 
-            label: 'Size Name', 
+          {
+            name: 'name',
+            label: 'Size Name',
             placeholder:  'e.g., M',
-            required: true 
+            required: true
           },
-          { 
-            name: 'chest', 
-            label: 'Chest Measurement', 
+          {
+            name: 'chest',
+            label: 'Chest Measurement',
             placeholder: 'e.g., 38-40"',
-            required: true 
+            required: true
           },
         ]}
         initialData={sizeModal.data || {}}
@@ -756,24 +775,26 @@ const AdminCystamize = ({ onBack }) => {
       {/* Gallery Design Modal */}
       <InputModal
         isOpen={galleryModal.open}
-        title={galleryModal.index !== null ? "Edit Gallery Design" : "Add Gallery Design"}
+        title={galleryModal.index !== null ? "Edit Gallery Design" :
+"Add Gallery Design"}
         fields={[
-          { 
-            name: 'name', 
-            label: 'Design Name', 
+          {
+            name: 'name',
+            label: 'Design Name',
             placeholder: 'e.g., Abstract Art',
-            required: true 
+            required: true
           },
-          { 
-            name: 'image', 
-            label: 'Design Image (Horizontal Rectangle)', 
+          {
+            name: 'image',
+            label: 'Design Image (Horizontal Rectangle)',
             type: 'file',
             accept: 'image/*',
             required: galleryModal.index === null
           },
         ]}
         initialData={galleryModal.data || {}}
-        onClose={() => setGalleryModal({ open:  false, data: null, index:  null })}
+        onClose={() => setGalleryModal({ open:  false, data: null,
+index:  null })}
         onSubmit={handleSubmitGalleryDesign}
       />
 
@@ -793,11 +814,12 @@ const AdminCystamize = ({ onBack }) => {
               Add Category
             </button>
           </div>
-          
+
           {(customizeDraft?. productCategories || []).length > 0 ?  (
             <div className="admin-customize-categories-list">
               {customizeDraft. productCategories.map((category, index) => (
-                <div key={category.id} className="admin-customize-category-card">
+                <div key={category.id}
+className="admin-customize-category-card">
                   {/* Category Image - Horizontal Rectangle */}
                   <div className="admin-customize-category-image-wrapper">
                     {category.image ?  (
@@ -807,7 +829,8 @@ const AdminCystamize = ({ onBack }) => {
                         className="admin-customize-category-image"
                         onError={(e) => {
                           e.target.style.display = 'none';
-                          e.target.parentElement.classList.add('admin-customize-image-error');
+
+e.target.parentElement.classList.add('admin-customize-image-error');
                         }}
                       />
                     ) : (
@@ -822,8 +845,10 @@ const AdminCystamize = ({ onBack }) => {
                   <div className="admin-customize-category-info">
                     <div className="admin-customize-category-main">
                       <div>
-                        <h4 className="admin-customize-category-name">{category.name}</h4>
-                        <p className="admin-customize-category-desc">{category.description}</p>
+                        <h4
+className="admin-customize-category-name">{category.name}</h4>
+                        <p
+className="admin-customize-category-desc">{category.description}</p>
                       </div>
                       <div className="admin-customize-category-actions">
                         <button
@@ -864,8 +889,10 @@ const AdminCystamize = ({ onBack }) => {
                       {category.variants && category.variants.length > 0 ? (
                         <div className="admin-customize-variants-list">
                           {category. variants.map((variant, vIndex) => (
-                            <div key={variant.id} className="admin-customize-variant-item">
-                              <div className="admin-customize-variant-image-wrapper">
+                            <div key={variant.id}
+className="admin-customize-variant-item">
+                              <div
+className="admin-customize-variant-image-wrapper">
                                 {variant. image ? (
                                   <img
                                     src={variant.image}
@@ -873,22 +900,27 @@ const AdminCystamize = ({ onBack }) => {
                                     className="admin-customize-variant-image"
                                   />
                                 ) : (
-                                  <div className="admin-customize-image-placeholder small">
+                                  <div
+className="admin-customize-image-placeholder small">
                                     <ImageIcon style={{ fontSize: 24 }} />
                                   </div>
                                 )}
                               </div>
-                              <span className="admin-customize-variant-name">{variant.name}</span>
+                              <span
+className="admin-customize-variant-name">{variant.name}</span>
                               <div className="admin-customize-variant-actions">
                                 <button
-                                  className="admin-customize-btn icon-btn primary"
-                                  onClick={() => handleEditVariant(index, vIndex)}
+                                  className="admin-customize-btn
+icon-btn primary"
+                                  onClick={() =>
+handleEditVariant(index, vIndex)}
                                   title="Edit"
                                 >
                                   <EditIcon fontSize="small" />
                                 </button>
                                 <button
-                                  className="admin-customize-btn icon-btn danger"
+                                  className="admin-customize-btn
+icon-btn danger"
                                   onClick={() => removeVariant(index, vIndex)}
                                   title="Delete"
                                 >
@@ -942,8 +974,10 @@ const AdminCystamize = ({ onBack }) => {
                     style={{ backgroundColor: color.hex }}
                   ></div>
                   <div className="admin-customize-color-info">
-                    <span className="admin-customize-color-name">{color.name}</span>
-                    <span className="admin-customize-color-hex">{color.hex}</span>
+                    <span
+className="admin-customize-color-name">{color.name}</span>
+                    <span
+className="admin-customize-color-hex">{color.hex}</span>
                   </div>
                   <div className="admin-customize-item-actions">
                     <button
@@ -991,7 +1025,8 @@ const AdminCystamize = ({ onBack }) => {
           {(customizeDraft?.materials || []).length > 0 ? (
             <div className="admin-customize-materials-list">
               {customizeDraft.materials.map((material, index) => (
-                <div key={material.id} className="admin-customize-material-card">
+                <div key={material.id}
+className="admin-customize-material-card">
                   {material.image && (
                     <div className="admin-customize-material-image-wrapper">
                       <img
@@ -1054,7 +1089,8 @@ const AdminCystamize = ({ onBack }) => {
                   <div className="admin-customize-size-badge">{size.name}</div>
                   <div className="admin-customize-size-info">
                     <span className="admin-customize-size-label">Chest</span>
-                    <span className="admin-customize-size-value">{size.chest}</span>
+                    <span
+className="admin-customize-size-value">{size.chest}</span>
                   </div>
                   <div className="admin-customize-item-actions">
                     <button
@@ -1117,7 +1153,8 @@ const AdminCystamize = ({ onBack }) => {
                     )}
                   </div>
                   <div className="admin-customize-gallery-info">
-                    <span className="admin-customize-gallery-name">{design.name}</span>
+                    <span
+className="admin-customize-gallery-name">{design.name}</span>
                     <div className="admin-customize-item-actions">
                       <button
                         className="admin-customize-btn small primary"
