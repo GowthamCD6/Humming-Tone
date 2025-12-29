@@ -44,11 +44,8 @@
 .admin-customize-title {
   font-size: 28px;
   font-weight: 700;
-  color: #2d3748;
+  color: #667eea;
   margin: 0;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
 }
 
 .admin-customize-alert {
