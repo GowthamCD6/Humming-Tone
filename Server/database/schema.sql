@@ -118,6 +118,36 @@ CREATE TABLE order_items (
   FOREIGN KEY (variant_id) REFERENCES product_variants(id)
 );
 
+CREATE TABLE return_requests (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+
+  order_id INT NOT NULL,
+  order_item_id INT NOT NULL,
+  product_id INT NOT NULL,
+
+  return_quantity INT NOT NULL CHECK (return_quantity > 0),
+
+  return_reason VARCHAR(150) NOT NULL,
+  return_description TEXT,
+
+  return_status ENUM(
+    'requested',
+    'approved',
+    'rejected',
+    'completed'
+  ) DEFAULT 'requested',
+
+  refund_amount DECIMAL(10,2) DEFAULT 0.00,
+
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+
+  FOREIGN KEY (order_id) REFERENCES orders(id),
+  FOREIGN KEY (order_item_id) REFERENCES order_items(id),
+  FOREIGN KEY (product_id) REFERENCES products(id)
+);
+
+
 CREATE TABLE promo_codes (
   id INT AUTO_INCREMENT PRIMARY KEY,
   code VARCHAR(50) NOT NULL UNIQUE,
