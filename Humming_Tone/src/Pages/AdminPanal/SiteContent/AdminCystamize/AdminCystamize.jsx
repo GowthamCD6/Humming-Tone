@@ -12,6 +12,11 @@ import EditIcon from '@mui/icons-material/Edit';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import CloseIcon from '@mui/icons-material/Close';
 import ImageIcon from '@mui/icons-material/Image';
+import CategoryIcon from '@mui/icons-material/Category';
+import PaletteIcon from '@mui/icons-material/Palette';
+import TextureIcon from '@mui/icons-material/Texture';
+import StraightenIcon from '@mui/icons-material/Straighten';
+import CollectionsIcon from '@mui/icons-material/Collections';
 
 // Input Modal Component
 const InputModal = ({ isOpen, title, fields, onClose, onSubmit, initialData = {} }) => {
@@ -44,7 +49,7 @@ const InputModal = ({ isOpen, title, fields, onClose, onSubmit, initialData = {}
     if (type === 'file') {
       setFormData(prev => ({
         ...prev,
-        [name]: files[0] || null
+        [name]:  files[0] || null
       }));
     } else {
       setFormData(prev => ({
@@ -72,7 +77,7 @@ const InputModal = ({ isOpen, title, fields, onClose, onSubmit, initialData = {}
               {field.type === 'textarea' ? (
                 <textarea
                   id={field.name}
-                  name={field.name}
+                  name={field. name}
                   value={formData[field.name]}
                   onChange={handleChange}
                   placeholder={field.placeholder}
@@ -91,7 +96,7 @@ const InputModal = ({ isOpen, title, fields, onClose, onSubmit, initialData = {}
                   />
                   {formData[field.name] && typeof formData[field.name] === 'string' && (
                     <div className="admin-file-preview">
-                      <img src={formData[field.name]} alt="Current" style={{width: '80px', height: '80px', objectFit: 'cover'}} />
+                      <img src={formData[field.name]} alt="Current" />
                       <div className="admin-file-preview-info">
                         <span className="admin-file-preview-label">Current Image</span>
                         <span className="admin-file-preview-name">Click to change</span>
@@ -100,10 +105,10 @@ const InputModal = ({ isOpen, title, fields, onClose, onSubmit, initialData = {}
                   )}
                   {formData[field.name] && formData[field.name] instanceof File && (
                     <div className="admin-file-preview">
-                      <ImageIcon style={{fontSize: 40, color: '#1976d2'}} />
+                      <ImageIcon style={{fontSize: 40, color: '#667eea'}} />
                       <div className="admin-file-preview-info">
                         <span className="admin-file-preview-label">New Image</span>
-                        <span className="admin-file-preview-name">{formData[field.name].name}</span>
+                        <span className="admin-file-preview-name">{formData[field.name]. name}</span>
                       </div>
                     </div>
                   )}
@@ -174,7 +179,7 @@ const AdminCystamize = ({ onBack }) => {
   });
   
   const [galleryModal, setGalleryModal] = useState({
-    open: false,
+    open:  false,
     data: null,
     index: null
   });
@@ -191,7 +196,7 @@ const AdminCystamize = ({ onBack }) => {
   useEffect(() => {
     const content = getSiteContent();
     setCustomizeDraft(content.customize || {
-      productCategories: [],
+      productCategories:  [],
       colors: [],
       materials: [],
       sizes: [],
@@ -206,7 +211,7 @@ const AdminCystamize = ({ onBack }) => {
       setModalMessage('Customize content saved successfully!');
       setModalOpen(true);
     } catch (e) {
-      setError(e?.message || 'Failed to save customize content');
+      setError(e?. message || 'Failed to save customize content');
     }
   };
 
@@ -222,7 +227,7 @@ const AdminCystamize = ({ onBack }) => {
   const handleEditProductCategory = (index) => {
     setProductCategoryModal({
       open: true,
-      data: customizeDraft.productCategories[index],
+      data:  customizeDraft.productCategories[index],
       index
     });
   };
@@ -246,7 +251,7 @@ const AdminCystamize = ({ onBack }) => {
         const categories = [...prev.productCategories];
         categories[productCategoryModal.index] = {
           ...categories[productCategoryModal.index],
-          name: formData.name.toUpperCase(),
+          name: formData.name. toUpperCase(),
           description: formData.description,
           image: imageUrl,
           id,
@@ -272,7 +277,7 @@ const AdminCystamize = ({ onBack }) => {
   };
 
   const removeProductCategory = (index) => {
-    if (!confirm('Remove this product category and all its variants?')) return;
+    if (! confirm('Remove this product category and all its variants?')) return;
     setCustomizeDraft(prev => ({
       ...prev,
       productCategories: prev.productCategories.filter((_, i) => i !== index),
@@ -284,16 +289,16 @@ const AdminCystamize = ({ onBack }) => {
     setVariantModal({
       open: true,
       categoryIndex,
-      data: null,
+      data:  null,
       index: null
     });
   };
 
   const handleEditVariant = (categoryIndex, variantIndex) => {
     setVariantModal({
-      open: true,
+      open:  true,
       categoryIndex,
-      data: customizeDraft.productCategories[categoryIndex].variants[variantIndex],
+      data: customizeDraft. productCategories[categoryIndex].variants[variantIndex],
       index: variantIndex
     });
   };
@@ -312,7 +317,7 @@ const AdminCystamize = ({ onBack }) => {
     }
     
     setCustomizeDraft(prev => {
-      const categories = [...prev.productCategories];
+      const categories = [...prev. productCategories];
       const variants = [...categories[variantModal.categoryIndex].variants];
       
       if (variantModal.index !== null) {
@@ -320,19 +325,19 @@ const AdminCystamize = ({ onBack }) => {
         variants[variantModal.index] = {
           ...variants[variantModal.index],
           id,
-          name: formData.name,
+          name: formData. name,
           image: imageUrl,
         };
       } else {
         // Add new variant
-        variants.push({
+        variants. push({
           id,
           name: formData.name,
           image: imageUrl,
         });
       }
       
-      categories[variantModal.categoryIndex].variants = variants;
+      categories[variantModal.categoryIndex]. variants = variants;
       return { ...prev, productCategories: categories };
     });
   };
@@ -340,7 +345,7 @@ const AdminCystamize = ({ onBack }) => {
   const removeVariant = (categoryIndex, variantIndex) => {
     if (!confirm('Remove this variant?')) return;
     setCustomizeDraft(prev => {
-      const categories = [...prev.productCategories];
+      const categories = [...prev. productCategories];
       categories[categoryIndex].variants = categories[categoryIndex].variants.filter(
         (_, i) => i !== variantIndex
       );
@@ -353,14 +358,14 @@ const AdminCystamize = ({ onBack }) => {
     setColorModal({
       open: true,
       data: null,
-      index: null
+      index:  null
     });
   };
 
   const handleEditColor = (index) => {
     setColorModal({
       open: true,
-      data: customizeDraft.colors[index],
+      data: customizeDraft. colors[index],
       index
     });
   };
@@ -371,7 +376,7 @@ const AdminCystamize = ({ onBack }) => {
     if (colorModal.index !== null) {
       // Edit existing color
       setCustomizeDraft(prev => {
-        const colors = [...prev.colors];
+        const colors = [... prev.colors];
         colors[colorModal.index] = {
           ...colors[colorModal.index],
           id,
@@ -388,7 +393,7 @@ const AdminCystamize = ({ onBack }) => {
           ...(prev.colors || []),
           {
             id,
-            name: formData.name,
+            name:  formData.name,
             hex: formData.hex || '#FFFFFF',
           },
         ],
@@ -408,7 +413,7 @@ const AdminCystamize = ({ onBack }) => {
   const handleAddMaterial = () => {
     setMaterialModal({
       open: true,
-      data: null,
+      data:  null,
       index: null
     });
   };
@@ -416,13 +421,13 @@ const AdminCystamize = ({ onBack }) => {
   const handleEditMaterial = (index) => {
     setMaterialModal({
       open: true,
-      data: customizeDraft.materials[index],
+      data: customizeDraft. materials[index],
       index
     });
   };
 
   const handleSubmitMaterial = async (formData) => {
-    const id = formData.name.toLowerCase().replace(/\s+/g, '_');
+    const id = formData.name. toLowerCase().replace(/\s+/g, '_');
     
     // Handle image upload
     let imageUrl = formData.image;
@@ -437,7 +442,7 @@ const AdminCystamize = ({ onBack }) => {
     if (materialModal.index !== null) {
       // Edit existing material
       setCustomizeDraft(prev => {
-        const materials = [...prev.materials];
+        const materials = [... prev.materials];
         materials[materialModal.index] = {
           ...materials[materialModal.index],
           id,
@@ -445,18 +450,18 @@ const AdminCystamize = ({ onBack }) => {
           desc: formData.desc,
           image: imageUrl,
         };
-        return { ...prev, materials };
+        return { ... prev, materials };
       });
     } else {
       // Add new material
       setCustomizeDraft(prev => ({
-        ...prev,
+        ... prev,
         materials: [
           ...(prev.materials || []),
           {
             id,
             name: formData.name,
-            desc: formData.desc,
+            desc: formData. desc,
             image: imageUrl,
           },
         ],
@@ -467,8 +472,8 @@ const AdminCystamize = ({ onBack }) => {
   const removeMaterial = (index) => {
     if (!confirm('Remove this material?')) return;
     setCustomizeDraft(prev => ({
-      ...prev,
-      materials: prev.materials.filter((_, i) => i !== index),
+      ... prev,
+      materials: prev. materials.filter((_, i) => i !== index),
     }));
   };
 
@@ -499,21 +504,21 @@ const AdminCystamize = ({ onBack }) => {
           id: formData.name,
           name: formData.name,
           chest: formData.chest,
-          icon: 'looks_' + (formData.name.length === 1 ? formData.name.toLowerCase() : 'one')
+          icon: 'looks_' + (formData.name.length === 1 ? formData.name. toLowerCase() : 'one')
         };
-        return { ...prev, sizes };
+        return { ... prev, sizes };
       });
     } else {
       // Add new size
       setCustomizeDraft(prev => ({
-        ...prev,
+        ... prev,
         sizes: [
           ...(prev.sizes || []),
           {
-            id: formData.name,
+            id:  formData.name,
             name: formData.name,
             chest: formData.chest,
-            icon: 'looks_' + (formData.name.length === 1 ? formData.name.toLowerCase() : 'one'),
+            icon: 'looks_' + (formData.name.length === 1 ? formData. name.toLowerCase() : 'one'),
           },
         ],
       }));
@@ -533,7 +538,7 @@ const AdminCystamize = ({ onBack }) => {
     setGalleryModal({
       open: true,
       data: null,
-      index: null
+      index:  null
     });
   };
 
@@ -573,9 +578,9 @@ const AdminCystamize = ({ onBack }) => {
     } else {
       // Add new design
       setCustomizeDraft(prev => ({
-        ...prev,
+        ... prev,
         galleryDesigns: [
-          ...(prev.galleryDesigns || []),
+          ...(prev. galleryDesigns || []),
           {
             id,
             name: formData.name,
@@ -587,7 +592,7 @@ const AdminCystamize = ({ onBack }) => {
   };
 
   const removeGalleryDesign = (index) => {
-    if (!confirm('Remove this gallery design?')) return;
+    if (!confirm('Remove this gallery design? ')) return;
     setCustomizeDraft(prev => ({
       ...prev,
       galleryDesigns: prev.galleryDesigns.filter((_, i) => i !== index),
@@ -621,7 +626,7 @@ const AdminCystamize = ({ onBack }) => {
         fields={[
           { 
             name: 'name', 
-            label: 'Category Name', 
+            label:  'Category Name', 
             placeholder: 'e.g., T-SHIRTS',
             required: true 
           },
@@ -635,10 +640,10 @@ const AdminCystamize = ({ onBack }) => {
           },
           { 
             name: 'image', 
-            label: 'Category Image', 
+            label: 'Category Image (Horizontal Rectangle)', 
             type: 'file',
             accept: 'image/*',
-            required: productCategoryModal.index === null
+            required:  productCategoryModal.index === null
           },
         ]}
         initialData={productCategoryModal.data || {}}
@@ -649,17 +654,17 @@ const AdminCystamize = ({ onBack }) => {
       {/* Variant Modal */}
       <InputModal
         isOpen={variantModal.open}
-        title={variantModal.index !== null ? "Edit Variant" : "Add Variant"}
+        title={variantModal. index !== null ? "Edit Variant" : "Add Variant"}
         fields={[
           { 
             name: 'name', 
             label: 'Variant Name', 
-            placeholder: 'e.g., Round Neck',
+            placeholder:  'e.g., Round Neck',
             required: true 
           },
           { 
             name: 'image', 
-            label: 'Variant Image', 
+            label: 'Variant Image (Horizontal Rectangle)', 
             type: 'file',
             accept: 'image/*',
             required: variantModal.index === null
@@ -677,7 +682,7 @@ const AdminCystamize = ({ onBack }) => {
         fields={[
           { 
             name: 'name', 
-            label: 'Color Name', 
+            label:  'Color Name', 
             placeholder: 'e.g., White',
             required: true 
           },
@@ -688,20 +693,20 @@ const AdminCystamize = ({ onBack }) => {
             required: true 
           },
         ]}
-        initialData={colorModal.data || {}}
-        onClose={() => setColorModal({ open: false, data: null, index: null })}
+        initialData={colorModal. data || {}}
+        onClose={() => setColorModal({ open:  false, data: null, index:  null })}
         onSubmit={handleSubmitColor}
       />
 
       {/* Material Modal */}
       <InputModal
         isOpen={materialModal.open}
-        title={materialModal.index !== null ? "Edit Material" : "Add Material"}
+        title={materialModal.index !== null ? "Edit Material" :  "Add Material"}
         fields={[
           { 
             name: 'name', 
             label: 'Material Name', 
-            placeholder: 'e.g., Pure Cotton',
+            placeholder: 'e. g., Pure Cotton',
             required: true 
           },
           { 
@@ -714,13 +719,13 @@ const AdminCystamize = ({ onBack }) => {
           },
           { 
             name: 'image', 
-            label: 'Material Image', 
+            label: 'Material Image (Horizontal Rectangle - Optional)', 
             type: 'file',
             accept: 'image/*',
             required: false 
           },
         ]}
-        initialData={materialModal.data || {}}
+        initialData={materialModal. data || {}}
         onClose={() => setMaterialModal({ open: false, data: null, index: null })}
         onSubmit={handleSubmitMaterial}
       />
@@ -733,7 +738,7 @@ const AdminCystamize = ({ onBack }) => {
           { 
             name: 'name', 
             label: 'Size Name', 
-            placeholder: 'e.g., M',
+            placeholder:  'e.g., M',
             required: true 
           },
           { 
@@ -761,199 +766,251 @@ const AdminCystamize = ({ onBack }) => {
           },
           { 
             name: 'image', 
-            label: 'Design Image', 
+            label: 'Design Image (Horizontal Rectangle)', 
             type: 'file',
             accept: 'image/*',
             required: galleryModal.index === null
           },
         ]}
         initialData={galleryModal.data || {}}
-        onClose={() => setGalleryModal({ open: false, data: null, index: null })}
+        onClose={() => setGalleryModal({ open:  false, data: null, index:  null })}
         onSubmit={handleSubmitGalleryDesign}
       />
 
       <div className="admin-customize-content">
         {/* Product Categories Section */}
         <div className="admin-customize-section">
-          <h3 className="admin-customize-section-title">Product Categories</h3>
-          <div className="admin-customize-categories-grid">
-            {(customizeDraft?.productCategories || []).map((category, index) => (
-              <div key={category.id} className="admin-customize-category-card">
-                <div className="admin-customize-category-image-container">
-                  {category.image ? (
-                    <img
-                      src={category.image}
-                      alt={category.name}
-                      className="admin-customize-category-image"
-                      onError={(e) => {
-                        e.target.style.display = 'none';
-                        e.target.parentElement.innerHTML = `
-                          <div class="admin-customize-image-upload-placeholder">
-                            <div class="admin-customize-upload-icon">📷</div>
-                            <div class="admin-customize-upload-text">Click to upload image</div>
-                          </div>
-                        `;
-                      }}
-                    />
-                  ) : (
-                    <div className="admin-customize-image-upload-placeholder">
-                      <div className="admin-customize-upload-icon">📷</div>
-                      <div className="admin-customize-upload-text">Upload vertical image (280px height)</div>
-                    </div>
-                  )}
-                </div>
-                <div className="admin-customize-category-content">
-                  <div className="admin-customize-category-header">
-                    <h4>{category.name}</h4>
-                    <div className="admin-customize-category-actions">
-                      <button
-                        className="admin-customize-btn small primary"
-                        onClick={() => handleEditProductCategory(index)}
-                        title="Edit Category"
-                      >
-                        <EditIcon fontSize="small" />
-                      </button>
-                      <button
-                        className="admin-customize-btn small danger"
-                        onClick={() => removeProductCategory(index)}
-                        title="Delete Category"
-                      >
-                        <DeleteIcon fontSize="small" />
-                      </button>
-                    </div>
+          <div className="admin-customize-section-header">
+            <h3 className="admin-customize-section-title">
+              <CategoryIcon className="admin-customize-section-icon" />
+              Product Categories
+            </h3>
+            <button
+              className="admin-customize-btn primary"
+              onClick={handleAddProductCategory}
+            >
+              <AddIcon />
+              Add Category
+            </button>
+          </div>
+          
+          {(customizeDraft?. productCategories || []).length > 0 ?  (
+            <div className="admin-customize-categories-list">
+              {customizeDraft. productCategories.map((category, index) => (
+                <div key={category.id} className="admin-customize-category-card">
+                  {/* Category Image - Horizontal Rectangle */}
+                  <div className="admin-customize-category-image-wrapper">
+                    {category.image ?  (
+                      <img
+                        src={category.image}
+                        alt={category.name}
+                        className="admin-customize-category-image"
+                        onError={(e) => {
+                          e.target.style.display = 'none';
+                          e.target.parentElement.classList.add('admin-customize-image-error');
+                        }}
+                      />
+                    ) : (
+                      <div className="admin-customize-image-placeholder">
+                        <ImageIcon style={{ fontSize: 48, color: '#cbd5e0' }} />
+                        <span>No Image</span>
+                      </div>
+                    )}
                   </div>
-                  <p className="admin-customize-category-desc">{category.description}</p>
-                  <div className="admin-customize-variants">
-                    <h5>
-                      Variants
-                      <span className="admin-customize-variant-count">
-                        {category.variants?.length || 0}
-                      </span>
-                    </h5>
-                    {category.variants && category.variants.length > 0 ? (
-                      <div className="admin-customize-variants-grid">
-                        {category.variants.map((variant, vIndex) => (
-                          <div key={variant.id} className="admin-customize-variant-card">
-                            <div className="admin-customize-variant-image-container">
-                              {variant.image ? (
-                                <img
-                                  src={variant.image}
-                                  alt={variant.name}
-                                  className="admin-customize-variant-image"
-                                  onError={(e) => {
-                                    e.target.style.display = 'none';
-                                    e.target.parentElement.innerHTML = `
-                                      <div class="admin-customize-image-upload-placeholder">
-                                        <div class="admin-customize-upload-icon">🖼️</div>
-                                      </div>
-                                    `;
-                                  }}
-                                />
-                              ) : (
-                                <div className="admin-customize-image-upload-placeholder">
-                                  <div className="admin-customize-upload-icon">🖼️</div>
-                                </div>
-                              )}
-                            </div>
-                            <div className="admin-customize-variant-body">
-                              <p className="admin-customize-variant-name">{variant.name}</p>
+
+                  {/* Category Info */}
+                  <div className="admin-customize-category-info">
+                    <div className="admin-customize-category-main">
+                      <div>
+                        <h4 className="admin-customize-category-name">{category.name}</h4>
+                        <p className="admin-customize-category-desc">{category.description}</p>
+                      </div>
+                      <div className="admin-customize-category-actions">
+                        <button
+                          className="admin-customize-btn small primary"
+                          onClick={() => handleEditProductCategory(index)}
+                          title="Edit Category"
+                        >
+                          <EditIcon fontSize="small" />
+                        </button>
+                        <button
+                          className="admin-customize-btn small danger"
+                          onClick={() => removeProductCategory(index)}
+                          title="Delete Category"
+                        >
+                          <DeleteIcon fontSize="small" />
+                        </button>
+                      </div>
+                    </div>
+
+                    {/* Variants Section */}
+                    <div className="admin-customize-variants-section">
+                      <div className="admin-customize-variants-header">
+                        <h5>
+                          Variants
+                          <span className="admin-customize-badge">
+                            {category.variants?. length || 0}
+                          </span>
+                        </h5>
+                        <button
+                          className="admin-customize-btn small secondary"
+                          onClick={() => handleAddVariant(index)}
+                        >
+                          <AddIcon fontSize="small" />
+                          Add
+                        </button>
+                      </div>
+
+                      {category.variants && category.variants.length > 0 ? (
+                        <div className="admin-customize-variants-list">
+                          {category. variants.map((variant, vIndex) => (
+                            <div key={variant.id} className="admin-customize-variant-item">
+                              <div className="admin-customize-variant-image-wrapper">
+                                {variant. image ? (
+                                  <img
+                                    src={variant.image}
+                                    alt={variant.name}
+                                    className="admin-customize-variant-image"
+                                  />
+                                ) : (
+                                  <div className="admin-customize-image-placeholder small">
+                                    <ImageIcon style={{ fontSize: 24 }} />
+                                  </div>
+                                )}
+                              </div>
+                              <span className="admin-customize-variant-name">{variant.name}</span>
                               <div className="admin-customize-variant-actions">
                                 <button
-                                  className="admin-customize-btn small icon-only primary"
+                                  className="admin-customize-btn icon-btn primary"
                                   onClick={() => handleEditVariant(index, vIndex)}
-                                  title="Edit Variant"
+                                  title="Edit"
                                 >
                                   <EditIcon fontSize="small" />
                                 </button>
                                 <button
-                                  className="admin-customize-btn small icon-only danger"
+                                  className="admin-customize-btn icon-btn danger"
                                   onClick={() => removeVariant(index, vIndex)}
-                                  title="Delete Variant"
+                                  title="Delete"
                                 >
                                   <DeleteIcon fontSize="small" />
                                 </button>
                               </div>
                             </div>
-                          </div>
-                        ))}
-                      </div>
-                    ) : (
-                      <div className="admin-customize-empty-state">
-                        <div className="admin-customize-empty-state-icon">📦</div>
-                        <div className="admin-customize-empty-state-text">No variants yet</div>
-                      </div>
-                    )}
-                    <button
-                      className="admin-customize-btn small secondary"
-                      onClick={() => handleAddVariant(index)}
-                    >
-                      <AddIcon fontSize="small" />
-                      Add Variant
-                    </button>
+                          ))}
+                        </div>
+                      ) : (
+                        <div className="admin-customize-empty-state small">
+                          <span>No variants yet</span>
+                        </div>
+                      )}
+                    </div>
                   </div>
                 </div>
-              </div>
-            ))}
-          </div>
-          <button
-            className="admin-customize-btn secondary"
-            onClick={handleAddProductCategory}
-          >
-            <AddIcon />
-            Add Category
-          </button>
+              ))}
+            </div>
+          ) : (
+            <div className="admin-customize-empty-state">
+              <CategoryIcon className="admin-customize-empty-icon" />
+              <p>No product categories yet</p>
+              <span>Click "Add Category" to get started</span>
+            </div>
+          )}
         </div>
 
         {/* Colors Section */}
         <div className="admin-customize-section">
-          <h3 className="admin-customize-section-title">Colors</h3>
-          <div className="admin-customize-color-grid">
-            {(customizeDraft?.colors || []).map((color, index) => (
-              <div key={color.id} className="admin-customize-color-item">
-                <div
-                  className="admin-customize-color-swatch"
-                  style={{ backgroundColor: color.hex }}
-                ></div>
-                <span>{color.name}</span>
-                <div className="admin-customize-color-actions">
-                  <button
-                    className="admin-customize-btn small primary"
-                    onClick={() => handleEditColor(index)}
-                  >
-                    Edit
-                  </button>
-                  <button
-                    className="admin-customize-btn small danger"
-                    onClick={() => removeColor(index)}
-                  >
-                    <DeleteIcon fontSize="small" />
-                  </button>
-                </div>
-              </div>
-            ))}
+          <div className="admin-customize-section-header">
+            <h3 className="admin-customize-section-title">
+              <PaletteIcon className="admin-customize-section-icon" />
+              Colors
+            </h3>
+            <button
+              className="admin-customize-btn primary"
+              onClick={handleAddColor}
+            >
+              <AddIcon />
+              Add Color
+            </button>
           </div>
-          <button
-            className="admin-customize-btn secondary"
-            onClick={handleAddColor}
-          >
-            <AddIcon />
-            Add Color
-          </button>
+
+          {(customizeDraft?.colors || []).length > 0 ? (
+            <div className="admin-customize-items-grid">
+              {customizeDraft.colors.map((color, index) => (
+                <div key={color.id} className="admin-customize-color-card">
+                  <div
+                    className="admin-customize-color-swatch"
+                    style={{ backgroundColor: color.hex }}
+                  ></div>
+                  <div className="admin-customize-color-info">
+                    <span className="admin-customize-color-name">{color.name}</span>
+                    <span className="admin-customize-color-hex">{color.hex}</span>
+                  </div>
+                  <div className="admin-customize-item-actions">
+                    <button
+                      className="admin-customize-btn icon-btn primary"
+                      onClick={() => handleEditColor(index)}
+                      title="Edit"
+                    >
+                      <EditIcon fontSize="small" />
+                    </button>
+                    <button
+                      className="admin-customize-btn icon-btn danger"
+                      onClick={() => removeColor(index)}
+                      title="Delete"
+                    >
+                      <DeleteIcon fontSize="small" />
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="admin-customize-empty-state">
+              <PaletteIcon className="admin-customize-empty-icon" />
+              <p>No colors yet</p>
+            </div>
+          )}
         </div>
 
         {/* Materials Section */}
         <div className="admin-customize-section">
-          <h3 className="admin-customize-section-title">Materials</h3>
-          <div className="admin-customize-grid">
-            {(customizeDraft?.materials || []).map((material, index) => (
-              <div key={material.id} className="admin-customize-material-card">
-                <div className="admin-customize-material-header">
-                  <h4>{material.name}</h4>
-                  <div className="admin-customize-material-actions">
+          <div className="admin-customize-section-header">
+            <h3 className="admin-customize-section-title">
+              <TextureIcon className="admin-customize-section-icon" />
+              Materials
+            </h3>
+            <button
+              className="admin-customize-btn primary"
+              onClick={handleAddMaterial}
+            >
+              <AddIcon />
+              Add Material
+            </button>
+          </div>
+
+          {(customizeDraft?.materials || []).length > 0 ? (
+            <div className="admin-customize-materials-list">
+              {customizeDraft.materials.map((material, index) => (
+                <div key={material.id} className="admin-customize-material-card">
+                  {material.image && (
+                    <div className="admin-customize-material-image-wrapper">
+                      <img
+                        src={material.image}
+                        alt={material.name}
+                        className="admin-customize-material-image"
+                      />
+                    </div>
+                  )}
+                  <div className="admin-customize-material-info">
+                    <h4>{material.name}</h4>
+                    <p>{material.desc}</p>
+                  </div>
+                  <div className="admin-customize-item-actions">
                     <button
                       className="admin-customize-btn small primary"
                       onClick={() => handleEditMaterial(index)}
                     >
+                      <EditIcon fontSize="small" />
                       Edit
                     </button>
                     <button
@@ -964,114 +1021,134 @@ const AdminCystamize = ({ onBack }) => {
                     </button>
                   </div>
                 </div>
-                <p className="admin-customize-material-desc">{material.desc}</p>
-              </div>
-            ))}
-          </div>
-          <button
-            className="admin-customize-btn secondary"
-            onClick={handleAddMaterial}
-          >
-            <AddIcon />
-            Add Material
-          </button>
+              ))}
+            </div>
+          ) : (
+            <div className="admin-customize-empty-state">
+              <TextureIcon className="admin-customize-empty-icon" />
+              <p>No materials yet</p>
+            </div>
+          )}
         </div>
 
         {/* Sizes Section */}
         <div className="admin-customize-section">
-          <h3 className="admin-customize-section-title">Sizes</h3>
-          <div className="admin-customize-size-grid">
-            {(customizeDraft?.sizes || []).map((size, index) => (
-              <div key={size.id} className="admin-customize-size-item">
-                <div className="admin-customize-size-content">
-                  <span className="admin-customize-size-name">{size.name}</span>
-                  <span className="admin-customize-size-measurement">{size.chest}</span>
-                </div>
-                <div className="admin-customize-size-actions">
-                  <button
-                    className="admin-customize-btn small primary"
-                    onClick={() => handleEditSize(index)}
-                  >
-                    Edit
-                  </button>
-                  <button
-                    className="admin-customize-btn small danger"
-                    onClick={() => removeSize(index)}
-                  >
-                    <DeleteIcon fontSize="small" />
-                  </button>
-                </div>
-              </div>
-            ))}
+          <div className="admin-customize-section-header">
+            <h3 className="admin-customize-section-title">
+              <StraightenIcon className="admin-customize-section-icon" />
+              Sizes
+            </h3>
+            <button
+              className="admin-customize-btn primary"
+              onClick={handleAddSize}
+            >
+              <AddIcon />
+              Add Size
+            </button>
           </div>
-          <button
-            className="admin-customize-btn secondary"
-            onClick={handleAddSize}
-          >
-            <AddIcon />
-            Add Size
-          </button>
-        </div>
 
-        {/* Gallery Designs Section */}
-        <div className="admin-customize-section">
-          <h3 className="admin-customize-section-title">Gallery Designs</h3>
-          <div className="admin-customize-gallery-grid">
-            {(customizeDraft?.galleryDesigns || []).map((design, index) => (
-              <div key={design.id} className="admin-customize-gallery-item">
-                {design.image ? (
-                  <img
-                    src={design.image}
-                    alt={design.name}
-                    className="admin-customize-gallery-image"
-                    onError={(e) => {
-                      e.target.style.display = 'none';
-                      e.target.parentElement.innerHTML = `
-                        <div class="admin-customize-image-upload-placeholder" style="height: 100%;">
-                          <div class="admin-customize-upload-icon">🖼️</div>
-                          <div class="admin-customize-upload-text">Click to upload image</div>
-                        </div>
-                      `;
-                    }}
-                  />
-                ) : (
-                  <div className="admin-customize-image-upload-placeholder" style={{height: '100%'}}>
-                    <div className="admin-customize-upload-icon">🖼️</div>
-                    <div className="admin-customize-upload-text">Upload square image</div>
+          {(customizeDraft?.sizes || []).length > 0 ? (
+            <div className="admin-customize-items-grid">
+              {customizeDraft.sizes.map((size, index) => (
+                <div key={size.id} className="admin-customize-size-card">
+                  <div className="admin-customize-size-badge">{size.name}</div>
+                  <div className="admin-customize-size-info">
+                    <span className="admin-customize-size-label">Chest</span>
+                    <span className="admin-customize-size-value">{size.chest}</span>
                   </div>
-                )}
-                <div className="admin-customize-gallery-overlay">
-                  <span>{design.name}</span>
-                  <div className="admin-customize-gallery-actions">
+                  <div className="admin-customize-item-actions">
                     <button
-                      className="admin-customize-btn small primary"
-                      onClick={() => handleEditGalleryDesign(index)}
+                      className="admin-customize-btn icon-btn primary"
+                      onClick={() => handleEditSize(index)}
+                      title="Edit"
                     >
-                      Edit
+                      <EditIcon fontSize="small" />
                     </button>
                     <button
-                      className="admin-customize-btn small danger"
-                      onClick={() => removeGalleryDesign(index)}
+                      className="admin-customize-btn icon-btn danger"
+                      onClick={() => removeSize(index)}
+                      title="Delete"
                     >
                       <DeleteIcon fontSize="small" />
                     </button>
                   </div>
                 </div>
-              </div>
-            ))}
-          </div>
-          <button
-            className="admin-customize-btn secondary"
-            onClick={handleAddGalleryDesign}
-          >
-            <AddIcon />
-            Add Design
-          </button>
+              ))}
+            </div>
+          ) : (
+            <div className="admin-customize-empty-state">
+              <StraightenIcon className="admin-customize-empty-icon" />
+              <p>No sizes yet</p>
+            </div>
+          )}
         </div>
 
-        <div className="admin-customize-actions">
+        {/* Gallery Designs Section */}
+        <div className="admin-customize-section">
+          <div className="admin-customize-section-header">
+            <h3 className="admin-customize-section-title">
+              <CollectionsIcon className="admin-customize-section-icon" />
+              Gallery Designs
+            </h3>
+            <button
+              className="admin-customize-btn primary"
+              onClick={handleAddGalleryDesign}
+            >
+              <AddIcon />
+              Add Design
+            </button>
+          </div>
+
+          {(customizeDraft?.galleryDesigns || []).length > 0 ? (
+            <div className="admin-customize-gallery-list">
+              {customizeDraft.galleryDesigns.map((design, index) => (
+                <div key={design.id} className="admin-customize-gallery-card">
+                  <div className="admin-customize-gallery-image-wrapper">
+                    {design.image ? (
+                      <img
+                        src={design.image}
+                        alt={design.name}
+                        className="admin-customize-gallery-image"
+                      />
+                    ) : (
+                      <div className="admin-customize-image-placeholder">
+                        <ImageIcon style={{ fontSize: 48 }} />
+                      </div>
+                    )}
+                  </div>
+                  <div className="admin-customize-gallery-info">
+                    <span className="admin-customize-gallery-name">{design.name}</span>
+                    <div className="admin-customize-item-actions">
+                      <button
+                        className="admin-customize-btn small primary"
+                        onClick={() => handleEditGalleryDesign(index)}
+                      >
+                        <EditIcon fontSize="small" />
+                        Edit
+                      </button>
+                      <button
+                        className="admin-customize-btn small danger"
+                        onClick={() => removeGalleryDesign(index)}
+                      >
+                        <DeleteIcon fontSize="small" />
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="admin-customize-empty-state">
+              <CollectionsIcon className="admin-customize-empty-icon" />
+              <p>No gallery designs yet</p>
+            </div>
+          )}
+        </div>
+
+        {/* Save Button */}
+        <div className="admin-customize-footer">
           <button
-            className="admin-customize-btn primary"
+            className="admin-customize-btn primary large"
             onClick={saveCustomize}
           >
             <SaveIcon />
