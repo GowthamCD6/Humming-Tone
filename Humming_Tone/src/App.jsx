@@ -8,6 +8,7 @@ import UserTab from './components/UserTab/UserTab.jsx';
 import Home from './Pages/UserPanal/HomePage/Home.jsx';
 import AllProductPage from './Pages/UserPanal/All-Product/AllProduct.jsx';
 import Men from './Pages/UserPanal/Men\'s-Page/Men\'s.jsx';
+import Women from './Pages/UserPanal/Women-Page/Women\'s.jsx';
 import Children from './Pages/UserPanal/Children\'s-Page/Children\'s.jsx';
 import Baby from './Pages/UserPanal/Baby-Page/Baby.jsx';
 import Sports from './Pages/UserPanal/Sports-Page/Sports.jsx';
@@ -86,6 +87,7 @@ export default function App() {
           <Route path="home" element={<Home />} />
           <Route path="all-products" element={<AllProductPage />} />
           <Route path="men" element={<Men />} />
+          <Route path="women" element={<Women />} />
           <Route path="children" element={<Children />} />
           <Route path="baby" element={<Baby />} />
           <Route path="sports" element={<Sports />} />
