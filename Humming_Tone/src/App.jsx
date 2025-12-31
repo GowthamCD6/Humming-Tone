@@ -18,6 +18,14 @@ import ProductDetail from './Pages/UserPanal/Prodect-Details/Details.jsx';
 import CheckOut from './Pages/UserPanal/CheckOut/CheckOut.jsx';
 import PrivacyPolicy from './Pages/SupportsPage/Privacy&Policy/Privacy&Policy.jsx';
 
+import AddProduct from './Pages/AdminPanal/AddProduct/AddProduct.jsx';
+import Dashboard from './Pages/AdminPanal/Dashboard/Dashboard.jsx';
+import ManageOrder from './Pages/AdminPanal/ManageOrder/ManageOrder.jsx';
+import ManageProducts from './Pages/AdminPanal/ManageProduct/ManageProduct.jsx';
+import AllProducts from './Pages/AdminPanal/ProductData/ProductData.jsx';
+import SiteContent from './Pages/AdminPanal/SiteContent/SiteContent.jsx';
+// view store pending
+
 import './App.css';
 
 export default function App() {
@@ -66,13 +74,22 @@ export default function App() {
         />
 
         <Route
-          path="/dashboard"
+          path="/"
           element={
             <ProtectedRoute isAuthenticated={isAuthenticated} userType={userType} requiredType="admin">
               <AdminTab onLogout={handleLogout} />
             </ProtectedRoute>
           }
-        />
+        >
+          <Route index element={<Navigate to="dashboard"/>}></Route>
+          <Route path="dashboard" element={<Dashboard/>}></Route>
+          <Route path="add_product" element={<AddProduct/>}></Route>
+          <Route path="manage_orders" element={<ManageOrder/>}></Route>
+          <Route path="product_data" element={<AllProducts/>}></Route>
+          <Route path="manage_products" element={<ManageProducts/>}></Route>
+          <Route path="site_content" element={<SiteContent/>}></Route>
+          <Route path="view_store" element={<Dashboard/>}></Route>
+        </Route>
 
         {/* USER NESTED ROUTES */}
         <Route

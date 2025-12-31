@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useLocation, useNavigate, Outlet } from 'react-router-dom'
 import DashboardIcon from '@mui/icons-material/Dashboard'
 import ShoppingBagIcon from '@mui/icons-material/ShoppingBag'
 import AddCircleIcon from '@mui/icons-material/AddCircle'
@@ -6,29 +6,29 @@ import ShoppingCartIcon from '@mui/icons-material/ShoppingCart'
 import OpenInNewIcon from '@mui/icons-material/OpenInNew'
 import LogoutIcon from '@mui/icons-material/Logout'
 import AccountCircleIcon from '@mui/icons-material/AccountCircle'
-import Dashboard from '../../Pages/AdminPanal/Dashboard/Dashboard'
-import ManageProduct from '../../Pages/AdminPanal/ManageProduct/ManageProduct'
-import AddProduct from '../../Pages/AdminPanal/AddProduct/AddProduct'
-import ManageOrder from '../../Pages/AdminPanal/ManageOrder/ManageOrder'
-import SiteContent from '../../Pages/AdminPanal/SiteContent/SiteContent'
-import ProductData from '../../Pages/AdminPanal/ProductData/ProductData'
 import './AdminTab.css'
 import ReactSnowfall from 'react-snowfall';
 
 export default function AdminTab({ onLogout = () => {} }) {
-  const [activeTab, setActiveTab] = useState('dashboard')
+
+  const location = useLocation()
+  const navigate = useNavigate()
+
+  const currentPath = location.pathname.split('/').pop()
+
 
   const menuItems = [
-    { id: 'dashboard', label: 'Dashboard', Icon: DashboardIcon },
-    { id: 'manage-products', label: 'Manage Products', Icon: ShoppingBagIcon },
-    { id: 'add-product', label: 'Add Product', Icon: AddCircleIcon },
-    { id: 'manage-orders', label: 'Manage Orders', Icon: ShoppingCartIcon },
-    { id: 'site-content', label: 'Site Content', Icon: AccountCircleIcon },
-    { id: 'all-products', label: 'Product Data', Icon: ShoppingBagIcon },
-    { id: 'view-store', label: 'View Store', Icon: OpenInNewIcon },
+    { id: 'dashboard', label: 'Dashboard', Icon: DashboardIcon, 'path':"dashboard" },
+    { id: 'manage-products', label: 'Manage Products', Icon: ShoppingBagIcon, 'path':"manage_products" },
+    { id: 'add-product', label: 'Add Product', Icon: AddCircleIcon, "path":"add_product" },
+    { id: 'manage-orders', label: 'Manage Orders', Icon: ShoppingCartIcon, "path":"manage_orders" },
+    { id: 'site-content', label: 'Site Content', Icon: AccountCircleIcon, "path":"site_content" },
+    { id: 'all-products', label: 'Product Data', Icon: ShoppingBagIcon, "path":"product_data" },
+    { id: 'view-store', label: 'View Store', Icon: OpenInNewIcon, "path":"view_store" },
   ]
 
-  const activeTabLabel = menuItems.find(item => item.id === activeTab)?.label || 'Dashboard'
+  const activeTabLabel =
+  menuItems.find(item => item.path === currentPath)?.label || 'Dashboard'
 
   return (
     <div className="admin-tab-layout">
@@ -51,8 +51,8 @@ export default function AdminTab({ onLogout = () => {} }) {
             return (
               <button
                 key={item.id}
-                onClick={() => setActiveTab(item.id)}
-                className={`nav-item ${activeTab === item.id ? 'active' : ''}`}
+                onClick={() => navigate(item.path)}
+                className={`nav-item ${currentPath === item.path ? 'active' : ''}`}
               >
                 <Icon className="nav-icon" />
                 <span className="nav-label">{item.label}</span>
@@ -84,24 +84,7 @@ export default function AdminTab({ onLogout = () => {} }) {
         {/* Content Container */}
         <div className="admin-content">
           {/* Render based on activeTab */}
-          {activeTab === 'dashboard' && <Dashboard />}
-
-          {activeTab === 'manage-products' && <ManageProduct />}
-
-          {activeTab === 'add-product' && <AddProduct />}
-
-          {activeTab === 'manage-orders' && <ManageOrder />}
-
-          {activeTab === 'site-content' && <SiteContent />}
-
-          {activeTab === 'all-products' && <ProductData />}
-
-          {activeTab === 'view-store' && (
-            <section className="tab-content">
-              <h2 className="content-title">View Store</h2>
-              <p style={{ color: '#666', marginTop: '1rem' }}>Store view page will be added here</p>
-            </section>
-          )}
+          <Outlet />
         </div>
       </main>
     </div>
