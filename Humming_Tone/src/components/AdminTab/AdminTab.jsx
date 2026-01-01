@@ -24,8 +24,8 @@ export default function AdminTab({ onLogout = () => {} }) {
     { id: 'all-products', path: 'all-products', label: 'Product Data', Icon: ShoppingBagIcon },
     { id: 'view-store', path: '/usertab/home', label: 'View Store', Icon: OpenInNewIcon },
   ]
-
-  const activeTabLabel = menuItems.find(item => item.id === activeTab)?.label || 'Dashboard'
+  const activeTabLabel =
+    menuItems.find(item => item.id === activeTab)?.label || 'Dashboard'
 
   // Keep activeTab in sync with URL
   useEffect(() => {
