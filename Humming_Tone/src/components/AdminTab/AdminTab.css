@@ -83,7 +83,7 @@
   background: #6b7280;
 }
 
-.nav-item {
+.admin-sidebar .admin-nav-item {
   display: flex;
   align-items: center;
   gap: 1rem;
@@ -101,18 +101,18 @@
   width: 100%;
 }
 
-.nav-item:hover {
+.admin-sidebar .admin-nav-item:hover {
   background: rgba(255, 255, 255, 0.05);
   color: #fff;
 }
 
-.nav-item.active {
+.admin-sidebar .admin-nav-item.active {
   background: rgba(255, 255, 255, 0.1);
   color: #fff;
   border-left-color: #ffffff;
 }
 
-.nav-item.active::before {
+.admin-sidebar .admin-nav-item.active::before {
   content: '';
   position: absolute;
   left: 0;
@@ -122,7 +122,7 @@
   background: #ffffff;
 }
 
-.nav-icon {
+.admin-sidebar .admin-nav-icon {
   font-size: 1.5rem;
   display: flex;
   align-items: center;
@@ -133,7 +133,7 @@
   flex-shrink: 0;
 }
 
-.nav-label {
+.admin-sidebar .admin-nav-label {
   font-weight: 500;
   font-size: 1.05rem;
 }
@@ -145,7 +145,7 @@
   margin-top: auto;
 }
 
-.logout-btn {
+.admin-logout-btn {
   display: flex;
   align-items: center;
   gap: 1rem;
@@ -161,7 +161,7 @@
   text-align: left;
 }
 
-.logout-btn:hover {
+.admin-logout-btn:hover {
   background: rgba(239, 68, 68, 0.1);
   color: #ef4444;
 }
@@ -188,7 +188,7 @@
   flex-shrink: 0;
 }
 
-.page-title {
+.admin-header .page-title {
   font-size: 2.25rem;
   font-weight: 400;
   color: #1a1a1a;
@@ -245,7 +245,7 @@
   min-height: 0;
 }
 
-.tab-content {
+.admin-content .tab-content {
   animation: fadeIn 0.3s ease-in;
 }
 
@@ -421,8 +421,8 @@
     padding: 2rem;
   }
 
-  .page-title,
-  .content-title {
+  .admin-header .page-title,
+  .admin-content .content-title {
     font-size: 2.5rem;
   }
 }
@@ -461,23 +461,23 @@
     padding: 0 1rem;
   }
 
-  .nav-item {
+  .admin-nav-item {
     padding: 1rem;
     border-left: none;
     border-bottom: 3px solid transparent;
     min-width: auto;
   }
 
-  .nav-item.active {
+  .admin-nav-item.active {
     border-left: none;
     border-bottom-color: #ffffff;
   }
 
-  .nav-item.active::before {
+  .admin-nav-item.active::before {
     display: none;
   }
 
-  .nav-label {
+  .admin-nav-label {
     display: none;
   }
 
@@ -486,7 +486,7 @@
     border-left: 1px solid #404040;
   }
 
-  .logout-btn {
+  .admin-logout-btn {
     padding: 1rem;
   }
 
@@ -499,8 +499,8 @@
     padding: 1.5rem;
   }
 
-  .page-title,
-  .content-title {
+  .admin-header .page-title,
+  .admin-content .content-title {
     font-size: 2rem;
   }
 

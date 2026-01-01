@@ -149,7 +149,8 @@ exports.update_promo = (req,res,next) => {
 exports.fetch_promos = async (req, res, next) => {
   try {
     const getSql = "SELECT * FROM promo_codes ORDER BY created_at DESC";
-    const [rows] = await db.query(getSql);
+    // Use promise-based query on the mysql2 pool
+    const [rows] = await db.promise().query(getSql);
     res.status(200).json(rows || []);
   } catch (error) {
     console.error("Fetch Promos Error:", error);

@@ -5,6 +5,7 @@ import Login from './Pages/LoginPage/Login.jsx';
 import AdminTab from './components/AdminTab/AdminTab.jsx';
 import UserTab from './components/UserTab/UserTab.jsx';
 
+// User pages
 import Home from './Pages/UserPanal/HomePage/Home.jsx';
 import AllProductPage from './Pages/UserPanal/All-Product/AllProduct.jsx';
 import Men from './Pages/UserPanal/Men\'s-Page/Men\'s.jsx';
@@ -17,6 +18,14 @@ import CartPage from './Pages/UserPanal/Cart-Page/CartPage.jsx';
 import ProductDetail from './Pages/UserPanal/Prodect-Details/Details.jsx';
 import CheckOut from './Pages/UserPanal/CheckOut/CheckOut.jsx';
 import PrivacyPolicy from './Pages/SupportsPage/Privacy&Policy/Privacy&Policy.jsx';
+
+// Admin pages
+import Dashboard from './Pages/AdminPanal/Dashboard/Dashboard.jsx';
+import ManageProduct from './Pages/AdminPanal/ManageProduct/ManageProduct.jsx';
+import AddProduct from './Pages/AdminPanal/AddProduct/AddProduct.jsx';
+import ManageOrder from './Pages/AdminPanal/ManageOrder/ManageOrder.jsx';
+import SiteContent from './Pages/AdminPanal/SiteContent/SiteContent.jsx';
+import ProductData from './Pages/AdminPanal/ProductData/ProductData.jsx';
 
 import './App.css';
 
@@ -45,7 +54,7 @@ export default function App() {
               to={
                 isAuthenticated
                   ? userType === 'admin'
-                    ? '/dashboard'
+                    ? '/admin/dashboard'
                     : '/usertab/home'
                   : '/login'
               }
@@ -58,21 +67,36 @@ export default function App() {
           path="/login"
           element={
             isAuthenticated ? (
-              <Navigate to={userType === 'admin' ? '/dashboard' : '/usertab/home'} />
+              <Navigate to={userType === 'admin' ? '/admin/dashboard' : '/usertab/home'} />
             ) : (
               <Login onSuccess={handleLogin} />
             )
           }
         />
 
+        {/* Redirect old /dashboard path to new admin route */}
         <Route
           path="/dashboard"
+          element={<Navigate to="/admin/dashboard" replace />}
+        />
+
+        {/* ADMIN NESTED ROUTES */}
+        <Route
+          path="/admin"
           element={
             <ProtectedRoute isAuthenticated={isAuthenticated} userType={userType} requiredType="admin">
               <AdminTab onLogout={handleLogout} />
             </ProtectedRoute>
           }
-        />
+        >
+          <Route index element={<Navigate to="dashboard" replace />} />
+          <Route path="dashboard" element={<Dashboard />} />
+          <Route path="manage-products" element={<ManageProduct />} />
+          <Route path="add-product" element={<AddProduct />} />
+          <Route path="manage-orders" element={<ManageOrder />} />
+          <Route path="site-content" element={<SiteContent />} />
+          <Route path="all-products" element={<ProductData />} />
+        </Route>
 
         {/* USER NESTED ROUTES */}
         <Route
@@ -124,5 +148,3 @@ const ScrollToTop = () => {
 
   return null;
 };
-
-

@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Outlet, Link, useNavigate } from 'react-router-dom';
+import { Outlet, Link, NavLink, useNavigate } from 'react-router-dom';
 import HomeIcon from '@mui/icons-material/Home';
 import GridViewIcon from '@mui/icons-material/GridView';
 import ManIcon from '@mui/icons-material/Man';
@@ -100,25 +100,31 @@ const UserTab = () => {
   return (
     <div className="user-app-container">
       {/* Header */}
-      <header className={`header ${isScrolled ? 'scrolled' : ''}`}>
-        <div className="header-container">
+      <header className={`user-header ${isScrolled ? 'scrolled' : ''}`}>
+        <div className="user-header-container">
           {/* Logo */}
-          <Link to="/usertab/home" className="logo-section">
-            <img src={logo} alt="Humming Tone" className="logo-image" />
+          <Link to="/usertab/home" className="user-logo-section">
+            <img src={logo} alt="Humming Tone" className="user-logo-image" />
           </Link>
 
           {/* Navigation */}
-          <nav className="nav">
+          <nav className="user-nav">
             {loading ? (
               <div className="nav-loading">Loading...</div>
             ) : (
-              <ul className="nav-menu">
+              <ul className="user-nav-menu">
                 {navItems.map(({ path, label, Icon }) => (
-                  <li key={path} className="nav-item">
-                    <Link to={path} className="nav-link">
-                      <Icon className="nav-icon" />
+                  <li key={path} className="user-nav-item">
+                    <NavLink
+                      to={path}
+                      className={({ isActive }) =>
+                        `user-nav-link${isActive ? ' active' : ''}`
+                      }
+                      end
+                    >
+                      <Icon className="user-nav-icon" />
                       <span>{label}</span>
-                    </Link>
+                    </NavLink>
                   </li>
                 ))}
               </ul>
@@ -126,15 +132,15 @@ const UserTab = () => {
           </nav>
 
           {/* Cart */}
-          <div className="cart-icon" onClick={() => navigate('/usertab/cart')}>
-            <ShoppingBagOutlinedIcon className="cart-bag" />
-            <span className="cart-badge">0</span>
+          <div className="user-cart-icon" onClick={() => navigate('/usertab/cart')}>
+            <ShoppingBagOutlinedIcon className="user-cart-bag" />
+            <span className="user-cart-badge">0</span>
           </div>
         </div>
       </header>
 
       {/* Nested Routes Render Here */}
-      <main className="main-content">
+      <main className="user-main-content">
         <Outlet />
       </main>
     </div>
