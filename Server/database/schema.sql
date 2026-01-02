@@ -162,3 +162,16 @@ CREATE TABLE promo_codes (
   is_active TINYINT(1) DEFAULT 1,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
+
+CREATE TABLE site_settings (
+    id INT PRIMARY KEY,
+    brand_name VARCHAR(255),
+    description TEXT,
+    email VARCHAR(255),
+    phone VARCHAR(50),
+    address TEXT,
+    social_links JSON,
+    legal_info JSON,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+);
