@@ -1,8 +1,7 @@
 @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&family=Poppins:wght@300;400;500;600;700&display=swap');
 
 /* Page-specific root to scope styles to this page only */
-.userpanal-homepage {
-}
+
 
 /* Basic reset for the home container */
 .userpanal-homepage .home-static-page {
