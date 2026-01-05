@@ -209,3 +209,26 @@ CREATE TABLE `genders` (
 ) ENGINE=InnoDB
 DEFAULT CHARSET=utf8mb4
 COLLATE=utf8mb4_0900_ai_ci;
+
+
+CREATE TABLE customize (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+
+  product_id INT NOT NULL,
+
+  cloth_type VARCHAR(255) NOT NULL,
+  variant VARCHAR(255) NOT NULL,
+  color VARCHAR(255) NOT NULL,
+  material VARCHAR(255) NOT NULL,
+
+  size ENUM('XS','S','M','L','XL','XXL','3XL') NOT NULL,
+
+  design_img_path VARCHAR(255) NOT NULL,
+
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+
+  CONSTRAINT fk_customize_product
+    FOREIGN KEY (product_id)
+    REFERENCES products(id)
+    ON DELETE CASCADE
+);

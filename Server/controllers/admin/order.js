@@ -20,9 +20,9 @@ exports.getManageOrders = async (req, res) => {
             GROUP BY o.id
             ORDER BY o.created_at DESC;
         `;
-        
-        // This destructuring [rows] ONLY works because we used mysql2/promise
-        const [rows] = await db.execute(query);
+
+        // Use the promise wrapper on the mysql2 pool
+        const [rows] = await db.promise().query(query);
 
         res.status(200).json(rows || []);
 

@@ -61,7 +61,7 @@ const Home = ({ onViewDetails = () => {} }) => {
   );
 
   return (
-    <main className="home-static-page">
+    <main className="userpanal-homepage home-static-page">
       {/* Hero Section */}
       <section className="hero-banner">
         <div className="hero-visual" style={{ backgroundImage: `url(${homeImage})` }}>

@@ -1,4 +1,4 @@
-import { useLocation, useNavigate, Outlet } from 'react-router-dom'
+import { useState, useEffect } from 'react'
 import DashboardIcon from '@mui/icons-material/Dashboard'
 import ShoppingBagIcon from '@mui/icons-material/ShoppingBag'
 import AddCircleIcon from '@mui/icons-material/AddCircle'
@@ -6,29 +6,36 @@ import ShoppingCartIcon from '@mui/icons-material/ShoppingCart'
 import OpenInNewIcon from '@mui/icons-material/OpenInNew'
 import LogoutIcon from '@mui/icons-material/Logout'
 import AccountCircleIcon from '@mui/icons-material/AccountCircle'
+import { Outlet, useLocation, useNavigate } from 'react-router-dom'
 import './AdminTab.css'
 import ReactSnowfall from 'react-snowfall';
 
 export default function AdminTab({ onLogout = () => {} }) {
-
+  const [activeTab, setActiveTab] = useState('dashboard')
   const location = useLocation()
   const navigate = useNavigate()
 
-  const currentPath = location.pathname.split('/').pop()
-
-
   const menuItems = [
-    { id: 'dashboard', label: 'Dashboard', Icon: DashboardIcon, 'path':"dashboard" },
-    { id: 'manage-products', label: 'Manage Products', Icon: ShoppingBagIcon, 'path':"manage_products" },
-    { id: 'add-product', label: 'Add Product', Icon: AddCircleIcon, "path":"add_product" },
-    { id: 'manage-orders', label: 'Manage Orders', Icon: ShoppingCartIcon, "path":"manage_orders" },
-    { id: 'site-content', label: 'Site Content', Icon: AccountCircleIcon, "path":"site_content" },
-    { id: 'all-products', label: 'Product Data', Icon: ShoppingBagIcon, "path":"product_data" },
-    { id: 'view-store', label: 'View Store', Icon: OpenInNewIcon, "path":"view_store" },
+    { id: 'dashboard', path: 'dashboard', label: 'Dashboard', Icon: DashboardIcon },
+    { id: 'manage-products', path: 'manage-products', label: 'Manage Products', Icon: ShoppingBagIcon },
+    { id: 'add-product', path: 'add-product', label: 'Add Product', Icon: AddCircleIcon },
+    { id: 'manage-orders', path: 'manage-orders', label: 'Manage Orders', Icon: ShoppingCartIcon },
+    { id: 'site-content', path: 'site-content', label: 'Site Content', Icon: AccountCircleIcon },
+    { id: 'all-products', path: 'all-products', label: 'Product Data', Icon: ShoppingBagIcon },
+    { id: 'view-store', path: '/usertab/home', label: 'View Store', Icon: OpenInNewIcon },
   ]
-
   const activeTabLabel =
-  menuItems.find(item => item.path === currentPath)?.label || 'Dashboard'
+    menuItems.find(item => item.id === activeTab)?.label || 'Dashboard'
+
+  // Keep activeTab in sync with URL
+  useEffect(() => {
+    const current = menuItems.find(item =>
+      item.path && location.pathname.startsWith(`/admin/${item.path}`)
+    )
+    if (current && current.id !== activeTab) {
+      setActiveTab(current.id)
+    }
+  }, [location.pathname])
 
   return (
     <div className="admin-tab-layout">
@@ -51,11 +58,18 @@ export default function AdminTab({ onLogout = () => {} }) {
             return (
               <button
                 key={item.id}
-                onClick={() => navigate(item.path)}
-                className={`nav-item ${currentPath === item.path ? 'active' : ''}`}
+                onClick={() => {
+                  if (item.id === 'view-store') {
+                    navigate(item.path)
+                  } else {
+                    setActiveTab(item.id)
+                    navigate(item.path)
+                  }
+                }}
+                className={`admin-nav-item ${activeTab === item.id ? 'active' : ''}`}
               >
-                <Icon className="nav-icon" />
-                <span className="nav-label">{item.label}</span>
+                <Icon className="admin-nav-icon" />
+                <span className="admin-nav-label">{item.label}</span>
               </button>
             )
           })}
@@ -63,7 +77,7 @@ export default function AdminTab({ onLogout = () => {} }) {
 
         {/* Sidebar Footer - Logout */}
         <div className="sidebar-footer">
-          <button onClick={onLogout} className="logout-btn">
+          <button onClick={onLogout} className="admin-logout-btn">
             <LogoutIcon className="nav-icon" />
             <span className="nav-label">Logout</span>
           </button>
@@ -83,7 +97,7 @@ export default function AdminTab({ onLogout = () => {} }) {
 
         {/* Content Container */}
         <div className="admin-content">
-          {/* Render based on activeTab */}
+          {/* Nested admin routes render here */}
           <Outlet />
         </div>
       </main>

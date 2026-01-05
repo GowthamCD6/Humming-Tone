@@ -8,7 +8,7 @@
   box-sizing: border-box;
 }
 
-.header {
+.user-header {
   background-color: #ffffff;
   border-bottom: 1px solid #e5e5e5;
   position: fixed;
@@ -19,7 +19,7 @@
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
 }
 
-.header-container {
+.user-header-container {
   max-width: 1400px;
   margin: 0 auto;
   padding: 0 50px;
@@ -29,7 +29,7 @@
   height: 100px;
 }
 
-.logo-section {
+.user-logo-section {
   display: flex;
   align-items: center;
   gap: 12px;
@@ -39,11 +39,11 @@
   transition: transform 0.2s ease;
 }
 
-.logo-section:hover {
+.user-logo-section:hover {
   transform: translateY(-1px);
 }
 
-.logo-image {
+.user-logo-image {
   height: 190px;
   width: 380px;
   margin-left: -120px;
@@ -51,11 +51,11 @@
   transition: transform 0.3s ease;
 }
 
-.logo-section:hover .logo-image {
+.user-logo-section:hover .user-logo-image {
   transform: scale(1.05);
 }
 
-.logo-text {
+.user-logo-text {
   font-family: 'Playfair Display', serif;
   font-size: 22px;
   color: #1a1a1a;
@@ -65,7 +65,7 @@
   white-space: nowrap;
 }
 
-.logo-text .ampersand {
+.user-logo-text .ampersand {
   font-style: italic;
   font-weight: 400;
   margin: 0 2px;
@@ -73,42 +73,41 @@
 }
 
 /* Navigation */
-.nav {
+.user-nav {
   display: flex;
   align-items: center;
   height: 100%;
   position: absolute;
   left: 50%;
-  transform: translateX(-50%);
+  transform: translateX(-46%);
 }
 
-.nav-menu {
+.user-nav-menu {
   display: flex;
   align-items: center;
-  gap: -8px;
+  gap: 15px;
   list-style: none;
   margin: 0;
   padding: 0;
   height: 100%;
 }
 
-.nav-item {
+.user-nav-item {
   position: relative;
   height: 100%;
   display: flex;
   align-items: center;
 }
 
-.nav-link {
+.user-nav-link {
   display: flex;
   align-items: center;
-  gap: -3px;
+  gap: 3px;
   text-decoration: none;
   color: #666666;
-  font-size: 13px; /* Reduced font size */
+  font-size: 15px; /* Reduced font size */
   font-weight: 500;
-  padding: 4px 6px;
-  height: 100%;
+  padding: 8px 10px 6px; /* extra bottom padding for underline */
   transition: color 0.3s ease;
   position: relative;
   cursor: pointer;
@@ -117,12 +116,12 @@
   white-space: nowrap;
 }
 
-.nav-link::after {
+.user-nav-link::after {
   content: '';
   position: absolute;
   left: 0;
   right: 0;
-  bottom: 0;
+  bottom: -4px; /* sit just below the text, not header bottom */
   height: 3px;
   background: linear-gradient(90deg, #1a1a1a 0%, #444444 50%, #1a1a1a 100%);
   border-radius: 3px 3px 0 0;
@@ -131,32 +130,32 @@
   box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.15);
 }
 
-.nav-icon {
+.user-nav-icon {
   font-size: 17px !important;
   color: inherit;
   transition: all 0.3s ease;
 }
 
-.nav-link:hover {
+.user-nav-link:hover {
   color: #333333;
 }
 
-.nav-link.active {
+.user-nav-link.active {
   color: #1a1a1a;
   font-weight: 600;
 }
 
-.nav-link.active::after,
-.nav-link:hover::after {
+.user-nav-link.active::after,
+.user-nav-link:hover::after {
   width: 100%;
 }
 
-.nav-link.active .nav-icon {
+.user-nav-link.active .user-nav-icon {
   transform: scale(1.1);
 }
 
 /* Cart Icon */
-.cart-icon {
+.user-cart-icon {
   position: relative;
   cursor: pointer;
   flex-shrink: 0;
@@ -170,24 +169,24 @@
   margin-right: -10px;
 }
 
-.cart-icon:hover {
+.user-cart-icon:hover {
   background-color: #1a1a1a;
   transform: translateY(-2px);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
 }
 
-.cart-bag {
+.user-cart-bag {
   font-size: 26px !important;
   color: #1a1a1a;
   transition: all 0.3s ease;
 }
 
-.cart-icon:hover .cart-bag {
+.user-cart-icon:hover .user-cart-bag {
   transform: scale(1.1);
   color: #ffffff;
 }
 
-.cart-badge {
+.user-cart-badge {
   position: absolute;
   top: 4px;
   right: 4px;
@@ -217,84 +216,84 @@
 
 /* Responsive Styles */
 @media (max-width: 1200px) {
-  .header-container {
+  .user-header-container {
     padding: 0 40px;
   }
 
-  .nav-menu {
+  .user-nav-menu {
     gap: -4px;
   }
 
-  .nav-link {
+  .user-nav-link {
     padding: 10px 14px;
     font-size: 12px;
   }
 }
 
 @media (max-width: 992px) {
-  .header-container {
+  .user-header-container {
     padding: 0 30px;
     height: 70px;
   }
 
-  .nav {
+  .user-nav {
     position: static;
     transform: none;
   }
 
-  .nav-menu {
+  .user-nav-menu {
     padding: 3px;
   }
 
-  .nav-link {
+  .user-nav-link {
     font-size: 13px;
     padding: 8px 12px;
     gap: 6px;
   }
 
-  .logo-text {
+  .user-logo-text {
     font-size: 20px;
   }
 
-  .logo-image {
+  .user-logo-image {
     height: 42px;
   }
 }
 
 @media (max-width: 768px) {
-  .header-container {
+  .user-header-container {
     padding: 0 20px;
     height: 65px;
   }
 
-  .nav-menu {
+  .user-nav-menu {
     gap: -4px;
     padding: 2px;
   }
 
-  .nav-link {
+  .user-nav-link {
     font-size: 11px;
     gap: 5px;
     padding: 7px 10px;
   }
 
-  .nav-icon {
+  .user-nav-icon {
     font-size: 18px !important;
   }
 
-  .logo-text {
+  .user-logo-text {
     font-size: 18px;
   }
 
-  .logo-image {
+  .user-logo-image {
     height: 38px;
   }
 
-  .cart-bag {
+  .user-cart-bag {
     font-size: 22px !important;
   }
 
-  .cart-badge {
+  .user-cart-badge {
     min-width: 18px;
     height: 18px;
     font-size: 10px;
@@ -302,34 +301,34 @@
 }
 
 @media (max-width: 600px) {
-  .header-container {
+  .user-header-container {
     padding: 0 15px;
     height: 60px;
   }
 
-  .nav-link span:last-child {
+  .user-nav-link span:last-child {
     display: none;
   }
 
-  .nav-link {
+  .user-nav-link {
     padding: 8px 8px;
   }
 
-  .logo-text {
+  .user-logo-text {
     font-size: 16px;
   }
 
-  .logo-image {
+  .user-logo-image {
     height: 36px;
   }
 
-  .nav-menu {
+  .user-nav-menu {
     border-radius: 40px;
   }
 }
 
 @media (max-width: 480px) {
-  .logo-text {
+  .user-logo-text {
     display: none;
   }
 }
@@ -345,23 +344,37 @@
 }
 
 /* Main Content Area */
-.main-content {
-  padding-top: 100px;
+.user-main-content {
+  padding-top: 100px; /* clear fixed header */
+  padding-bottom: 40px; /* comfortable space above footer */
+}
+
+/* Normalize page heights under user tab so they don't
+   force their own full-viewport height and create
+   a "tight" inner scroll experience */
+.user-main-content .all-products-collection-page,
+.user-main-content .mens-collection-page,
+.user-main-content .womens-collection-page,
+.user-main-content .childrens-collection-page,
+.user-main-content .baby-collection-page,
+.user-main-content .sports-collection-page,
+.user-main-content .customize-page {
+  min-height: auto;
 }
 
 /* Page Placeholder */
-.page-placeholder {
+.user-page-placeholder {
   display: flex;
   align-items: center;
   justify-content: center;
-  min-height: calc(100vh - 100px);
+  min-height: calc(100vh - 140px);
   font-size: 32px;
   color: #999;
   font-family: 'Playfair Display', serif;
 }
 
 /* Header Scroll Effect */
-.header.scrolled {
+.user-header.scrolled {
   background-color: rgba(255, 255, 255, 0.98);
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
 }

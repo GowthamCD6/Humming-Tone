@@ -400,7 +400,7 @@ import './ProductData.css';
 import demoImage from '../../../assets/demo.jpeg';
 import axios from 'axios';
 
-const API_BASE_URL = 'http://localhost:5000/api'; // Change to your API URL
+const API_BASE_URL = 'http://localhost:5000'; // Change to your API URL
 
 const AllProducts = () => {
   const [products, setProducts] = useState([]);
@@ -423,7 +423,7 @@ const AllProducts = () => {
       if (filters.gender) params.gender = filters.gender;
       if (filters.status) params.status = filters.status;
 
-      const response = await axios.get(`${API_BASE_URL}/products`, { params });
+      const response = await axios.get(`${API_BASE_URL}/admin/fetch_products`, { params });
       
       if (response.data.success) {
         setProducts(response.data.data);
