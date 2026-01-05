@@ -163,15 +163,49 @@ CREATE TABLE promo_codes (
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
-CREATE TABLE site_settings (
-    id INT PRIMARY KEY,
-    brand_name VARCHAR(255),
-    description TEXT,
-    email VARCHAR(255),
-    phone VARCHAR(50),
-    address TEXT,
-    social_links JSON,
-    legal_info JSON,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
-);
+
+CREATE TABLE `site_settings` (
+  `id` int NOT NULL DEFAULT '1',
+  `brand_name` varchar(255) DEFAULT 'Humming & Tone',
+  `description` text,
+  `email` varchar(255) DEFAULT NULL,
+  `phone` varchar(50) DEFAULT NULL,
+  `address` text,
+  `social_links` json DEFAULT NULL,
+  `legal_info` json DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  CONSTRAINT `site_settings_chk_1` CHECK ((`id` = 1))
+) ENGINE=InnoDB
+DEFAULT CHARSET=utf8mb4
+COLLATE=utf8mb4_0900_ai_ci;
+
+
+CREATE TABLE `footer_links` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `type` enum('shop','support') NOT NULL,
+  `label` varchar(255) NOT NULL,
+  `href` varchar(500) DEFAULT NULL,
+  `active` tinyint(1) DEFAULT '1',
+  `display_order` int DEFAULT '0',
+  `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB
+AUTO_INCREMENT=1
+DEFAULT CHARSET=utf8mb4
+COLLATE=utf8mb4_0900_ai_ci;
+
+CREATE TABLE `genders` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `name` varchar(100) NOT NULL,
+  `is_active` tinyint(1) DEFAULT '1',
+  `display_order` int DEFAULT '0',
+  `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `name` (`name`)
+) ENGINE=InnoDB
+DEFAULT CHARSET=utf8mb4
+COLLATE=utf8mb4_0900_ai_ci;
