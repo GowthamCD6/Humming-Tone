@@ -14,6 +14,7 @@ const userPromoRoutes = require("./routes/user/promo");
 const siteRoutes = require('./routes/admin/siteContent');
 const productRoutes=require('./routes/admin/productData');
 const userReturnRoutes = require("./routes/user/return");
+const customizeRoutes = require("./routes/user/customize");
 const app = express();
 const PORT = process.env.PORT || 5000;
 const path = require('path');
