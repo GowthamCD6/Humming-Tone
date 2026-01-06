@@ -71,7 +71,7 @@ const Home = ({ onViewDetails = () => {} }) => {
         <div className="hero-text-content">
           <h1 className="hero-main-title">Elevate Your Style</h1>
           <p className="hero-sub-text">Discover our curated collection of premium clothing</p>
-          <button className="hero-cta-button">SHOP CUSTOMIZE PRODUCT</button>
+          <Link to="/usertab/customize" className="hero-cta-button">SHOP CUSTOMIZE PRODUCT</Link>
         </div>
 
         <div className="hero-scroll-down">

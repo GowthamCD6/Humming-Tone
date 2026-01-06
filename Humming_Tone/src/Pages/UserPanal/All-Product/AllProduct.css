@@ -308,6 +308,8 @@
     transform: translateY(20px);
     position: relative;
     overflow: hidden;
+    text-decoration: none;
+    display: inline-block;
 }
 
 /* Ripple effect matching hero button */

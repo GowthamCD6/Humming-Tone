@@ -28,10 +28,12 @@ const AllProductPage = ({ onViewDetails = () => {} }) => {
       const formattedProducts = data.map(product => ({
         id: product.id,
         name: product.name,
-        brand: product.brand,
-        price: parseFloat(product.price), // Replace with actual price if available
-        image: `http://localhost:5000/${product.image_path.replace(/\\/g, '/')}`, // Correct image URL format
-        category: product.gender, // Replace with the correct field
+        brand: product.brand || 'HummingTone',
+        price: parseFloat(product.original_price), // correct column
+        image: product.image_path
+          ? `http://localhost:5000/${product.image_path.replace(/\\/g, '/')}`
+          : demoImage,
+        category: product.gender,
       }));
 
       setProducts(formattedProducts);  // Set the fetched products in state
