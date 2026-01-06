@@ -391,18 +391,17 @@
     font-size: 36px;
     font-weight: 400;
     color: #1a1a1a;
-    margin-bottom: 25px;
+    margin-bottom: 20px;
     letter-spacing: -0.01em;
+    margin-top: -30px;
 }
 
 .childrens-no-products-text {
     font-size: 16px;
     color: #666;
     line-height: 1.8;
-    margin-bottom: 20px;
+    margin-bottom: 30px;
     font-weight: 300;
-    margin-top: -30px;
-
 }
 
 .childrens-view-all-button {
@@ -418,6 +417,9 @@
     font-family: 'Poppins', sans-serif;
     position: relative;
     overflow: hidden;
+    margin-top: 10px;
+    text-decoration: none;
+    display: inline-block;
 }
 
 .childrens-view-all-button::before {

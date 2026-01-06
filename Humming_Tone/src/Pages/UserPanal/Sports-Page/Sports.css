@@ -418,6 +418,8 @@
     font-family: 'Poppins', sans-serif;
     position: relative;
     overflow: hidden;
+    text-decoration: none;
+    display: inline-block;
 }
 
 .sports-view-all-button::before {

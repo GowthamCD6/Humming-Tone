@@ -418,6 +418,8 @@
     font-family: 'Poppins', sans-serif;
     position: relative;
     overflow: hidden;
+    text-decoration: none;
+    display: inline-block;
 }
 
 .mens-view-all-button:hover {
