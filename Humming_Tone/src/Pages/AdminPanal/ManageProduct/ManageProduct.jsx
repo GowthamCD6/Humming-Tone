@@ -737,6 +737,8 @@ export default function ManageProducts() {
   const [promoCodes, setPromoCodes] = useState([])
   const [editingProduct, setEditingProduct] = useState(null)
   const [showEditModal, setShowEditModal] = useState(false)
+  const [showDeleteModal, setShowDeleteModal] = useState(false)
+  const [productToDelete, setProductToDelete] = useState(null)
   
   // Promo State
   const [showAddPromoModal, setShowAddPromoModal] = useState(false)
@@ -795,15 +797,23 @@ export default function ManageProducts() {
     if (data.success) { setShowEditModal(false); loadData(); }
   }
 
-  const handleDeleteProduct = async (id) => {
-    if (window.confirm("Delete this product permanently?")) {
-      const res = await fetch(`${BASE_URL}/admin/delete_product`, {
-        method: 'DELETE',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ id })
-      });
-      const data = await res.json();
-      if (data.success) loadData();
+  const openDeleteModal = (product) => {
+    setProductToDelete(product);
+    setShowDeleteModal(true);
+  }
+
+  const handleDeleteProduct = async () => {
+    if (!productToDelete) return;
+    const res = await fetch(`${BASE_URL}/admin/delete_product`, {
+      method: 'DELETE',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ id: productToDelete.id })
+    });
+    const data = await res.json();
+    if (data.success) {
+      setShowDeleteModal(false);
+      setProductToDelete(null);
+      loadData();
     }
   }
 
@@ -910,7 +920,7 @@ export default function ManageProducts() {
                     <td>
                       <div className="action-btns">
                         <button className="btn-edit" onClick={() => handleEditProduct(p)}>EDIT</button>
-                        <button className="btn-delete" onClick={() => handleDeleteProduct(p.id)}>DELETE</button>
+                        <button className="btn-delete" onClick={() => openDeleteModal(p)}>DELETE</button>
                       </div>
                     </td>
                   </tr>
@@ -951,6 +961,28 @@ export default function ManageProducts() {
             <div className="modal-footer">
               <button className="btn-cancel" onClick={() => setShowEditModal(false)}>CANCEL</button>
               <button className="btn-save" onClick={handleSaveProduct}>SAVE CHANGES</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* DELETE CONFIRMATION MODAL */}
+      {showDeleteModal && productToDelete && (
+        <div className="modal-overlay" onClick={() => setShowDeleteModal(false)}>
+          <div className="modal-content modal-content--compact" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header">
+              <h2 className="modal-title">Delete Product</h2>
+              <button className="modal-close" onClick={() => setShowDeleteModal(false)}>×</button>
+            </div>
+            <div className="modal-body">
+              <p className="delete-modal-text">
+                Deleting this product will remove it from the user pages
+                and store it in Product Data. Do you want to continue?
+              </p>
+            </div>
+            <div className="modal-footer">
+              <button className="btn-cancel" onClick={() => setShowDeleteModal(false)}>CANCEL</button>
+              <button className="btn-save btn-delete-confirm" onClick={handleDeleteProduct}>DELETE PRODUCT</button>
             </div>
           </div>
         </div>

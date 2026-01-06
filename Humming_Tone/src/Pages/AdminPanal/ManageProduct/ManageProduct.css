@@ -651,3 +651,19 @@
   transform: translateY(-2px);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
 }
+
+/* Delete confirmation modal text */
+.delete-modal-text {
+  font-size: 0.95rem;
+  line-height: 1.6;
+  color: #4b5563;
+}
+
+/* Destructive delete button variant */
+.btn-delete-confirm {
+  background: #b91c1c;
+}
+
+.btn-delete-confirm:hover {
+  background: #991b1b;
+}
