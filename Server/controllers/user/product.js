@@ -28,7 +28,7 @@ exports.fetch_products = (req,res,next) => { // api request should be /user/fetc
                         LEFT JOIN product_variants pv 
                         ON pv.product_id = p.id
                         WHERE p.is_active = 1 and p.gender = ?
-                        GROUP BY p.id;`;
+                        GROUP BY p.id order by created_at DESC`;
       db.query(fetchSql,[gender],(error,result) => {
         if(error || result.length === 0){
             return next(error || createError.NotFound('Products not found!'));
@@ -57,7 +57,7 @@ exports.fetch_products = (req,res,next) => { // api request should be /user/fetc
 
 exports.fetch_featured_products = (req, res, next) => {
   try {
-    let sql = "select * from products p join product_variants pv on p.id = pv.product_id where is_featured = 1 and is_active = 1";
+    let sql = "select * from products p join product_variants pv on p.id = pv.product_id where is_featured = 1 and is_active = 1 order by p.created_at DESC";
     db.query(sql, (error, result) => {  
       if (error || result.length === 0) {
         return next(createError.BadRequest(error || createError.NotFound('Products not found!')));
