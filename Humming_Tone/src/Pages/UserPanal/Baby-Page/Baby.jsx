@@ -160,7 +160,7 @@ const Baby = ({ onViewDetails = () => {} }) => {
           <p className="baby-no-products-text">
             Try adjusting your filters or browse our complete<br />collection.
           </p>
-          <Link className="mens-view-all-button no-underline" to="/usertab/all-products">VIEW ALL PRODUCTS</Link>
+          <Link className="baby-view-all-button" to="/usertab/all-products">VIEW ALL PRODUCTS</Link>
         </div>
       )}
       

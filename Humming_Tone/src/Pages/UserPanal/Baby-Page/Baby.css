@@ -417,6 +417,8 @@
     font-family: 'Poppins', sans-serif;
     position: relative;
     overflow: hidden;
+    text-decoration: none;
+    display: inline-block;
 }
 
 .baby-view-all-button::before {
