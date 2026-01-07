@@ -41,24 +41,94 @@ exports.fetch_products = (req,res,next) => { // api request should be /user/fetc
     }
 }
 
-  exports.fetch_new_arrivals = (req, res, next) => {
-    try {
-      let sql = "select * from products p join product_variants pv on p.id = pv.product_id where is_active = 1 order by created_at DESC limit 9";
-      db.query(sql, (error, result) => {  
-        if (error || result.length === 0) {
-          return next(createError.BadRequest(error || createError.NotFound('Products not found!')));
-        }
-        res.send(result);
-      });
-    } catch (error) {
-      next(error);
-    }
-  };
+exports.fetch_new_arrivals = (req, res, next) => {
+  try {
+    const sql = `
+      SELECT
+        p.id AS id,                     -- ✅ product id
+        p.name,
+        p.about,
+        p.original_price,
+        p.sku,
+        p.category_id,
+        p.subcategory,
+        p.brand,
+        p.color,
+        p.material,
+        p.care_instructions,
+        p.gender,
+        p.age_range,
+        p.weight,
+        p.dimensions,
+        p.stock_quantity,
+        p.is_featured,
+        p.is_active,
+        p.image_path,
+        p.video_path,
+        p.created_at,
+        p.updated_at,
+
+        pv.id AS variant_id,            -- ✅ variant id (separate)
+        pv.size,
+        pv.price
+      FROM products p
+      JOIN product_variants pv ON p.id = pv.product_id
+      WHERE p.is_active = 1
+      ORDER BY p.created_at DESC
+      LIMIT 9
+    `;
+
+    db.query(sql, (error, result) => {
+      if (error || result.length === 0) {
+        return next(createError.BadRequest(error || createError.NotFound('Products not found!')));
+      }
+      res.send(result);
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+
 
 exports.fetch_featured_products = (req, res, next) => {
   try {
-    let sql = "select * from products p join product_variants pv on p.id = pv.product_id where is_featured = 1 and is_active = 1 order by p.created_at DESC";
-    db.query(sql, (error, result) => {  
+    const sql = `
+      SELECT
+        p.id AS id,                   
+        p.name,
+        p.about,
+        p.original_price,
+        p.sku,
+        p.category_id,
+        p.subcategory,
+        p.brand,
+        p.color,
+        p.material,
+        p.care_instructions,
+        p.gender,
+        p.age_range,
+        p.weight,
+        p.dimensions,
+        p.stock_quantity,
+        p.is_featured,
+        p.is_active,
+        p.image_path,
+        p.video_path,
+        p.created_at,
+        p.updated_at,
+
+        pv.id AS variant_id,
+        pv.size,
+        pv.price
+      FROM products p
+      JOIN product_variants pv ON p.id = pv.product_id
+      WHERE p.is_featured = 1
+        AND p.is_active = 1
+      ORDER BY p.created_at DESC
+    `;
+
+    db.query(sql, (error, result) => {
       if (error || result.length === 0) {
         return next(createError.BadRequest(error || createError.NotFound('Products not found!')));
       }
