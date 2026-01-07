@@ -5,6 +5,9 @@ const ProductDetailPage = () => {
   const [selectedSize, setSelectedSize] = useState(null);
   const [quantity, setQuantity] = useState(1);
 
+  const productImages = [demoImage, demoImage, demoImage, demoImage];
+  const [activeImageIndex, setActiveImageIndex] = useState(0);
+
   const product = {
     title: "Blue set",
     price: "400.00",
@@ -37,13 +40,20 @@ const ProductDetailPage = () => {
           <div className="product-gallery-container">
             <div className="sticky-wrapper">
               <div className="product-main-image">
-                <img src={demoImage} alt="Blue set main" />
+                <img src={productImages[activeImageIndex]} alt={product.title} loading="eager" />
               </div>
               <div className="thumbnail-gallery">
-                <div className="thumbnail active"><img src={demoImage} alt="thumb1" /></div>
-                <div className="thumbnail"><img src={demoImage} alt="thumb2" /></div>
-                <div className="thumbnail"><img src={demoImage} alt="thumb3" /></div>
-                <div className="thumbnail"><img src={demoImage} alt="thumb4" /></div>
+                {productImages.map((src, idx) => (
+                  <button
+                    key={`${src}-${idx}`}
+                    type="button"
+                    className={`thumbnail ${idx === activeImageIndex ? 'active' : ''}`}
+                    onClick={() => setActiveImageIndex(idx)}
+                    aria-label={`View product image ${idx + 1}`}
+                  >
+                    <img src={src} alt={`${product.title} thumbnail ${idx + 1}`} loading="lazy" />
+                  </button>
+                ))}
               </div>
             </div>
           </div>
@@ -125,7 +135,7 @@ const ProductDetailPage = () => {
           </div>
         </div>
 
-        {/* BOTTOM SECTION: RELATED PRODUCTS */}
+        {/* FULL WIDTH RELATED PRODUCTS SECTION - OUTSIDE GRID */}
         <section className="related-section">
           <h2 className="related-heading">You May Also Like</h2>
           <div className="related-divider"></div>
@@ -134,11 +144,7 @@ const ProductDetailPage = () => {
             {relatedProducts.map(item => (
               <div className="related-card" key={item.id}>
                 <div className="related-product-image-container">
-                  <img 
-                    src={demoImage} 
-                    alt={item.name} 
-                    className="related-product-img"
-                  />
+                  <img src={demoImage} alt={item.name} loading="lazy" />
                   <div className="related-product-hover-overlay">
                     <button className="related-view-details-btn">VIEW DETAILS</button>
                   </div>
@@ -152,19 +158,19 @@ const ProductDetailPage = () => {
             ))}
           </div>
 
-          <button className="view-more-products">VIEW MORE BABY PRODUCTS</button>
+          <button className="view-more-products">VIEW MORE ALL-PRODUCTS</button>
         </section>
       </div>
     </div>
   );
 };
 
-// INTERNAL CSS
 const pageStyles = `
   .userpanal-product-details-page {
     font-family: 'Inter', sans-serif;
     background: #fff;
     color: #1a1a1a;
+    min-height: 100vh;
   }
 
   .userpanal-product-details-page .container {
@@ -173,29 +179,44 @@ const pageStyles = `
     padding: 0 40px;
   }
 
-  /* Layout Logic */
+  /* CRITICAL: Layout with proper sticky behavior */
   .userpanal-product-details-page .product-detail-layout {
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 80px;
     padding: 60px 0;
-    align-items: start; /* Crucial for sticky */
+    align-items: flex-start;
   }
 
-  /* Sticky Left Column */
+  /* Left Column: Sticky Gallery */
   .userpanal-product-details-page .product-gallery-container {
     position: sticky;
-    top: 40px;
+    top: calc(var(--user-header-height, 100px) + 1px);
+    align-self: flex-start;
+    height: fit-content;
   }
 
   .userpanal-product-details-page .product-main-image {
-    background: #f5f5f5;
+    background: linear-gradient(135deg, #f5f5f5 0%, #e8e8e8 100%);
     margin-bottom: 20px;
+    aspect-ratio: 0.85;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
   }
 
   .userpanal-product-details-page .product-main-image img {
     width: 100%;
+    height: 100%;
     display: block;
+    object-fit: cover;
+  }
+
+  .userpanal-product-details-page .image-placeholder {
+    color: #999;
+    font-size: 1.2rem;
+    font-weight: 500;
   }
 
   .userpanal-product-details-page .thumbnail-gallery {
@@ -208,22 +229,62 @@ const pageStyles = `
     height: 80px;
     border: 1px solid #eee;
     cursor: pointer;
+    background: #f9f9f9;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
   }
 
-  .userpanal-product-details-page .thumbnail.active { border: 2px solid #1a1a1a; }
-  .userpanal-product-details-page .thumbnail img { width: 100%; height: 100%; object-fit: cover; }
+  .userpanal-product-details-page button.thumbnail {
+    appearance: none;
+    border-radius: 0;
+  }
 
-  /* Scrolling Right Column */
+  .userpanal-product-details-page .thumbnail img {
+    width: 100%;
+    height: 100%;
+    display: block;
+    object-fit: cover;
+  }
+
+  .userpanal-product-details-page .thumbnail.active { 
+    border: 2px solid #1a1a1a; 
+  }
+
+  .userpanal-product-details-page .thumb-placeholder {
+    color: #999;
+    font-size: 0.9rem;
+  }
+
+  /* Right Column: Natural scrolling content */
+  .userpanal-product-details-page .product-info-container {
+    /* No special positioning - flows naturally */
+  }
+
   .userpanal-product-details-page .product-title {
     font-family: 'Playfair Display', serif;
     font-size: 3.2rem;
     font-weight: 400;
     margin-bottom: 20px;
+    line-height: 1.2;
   }
 
-  .userpanal-product-details-page .price-section { margin-bottom: 40px; }
-  .userpanal-product-details-page .dynamic-price { font-size: 2.8rem; font-weight: 600; }
-  .userpanal-product-details-page .original-price { color: #999; text-decoration: line-through; font-size: 1.3rem; margin-top: 5px; }
+  .userpanal-product-details-page .price-section { 
+    margin-bottom: 40px; 
+  }
+
+  .userpanal-product-details-page .dynamic-price { 
+    font-size: 2.8rem; 
+    font-weight: 600; 
+  }
+
+  .userpanal-product-details-page .original-price { 
+    color: #999; 
+    text-decoration: line-through; 
+    font-size: 1.3rem; 
+    margin-top: 5px; 
+  }
 
   .userpanal-product-details-page .meta-grid {
     display: grid;
@@ -235,8 +296,23 @@ const pageStyles = `
     margin-bottom: 40px;
   }
 
-  .userpanal-product-details-page .meta-item .label { display: block; font-size: 0.8rem; color: #999; text-transform: uppercase; letter-spacing: 1px; }
-  .userpanal-product-details-page .meta-item .value { font-size: 1.1rem; font-weight: 500; }
+  .userpanal-product-details-page .meta-item .label { 
+    display: block; 
+    font-size: 0.8rem; 
+    color: #999; 
+    text-transform: uppercase; 
+    letter-spacing: 1px; 
+    margin-bottom: 5px;
+  }
+
+  .userpanal-product-details-page .meta-item .value { 
+    font-size: 1.1rem; 
+    font-weight: 500; 
+  }
+
+  .userpanal-product-details-page .selection-section {
+    margin-bottom: 40px;
+  }
 
   .userpanal-product-details-page .sub-title {
     font-family: 'Playfair Display', serif;
@@ -247,31 +323,81 @@ const pageStyles = `
     padding-bottom: 10px;
   }
 
-  /* Size Selection */
-  .userpanal-product-details-page .size-options { display: flex; gap: 15px; margin-bottom: 40px; }
+  .userpanal-product-details-page .size-options { 
+    display: flex; 
+    gap: 15px; 
+  }
+
   .userpanal-product-details-page .size-btn {
     flex: 1;
     background: white;
     border: 2px solid #eee;
     padding: 15px;
     cursor: pointer;
-    transition: 0.3s;
+    transition: all 0.3s ease;
     text-align: center;
   }
 
-  .userpanal-product-details-page .size-btn:hover { border-color: #1a1a1a; }
-  .userpanal-product-details-page .size-btn.selected { border-color: #1a1a1a; background: #1a1a1a; color: white; }
-  .userpanal-product-details-page .size-name { display: block; font-size: 1.2rem; font-weight: 600; }
-  .userpanal-product-details-page .stock-tag { font-size: 0.7rem; color: #27ae60; }
-  .userpanal-product-details-page .size-btn.selected .stock-tag { color: white; }
+  .userpanal-product-details-page .size-btn:hover { 
+    border-color: #1a1a1a; 
+  }
 
-  /* Quantity */
-  .userpanal-product-details-page .quantity-ctrl { display: inline-flex; border: 2px solid #eee; margin-bottom: 15px; }
-  .userpanal-product-details-page .quantity-ctrl button { width: 60px; height: 50px; background: none; border: none; font-size: 1.5rem; cursor: pointer; }
-  .userpanal-product-details-page .quantity-ctrl input { width: 80px; text-align: center; border: none; font-size: 1.2rem; font-weight: 600; }
-  .userpanal-product-details-page .availability-msg { font-size: 0.8rem; color: #666; text-transform: uppercase; margin-bottom: 40px; }
+  .userpanal-product-details-page .size-btn.selected { 
+    border-color: #1a1a1a; 
+    background: #1a1a1a; 
+    color: white; 
+  }
 
-  /* Submit Button */
+  .userpanal-product-details-page .size-name { 
+    display: block; 
+    font-size: 1.2rem; 
+    font-weight: 600; 
+    margin-bottom: 5px;
+  }
+
+  .userpanal-product-details-page .stock-tag { 
+    font-size: 0.7rem; 
+    color: #27ae60; 
+  }
+
+  .userpanal-product-details-page .size-btn.selected .stock-tag { 
+    color: white; 
+  }
+
+  .userpanal-product-details-page .quantity-ctrl { 
+    display: inline-flex; 
+    border: 2px solid #eee; 
+    margin-bottom: 15px; 
+  }
+
+  .userpanal-product-details-page .quantity-ctrl button { 
+    width: 60px; 
+    height: 50px; 
+    background: none; 
+    border: none; 
+    font-size: 1.5rem; 
+    cursor: pointer;
+    transition: background 0.2s;
+  }
+
+  .userpanal-product-details-page .quantity-ctrl button:hover {
+    background: #f5f5f5;
+  }
+
+  .userpanal-product-details-page .quantity-ctrl input { 
+    width: 80px; 
+    text-align: center; 
+    border: none; 
+    font-size: 1.2rem; 
+    font-weight: 600; 
+  }
+
+  .userpanal-product-details-page .availability-msg { 
+    font-size: 0.8rem; 
+    color: #666; 
+    text-transform: uppercase; 
+  }
+
   .userpanal-product-details-page .cart-submit-btn {
     width: 100%;
     padding: 20px;
@@ -282,23 +408,60 @@ const pageStyles = `
     letter-spacing: 2px;
     cursor: not-allowed;
     margin-bottom: 60px;
+    transition: all 0.3s ease;
   }
 
-  .userpanal-product-details-page .cart-submit-btn.enabled { background: #1a1a1a; cursor: pointer; }
+  .userpanal-product-details-page .cart-submit-btn.enabled { 
+    background: #1a1a1a; 
+    cursor: pointer; 
+  }
 
-  .userpanal-product-details-page .description-box p { line-height: 1.8; color: #555; font-size: 1.1rem; margin-bottom: 40px; }
+  .userpanal-product-details-page .cart-submit-btn.enabled:hover {
+    background: #333;
+  }
 
-  .userpanal-product-details-page .product-details-card { background: #fafafa; padding: 30px; border: 1px solid #eee; }
-  .userpanal-product-details-page .detail-row { margin-bottom: 15px; }
-  .userpanal-product-details-page .detail-row .label { color: #999; font-size: 0.9rem; margin-right: 10px; }
-  .userpanal-product-details-page .detail-row .value { font-weight: 600; }
+  .userpanal-product-details-page .description-box {
+    margin-bottom: 40px;
+  }
 
-  /* Related Products Section */
+  .userpanal-product-details-page .description-box p { 
+    line-height: 1.8; 
+    color: #555; 
+    font-size: 1.1rem; 
+  }
+
+  .userpanal-product-details-page .product-details-card { 
+    background: #fafafa; 
+    padding: 30px; 
+    border: 1px solid #eee;
+    margin-bottom: 60px;
+  }
+
+  .userpanal-product-details-page .detail-row { 
+    margin-bottom: 15px; 
+  }
+
+  .userpanal-product-details-page .detail-row:last-child {
+    margin-bottom: 0;
+  }
+
+  .userpanal-product-details-page .detail-row .label { 
+    color: #999; 
+    font-size: 0.9rem; 
+    margin-right: 10px; 
+  }
+
+  .userpanal-product-details-page .detail-row .value { 
+    font-weight: 600; 
+  }
+
+  /* FULL WIDTH Related Products Section - Outside grid layout */
   .userpanal-product-details-page .related-section { 
-    margin-top: 100px; 
     padding: 80px 0; 
     border-top: 1px solid #eee; 
     text-align: center; 
+    margin-bottom: 80px;
+    width: 100%;
   }
 
   .userpanal-product-details-page .related-heading { 
@@ -317,22 +480,21 @@ const pageStyles = `
 
   .userpanal-product-details-page .related-grid { 
     display: grid; 
-    grid-template-columns: repeat(3, 380px); 
-    gap: 5.5rem; 
+    grid-template-columns: repeat(3, 1fr); 
+    gap: 3rem; 
     margin-bottom: 60px;
-    justify-content: center;
+    max-width: 1300px;
+    margin-left: auto;
+    margin-right: auto;
   }
   
   .userpanal-product-details-page .related-card {
     background: #ffffff;
-    border-radius: 0;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
     transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
     overflow: hidden;
     position: relative;
     cursor: pointer;
-    max-width: 380px;
-    width: 100%;
   }
 
   .userpanal-product-details-page .related-card::before {
@@ -360,23 +522,29 @@ const pageStyles = `
 
   .userpanal-product-details-page .related-product-image-container {
     position: relative;
-    height: 440px;
+    height: 400px;
     background: linear-gradient(135deg, #f5f5f5 0%, #e8e8e8 100%);
     overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
   }
 
-  .userpanal-product-details-page .related-product-img {
+  .userpanal-product-details-page .related-product-image-container img {
     width: 100%;
     height: 100%;
+    display: block;
     object-fit: cover;
-    transition: transform 0.7s cubic-bezier(0.4, 0, 0.2, 1);
-    filter: grayscale(0.1);
-    will-change: transform;
   }
 
-  .userpanal-product-details-page .related-card:hover .related-product-img {
+  .userpanal-product-details-page .related-img-placeholder {
+    color: #999;
+    font-size: 1.1rem;
+    transition: transform 0.7s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .userpanal-product-details-page .related-card:hover .related-img-placeholder {
     transform: scale(1.08);
-    filter: grayscale(0);
   }
 
   .userpanal-product-details-page .related-product-hover-overlay {
@@ -409,7 +577,6 @@ const pageStyles = `
     border-radius: 2px;
     transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
     text-transform: uppercase;
-    font-family: 'Poppins', sans-serif;
     transform: translateY(20px);
     position: relative;
     overflow: hidden;
@@ -445,41 +612,41 @@ const pageStyles = `
   }
 
   .userpanal-product-details-page .related-product-details {
-    padding: 2rem;
+    padding: 2.2rem;
     text-align: center;
     background-color: #ffffff;
-    position: relative;
   }
 
   .userpanal-product-details-page .related-product-title {
     font-family: 'Playfair Display', serif;
-    font-size: 20px;
+    font-size: 23px;
     font-weight: 500;
-    margin-bottom: 0.5rem;
+    margin-bottom: 11px;
     color: #1a1a1a;
-    line-height: 1.3;
-    letter-spacing: -0.01em;
+    line-height: 1.4;
+    letter-spacing: 0.01em;
     transition: color 0.3s ease;
   }
 
   .userpanal-product-details-page .related-card:hover .related-product-title {
-    color: #666;
+    color: #000;
   }
 
   .userpanal-product-details-page .related-product-brand {
-    font-size: 11px;
-    color: #999;
-    letter-spacing: 0.12em;
+    font-family: 'Poppins', sans-serif;
+    font-size: 15px;
+    color: #a0a0a0;
+    letter-spacing: 0.15em;
     text-transform: uppercase;
-    margin-bottom: 1rem;
+    margin-bottom: 17px;
     font-weight: 500;
   }
 
   .userpanal-product-details-page .related-product-price {
+    font-family: 'Poppins', sans-serif;
     font-size: 20px;
     font-weight: 600;
     color: #1a1a1a;
-    letter-spacing: -0.01em;
   }
 
   .userpanal-product-details-page .view-more-products {
@@ -490,12 +657,42 @@ const pageStyles = `
     font-weight: 600;
     letter-spacing: 1px;
     cursor: pointer;
+    transition: background 0.3s ease;
+  }
+
+  .userpanal-product-details-page .view-more-products:hover {
+    background: #333;
+  }
+
+  @media (max-width: 1024px) {
+    .userpanal-product-details-page .related-grid { 
+      grid-template-columns: repeat(2, 1fr);
+      gap: 2rem;
+    }
   }
 
   @media (max-width: 900px) {
-    .userpanal-product-details-page .product-detail-layout { grid-template-columns: 1fr; }
-    .userpanal-product-details-page .product-gallery-container { position: relative; top: 0; }
-    .userpanal-product-details-page .related-grid { grid-template-columns: 1fr; }
+    .userpanal-product-details-page .product-detail-layout { 
+      grid-template-columns: 1fr; 
+      gap: 40px;
+    }
+    
+    .userpanal-product-details-page .product-gallery-container { 
+      position: relative; 
+      top: 0; 
+    }
+
+    .userpanal-product-details-page .container {
+      padding: 0 20px;
+    }
+
+    .userpanal-product-details-page .product-title {
+      font-size: 2.4rem;
+    }
+
+    .userpanal-product-details-page .related-grid { 
+      grid-template-columns: 1fr;
+    }
   }
 `;
 
