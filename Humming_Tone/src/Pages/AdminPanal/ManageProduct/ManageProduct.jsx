@@ -746,6 +746,7 @@ export default function ManageProducts() {
 
   const [filterGender, setFilterGender] = useState('All')
   const [filterCategory, setFilterCategory] = useState('All')
+  const [searchQuery, setSearchQuery] = useState('')
 
   const loadData = async () => {
     try {
@@ -781,7 +782,8 @@ export default function ManageProducts() {
   const filteredProducts = products.filter((p) => {
     const genOk = filterGender === 'All' || normalizeGender(p.gender) === filterGender
     const catOk = filterCategory === 'All' || p.category === filterCategory
-    return genOk && catOk
+    const nameOk = String(p.name || '').toLowerCase().includes(searchQuery.toLowerCase())
+    return genOk && catOk && nameOk
   })
 
   // --- PRODUCT HANDLERS ---
@@ -847,7 +849,6 @@ export default function ManageProducts() {
       <div className="promo-section">
         <div className="section-header">
           <h3 className="section-title">Active Promo Codes</h3>
-          <button className="btn-view-all">VIEW ALL</button>
         </div>
         <div className="promo-table-container">
           <table className="promo-table">
@@ -876,12 +877,15 @@ export default function ManageProducts() {
       {/* FILTER UI (RESIZED TO ORIGINAL) */}
       <div className="products-filters">
         <div className="filters-left">
-          <div className="filter-item">
-            <label className="filter-label">CATEGORY</label>
-            <select className="filter-select" value={filterCategory} onChange={(e) => setFilterCategory(e.target.value)}>
-              <option value="All">All</option>
-              {Array.from(new Set(products.map(p => p.category))).map(c => <option key={c} value={c}>{c}</option>)}
-            </select>
+          <div className="filter-item search-filter">
+            <label className="filter-label">SEARCH BY NAME</label>
+            <input
+              type="text"
+              className="filter-input"
+              placeholder="Search by name..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+            />
           </div>
           <div className="filter-item">
             <label className="filter-label">GENDER</label>
@@ -893,10 +897,24 @@ export default function ManageProducts() {
               <option value="Sports">Sports</option>
             </select>
           </div>
+          <div className="filter-item">
+            <label className="filter-label">CATEGORY</label>
+            <select className="filter-select" value={filterCategory} onChange={(e) => setFilterCategory(e.target.value)}>
+              <option value="All">All</option>
+              {Array.from(new Set(products.map(p => p.category))).map(c => <option key={c} value={c}>{c}</option>)}
+            </select>
+          </div>
         </div>
         <div className="filters-right">
           <span className="filters-count">Showing {filteredProducts.length} of {products.length}</span>
-          <button type="button" className="btn-clear-filters" onClick={() => { setFilterCategory('All'); setFilterGender('All'); }}>CLEAR FILTERS</button>
+          <button 
+            type="button" 
+            className="btn-clear-filters" 
+            onClick={() => { setFilterCategory('All'); setFilterGender('All'); setSearchQuery(''); }}
+            disabled={filterCategory === 'All' && filterGender === 'All' && searchQuery === ''}
+          >
+            CLEAR FILTERS
+          </button>
         </div>
       </div>
 
