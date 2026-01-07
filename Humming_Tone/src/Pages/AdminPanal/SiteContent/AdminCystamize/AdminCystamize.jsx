@@ -98,7 +98,13 @@ initialData = {} }) => {
                   {formData[field.name] && typeof formData[field.name]
 === 'string' && (
                     <div className="admin-file-preview">
-                      <img src={formData[field.name]} alt="Current" />
+                      <div className="admin-file-preview-thumb admin-passport-frame">
+                        <img
+                          src={formData[field.name]}
+                          alt="Current"
+                          className="admin-file-preview-img"
+                        />
+                      </div>
                       <div className="admin-file-preview-info">
                         <span
 className="admin-file-preview-label">Current Image</span>
@@ -110,7 +116,9 @@ className="admin-file-preview-name">Click to change</span>
                   {formData[field.name] && formData[field.name]
 instanceof File && (
                     <div className="admin-file-preview">
-                      <ImageIcon style={{fontSize: 40, color: '#667eea'}} />
+                      <div className="admin-file-preview-thumb admin-passport-frame">
+                        <ImageIcon className="admin-file-preview-icon" />
+                      </div>
                       <div className="admin-file-preview-info">
                         <span className="admin-file-preview-label">New
 Image</span>
@@ -655,7 +663,7 @@ admin-customize-alert-error">{error}</div>
           },
           {
             name: 'image',
-            label: 'Category Image (Horizontal Rectangle)',
+            label: 'Category Image (Passport Size)',
             type: 'file',
             accept: 'image/*',
             required:  productCategoryModal.index === null
@@ -680,7 +688,7 @@ null, index: null })}
           },
           {
             name: 'image',
-            label: 'Variant Image (Horizontal Rectangle)',
+            label: 'Variant Image (Passport Size)',
             type: 'file',
             accept: 'image/*',
             required: variantModal.index === null
@@ -737,7 +745,7 @@ index:  null })}
           },
           {
             name: 'image',
-            label: 'Material Image (Horizontal Rectangle - Optional)',
+            label: 'Material Image (Passport Size - Optional)',
             type: 'file',
             accept: 'image/*',
             required: false
@@ -786,7 +794,7 @@ index: null })}
           },
           {
             name: 'image',
-            label: 'Design Image (Horizontal Rectangle)',
+            label: 'Design Image (Passport Size)',
             type: 'file',
             accept: 'image/*',
             required: galleryModal.index === null

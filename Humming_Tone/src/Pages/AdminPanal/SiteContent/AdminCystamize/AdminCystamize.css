@@ -8,6 +8,7 @@
   margin: 0;
   background: #f9fafb;
   min-height: 100vh;
+  --admin-passport-w: 96px;
 }
 
 /* ===== HEADER ===== */
@@ -205,6 +206,9 @@
 /* ===== PRODUCT CATEGORIES ===== */
 .admin-customize-categories-list {
   padding: 20px 24px;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
+  gap: 16px;
 }
 
 .admin-customize-categories-grid {
@@ -223,7 +227,8 @@
   transition: all 0.2s ease;
   display: flex;
   flex-direction: column;
-  height: 100%;
+  height: auto;
+  width: 100%;
 }
 
 .admin-customize-category-card:hover {
@@ -232,27 +237,46 @@
   border-color: #3b82f6;
 }
 
-/* Horizontal Rectangle Image Container */
+/* Passport-size (portrait) image container */
 .admin-customize-category-image-wrapper,
 .admin-customize-category-image-container {
   width: 100%;
-  height: 160px;
+  height: auto;
   position: relative;
-  overflow: hidden;
+  overflow: visible;
   background: #f3f4f6;
   border-bottom: 1px solid #e5e7eb;
   flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 12px;
+  box-sizing: border-box;
+  min-height: calc((var(--admin-passport-w) * 4 / 3) + 24px);
 }
 
 .admin-customize-category-image {
-  width: 100%;
-  height: 100%;
+  width: var(--admin-passport-w);
+  aspect-ratio: 3 / 4;
+  height: auto;
   object-fit: cover;
   transition: transform 0.3s ease;
+  border-radius: 6px;
+  border: 1px solid #e5e7eb;
+  background: white;
+  display: block;
 }
 
 .admin-customize-category-card:hover .admin-customize-category-image {
   transform: scale(1.05);
+}
+
+.admin-customize-category-image-wrapper .admin-customize-image-placeholder,
+.admin-customize-category-image-container .admin-customize-image-placeholder {
+  width: var(--admin-passport-w);
+  aspect-ratio: 3 / 4;
+  height: auto;
+  min-height: 0;
 }
 
 /* Category Content */
@@ -344,9 +368,9 @@
 
 .admin-customize-variants-grid,
 .admin-customize-variants-list {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 10px;
   padding: 8px 0;
   margin-bottom: 0;
 }
@@ -364,8 +388,8 @@
   overflow: hidden;
   transition: all 0.2s ease;
   cursor: pointer;
-  min-width: 160px;
-  flex: 0 0 auto;
+  min-width: 0;
+  width: 100%;
 }
 
 .admin-customize-variant-card:hover,
@@ -375,13 +399,13 @@
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
-/* Horizontal Rectangle Variant Image */
+/* Passport-size (portrait) Variant Image */
 .admin-customize-variant-image-container,
 .admin-customize-variant-image-wrapper {
-  width: 60px;
-  height: 40px;
+  width: 48px;
+  height: 64px;
   position: relative;
-  background: #f3f4f6;
+  background: transparent;
   border-radius: 4px;
   overflow: hidden;
   flex-shrink: 0;
@@ -394,6 +418,16 @@
   width: 100%;
   height: 100%;
   object-fit: cover;
+  border-radius: 4px;
+  border: 1px solid #e5e7eb;
+  background: white;
+  display: block;
+}
+
+.admin-customize-variant-image-wrapper .admin-customize-image-placeholder,
+.admin-customize-variant-image-container .admin-customize-image-placeholder {
+  min-height: 0;
+  border-radius: 4px;
 }
 
 .admin-customize-variant-body {
@@ -604,13 +638,13 @@
   transform: translateY(-2px);
 }
 
-/* Horizontal Rectangle Material Image */
+/* Passport-size (portrait) Material Image */
 .admin-customize-material-image-wrapper {
-  width: 100px;
-  height: 70px;
+  width: 72px;
+  height: 96px;
   border-radius: 6px;
   overflow: hidden;
-  background: #f3f4f6;
+  background: transparent;
   flex-shrink: 0;
   display: flex;
   align-items: center;
@@ -621,6 +655,10 @@
   width: 100%;
   height: 100%;
   object-fit: cover;
+  border-radius: 6px;
+  border: 1px solid #e5e7eb;
+  background: white;
+  display: block;
 }
 
 .admin-customize-material-info {
@@ -739,27 +777,42 @@
   transform: translateY(-2px);
 }
 
-/* Horizontal Rectangle Gallery Image */
+/* Passport-size (portrait) Gallery Image */
 .admin-customize-gallery-image-wrapper {
   width: 100%;
-  height: 160px;
+  height: auto;
   background: #f3f4f6;
   display: flex;
   align-items: center;
   justify-content: center;
-  overflow: hidden;
+  overflow: visible;
   border-bottom: 1px solid #e5e7eb;
+  padding: 12px;
+  box-sizing: border-box;
+  min-height: calc((var(--admin-passport-w) * 4 / 3) + 24px);
 }
 
 .admin-customize-gallery-image {
-  width: 100%;
-  height: 100%;
+  width: var(--admin-passport-w);
+  aspect-ratio: 3 / 4;
+  height: auto;
   object-fit: cover;
   transition: transform 0.3s ease;
+  border-radius: 6px;
+  border: 1px solid #e5e7eb;
+  background: white;
+  display: block;
 }
 
 .admin-customize-gallery-card:hover .admin-customize-gallery-image {
   transform: scale(1.05);
+}
+
+.admin-customize-gallery-image-wrapper .admin-customize-image-placeholder {
+  width: var(--admin-passport-w);
+  aspect-ratio: 3 / 4;
+  height: auto;
+  min-height: 0;
 }
 
 .admin-customize-gallery-info {
@@ -1015,14 +1068,34 @@
   gap: 10px;
 }
 
-.admin-file-preview img {
-  max-width: 100%;
-  max-height: 80px;
-  border-radius: 4px;
-  width: 80px;
-  height: 50px;
-  object-fit: cover;
+/* Passport-size (portrait) frame for all image uploads in this page */
+.admin-passport-frame {
+  width: 96px;
+  aspect-ratio: 3 / 4;
+  border-radius: 6px;
+  overflow: hidden;
+  background: white;
   border: 1px solid #e5e7eb;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.admin-file-preview-thumb {
+  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.02);
+}
+
+.admin-file-preview-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.admin-file-preview-icon {
+  font-size: 44px;
+  color: #9ca3af;
 }
 
 .admin-file-preview-info {
@@ -1089,13 +1162,12 @@
     padding: 20px;
   }
 
-  .admin-customize-category-card {
-    flex: 0 0 320px;
+  .admin-customize-categories-list {
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
   }
 
-  .admin-customize-category-image-container,
-  .admin-customize-category-image-wrapper {
-    height: 180px;
+  .admin-customize {
+    --admin-passport-w: 92px;
   }
 }
 
@@ -1132,13 +1204,12 @@
     gap: 12px;
   }
 
-  .admin-customize-category-card {
-    flex: 0 0 280px;
+  .admin-customize-categories-list {
+    grid-template-columns: 1fr;
   }
 
-  .admin-customize-category-image-container,
-  .admin-customize-category-image-wrapper {
-    height: 160px;
+  .admin-customize {
+    --admin-passport-w: 88px;
   }
 
   .admin-customize-category-main {
@@ -1152,8 +1223,9 @@
   }
 
   .admin-customize-material-image-wrapper {
-    width: 100%;
-    height: 100px;
+    width: var(--admin-passport-w);
+    height: auto;
+    aspect-ratio: 3 / 4;
   }
 
   .admin-customize-grid {
@@ -1169,7 +1241,7 @@
   }
 
   .admin-customize-gallery-image-wrapper {
-    height: 120px;
+    padding: 12px;
   }
 
   .admin-customize-items-grid {
@@ -1186,8 +1258,12 @@
 }
 
 @media (max-width: 480px) {
-  .admin-customize-category-card {
-    flex: 0 0 260px;
+  .admin-customize {
+    --admin-passport-w: 84px;
+  }
+  .admin-customize-categories-list {
+    grid-template-columns: 1fr;
+    padding: 16px;
   }
 
   .admin-customize-category-content,
@@ -1209,15 +1285,10 @@
     justify-content: center;
   }
 
-  .admin-customize-category-image-container,
-  .admin-customize-category-image-wrapper {
-    height: 120px;
-  }
-
   .admin-customize-variant-image-container,
   .admin-customize-variant-image-wrapper {
-    width: 60px;
-    height: 40px;
+    width: 45px;
+    height: 60px;
   }
 
   .admin-customize-items-grid {
@@ -1229,7 +1300,7 @@
   }
 
   .admin-customize-gallery-image-wrapper {
-    height: 120px;
+    padding: 10px;
   }
 
   .admin-input-modal-actions {
