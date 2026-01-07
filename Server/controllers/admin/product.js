@@ -534,7 +534,7 @@ exports.add_product = (req, res, next) => {
     });
 };
 
-// --- FETCH PRODUCTS ---
+// --- FETCH PRODUCTS (ACTIVE ONLY) ---
 exports.fetch_products = (req, res, next) => {
     try {
         const getSql = `
@@ -542,6 +542,32 @@ exports.fetch_products = (req, res, next) => {
             (SELECT price FROM product_variants WHERE product_id = p.id LIMIT 1) AS price,
             (SELECT SUM(stock_quantity) FROM product_variants WHERE product_id = p.id) AS stock_quantity
             FROM products p 
+            WHERE p.is_active = 1
+            ORDER BY p.id DESC
+        `;
+
+        db.query(getSql, (error, rows) => {
+            if (error) {
+                return next(error);
+            }
+
+            res.status(200).json(rows || []);
+        });
+
+    } catch (error) {
+        next(error);
+    }
+};
+
+// --- FETCH DELETED PRODUCTS (INACTIVE) ---
+exports.fetch_deleted_products = (req, res, next) => {
+    try {
+        const getSql = `
+            SELECT p.*, 
+            (SELECT price FROM product_variants WHERE product_id = p.id LIMIT 1) AS price,
+            (SELECT SUM(stock_quantity) FROM product_variants WHERE product_id = p.id) AS stock_quantity
+            FROM products p 
+            WHERE p.is_active = 0
             ORDER BY p.id DESC
         `;
 
@@ -712,59 +738,54 @@ exports.update_product = (req, res, next) => {
 };
 
 
-// --- DELETE PRODUCT (WITH TRANSACTION) ---
+// --- SOFT DELETE PRODUCT (SET is_active = 0) ---
 exports.delete_product = (req, res, next) => {
     const { id } = req.body;
 
-    db.getConnection((err, connection) => {
-        if (err) return next(err);
+    if (!id) {
+        return res.status(400).json({ success: false, message: "Product ID is required" });
+    }
 
-        connection.beginTransaction(err => {
-            if (err) {
-                connection.release();
-                return next(err);
-            }
+    const updateSql = "UPDATE products SET is_active = 0 WHERE id = ?";
+    
+    db.query(updateSql, [id], (error, result) => {
+        if (error) {
+            return next(error);
+        }
+        
+        if (result.affectedRows === 0) {
+            return res.status(404).json({ success: false, message: "Product not found" });
+        }
+        
+        res.json({
+            success: true,
+            message: "Product moved to deleted products"
+        });
+    });
+};
 
-            connection.query(
-                "DELETE FROM product_images WHERE product_id=?",
-                [id],
-                err => {
-                    if (err) return rollback(err);
+// --- RESTORE PRODUCT (SET is_active = 1) ---
+exports.restore_product = (req, res, next) => {
+    const { id } = req.params;
 
-                    connection.query(
-                        "DELETE FROM product_variants WHERE product_id=?",
-                        [id],
-                        err => {
-                            if (err) return rollback(err);
+    if (!id) {
+        return res.status(400).json({ success: false, message: "Product ID is required" });
+    }
 
-                            connection.query(
-                                "DELETE FROM products WHERE id=?",
-                                [id],
-                                err => {
-                                    if (err) return rollback(err);
-
-                                    connection.commit(err => {
-                                        if (err) return rollback(err);
-
-                                        connection.release();
-                                        res.json({
-                                            success: true,
-                                            message: "Product deleted"
-                                        });
-                                    });
-                                }
-                            );
-                        }
-                    );
-                }
-            );
-
-            function rollback(error) {
-                connection.rollback(() => {
-                    connection.release();
-                    next(error);
-                });
-            }
+    const updateSql = "UPDATE products SET is_active = 1 WHERE id = ?";
+    
+    db.query(updateSql, [id], (error, result) => {
+        if (error) {
+            return next(error);
+        }
+        
+        if (result.affectedRows === 0) {
+            return res.status(404).json({ success: false, message: "Product not found" });
+        }
+        
+        res.json({
+            success: true,
+            message: "Product restored successfully"
         });
     });
 };

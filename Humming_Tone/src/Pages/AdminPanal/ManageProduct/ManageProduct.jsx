@@ -728,11 +728,13 @@
 // }
 
 import { useState, useEffect } from 'react'
+import { useNavigate } from 'react-router-dom'
 import './ManageProduct.css'
 
 const BASE_URL = 'http://localhost:5000';
 
 export default function ManageProducts() {
+  const navigate = useNavigate();
   const [products, setProducts] = useState([])
   const [promoCodes, setPromoCodes] = useState([])
   const [editingProduct, setEditingProduct] = useState(null)
@@ -743,6 +745,9 @@ export default function ManageProducts() {
   // Promo State
   const [showAddPromoModal, setShowAddPromoModal] = useState(false)
   const [newPromo, setNewPromo] = useState({ code: '', type: 'fixed', discount: 0, minOrder: 0, usageLimit: 100 })
+  const [showEditPromoModal, setShowEditPromoModal] = useState(false)
+  const [editingPromo, setEditingPromo] = useState(null)
+  const [showDeletePromoModal, setShowDeletePromoModal] = useState(false)
 
   const [filterGender, setFilterGender] = useState('All')
   const [filterCategory, setFilterCategory] = useState('All')
@@ -820,6 +825,57 @@ export default function ManageProducts() {
   }
 
   // --- PROMO HANDLERS ---
+  const handleEditPromo = (promo) => {
+    setEditingPromo({ ...promo });
+    setShowEditPromoModal(true);
+  }
+
+  const handleSavePromo = async () => {
+    if (!editingPromo) return;
+    try {
+      const res = await fetch(`${BASE_URL}/admin/update_promo_code/${editingPromo.id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          code: editingPromo.code,
+          discount_type: editingPromo.discount_type,
+          discount_value: editingPromo.discount_value,
+          min_order_amount: editingPromo.min_order_amount,
+          is_active: editingPromo.is_active
+        })
+      });
+      if (res.ok) {
+        setShowEditPromoModal(false);
+        setEditingPromo(null);
+        loadData();
+      }
+    } catch (err) {
+      console.error(err);
+    }
+  }
+
+  const openDeletePromoModal = () => {
+    setShowDeletePromoModal(true);
+  }
+
+  const handleDeletePromo = async () => {
+    if (!editingPromo) return;
+    try {
+      const res = await fetch(`${BASE_URL}/admin/remove_promo_code/${editingPromo.id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' }
+      });
+      if (res.ok) {
+        setShowDeletePromoModal(false);
+        setShowEditPromoModal(false);
+        setEditingPromo(null);
+        loadData();
+      }
+    } catch (err) {
+      console.error(err);
+    }
+  }
+
   const handleAddPromo = async () => {
     const res = await fetch(`${BASE_URL}/admin/add_promo_code`, {
       method: 'POST',
@@ -841,7 +897,7 @@ export default function ManageProducts() {
   return (
     <section className="manage-products-container">
       <div className="action-buttons">
-        <button className="btn-add-product">ADD NEW PRODUCT</button>
+        <button className="btn-add-product" onClick={() => navigate('/admin/add-product')}>ADD NEW PRODUCT</button>
         <button className="btn-manage-promo" onClick={() => setShowAddPromoModal(true)}>ADD PROMO CODE</button>
       </div>
 
@@ -864,7 +920,7 @@ export default function ManageProducts() {
                   <td>₹{p.min_order_amount}.00</td>
                   <td>{p.used_count || 0} / {p.usage_limit || '∞'}</td>
                   <td><span className={`status-badge ${p.is_active ? 'status-active' : ''}`}>{p.is_active ? 'Active' : 'Inactive'}</span></td>
-                  <td><div className="action-btns"><button className="btn-edit">EDIT</button></div></td>
+                  <td><div className="action-btns"><button className="btn-edit" onClick={() => handleEditPromo(p)}>EDIT</button></div></td>
                 </tr>
               ))}
             </tbody>
@@ -1006,6 +1062,39 @@ export default function ManageProducts() {
         </div>
       )}
 
+      {/* EDIT PROMO MODAL */}
+      {showEditPromoModal && editingPromo && (
+        <div className="modal-overlay" onClick={() => setShowEditPromoModal(false)}>
+          <div className="modal-content modal-content--compact" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header"><h2 className="modal-title">Edit Promo Code</h2><button className="modal-close" onClick={() => setShowEditPromoModal(false)}>×</button></div>
+            <div className="modal-body">
+              <div className="form-group"><label>PROMO CODE</label><input type="text" value={editingPromo.code} onChange={(e) => setEditingPromo({...editingPromo, code: e.target.value})} className="form-input" /></div>
+              <div className="form-group"><label>TYPE</label>
+                <select value={editingPromo.discount_type} onChange={(e) => setEditingPromo({...editingPromo, discount_type: e.target.value})} className="form-input">
+                  <option value="fixed">Fixed</option><option value="percentage">Percentage</option>
+                </select>
+              </div>
+              <div className="form-row">
+                <div className="form-group"><label>DISCOUNT</label><input type="number" value={editingPromo.discount_value} onChange={(e) => setEditingPromo({...editingPromo, discount_value: e.target.value})} className="form-input" /></div>
+                <div className="form-group"><label>MIN ORDER (₹)</label><input type="number" value={editingPromo.min_order_amount} onChange={(e) => setEditingPromo({...editingPromo, min_order_amount: e.target.value})} className="form-input" /></div>
+              </div>
+              <div className="form-group"><label>STATUS</label>
+                <select value={editingPromo.is_active ? 'true' : 'false'} onChange={(e) => setEditingPromo({...editingPromo, is_active: e.target.value === 'true'})} className="form-input">
+                  <option value="true">Active</option><option value="false">Inactive</option>
+                </select>
+              </div>
+            </div>
+            <div className="modal-footer">
+              <button className="btn-delete" onClick={openDeletePromoModal}>DELETE</button>
+              <div style={{display: 'flex', gap: '10px'}}>
+                <button className="btn-cancel" onClick={() => setShowEditPromoModal(false)}>CANCEL</button>
+                <button className="btn-save" onClick={handleSavePromo}>SAVE CHANGES</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* ADD PROMO MODAL */}
       {showAddPromoModal && (
         <div className="modal-overlay" onClick={() => setShowAddPromoModal(false)}>
@@ -1013,10 +1102,13 @@ export default function ManageProducts() {
             <div className="modal-header"><h2 className="modal-title">Add Promo Code</h2><button className="modal-close" onClick={() => setShowAddPromoModal(false)}>×</button></div>
             <div className="modal-body">
               <div className="form-group"><label>PROMO CODE</label><input type="text" value={newPromo.code} onChange={(e) => setNewPromo({...newPromo, code: e.target.value})} className="form-input" /></div>
-              <div className="form-group"><label>TYPE</label>
-                <select value={newPromo.type} onChange={(e) => setNewPromo({...newPromo, type: e.target.value})} className="form-input">
-                  <option value="fixed">Fixed</option><option value="percentage">Percentage</option>
-                </select>
+              <div className="form-row">
+                <div className="form-group"><label>TYPE</label>
+                  <select value={newPromo.type} onChange={(e) => setNewPromo({...newPromo, type: e.target.value})} className="form-input">
+                    <option value="fixed">Fixed</option><option value="percentage">Percentage</option>
+                  </select>
+                </div>
+                <div className="form-group"><label>USAGE LIMIT</label><input type="number" value={newPromo.usageLimit} onChange={(e) => setNewPromo({...newPromo, usageLimit: e.target.value})} className="form-input" placeholder="e.g. 100" /></div>
               </div>
               <div className="form-row">
                 <div className="form-group"><label>DISCOUNT</label><input type="number" value={newPromo.discount} onChange={(e) => setNewPromo({...newPromo, discount: e.target.value})} className="form-input" /></div>
@@ -1024,6 +1116,27 @@ export default function ManageProducts() {
               </div>
             </div>
             <div className="modal-footer"><button className="btn-cancel" onClick={() => setShowAddPromoModal(false)}>CANCEL</button><button className="btn-save" onClick={handleAddPromo}>ADD PROMO</button></div>
+          </div>
+        </div>
+      )}
+
+      {/* DELETE PROMO CONFIRMATION MODAL */}
+      {showDeletePromoModal && (
+        <div className="modal-overlay" onClick={() => setShowDeletePromoModal(false)}>
+          <div className="modal-content modal-content--compact" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header">
+              <h2 className="modal-title">Delete Promo Code</h2>
+              <button className="modal-close" onClick={() => setShowDeletePromoModal(false)}>×</button>
+            </div>
+            <div className="modal-body">
+              <p className="delete-modal-text">
+                Are you sure you want to delete this promo code? This action cannot be undone.
+              </p>
+            </div>
+            <div className="modal-footer">
+              <button className="btn-cancel" onClick={() => setShowDeletePromoModal(false)}>CANCEL</button>
+              <button className="btn-save btn-delete-confirm" onClick={handleDeletePromo}>DELETE PROMO</button>
+            </div>
           </div>
         </div>
       )}

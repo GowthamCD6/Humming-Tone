@@ -407,31 +407,35 @@ const AllProducts = () => {
   const [filteredProducts, setFilteredProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedProducts, setSelectedProducts] = useState([]);
+  const [showRestoreModal, setShowRestoreModal] = useState(false);
+  const [productToRestore, setProductToRestore] = useState(null);
   const [filters, setFilters] = useState({
     category: '',
     gender: '',
     status: ''
   });
 
-  // Fetch products from API
+  // Fetch deleted products from API
   const fetchProducts = async () => {
     try {
       setLoading(true);
-      const params = {};
+      const response = await axios.get(`${API_BASE_URL}/admin/fetch_deleted_products`);
       
-      if (filters.category) params.category = filters.category;
-      if (filters.gender) params.gender = filters.gender;
-      if (filters.status) params.status = filters.status;
-
-      const response = await axios.get(`${API_BASE_URL}/admin/fetch_products`, { params });
-      
-      if (response.data.success) {
-        setProducts(response.data.data);
-        setFilteredProducts(response.data.data);
+      if (Array.isArray(response.data)) {
+        const formattedProducts = response.data.map(p => ({
+          ...p,
+          _id: p.id,
+          image: p.image_path ? `${API_BASE_URL}/${p.image_path.replace(/\\/g, '/')}` : demoImage,
+          category: p.subcategory || 'General',
+          price: p.price || 0,
+          stock: p.stock_quantity || 0,
+          status: p.is_active ? 'Active' : 'Inactive'
+        }));
+        setProducts(formattedProducts);
+        setFilteredProducts(formattedProducts);
       }
     } catch (error) {
       console.error('Error fetching products:', error);
-      alert('Failed to fetch products. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -551,18 +555,25 @@ const AllProducts = () => {
     }
   };
 
+  // Open restore confirmation modal
+  const openRestoreModal = (product) => {
+    setProductToRestore(product);
+    setShowRestoreModal(true);
+  };
+
   // Restore product status to Active
-  const restoreProductStatus = async (productId) => {
+  const restoreProductStatus = async () => {
+    if (!productToRestore) return;
     try {
-      const response = await axios.patch(`${API_BASE_URL}/products/${productId}/restore`);
+      const response = await axios.patch(`${API_BASE_URL}/admin/restore_product/${productToRestore._id}`);
       
       if (response.data.success) {
-        alert(response.data.message);
+        setShowRestoreModal(false);
+        setProductToRestore(null);
         fetchProducts();
       }
     } catch (error) {
       console.error('Error restoring product:', error);
-      alert('Failed to restore product. Please try again.');
     }
   };
 
@@ -709,7 +720,7 @@ const AllProducts = () => {
                   </td>
                   <td className="product-name">{product.name}</td>
                   <td className="product-sku">{product.sku}</td>
-                  <td className="product-price">₹{product.price?.toFixed(2)}</td>
+                  <td className="product-price">₹{Number(product.price || 0).toFixed(2)}</td>
                   <td className="product-category">{product.category}</td>
                   <td className="product-gender">{product.gender}</td>
                   <td>
@@ -721,8 +732,7 @@ const AllProducts = () => {
                     <div className="action-btns">
                      <button
                               className="btn-toggle-status"
-                              onClick={() => restoreProductStatus(product._id)}
-                              disabled={product.status === 'Active'} // Only disabled when Active
+                              onClick={() => openRestoreModal(product)}
                          >
                           RESTORE
                          </button>
@@ -740,6 +750,27 @@ const AllProducts = () => {
           </tbody>
         </table>
       </div>
+
+      {/* RESTORE CONFIRMATION MODAL */}
+      {showRestoreModal && productToRestore && (
+        <div className="modal-overlay" onClick={() => setShowRestoreModal(false)}>
+          <div className="modal-content modal-content--compact" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header">
+              <h2 className="modal-title">Restore Product</h2>
+              <button className="modal-close" onClick={() => setShowRestoreModal(false)}>×</button>
+            </div>
+            <div className="modal-body">
+              <p className="delete-modal-text">
+                Are you sure you want to restore "{productToRestore.name}"? This will make the product active and visible in the Manage Products page.
+              </p>
+            </div>
+            <div className="modal-footer">
+              <button className="btn-cancel" onClick={() => setShowRestoreModal(false)}>CANCEL</button>
+              <button className="btn-save" onClick={restoreProductStatus}>RESTORE PRODUCT</button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
