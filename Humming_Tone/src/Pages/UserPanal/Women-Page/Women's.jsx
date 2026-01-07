@@ -61,7 +61,7 @@ const Women = ({ onViewDetails = () => {} }) => {
         />
         <div className="women-product-hover-overlay">
           <Link
-            className="all-products-view-details-btn"
+            className="women-view-details-btn"
             to={`/usertab/details/${product.id}`}
           >
             VIEW DETAILS

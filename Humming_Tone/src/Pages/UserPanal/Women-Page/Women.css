@@ -1,7 +1,7 @@
 @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&family=Poppins:wght@300;400;500;600;700&display=swap');
 
 /* Container */
-.mens-collection-page {
+.women-collection-page {
     max-width: 1400px;
     margin: 0 auto;
     padding: 60px 40px;
@@ -11,12 +11,12 @@
 }
 
 /* Header Section */
-.mens-header {
+.women-header {
     margin-bottom: 40px;
     animation: fadeInUp 0.8s ease-out;
 }
 
-.mens-title {
+.women-title {
     font-family: 'Playfair Display', serif;
     font-size: 48px;
     font-weight: 300;
@@ -26,7 +26,7 @@
     animation: fadeInUp 0.8s ease-out 0.1s both;
 }
 
-.mens-item-count {
+.women-item-count {
     font-size: 13px;
     color: #999;
     letter-spacing: 2px;
@@ -34,7 +34,7 @@
     animation: fadeInUp 0.8s ease-out 0.2s both;
 }
 
-.mens-divider {
+.women-divider {
     width: 100%;
     height: 1px;
     background-color: #d1d5db;
@@ -43,7 +43,7 @@
 }
 
 /* Filter Section */
-.mens-filter-container {
+.women-filter-container {
     background-color: #ffffff;
     padding: 50px;
     margin-bottom: 80px;
@@ -52,7 +52,7 @@
     animation: fadeInUp 0.8s ease-out 0.4s both;
 }
 
-.mens-filter-title {
+.women-filter-title {
     font-family: 'Playfair Display', serif;
     font-size: 36px;
     font-weight: 400;
@@ -62,31 +62,31 @@
     letter-spacing: -0.01em;
 }
 
-.mens-filter-row {
+.women-filter-row {
     display: grid;
     grid-template-columns: 1fr 1fr auto;
     gap: 30px;
     align-items: end;
 }
 
-.mens-filter-group {
+.women-filter-group {
     display: flex;
     flex-direction: column;
     gap: 12px;
 }
 
-.mens-filter-label {
+.women-filter-label {
     font-size: 11px;
     font-weight: 600;
     color: #1a1a1a;
     letter-spacing: 1.5px;
 }
 
-.mens-select-wrapper {
+.women-select-wrapper {
     position: relative;
 }
 
-.mens-select {
+.women-select {
     width: 100%;
     padding: 16px 20px;
     font-size: 15px;
@@ -101,12 +101,12 @@
     outline: none;
 }
 
-.mens-select:hover {
+.women-select:hover {
     border-color: #1a1a1a;
     background-color: #ffffff;
 }
 
-.mens-select-arrow {
+.women-select-arrow {
     position: absolute;
     right: 20px;
     top: 50%;
@@ -116,13 +116,13 @@
     color: #666;
 }
 
-.mens-button-group {
+.women-button-group {
     display: flex;
     gap: 15px;
     align-items: center;
 }
 
-.mens-apply-button {
+.women-apply-button {
     padding: 16px 36px;
     background-color: #1a1a1a;
     color: #ffffff;
@@ -136,12 +136,12 @@
     white-space: nowrap;
 }
 
-.mens-apply-button:hover {
+.women-apply-button:hover {
     transform: translateY(-2px);
     box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
 }
 
-.mens-clear-button {
+.women-clear-button {
     padding: 16px 36px;
     background-color: transparent;
     color: #666;
@@ -155,22 +155,22 @@
     white-space: nowrap;
 }
 
-.mens-clear-button:hover {
+.women-clear-button:hover {
     color: #1a1a1a;
 }
 
 /* Products Section */
-.mens-products-section {
+.women-products-section {
     animation: fadeInUp 0.8s ease-out 0.5s both;
 }
 
-.mens-section-intro {
+.women-section-intro {
     text-align: center;
     margin-bottom: 5rem;
     animation: fadeIn 0.8s ease-out;
 }
 
-.mens-section-heading {
+.women-section-heading {
     font-family: 'Playfair Display', serif;
     font-size: clamp(28px, 4vw, 42px);
     font-weight: 500;
@@ -179,7 +179,7 @@
     letter-spacing: -0.02em;
 }
 
-.mens-heading-accent {
+.women-heading-accent {
     width: 70px;
     height: 2px;
     background: linear-gradient(90deg, transparent, #1a1a1a, transparent);
@@ -187,7 +187,7 @@
     border-radius: 10px;
 }
 
-.mens-section-description {
+.women-section-description {
     color: #666;
     font-size: 16px;
     font-weight: 300;
@@ -196,7 +196,7 @@
     line-height: 1.8;
 }
 
-.mens-product-grid {
+.women-product-grid {
     display: grid;
     grid-template-columns: repeat(3, 380px);
     gap: 5.5rem;
@@ -205,7 +205,7 @@
 }
 
 /* Product Card */
-.mens-product-card {
+.women-product-card {
     background: #ffffff;
     border-radius: 0;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
@@ -219,14 +219,14 @@
     width: 100%;
 }
 
-.mens-product-card:nth-child(1) { animation-delay: 0.1s; }
-.mens-product-card:nth-child(2) { animation-delay: 0.2s; }
-.mens-product-card:nth-child(3) { animation-delay: 0.3s; }
-.mens-product-card:nth-child(4) { animation-delay: 0.4s; }
-.mens-product-card:nth-child(5) { animation-delay: 0.5s; }
-.mens-product-card:nth-child(6) { animation-delay: 0.6s; }
+.women-product-card:nth-child(1) { animation-delay: 0.1s; }
+.women-product-card:nth-child(2) { animation-delay: 0.2s; }
+.women-product-card:nth-child(3) { animation-delay: 0.3s; }
+.women-product-card:nth-child(4) { animation-delay: 0.4s; }
+.women-product-card:nth-child(5) { animation-delay: 0.5s; }
+.women-product-card:nth-child(6) { animation-delay: 0.6s; }
 
-.mens-product-card::before {
+.women-product-card::before {
     content: '';
     position: absolute;
     top: 0;
@@ -240,23 +240,23 @@
     z-index: 1;
 }
 
-.mens-product-card::before {
+.women-product-card:hover::before {
     opacity: 1;
 }
 
-.mens-product-card:hover {
+.women-product-card:hover {
     box-shadow: 0 24px 64px rgba(0, 0, 0, 0.12);
     transform: translateY(-12px);
 }
 
-.mens-product-image-container {
+.women-product-image-container {
     position: relative;
     height: 440px;
     background: linear-gradient(135deg, #f5f5f5 0%, #e8e8e8 100%);
     overflow: hidden;
 }
 
-.mens-product-img {
+.women-product-img {
     width: 100%;
     height: 100%;
     object-fit: cover;
@@ -265,12 +265,12 @@
     will-change: transform;
 }
 
-.mens-product-card:hover .mens-product-img {
+.women-product-card:hover .women-product-img {
     transform: scale(1.08);
     filter: grayscale(0);
 }
 
-.mens-product-hover-overlay {
+.women-product-hover-overlay {
     position: absolute;
     inset: 0;
     background: linear-gradient(180deg, transparent 0%, rgba(0,0,0,0.8) 100%);
@@ -283,11 +283,11 @@
     z-index: 2;
 }
 
-.mens-product-card:hover .mens-product-hover-overlay {
+.women-product-card:hover .women-product-hover-overlay {
     opacity: 1;
 }
 
-.mens-view-details-btn {
+.women-view-details-btn {
     background: #ffffff;
     color: #1a1a1a;
     border: 2px solid transparent;
@@ -304,9 +304,10 @@
     transform: translateY(20px);
     position: relative;
     overflow: hidden;
+    text-decoration: none;
 }
 
-.mens-view-details-btn::before {
+.women-view-details-btn::before {
     content: '';
     position: absolute;
     top: 50%;
@@ -319,74 +320,75 @@
     transition: width 0.6s, height 0.6s;
 }
 
-.mens-view-details-btn:hover::before {
+.women-view-details-btn:hover::before {
     width: 300px;
     height: 300px;
 }
 
-.mens-product-card:hover .mens-view-details-btn {
+.women-product-card:hover .women-view-details-btn {
     transform: translateY(0);
 }
 
-.mens-view-details-btn:hover {
+.women-view-details-btn:hover {
     transform: translateY(-4px);
     box-shadow: 0 16px 48px rgba(0, 0, 0, 0.5);
     background: #1a1a1a;
     color: #ffffff;
 }
 
-.mens-view-details-btn:active {
+.women-view-details-btn:active {
     transform: translateY(-2px);
     background: #000;
     color: #ffffff;
 }
 
-.mens-product-details {
-    padding: 2rem;
+.women-product-details {
+    padding: 2.2rem;
     text-align: center;
     background-color: #ffffff;
     position: relative;
 }
 
-.mens-product-title {
+.women-product-title {
     font-family: 'Playfair Display', serif;
-    font-size: 20px;
+    font-size: 23px;
     font-weight: 500;
-    margin-bottom: 0.5rem;
+    margin-bottom: 11px;
     color: #1a1a1a;
-    line-height: 1.3;
-    letter-spacing: -0.01em;
+    line-height: 1.4;
+    letter-spacing: 0.01em;
     transition: color 0.3s ease;
 }
 
-.mens-product-card:hover .mens-product-title {
-    color: #666;
+.women-product-card:hover .women-product-title {
+    color: #000;
 }
 
-.mens-product-brand {
-    font-size: 11px;
-    color: #999;
-    letter-spacing: 0.12em;
+.women-product-brand {
+    font-family: 'Poppins', sans-serif;
+    font-size: 15px;
+    color: #a0a0a0;
+    letter-spacing: 0.15em;
     text-transform: uppercase;
-    margin-bottom: 1rem;
+    margin-bottom: 17px;
     font-weight: 500;
 }
 
-.mens-product-price {
+.women-product-price {
+    font-family: 'Poppins', sans-serif;
     font-size: 20px;
     font-weight: 600;
     color: #1a1a1a;
-    letter-spacing: -0.01em;
 }
 
 /* No Products Section */
-.mens-no-products-container {
+.women-no-products-container {
     text-align: center;
     padding: 100px 20px;
     animation: fadeInUp 0.8s ease-out 0.5s both;
 }
 
-.mens-no-products-title {
+.women-no-products-title {
     font-family: 'Playfair Display', serif;
     font-size: 36px;
     font-weight: 400;
@@ -397,7 +399,7 @@
 
 }
 
-.mens-no-products-text {
+.women-no-products-text {
     font-size: 16px;
     color: #666;
     line-height: 1.8;
@@ -405,7 +407,7 @@
     font-weight: 300;
 }
 
-.mens-view-all-button {
+.women-view-all-button {
     padding: 18px 48px;
     background-color: #1a1a1a;
     color: #ffffff;
@@ -418,9 +420,11 @@
     font-family: 'Poppins', sans-serif;
     position: relative;
     overflow: hidden;
+    text-decoration: none;
+    display: inline-block;
 }
 
-.mens-view-all-button:hover {
+.women-view-all-button:hover {
     transform: translateY(-2px);
     box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
 }
@@ -459,52 +463,52 @@
 
 /* Responsive */
 @media (max-width: 992px) {
-    .mens-filter-row {
+    .women-filter-row {
         grid-template-columns: 1fr;
         gap: 20px;
     }
     
-    .mens-button-group {
+    .women-button-group {
         justify-content: center;
         margin-top: 20px;
     }
     
-    .mens-collection-page {
+    .women-collection-page {
         padding: 40px 20px;
     }
     
-    .mens-title {
+    .women-title {
         font-size: 36px;
     }
     
-    .mens-filter-title {
+    .women-filter-title {
         font-size: 28px;
     }
 }
 
 @media (max-width: 768px) {
-    .mens-product-grid {
+    .women-product-grid {
         grid-template-columns: repeat(2, 1fr);
         gap: 1.5rem;
     }
     
-    .mens-product-image-container {
+    .women-product-image-container {
         height: 300px;
     }
     
-    .mens-filter-container {
+    .women-filter-container {
         padding: 30px 20px;
     }
 }
 
 @media (max-width: 480px) {
-    .mens-product-grid {
+    .women-product-grid {
         grid-template-columns: 1fr;
     }
 }
 
 /* Footer Full Width - Break out of parent container */
-.mens-collection-page .footer-main-wrapper {
+.women-collection-page .footer-main-wrapper {
     width: 100vw;
     margin-left: calc(-50vw + 50%);
     margin-top: 80px;
@@ -513,6 +517,6 @@
 }
 
 /* Remove bottom padding from container */
-.mens-collection-page {
+.women-collection-page {
     padding-bottom: 0;
 }

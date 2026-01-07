@@ -737,6 +737,8 @@ export default function ManageProducts() {
   const [promoCodes, setPromoCodes] = useState([])
   const [editingProduct, setEditingProduct] = useState(null)
   const [showEditModal, setShowEditModal] = useState(false)
+  const [showDeleteModal, setShowDeleteModal] = useState(false)
+  const [productToDelete, setProductToDelete] = useState(null)
   
   // Promo State
   const [showAddPromoModal, setShowAddPromoModal] = useState(false)
@@ -744,6 +746,7 @@ export default function ManageProducts() {
 
   const [filterGender, setFilterGender] = useState('All')
   const [filterCategory, setFilterCategory] = useState('All')
+  const [searchQuery, setSearchQuery] = useState('')
 
   const loadData = async () => {
     try {
@@ -779,7 +782,8 @@ export default function ManageProducts() {
   const filteredProducts = products.filter((p) => {
     const genOk = filterGender === 'All' || normalizeGender(p.gender) === filterGender
     const catOk = filterCategory === 'All' || p.category === filterCategory
-    return genOk && catOk
+    const nameOk = String(p.name || '').toLowerCase().includes(searchQuery.toLowerCase())
+    return genOk && catOk && nameOk
   })
 
   // --- PRODUCT HANDLERS ---
@@ -795,15 +799,23 @@ export default function ManageProducts() {
     if (data.success) { setShowEditModal(false); loadData(); }
   }
 
-  const handleDeleteProduct = async (id) => {
-    if (window.confirm("Delete this product permanently?")) {
-      const res = await fetch(`${BASE_URL}/admin/delete_product`, {
-        method: 'DELETE',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ id })
-      });
-      const data = await res.json();
-      if (data.success) loadData();
+  const openDeleteModal = (product) => {
+    setProductToDelete(product);
+    setShowDeleteModal(true);
+  }
+
+  const handleDeleteProduct = async () => {
+    if (!productToDelete) return;
+    const res = await fetch(`${BASE_URL}/admin/delete_product`, {
+      method: 'DELETE',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ id: productToDelete.id })
+    });
+    const data = await res.json();
+    if (data.success) {
+      setShowDeleteModal(false);
+      setProductToDelete(null);
+      loadData();
     }
   }
 
@@ -837,7 +849,6 @@ export default function ManageProducts() {
       <div className="promo-section">
         <div className="section-header">
           <h3 className="section-title">Active Promo Codes</h3>
-          <button className="btn-view-all">VIEW ALL</button>
         </div>
         <div className="promo-table-container">
           <table className="promo-table">
@@ -866,12 +877,15 @@ export default function ManageProducts() {
       {/* FILTER UI (RESIZED TO ORIGINAL) */}
       <div className="products-filters">
         <div className="filters-left">
-          <div className="filter-item">
-            <label className="filter-label">CATEGORY</label>
-            <select className="filter-select" value={filterCategory} onChange={(e) => setFilterCategory(e.target.value)}>
-              <option value="All">All</option>
-              {Array.from(new Set(products.map(p => p.category))).map(c => <option key={c} value={c}>{c}</option>)}
-            </select>
+          <div className="filter-item search-filter">
+            <label className="filter-label">SEARCH BY NAME</label>
+            <input
+              type="text"
+              className="filter-input"
+              placeholder="Search by name..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+            />
           </div>
           <div className="filter-item">
             <label className="filter-label">GENDER</label>
@@ -883,10 +897,24 @@ export default function ManageProducts() {
               <option value="Sports">Sports</option>
             </select>
           </div>
+          <div className="filter-item">
+            <label className="filter-label">CATEGORY</label>
+            <select className="filter-select" value={filterCategory} onChange={(e) => setFilterCategory(e.target.value)}>
+              <option value="All">All</option>
+              {Array.from(new Set(products.map(p => p.category))).map(c => <option key={c} value={c}>{c}</option>)}
+            </select>
+          </div>
         </div>
         <div className="filters-right">
           <span className="filters-count">Showing {filteredProducts.length} of {products.length}</span>
-          <button type="button" className="btn-clear-filters" onClick={() => { setFilterCategory('All'); setFilterGender('All'); }}>CLEAR FILTERS</button>
+          <button 
+            type="button" 
+            className="btn-clear-filters" 
+            onClick={() => { setFilterCategory('All'); setFilterGender('All'); setSearchQuery(''); }}
+            disabled={filterCategory === 'All' && filterGender === 'All' && searchQuery === ''}
+          >
+            CLEAR FILTERS
+          </button>
         </div>
       </div>
 
@@ -910,7 +938,7 @@ export default function ManageProducts() {
                     <td>
                       <div className="action-btns">
                         <button className="btn-edit" onClick={() => handleEditProduct(p)}>EDIT</button>
-                        <button className="btn-delete" onClick={() => handleDeleteProduct(p.id)}>DELETE</button>
+                        <button className="btn-delete" onClick={() => openDeleteModal(p)}>DELETE</button>
                       </div>
                     </td>
                   </tr>
@@ -951,6 +979,28 @@ export default function ManageProducts() {
             <div className="modal-footer">
               <button className="btn-cancel" onClick={() => setShowEditModal(false)}>CANCEL</button>
               <button className="btn-save" onClick={handleSaveProduct}>SAVE CHANGES</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* DELETE CONFIRMATION MODAL */}
+      {showDeleteModal && productToDelete && (
+        <div className="modal-overlay" onClick={() => setShowDeleteModal(false)}>
+          <div className="modal-content modal-content--compact" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header">
+              <h2 className="modal-title">Delete Product</h2>
+              <button className="modal-close" onClick={() => setShowDeleteModal(false)}>×</button>
+            </div>
+            <div className="modal-body">
+              <p className="delete-modal-text">
+                Deleting this product will remove it from the user pages
+                and store it in Product Data. Do you want to continue?
+              </p>
+            </div>
+            <div className="modal-footer">
+              <button className="btn-cancel" onClick={() => setShowDeleteModal(false)}>CANCEL</button>
+              <button className="btn-save btn-delete-confirm" onClick={handleDeleteProduct}>DELETE PRODUCT</button>
             </div>
           </div>
         </div>

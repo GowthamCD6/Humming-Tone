@@ -8,6 +8,10 @@
   box-sizing: border-box;
 }
 
+:root {
+  --user-header-height: 110px;
+}
+
 .user-header {
   background-color: #ffffff;
   border-bottom: 1px solid #e5e5e5;
@@ -26,7 +30,7 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  height: 100px;
+  height: var(--user-header-height);
 }
 
 .user-logo-section {
@@ -231,9 +235,13 @@
 }
 
 @media (max-width: 992px) {
+  :root {
+    --user-header-height: 70px;
+  }
+
   .user-header-container {
     padding: 0 30px;
-    height: 70px;
+    height: var(--user-header-height);
   }
 
   .user-nav {
@@ -261,9 +269,13 @@
 }
 
 @media (max-width: 768px) {
+  :root {
+    --user-header-height: 65px;
+  }
+
   .user-header-container {
     padding: 0 20px;
-    height: 65px;
+    height: var(--user-header-height);
   }
 
   .user-nav-menu {
@@ -301,9 +313,13 @@
 }
 
 @media (max-width: 600px) {
+  :root {
+    --user-header-height: 60px;
+  }
+
   .user-header-container {
     padding: 0 15px;
-    height: 60px;
+    height: var(--user-header-height);
   }
 
   .user-nav-link span:last-child {
@@ -340,12 +356,13 @@
 .user-app-container {
   min-height: 100vh;
   background-color: #f8f9fa;
-  overflow-x: hidden;
+  /* NOTE: overflow hidden on any ancestor can break position: sticky */
+  overflow-x: clip;
 }
 
 /* Main Content Area */
 .user-main-content {
-  padding-top: 100px; /* clear fixed header */
+  padding-top: var(--user-header-height); /* clear fixed header */
   padding-bottom: 40px; /* comfortable space above footer */
 }
 
