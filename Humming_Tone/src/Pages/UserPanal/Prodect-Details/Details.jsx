@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import demoImage from '../../../assets/demo.jpeg';
+import UserFooter from '../../../components/User-Footer-Card/UserFooter';
 
 const ProductDetailPage = () => {
   const [selectedSize, setSelectedSize] = useState(null);
@@ -15,10 +16,18 @@ const ProductDetailPage = () => {
     sku: "BLUCA8637",
     brand: "Care and dare",
     category: "Winter sets",
+    subCategory: "Co-orc sets",
     gender: "Baby",
     color: "Navy, blue, white",
     material: "Cotton",
-    description: "This sweet baby outfit combines cozy comfort with cool, modern style. The color-block sweatshirt features a handsome navy top, a soft sky-blue middle, and creamy white sleeves, complete with a cute pocket accent with the words 'MAKING TODAY AN AMAZING DAY' embroidered. It's perfectly paired with coordinating, comfy blue jogger pants that include stylish cargo pockets."
+    description: "This sweet baby outfit combines cozy comfort with cool, modern style. The color-block sweatshirt features a handsome navy top, a soft sky-blue middle, and creamy white sleeves, complete with a cute pocket accent with the words 'MAKING TODAY AN AMAZING DAY' embroidered. It's perfectly paired with coordinating, comfy blue jogger pants that include stylish cargo pockets.",
+    careInstructions: [
+      "Machine wash cold with similar colors",
+      "Do not bleach",
+      "Tumble dry low",
+      "Warm iron if needed",
+      "Do not dry clean",
+    ],
   };
 
   const relatedProducts = [
@@ -84,6 +93,10 @@ const ProductDetailPage = () => {
                 <span className="label">GENDER</span>
                 <span className="value">{product.gender}</span>
               </div>
+              <div className="meta-item full-width">
+                <span className="label">SUBCATEGORY</span>
+                <span className="value">{product.subCategory}</span>
+              </div>
             </div>
 
             <div className="selection-section">
@@ -119,6 +132,15 @@ const ProductDetailPage = () => {
             <div className="description-box">
               <h3 className="sub-title">About this item</h3>
               <p>{product.description}</p>
+            </div>
+
+            <div className="care-box">
+              <h3 className="sub-title">Care Instructions</h3>
+              <ul className="care-list">
+                {product.careInstructions.map((instruction) => (
+                  <li key={instruction}>{instruction}</li>
+                ))}
+              </ul>
             </div>
 
             <div className="product-details-card">
@@ -161,6 +183,8 @@ const ProductDetailPage = () => {
           <button className="view-more-products">VIEW MORE ALL-PRODUCTS</button>
         </section>
       </div>
+
+      <UserFooter />
     </div>
   );
 };
@@ -276,7 +300,7 @@ const pageStyles = `
 
   .userpanal-product-details-page .dynamic-price { 
     font-size: 2.8rem; 
-    font-weight: 600; 
+    font-weight: 550; 
   }
 
   .userpanal-product-details-page .original-price { 
@@ -289,11 +313,16 @@ const pageStyles = `
   .userpanal-product-details-page .meta-grid {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 20px;
-    background: #fafafa;
-    padding: 25px;
-    border: 1px solid #f0f0f0;
+    column-gap: 60px;
+    row-gap: 35px;
+    background: #ffffff;
+    padding: 45px 40px;
+    border: 1px solid #eee;
     margin-bottom: 40px;
+  }
+
+  .userpanal-product-details-page .meta-item.full-width {
+    grid-column: 1 / -1;
   }
 
   .userpanal-product-details-page .meta-item .label { 
@@ -324,44 +353,53 @@ const pageStyles = `
   }
 
   .userpanal-product-details-page .size-options { 
-    display: flex; 
-    gap: 15px; 
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 24px;
   }
 
   .userpanal-product-details-page .size-btn {
-    flex: 1;
     background: white;
-    border: 2px solid #eee;
-    padding: 15px;
+    border: 1px solid #e9e9e9;
+    padding: 26px 18px;
+    min-height: 92px;
     cursor: pointer;
     transition: all 0.3s ease;
     text-align: center;
   }
 
   .userpanal-product-details-page .size-btn:hover { 
-    border-color: #1a1a1a; 
+    border-color: #cfcfcf;
   }
 
   .userpanal-product-details-page .size-btn.selected { 
-    border-color: #1a1a1a; 
-    background: #1a1a1a; 
-    color: white; 
+    border-color: #1a1a1a;
   }
 
   .userpanal-product-details-page .size-name { 
     display: block; 
-    font-size: 1.2rem; 
+    font-size: 18px;
     font-weight: 600; 
     margin-bottom: 5px;
   }
 
   .userpanal-product-details-page .stock-tag { 
-    font-size: 0.7rem; 
+    font-size: 12px;
     color: #27ae60; 
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
   }
 
-  .userpanal-product-details-page .size-btn.selected .stock-tag { 
-    color: white; 
+  @media (max-width: 900px) {
+    .userpanal-product-details-page .size-options {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+
+  @media (max-width: 520px) {
+    .userpanal-product-details-page .size-options {
+      grid-template-columns: 1fr;
+    }
   }
 
   .userpanal-product-details-page .quantity-ctrl { 
@@ -430,6 +468,18 @@ const pageStyles = `
     font-size: 1.1rem; 
   }
 
+  .userpanal-product-details-page .care-box {
+    margin-bottom: 40px;
+  }
+
+  .userpanal-product-details-page .care-list {
+    margin: 0;
+    padding-left: 18px;
+    color: #555;
+    font-size: 1.1rem;
+    line-height: 1.9;
+  }
+
   .userpanal-product-details-page .product-details-card { 
     background: #fafafa; 
     padding: 30px; 
@@ -475,7 +525,7 @@ const pageStyles = `
     width: 60px; 
     height: 2px; 
     background: #1a1a1a; 
-    margin: 0 auto 50px; 
+    margin: 0 auto 110px; 
   }
 
   .userpanal-product-details-page .related-grid { 
@@ -651,17 +701,52 @@ const pageStyles = `
 
   .userpanal-product-details-page .view-more-products {
     background: #1a1a1a;
-    color: white;
+    color: #ffffff;
+    border: 2px solid transparent;
     padding: 15px 40px;
-    border: none;
     font-weight: 600;
-    letter-spacing: 1px;
+    font-size: 13px;
+    letter-spacing: 0.1em;
     cursor: pointer;
-    transition: background 0.3s ease;
+    text-transform: uppercase;
+    font-family: 'Poppins', sans-serif;
+    border-radius: 2px;
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.25);
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    overflow: hidden;
+    margin-bottom: -50px;
+  }
+
+  .userpanal-product-details-page .view-more-products::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 0;
+    height: 0;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.15);
+    transform: translate(-50%, -50%);
+    transition: width 0.6s, height 0.6s;
+  }
+
+  .userpanal-product-details-page .view-more-products:hover::before {
+    width: 300px;
+    height: 300px;
   }
 
   .userpanal-product-details-page .view-more-products:hover {
-    background: #333;
+    transform: translateY(-4px);
+    box-shadow: 0 16px 48px rgba(0, 0, 0, 0.5);
+    background: #000;
+    color: #ffffff;
+  }
+
+  .userpanal-product-details-page .view-more-products:active {
+    transform: translateY(-2px);
+    background: #000;
+    color: #ffffff;
   }
 
   @media (max-width: 1024px) {
