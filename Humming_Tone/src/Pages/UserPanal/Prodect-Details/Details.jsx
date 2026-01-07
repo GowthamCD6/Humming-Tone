@@ -1,42 +1,53 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useParams } from 'react-router-dom';
 import demoImage from '../../../assets/demo.jpeg';
 import UserFooter from '../../../components/User-Footer-Card/UserFooter';
 
 const ProductDetailPage = () => {
+  const { id } = useParams();
+
   const [selectedSize, setSelectedSize] = useState(null);
   const [quantity, setQuantity] = useState(1);
-
-  const productImages = [demoImage, demoImage, demoImage, demoImage];
   const [activeImageIndex, setActiveImageIndex] = useState(0);
 
-  const product = {
-    title: "Blue set",
-    price: "400.00",
-    originalPrice: "1,200.00",
-    sku: "BLUCA8637",
-    brand: "Care and dare",
-    category: "Winter sets",
-    subCategory: "Co-orc sets",
-    gender: "Baby",
-    color: "Navy, blue, white",
-    material: "Cotton",
-    description: "This sweet baby outfit combines cozy comfort with cool, modern style. The color-block sweatshirt features a handsome navy top, a soft sky-blue middle, and creamy white sleeves, complete with a cute pocket accent with the words 'MAKING TODAY AN AMAZING DAY' embroidered. It's perfectly paired with coordinating, comfy blue jogger pants that include stylish cargo pockets.",
-    careInstructions: [
-      "Machine wash cold with similar colors",
-      "Do not bleach",
-      "Tumble dry low",
-      "Warm iron if needed",
-      "Do not dry clean",
-    ],
-  };
+  const [product, setProduct] = useState(null);
+  const [productImages, setProductImages] = useState([]);
+  const [sizes, setSizes] = useState([]);
 
-  const relatedProducts = [
-    { id: 1, name: "Stitch set", price: "400.00", brand: "Care and dare" },
-    { id: 2, name: "Mickey hoodie set", price: "450.00", brand: "Care and dare" },
-    { id: 3, name: "Bear set", price: "400.00", brand: "Care and dare" }
-  ];
+  const relatedProducts = [ { id: 1, name: "Stitch set", price: "400.00", brand: "Care and dare" }, { id: 2, name: "Mickey hoodie set", price: "450.00", brand: "Care and dare" }, { id: 3, name: "Bear set", price: "400.00", brand: "Care and dare" } ];
 
-  const sizes = ["S", "M", "L", "XL"];
+  useEffect(() => {
+    const fetchProduct = async () => {
+      try {
+        const res = await fetch(`http://localhost:5000/admin/fetch_variants/${id}`);
+        const data = await res.json();
+
+        setProduct(data);
+
+        /* ---- IMAGES (primary first) ---- */
+        if (data.images && data.images.length > 0) {
+          const sortedImages = [...data.images].sort(
+            (a, b) => b.is_primary - a.is_primary
+          );
+          setProductImages(
+            sortedImages.map(img => `http://localhost:5000/${img.image_path}`)
+          );
+        }
+
+        /* ---- SIZES FROM VARIANTS ---- */
+        if (data.variants) {
+          setSizes(data.variants);
+        }
+
+      } catch (err) {
+        console.error(err);
+      }
+    };
+
+    fetchProduct();
+  }, [id]);
+
+  if (!product) return null;
 
   return (
     <div className="userpanal-product-details-page">
@@ -44,23 +55,27 @@ const ProductDetailPage = () => {
 
       <div className="container">
         <div className="product-detail-layout">
-          
+
           {/* LEFT SIDE: STICKY GALLERY */}
           <div className="product-gallery-container">
             <div className="sticky-wrapper">
               <div className="product-main-image">
-                <img src={productImages[activeImageIndex]} alt={product.title} loading="eager" />
+                <img
+                  src={productImages[activeImageIndex] || demoImage}
+                  alt={product.name}
+                  loading="eager"
+                />
               </div>
+
               <div className="thumbnail-gallery">
                 {productImages.map((src, idx) => (
                   <button
-                    key={`${src}-${idx}`}
+                    key={idx}
                     type="button"
                     className={`thumbnail ${idx === activeImageIndex ? 'active' : ''}`}
                     onClick={() => setActiveImageIndex(idx)}
-                    aria-label={`View product image ${idx + 1}`}
                   >
-                    <img src={src} alt={`${product.title} thumbnail ${idx + 1}`} loading="lazy" />
+                    <img src={src} alt="thumbnail" loading="lazy" />
                   </button>
                 ))}
               </div>
@@ -69,11 +84,15 @@ const ProductDetailPage = () => {
 
           {/* RIGHT SIDE: SCROLLING CONTENT */}
           <div className="product-info-container">
-            <h1 className="product-title">{product.title}</h1>
-            
+            <h1 className="product-title">{product.name}</h1>
+
             <div className="price-section">
-              <div className="dynamic-price">₹{product.price}</div>
-              <div className="original-price">Original: ₹{product.originalPrice}</div>
+              <div className="dynamic-price">
+                ₹{sizes.find(s => s.size === selectedSize)?.price || sizes[0]?.price}
+              </div>
+              <div className="original-price">
+                Original: ₹{sizes.find(s => s.size === selectedSize)?.original_price || sizes[0]?.original_price}
+              </div>
             </div>
 
             <div className="meta-grid">
@@ -87,7 +106,7 @@ const ProductDetailPage = () => {
               </div>
               <div className="meta-item">
                 <span className="label">CATEGORY</span>
-                <span className="value">{product.category}</span>
+                <span className="value">{product.category_name}</span>
               </div>
               <div className="meta-item">
                 <span className="label">GENDER</span>
@@ -95,21 +114,23 @@ const ProductDetailPage = () => {
               </div>
               <div className="meta-item full-width">
                 <span className="label">SUBCATEGORY</span>
-                <span className="value">{product.subCategory}</span>
+                <span className="value">{product.subcategory}</span>
               </div>
             </div>
 
             <div className="selection-section">
               <h3 className="sub-title">Select Size</h3>
               <div className="size-options">
-                {sizes.map(size => (
-                  <button 
-                    key={size}
-                    className={`size-btn ${selectedSize === size ? 'selected' : ''}`}
-                    onClick={() => setSelectedSize(size)}
+                {sizes.map(v => (
+                  <button
+                    key={v.size}
+                    className={`size-btn ${selectedSize === v.size ? 'selected' : ''}`}
+                    onClick={() => setSelectedSize(v.size)}
                   >
-                    <span className="size-name">{size}</span>
-                    <span className="stock-tag">IN STOCK</span>
+                    <span className="size-name">{v.size}</span>
+                    <span className="stock-tag">
+                      {v.stock_quantity > 0 ? 'IN STOCK' : 'OUT OF STOCK'}
+                    </span>
                   </button>
                 ))}
               </div>
@@ -122,7 +143,6 @@ const ProductDetailPage = () => {
                 <input type="text" value={quantity} readOnly />
                 <button onClick={() => setQuantity(quantity + 1)}>+</button>
               </div>
-              <p className="availability-msg">Select a size to see availability</p>
             </div>
 
             <button className={`cart-submit-btn ${selectedSize ? 'enabled' : ''}`}>
@@ -131,16 +151,12 @@ const ProductDetailPage = () => {
 
             <div className="description-box">
               <h3 className="sub-title">About this item</h3>
-              <p>{product.description}</p>
+              <p>{product.about}</p>
             </div>
 
             <div className="care-box">
               <h3 className="sub-title">Care Instructions</h3>
-              <ul className="care-list">
-                {product.careInstructions.map((instruction) => (
-                  <li key={instruction}>{instruction}</li>
-                ))}
-              </ul>
+              <p>{product.care_instructions}</p>
             </div>
 
             <div className="product-details-card">
@@ -157,7 +173,6 @@ const ProductDetailPage = () => {
           </div>
         </div>
 
-        {/* FULL WIDTH RELATED PRODUCTS SECTION - OUTSIDE GRID */}
         <section className="related-section">
           <h2 className="related-heading">You May Also Like</h2>
           <div className="related-divider"></div>
@@ -182,12 +197,16 @@ const ProductDetailPage = () => {
 
           <button className="view-more-products">VIEW MORE ALL-PRODUCTS</button>
         </section>
+
       </div>
 
       <UserFooter />
     </div>
   );
 };
+
+export default ProductDetailPage;
+
 
 const pageStyles = `
   .userpanal-product-details-page {
@@ -781,4 +800,5 @@ const pageStyles = `
   }
 `;
 
-export default ProductDetailPage;
+
+
