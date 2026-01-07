@@ -6,7 +6,7 @@ exports.fetch_products = (req,res,next) => { // api request should be /user/fetc
     if(gender === undefined || gender == null || !gender || gender.trim() === ""){
       return next(createError.BadRequest('gender not found!'));
     }
-    const allowedGenders = ['men','children','babies','sports'];
+    const allowedGenders = ['men', 'women', 'children', 'babies', 'sports'];
     if(!allowedGenders.includes(gender))return next(createError.BadRequest('Invalid Gender!'));
     try{
       let fetchSql = `SELECT 

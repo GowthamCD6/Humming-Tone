@@ -172,6 +172,7 @@ const AddProduct = () => {
               <select id="gender" value={gender} onChange={(e) => { setGender(e.target.value); clearFieldError('gender'); }} className={errors.gender ? 'input-error' : ''} >
                 <option value="">Select Gender</option>
                 <option value="Men">Mens</option>
+                <option value="Women">Womens</option>
                 <option value="Children">Childrens</option>
                 <option value="Babies">Baby</option>
                 <option value="Sports">Sports</option>
