@@ -23,19 +23,19 @@ CREATE TABLE categories (
 
 CREATE TABLE products (
   id INT AUTO_INCREMENT PRIMARY KEY,
-  name VARCHAR(255) NOT NULL,
-  about TEXT,
-  sku VARCHAR(100) NOT NULL UNIQUE, -- stock keeping unit
+  name VARCHAR(255) NOT NULL, #
+  about TEXT, #
+  sku VARCHAR(100) NOT NULL UNIQUE, #
   category_id INT,
-  subcategory VARCHAR(100),
-  brand VARCHAR(100),
-  color VARCHAR(50),
-  material VARCHAR(100),
-  care_instructions TEXT,
+  subcategory VARCHAR(100), #
+  brand VARCHAR(100), #
+  color VARCHAR(50), #
+  material VARCHAR(100), #
+  care_instructions TEXT, #
   gender ENUM('men','women','children','babies','sports'),
-  age_range VARCHAR(50),
+  age_range VARCHAR(50), #
   weight DECIMAL(8,2),
-  dimensions VARCHAR(100),
+  dimensions VARCHAR(100), #
   is_featured TINYINT(1) DEFAULT 0,
   is_active TINYINT(1) DEFAULT 1,
   image_path VARCHAR(500),
