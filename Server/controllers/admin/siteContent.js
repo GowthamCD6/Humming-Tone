@@ -257,3 +257,46 @@ exports.updateGenderCategory = (req, res) => {
         );
     });
 };
+
+// New endpoint to fetch genders and categories for admin forms
+exports.getGendersAndCategories = (req, res) => {
+    console.log('Fetching genders and categories...');
+    
+    db.query("SELECT * FROM genders WHERE is_active = 1 ORDER BY display_order", (err, genders) => {
+        if (err) {
+            console.error('getGendersAndCategories error:', err);
+            return res.status(500).json({ error: err.message });
+        }
+        
+        db.query("SELECT * FROM categories ORDER BY name", (err, categories) => {
+            if (err) {
+                console.error('getGendersAndCategories error:', err);
+                return res.status(500).json({ error: err.message });
+            }
+            
+            db.query("SELECT brand_name FROM site_settings WHERE id = 1", (err, settings) => {
+                if (err) {
+                    console.error('getGendersAndCategories error:', err);
+                    return res.status(500).json({ error: err.message });
+                }
+                
+                // Group categories by gender
+                const genderCategoryMap = {};
+                genders.forEach(g => {
+                    genderCategoryMap[g.name] = categories
+                        .filter(c => c.gender_name === g.name)
+                        .map(c => ({ name: c.name, slug: c.slug }));
+                });
+                
+                const response = {
+                    genders: genders.map(g => g.name),
+                    genderCategoryMap,
+                    brandName: settings[0]?.brand_name || 'Humming Tone'
+                };
+                
+                console.log('Sending genders and categories successfully');
+                res.json(response);
+            });
+        });
+    });
+};

@@ -4,6 +4,7 @@ const siteController = require('../../controllers/admin/siteContent');
 
 // Fixed: functions are explicitly passed
 router.get('/', siteController.getSiteContent);
+router.get('/genders-categories', siteController.getGendersAndCategories);
 router.post('/footer', siteController.updateFooter);
 router.post('/gender-status', siteController.updateGenderStatus);
 router.post('/gender-category', siteController.updateGenderCategory);
