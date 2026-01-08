@@ -587,60 +587,68 @@ exports.fetch_deleted_products = (req, res, next) => {
 
 // --- FETCH VARIANTS ---
 exports.fetch_variants = (req, res, next) => {
-    try {
-        const { id } = req.params;
-        let sql = `
-        SELECT
-            p.id,
-            p.name,
-            p.about,
-            p.sku,
-            p.subcategory,
-            p.brand,
-            p.color,
-            p.material,
-            p.care_instructions,
-            p.gender,
-            p.age_range,
-            p.weight,
-            p.dimensions,
-            p.is_featured,
-            p.is_active,
-            c.name AS category_name,
+  try {
+    const { id } = req.params;
 
-            JSON_ARRAYAGG(
-                JSON_OBJECT(
-                    'image_path', pi.image_path,
-                    'is_primary', pi.is_primary
-                )
-            ) AS images,
+    const sql = `
+      SELECT
+          p.id,
+          p.name,
+          p.about,
+          p.sku,
+          p.category_id,
+          c.name AS category_name,
+          p.subcategory,
+          p.brand,
+          p.color,
+          p.material,
+          p.care_instructions,
+          p.gender,
+          p.age_range,
+          p.weight,
+          p.dimensions,
+          p.is_featured,
+          p.is_active,
 
-            JSON_ARRAYAGG(
-                JSON_OBJECT(
-                    'size', v.size,
-                    'price', v.price,
-                    'original_price', v.original_price,
-                    'stock_quantity', v.stock_quantity
-                )
-            ) AS variants
+          (
+            SELECT JSON_ARRAYAGG(
+              JSON_OBJECT(
+                'image_path', pi.image_path,
+                'is_primary', pi.is_primary
+              )
+            )
+            FROM product_images pi
+            WHERE pi.product_id = p.id
+          ) AS images,
 
-        FROM products p
-        JOIN categories c ON p.category_id = c.id
-        JOIN product_variants v ON p.id = v.product_id
-        LEFT JOIN product_images pi ON p.id = pi.product_id
-        WHERE p.id = ?
-        GROUP BY p.id;
-        `;
+          (
+            SELECT JSON_ARRAYAGG(
+              JSON_OBJECT(
+                'size', v.size,
+                'price', v.price,
+                'original_price', v.original_price,
+                'stock_quantity', v.stock_quantity
+              )
+            )
+            FROM product_variants v
+            WHERE v.product_id = p.id
+          ) AS variants
 
-        db.query(sql, [id], (err, rows) => {
-            if (err) return next(err);
-            res.status(200).json(rows[0] || {});
-        });
+      FROM products p
+      JOIN categories c ON p.category_id = c.id
+      WHERE p.id = ?;
+    `;
 
-    } catch (error) {
-        next(error);
-    }
+    db.query(sql, [id], (err, rows) => {
+      if (err) return next(err);
+      res.status(200).json(rows[0] || {});
+    });
+
+  } catch (error) {
+    next(error);
+  }
 };
+
 
 
 // --- UPDATE PRODUCT ---

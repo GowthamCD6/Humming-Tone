@@ -15,18 +15,22 @@ const ProductDetailPage = () => {
   const [productImages, setProductImages] = useState([]);
   const [sizes, setSizes] = useState([]);
 
-  const relatedProducts = [ { id: 1, name: "Stitch set", price: "400.00", brand: "Care and dare" }, { id: 2, name: "Mickey hoodie set", price: "450.00", brand: "Care and dare" }, { id: 3, name: "Bear set", price: "400.00", brand: "Care and dare" } ];
+  /* 🔥 You May Also Like */
+  const [recommendedProducts, setRecommendedProducts] = useState([]);
 
+  /* ================= PRODUCT DETAILS ================= */
   useEffect(() => {
     const fetchProduct = async () => {
       try {
-        const res = await fetch(`http://localhost:5000/admin/fetch_variants/${id}`);
+        const res = await fetch(
+          `http://localhost:5000/admin/fetch_variants/${id}`
+        );
         const data = await res.json();
 
         setProduct(data);
 
-        /* ---- IMAGES (primary first) ---- */
-        if (data.images && data.images.length > 0) {
+        /* IMAGES */
+        if (data.images?.length) {
           const sortedImages = [...data.images].sort(
             (a, b) => b.is_primary - a.is_primary
           );
@@ -35,10 +39,13 @@ const ProductDetailPage = () => {
           );
         }
 
-        /* ---- SIZES FROM VARIANTS ---- */
+        /* SIZES */
         if (data.variants) {
           setSizes(data.variants);
         }
+
+        /* 🔥 FETCH RECOMMENDATIONS USING CATEGORY ID */
+        fetchRecommendations(data.category_id);
 
       } catch (err) {
         console.error(err);
@@ -48,6 +55,30 @@ const ProductDetailPage = () => {
     fetchProduct();
   }, [id]);
 
+  /* ================= RECOMMENDATIONS ================= */
+  const fetchRecommendations = async (categoryId) => {
+    try {
+      const res = await fetch(
+        'http://localhost:5000/user/fetch_recommendations?page=1&limit=3',
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            category_id: categoryId
+          })
+        }
+      );
+
+      const data = await res.json();
+      setRecommendedProducts(data.data || []);
+
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
   if (!product) return null;
 
   return (
@@ -55,14 +86,13 @@ const ProductDetailPage = () => {
       <div className="container">
         <div className="product-detail-layout">
 
-          {/* LEFT SIDE: STICKY GALLERY */}
+          {/* LEFT */}
           <div className="product-gallery-container">
             <div className="sticky-wrapper">
               <div className="product-main-image">
                 <img
                   src={productImages[activeImageIndex] || demoImage}
                   alt={product.name}
-                  loading="eager"
                 />
               </div>
 
@@ -70,18 +100,17 @@ const ProductDetailPage = () => {
                 {productImages.map((src, idx) => (
                   <button
                     key={idx}
-                    type="button"
                     className={`thumbnail ${idx === activeImageIndex ? 'active' : ''}`}
                     onClick={() => setActiveImageIndex(idx)}
                   >
-                    <img src={src} alt="thumbnail" loading="lazy" />
+                    <img src={src} alt="thumb" />
                   </button>
                 ))}
               </div>
             </div>
           </div>
 
-          {/* RIGHT SIDE: SCROLLING CONTENT */}
+          {/* RIGHT */}
           <div className="product-info-container">
             <h1 className="product-title">{product.name}</h1>
 
@@ -95,26 +124,11 @@ const ProductDetailPage = () => {
             </div>
 
             <div className="meta-grid">
-              <div className="meta-item">
-                <span className="label">SKU</span>
-                <span className="value">{product.sku}</span>
-              </div>
-              <div className="meta-item">
-                <span className="label">BRAND</span>
-                <span className="value">{product.brand}</span>
-              </div>
-              <div className="meta-item">
-                <span className="label">CATEGORY</span>
-                <span className="value">{product.category_name}</span>
-              </div>
-              <div className="meta-item">
-                <span className="label">GENDER</span>
-                <span className="value">{product.gender}</span>
-              </div>
-              <div className="meta-item full-width">
-                <span className="label">SUBCATEGORY</span>
-                <span className="value">{product.subcategory}</span>
-              </div>
+              <div className="meta-item"><span className="label">SKU</span><span>{product.sku}</span></div>
+              <div className="meta-item"><span className="label">BRAND</span><span>{product.brand}</span></div>
+              <div className="meta-item"><span className="label">CATEGORY</span><span>{product.category_name}</span></div>
+              <div className="meta-item"><span className="label">GENDER</span><span>{product.gender}</span></div>
+              <div className="meta-item full-width"><span className="label">SUBCATEGORY</span><span>{product.subcategory}</span></div>
             </div>
 
             <div className="selection-section">
@@ -126,7 +140,7 @@ const ProductDetailPage = () => {
                     className={`size-btn ${selectedSize === v.size ? 'selected' : ''}`}
                     onClick={() => setSelectedSize(v.size)}
                   >
-                    <span className="size-name">{v.size}</span>
+                    <span>{v.size}</span>
                     <span className="stock-tag">
                       {v.stock_quantity > 0 ? 'IN STOCK' : 'OUT OF STOCK'}
                     </span>
@@ -139,7 +153,7 @@ const ProductDetailPage = () => {
               <h3 className="sub-title">Quantity</h3>
               <div className="quantity-ctrl">
                 <button onClick={() => setQuantity(Math.max(1, quantity - 1))}>-</button>
-                <input type="text" value={quantity} readOnly />
+                <input readOnly value={quantity} />
                 <button onClick={() => setQuantity(quantity + 1)}>+</button>
               </div>
             </div>
@@ -157,46 +171,41 @@ const ProductDetailPage = () => {
               <h3 className="sub-title">Care Instructions</h3>
               <p>{product.care_instructions}</p>
             </div>
-
-            <div className="product-details-card">
-              <h3 className="sub-title">Product Details</h3>
-              <div className="detail-row">
-                <span className="label">COLOR</span>
-                <span className="value">{product.color}</span>
-              </div>
-              <div className="detail-row">
-                <span className="label">MATERIAL</span>
-                <span className="value">{product.material}</span>
-              </div>
-            </div>
           </div>
         </div>
 
+        {/* ================= YOU MAY ALSO LIKE ================= */}
         <section className="related-section">
           <h2 className="related-heading">You May Also Like</h2>
           <div className="related-divider"></div>
-          
+
           <div className="related-grid">
-            {relatedProducts.map(item => (
+            {recommendedProducts.map(item => (
               <div className="related-card" key={item.id}>
                 <div className="related-product-image-container">
-                  <img src={demoImage} alt={item.name} loading="lazy" />
+                  <img
+                    src={`http://localhost:5000/${item.image_path}`}
+                    alt={item.name}
+                  />
                   <div className="related-product-hover-overlay">
-                    <button className="related-view-details-btn">VIEW DETAILS</button>
+                    <button className="related-view-details-btn">
+                      VIEW DETAILS
+                    </button>
                   </div>
                 </div>
                 <div className="related-product-details">
-                  <h3 className="related-product-title">{item.name}</h3>
-                  <p className="related-product-brand">{item.brand}</p>
-                  <p className="related-product-price">₹{item.price}</p>
+                  <h3>{item.name}</h3>
+                  <p>{item.brand}</p>
+                  <p>₹{item.price}</p>
                 </div>
               </div>
             ))}
           </div>
 
-          <button className="view-more-products">VIEW MORE ALL-PRODUCTS</button>
+          <button className="view-more-products">
+            VIEW MORE ALL-PRODUCTS
+          </button>
         </section>
-
       </div>
 
       <UserFooter />
@@ -205,6 +214,3 @@ const ProductDetailPage = () => {
 };
 
 export default ProductDetailPage;
-
-
-

@@ -136,3 +136,52 @@ exports.fetch_featured_products = (req, res, next) => {
     next(error);
   }
 };
+
+exports.fetch_recommendations = (req, res, next) => {
+  try {
+    const category_id = req.body.category_id;
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 3;
+    const offset = (page - 1) * limit;
+
+    if (!category_id) {
+      return next(createError.BadRequest('invalid category id!'));
+    }
+
+    const sql = `
+      SELECT
+        p.id,
+        p.name,
+        p.brand,
+        (
+          SELECT pi.image_path
+          FROM product_images pi
+          WHERE pi.product_id = p.id
+          AND pi.is_primary = 1
+          LIMIT 1
+        ) AS image_path,
+        MIN(pv.price) AS price,
+        SUM(pv.stock_quantity) AS total_stock
+      FROM products p
+      JOIN product_variants pv ON pv.product_id = p.id
+      WHERE p.category_id = ?
+        AND p.is_active = 1
+      GROUP BY p.id
+      ORDER BY p.created_at DESC
+      LIMIT ? OFFSET ?;
+    `;
+
+    db.query(sql, [category_id, limit, offset], (err, rows) => {
+      if (err) return next(err);
+
+      res.status(200).json({
+        page,
+        limit,
+        count: rows.length,
+        data: rows
+      });
+    });
+  } catch (error) {
+    next(error);
+  }
+};

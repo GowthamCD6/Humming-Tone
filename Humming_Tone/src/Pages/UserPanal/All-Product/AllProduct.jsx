@@ -68,7 +68,7 @@ const AllProductPage = ({ onViewDetails = () => {} }) => {
         id: product.id,
         name: product.name,
         brand: product.brand || 'HummingTone',
-        price: parseFloat(product.original_price),
+        price: Number(product.price), // ✅ FIXED
         image: product.image_path
           ? `http://localhost:5000/${product.image_path.replace(/\\/g, '/')}`
           : demoImage,
