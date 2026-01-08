@@ -1,13 +1,11 @@
 import { useMemo, useState, useEffect } from "react";
 import "./SiteContent.css";
 import SuccessModal from "../../../components/SuccessModal/SuccessModal";
-import AdminCystamize from "./AdminCystamize/AdminCystamize";
 import {
   fetchSiteContent,
   updateFooter,
   updateGenderCategory,
   updateGenderStatus,
-  updateCustomize,
   resetSiteContent,
 } from "../../../utils/siteContentStore";
 import SettingsIcon from "@mui/icons-material/Settings";
@@ -26,7 +24,9 @@ export default function SiteContent() {
   const [modalMessage, setModalMessage] = useState("");
   const [error, setError] = useState("");
   const [expandedCard, setExpandedCard] = useState(null);
-  const [customizeModalOpen, setCustomizeModalOpen] = useState(false);
+  const [addCategoryModalOpen, setAddCategoryModalOpen] = useState(false);
+  const [categoryGender, setCategoryGender] = useState("");
+  const [newCategoryName, setNewCategoryName] = useState("");
 
   const [footerDraft, setFooterDraft] = useState(null);
   const [genderCategoryDraft, setGenderCategoryDraft] = useState(null);
@@ -141,13 +141,20 @@ export default function SiteContent() {
   };
 
   const addCategory = (gender) => {
-    const name = prompt(`Add category for ${gender}`);
-    if (!name) return;
+    setCategoryGender(gender);
+    setNewCategoryName("");
+    setAddCategoryModalOpen(true);
+  };
+
+  const handleAddCategory = () => {
+    if (!newCategoryName.trim()) return;
     setGenderCategoryDraft((prev) => {
-      const list = Array.isArray(prev?.[gender]) ? prev[gender] : [];
-      if (list.includes(name)) return prev;
-      return { ...(prev || {}), [gender]: [...list, name] };
+      const list = Array.isArray(prev?.[categoryGender]) ? prev[categoryGender] : [];
+      if (list.includes(newCategoryName.trim())) return prev;
+      return { ...(prev || {}), [categoryGender]: [...list, newCategoryName.trim()] };
     });
+    setAddCategoryModalOpen(false);
+    setNewCategoryName("");
   };
 
   const removeCategory = (gender, category) => {
@@ -249,11 +256,6 @@ export default function SiteContent() {
     setModalOpen(true);
     setError("");
     setExpandedCard(null);
-  };
-
-  // Open customize content modal
-  const openCustomizeModal = () => {
-    setCustomizeModalOpen(true);
   };
 
   if (loading) {
@@ -752,50 +754,49 @@ export default function SiteContent() {
             </div>
           )}
         </div>
-
-        {/* Customize Content Card */}
-        <div className="sitecontent-main-card">
-          <div className="sitecontent-card-header">
-            <div className="sitecontent-card-icon">
-              <SettingsIcon />
-            </div>
-            <div className="sitecontent-card-info">
-              <h3 className="sitecontent-card-title">Customize Product Content</h3>
-              <p className="sitecontent-card-desc">
-                Manage product categories, colors, materials, sizes and gallery designs
-              </p>
-              <div className="sitecontent-card-status">
-                <CheckCircleIcon className="status-icon complete" />
-                <span>Available</span>
-              </div>
-            </div>
-            <div className="sitecontent-card-toggle">
-              <button
-                className="sitecontent-btn primary small"
-                onClick={openCustomizeModal}
-              >
-                Open Modal
-              </button>
-            </div>
-          </div>
-        </div>
       </div>
 
-      {/* Customize Content Modal */}
-      {customizeModalOpen && (
-        <div className="sitecontent-modal-overlay" onClick={() => setCustomizeModalOpen(false)}>
-          <div className="sitecontent-modal-content" onClick={(e) => e.stopPropagation()}>
+      {/* Add Category Modal */}
+      {addCategoryModalOpen && (
+        <div className="sitecontent-modal-overlay" onClick={() => setAddCategoryModalOpen(false)}>
+          <div className="sitecontent-modal-content sitecontent-modal-small" onClick={(e) => e.stopPropagation()}>
             <div className="sitecontent-modal-header">
-              <h3>Customize Product Content Management</h3>
+              <h3>Add Category for {categoryGender}</h3>
               <button 
                 className="sitecontent-modal-close"
-                onClick={() => setCustomizeModalOpen(false)}
+                onClick={() => setAddCategoryModalOpen(false)}
               >
                 ×
               </button>
             </div>
             <div className="sitecontent-modal-body">
-              <AdminCystamize onBack={() => setCustomizeModalOpen(false)} />
+              <div className="form-group">
+                <label>Category Name</label>
+                <input
+                  type="text"
+                  className="form-input"
+                  placeholder="Enter category name"
+                  value={newCategoryName}
+                  onChange={(e) => setNewCategoryName(e.target.value)}
+                  onKeyPress={(e) => e.key === 'Enter' && handleAddCategory()}
+                  autoFocus
+                />
+              </div>
+            </div>
+            <div className="sitecontent-modal-footer">
+              <button 
+                className="sitecontent-btn secondary"
+                onClick={() => setAddCategoryModalOpen(false)}
+              >
+                Cancel
+              </button>
+              <button 
+                className="sitecontent-btn primary"
+                onClick={handleAddCategory}
+                disabled={!newCategoryName.trim()}
+              >
+                Add Category
+              </button>
             </div>
           </div>
         </div>

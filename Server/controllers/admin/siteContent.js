@@ -213,24 +213,29 @@ exports.updateGenderCategory = (req, res) => {
                     return res.status(500).json({ error: err.message });
                 }
                 
-                // Delete old categories
-                db.query("DELETE FROM categories WHERE gender_name = ?", [gender], (err) => {
+                // Get existing categories for this gender
+                db.query("SELECT name FROM categories WHERE gender_name = ?", [gender], (err, existingCats) => {
                     if (err && !hasError) {
                         hasError = true;
                         console.error('updateGenderCategory error:', err);
                         return res.status(500).json({ error: err.message });
                     }
                     
-                    const cats = req.body[gender].map(n => [
-                        n, 
-                        n.toLowerCase().replace(/ /g, '-'), 
-                        gender
-                    ]);
+                    const existingCatNames = existingCats.map(c => c.name);
+                    const newCatNames = req.body[gender];
                     
-                    if (cats.length > 0) {
+                    // Find categories to delete (only ones not in new list and not referenced by products)
+                    const catsToDelete = existingCatNames.filter(name => !newCatNames.includes(name));
+                    
+                    // Find categories to add (only ones not already existing)
+                    const catsToAdd = newCatNames.filter(name => !existingCatNames.includes(name));
+                    
+                    // Delete unused categories (that aren't referenced by products)
+                    if (catsToDelete.length > 0) {
+                        const placeholders = catsToDelete.map(() => '?').join(',');
                         db.query(
-                            "INSERT INTO categories (name, slug, gender_name) VALUES ?", 
-                            [cats],
+                            `DELETE FROM categories WHERE gender_name = ? AND name IN (${placeholders}) AND id NOT IN (SELECT DISTINCT category_id FROM products WHERE category_id IS NOT NULL)`,
+                            [gender, ...catsToDelete],
                             (err) => {
                                 if (err && !hasError) {
                                     hasError = true;
@@ -238,18 +243,45 @@ exports.updateGenderCategory = (req, res) => {
                                     return res.status(500).json({ error: err.message });
                                 }
                                 
-                                completed++;
-                                if (completed === genders.length && !hasError) {
-                                    console.log('Gender categories updated successfully');
-                                    res.json({ message: "Gender/Category mapping saved successfully" });
-                                }
+                                // Continue with adding new categories
+                                addNewCategories();
                             }
                         );
                     } else {
-                        completed++;
-                        if (completed === genders.length && !hasError) {
-                            console.log('Gender categories updated successfully');
-                            res.json({ message: "Gender/Category mapping saved successfully" });
+                        addNewCategories();
+                    }
+                    
+                    function addNewCategories() {
+                        if (catsToAdd.length > 0) {
+                            const cats = catsToAdd.map(n => [
+                                n, 
+                                n.toLowerCase().replace(/ /g, '-'), 
+                                gender
+                            ]);
+                            
+                            db.query(
+                                "INSERT INTO categories (name, slug, gender_name) VALUES ? ON DUPLICATE KEY UPDATE slug = VALUES(slug)", 
+                                [cats],
+                                (err) => {
+                                    if (err && !hasError) {
+                                        hasError = true;
+                                        console.error('updateGenderCategory error:', err);
+                                        return res.status(500).json({ error: err.message });
+                                    }
+                                    
+                                    completed++;
+                                    if (completed === genders.length && !hasError) {
+                                        console.log('Gender categories updated successfully');
+                                        res.json({ message: "Gender/Category mapping saved successfully" });
+                                    }
+                                }
+                            );
+                        } else {
+                            completed++;
+                            if (completed === genders.length && !hasError) {
+                                console.log('Gender categories updated successfully');
+                                res.json({ message: "Gender/Category mapping saved successfully" });
+                            }
                         }
                     }
                 });
