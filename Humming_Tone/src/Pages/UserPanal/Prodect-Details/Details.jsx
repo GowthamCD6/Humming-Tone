@@ -15,8 +15,54 @@ const ProductDetailPage = () => {
   const [productImages, setProductImages] = useState([]);
   const [sizes, setSizes] = useState([]);
 
-  /* 🔥 You May Also Like */
   const [recommendedProducts, setRecommendedProducts] = useState([]);
+
+  const [isInCart, setIsInCart] = useState(false);
+
+  /* ================= CART HELPERS ================= */
+  const getCart = () => {
+    return JSON.parse(localStorage.getItem('cart')) || [];
+  };
+
+  const checkIfInCart = (size) => {
+    const cart = getCart();
+    return cart.some(
+      item => item.id === product.id && item.size === size
+    );
+  };
+
+  const addToCart = () => {
+    if (!selectedSize) return;
+
+    const variant = sizes.find(v => v.size === selectedSize);
+
+    const cartItem = {
+      id: product.id,
+      name: product.name,
+      brand: product.brand,
+      price: variant.price,
+      quantity,
+      size: selectedSize,
+      color: product.color || 'Default',
+      stock: variant.stock_quantity,
+      image: productImages[0] || demoImage
+    };
+
+    const cart = getCart();
+    cart.push(cartItem);
+
+    localStorage.setItem('cart', JSON.stringify(cart));
+    setIsInCart(true);
+  };
+
+  const removeFromCart = () => {
+    const cart = getCart().filter(
+      item => !(item.id === product.id && item.size === selectedSize)
+    );
+
+    localStorage.setItem('cart', JSON.stringify(cart));
+    setIsInCart(false);
+  };
 
   /* ================= PRODUCT DETAILS ================= */
   useEffect(() => {
@@ -29,7 +75,6 @@ const ProductDetailPage = () => {
 
         setProduct(data);
 
-        /* IMAGES */
         if (data.images?.length) {
           const sortedImages = [...data.images].sort(
             (a, b) => b.is_primary - a.is_primary
@@ -39,14 +84,11 @@ const ProductDetailPage = () => {
           );
         }
 
-        /* SIZES */
         if (data.variants) {
           setSizes(data.variants);
         }
 
-        /* 🔥 FETCH RECOMMENDATIONS USING CATEGORY ID */
         fetchRecommendations(data.category_id);
-
       } catch (err) {
         console.error(err);
       }
@@ -54,6 +96,13 @@ const ProductDetailPage = () => {
 
     fetchProduct();
   }, [id]);
+
+  /* ================= CHECK CART ON SIZE CHANGE ================= */
+  useEffect(() => {
+    if (product && selectedSize) {
+      setIsInCart(checkIfInCart(selectedSize));
+    }
+  }, [selectedSize, product]);
 
   /* ================= RECOMMENDATIONS ================= */
   const fetchRecommendations = async (categoryId) => {
@@ -65,15 +114,12 @@ const ProductDetailPage = () => {
           headers: {
             'Content-Type': 'application/json'
           },
-          body: JSON.stringify({
-            category_id: categoryId
-          })
+          body: JSON.stringify({ category_id: categoryId })
         }
       );
 
       const data = await res.json();
       setRecommendedProducts(data.data || []);
-
     } catch (err) {
       console.error(err);
     }
@@ -158,8 +204,16 @@ const ProductDetailPage = () => {
               </div>
             </div>
 
-            <button className={`cart-submit-btn ${selectedSize ? 'enabled' : ''}`}>
-              {selectedSize ? 'ADD TO CART' : 'SELECT SIZE TO ADD TO CART'}
+            <button
+              className={`cart-submit-btn ${selectedSize ? 'enabled' : ''}`}
+              onClick={isInCart ? removeFromCart : addToCart}
+              disabled={!selectedSize}
+            >
+              {!selectedSize
+                ? 'SELECT SIZE TO ADD TO CART'
+                : isInCart
+                ? 'REMOVE FROM CART'
+                : 'ADD TO CART'}
             </button>
 
             <div className="description-box">
