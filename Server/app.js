@@ -42,6 +42,7 @@ app.use('/api', productRoutes);
 app.use("/", userProductRoute);
 app.use("/", userPromoRoutes);
 app.use("/",userReturnRoutes);
+app.use("/", customizeRoutes);
 
 // Site content routes
 app.use('/api/site-content', siteRoutes);

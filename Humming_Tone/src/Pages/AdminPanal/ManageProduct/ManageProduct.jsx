@@ -753,6 +753,57 @@ export default function ManageProducts() {
   const [filterCategory, setFilterCategory] = useState('All')
   const [searchQuery, setSearchQuery] = useState('')
 
+  // Fetch from backend
+  const [genderOptions, setGenderOptions] = useState([]);
+  const [genderCategoryMap, setGenderCategoryMap] = useState({});
+  const [filterCategoryOptions, setFilterCategoryOptions] = useState([]);
+  const [editCategoryOptions, setEditCategoryOptions] = useState([]);
+
+  // Fetch genders and categories from backend
+  useEffect(() => {
+    const fetchGendersAndCategories = async () => {
+      try {
+        const response = await fetch(`${BASE_URL}/api/site-content/genders-categories`);
+        const data = await response.json();
+        if (data.genders) {
+          setGenderOptions(data.genders);
+          setGenderCategoryMap(data.genderCategoryMap);
+        }
+      } catch (error) {
+        console.error('Error fetching genders and categories:', error);
+      }
+    };
+
+    fetchGendersAndCategories();
+  }, []);
+
+  // Update filter category options when filter gender changes
+  useEffect(() => {
+    if (filterGender !== 'All' && genderCategoryMap[filterGender]) {
+      setFilterCategoryOptions(genderCategoryMap[filterGender]);
+    } else if (filterGender === 'All') {
+      // Get all categories from all genders
+      const allCategories = [];
+      Object.values(genderCategoryMap).forEach(cats => {
+        cats.forEach(cat => {
+          if (!allCategories.some(c => c.name === cat.name)) {
+            allCategories.push(cat);
+          }
+        });
+      });
+      setFilterCategoryOptions(allCategories);
+    }
+  }, [filterGender, genderCategoryMap]);
+
+  // Update edit category options when editing product gender changes
+  useEffect(() => {
+    if (editingProduct?.gender && genderCategoryMap[editingProduct.gender]) {
+      setEditCategoryOptions(genderCategoryMap[editingProduct.gender]);
+    } else {
+      setEditCategoryOptions([]);
+    }
+  }, [editingProduct?.gender, genderCategoryMap]);
+
   const loadData = async () => {
     try {
       const prodRes = await fetch(`${BASE_URL}/admin/fetch_products`);
@@ -947,17 +998,14 @@ export default function ManageProducts() {
             <label className="filter-label">GENDER</label>
             <select className="filter-select" value={filterGender} onChange={(e) => setFilterGender(e.target.value)}>
               <option value="All">All</option>
-              <option value="Men">Men</option>
-              <option value="Children">Children</option>
-              <option value="Baby">Baby</option>
-              <option value="Sports">Sports</option>
+              {genderOptions.map(g => <option key={g} value={g}>{g}</option>)}
             </select>
           </div>
           <div className="filter-item">
             <label className="filter-label">CATEGORY</label>
             <select className="filter-select" value={filterCategory} onChange={(e) => setFilterCategory(e.target.value)}>
               <option value="All">All</option>
-              {Array.from(new Set(products.map(p => p.category))).map(c => <option key={c} value={c}>{c}</option>)}
+              {filterCategoryOptions.map(c => <option key={c.name} value={c.name}>{c.name}</option>)}
             </select>
           </div>
         </div>
@@ -1023,10 +1071,16 @@ export default function ManageProducts() {
                 <div className="form-group"><label>STOCK</label><input type="number" value={editingProduct.stock} onChange={(e) => setEditingProduct({...editingProduct, stock: e.target.value})} className="form-input" /></div>
               </div>
               <div className="form-row">
-                <div className="form-group"><label>CATEGORY</label><input type="text" value={editingProduct.category} onChange={(e) => setEditingProduct({...editingProduct, category: e.target.value})} className="form-input" /></div>
+                <div className="form-group"><label>CATEGORY</label>
+                  <select value={editingProduct.category} onChange={(e) => setEditingProduct({...editingProduct, category: e.target.value})} className="form-input" disabled={!editingProduct.gender}>
+                    <option value="">Select Category</option>
+                    {editCategoryOptions.map(c => <option key={c.name} value={c.name}>{c.name}</option>)}
+                  </select>
+                </div>
                 <div className="form-group"><label>GENDER</label>
-                  <select value={editingProduct.gender} onChange={(e) => setEditingProduct({...editingProduct, gender: e.target.value})} className="form-input">
-                    <option value="men">Men</option><option value="children">Children</option><option value="babies">Baby</option><option value="sports">Sports</option>
+                  <select value={editingProduct.gender} onChange={(e) => setEditingProduct({...editingProduct, gender: e.target.value, category: ''})} className="form-input">
+                    <option value="">Select Gender</option>
+                    {genderOptions.map(g => <option key={g} value={g.toLowerCase()}>{g}</option>)}
                   </select>
                 </div>
               </div>

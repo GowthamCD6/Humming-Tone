@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import './AddProduct.css';
 import AddPhotoAlternateIcon from '@mui/icons-material/AddPhotoAlternate';
 import CloseIcon from '@mui/icons-material/Close';
@@ -26,9 +26,47 @@ const AddProduct = () => {
   const [errors, setErrors] = useState({});
   const [showSuccessModal, setShowSuccessModal] = useState(false);
 
-  const brandOptions = ['Humming Tone', 'Other'];
+  // Fetch from backend
+  const [genderOptions, setGenderOptions] = useState([]);
+  const [genderCategoryMap, setGenderCategoryMap] = useState({});
+  const [categoryOptions, setCategoryOptions] = useState([]);
+  const [brandName, setBrandName] = useState('Humming Tone');
+
   const colorOptions = ['Red', 'Blue', 'Green', 'Yellow', 'Black', 'White', 'Pink', 'Purple', 'Orange', 'Brown', 'Gray', 'Multicolor'];
   const materialOptions = ['Cotton', 'Polyester', 'Wool', 'Silk', 'Denim', 'Leather', 'Linen', 'Nylon', 'Rayon', 'Velvet', 'Mixed'];
+
+  // Fetch genders and categories from backend
+  useEffect(() => {
+    const fetchGendersAndCategories = async () => {
+      try {
+        const response = await fetch('http://localhost:5000/api/site-content/genders-categories');
+        const data = await response.json();
+        if (data.genders) {
+          setGenderOptions(data.genders);
+          setGenderCategoryMap(data.genderCategoryMap);
+          setBrandName(data.brandName || 'Humming Tone');
+        }
+      } catch (error) {
+        console.error('Error fetching genders and categories:', error);
+      }
+    };
+
+    fetchGendersAndCategories();
+  }, []);
+
+  // Update category options when gender changes
+  useEffect(() => {
+    if (gender && genderCategoryMap[gender]) {
+      setCategoryOptions(genderCategoryMap[gender]);
+      // Reset category if current category is not valid for selected gender
+      if (category && !genderCategoryMap[gender].some(c => c.name === category)) {
+        setCategory('');
+      }
+    } else {
+      setCategoryOptions([]);
+      setCategory('');
+    }
+  }, [gender, genderCategoryMap]);
 
   const validateForm = () => {
     const newErrors = {};
@@ -171,11 +209,7 @@ const AddProduct = () => {
               <label htmlFor="gender">GENDER</label>
               <select id="gender" value={gender} onChange={(e) => { setGender(e.target.value); clearFieldError('gender'); }} className={errors.gender ? 'input-error' : ''} >
                 <option value="">Select Gender</option>
-                <option value="Men">Mens</option>
-                <option value="Women">Womens</option>
-                <option value="Children">Childrens</option>
-                <option value="Babies">Baby</option>
-                <option value="Sports">Sports</option>
+                {genderOptions.map(g => <option key={g} value={g}>{g}</option>)}
               </select>
               {errors.gender && <div className="field-error">{errors.gender}</div>}
             </div>
@@ -198,20 +232,26 @@ const AddProduct = () => {
             </div>
             <div className="form-group">
               <label htmlFor="brand">BRAND</label>
-              <select id="brand" value={brand} onChange={(e) => { setBrand(e.target.value); clearFieldError('brand'); }} className={errors.brand ? 'input-error' : ''} >
-                <option value="">Select Brand</option>
-                {brandOptions.map(b => <option key={b} value={b}>{b}</option>)}
-              </select>
+              <input 
+                type="text" 
+                id="brand" 
+                list="brand-options" 
+                placeholder="Enter or select brand" 
+                value={brand} 
+                onChange={(e) => { setBrand(e.target.value); clearFieldError('brand'); }} 
+                className={errors.brand ? 'input-error' : ''} 
+              />
+              <datalist id="brand-options">
+                <option value={brandName} />
+                <option value="Other" />
+              </datalist>
               {errors.brand && <div className="field-error">{errors.brand}</div>}
             </div>
             <div className="form-group">
               <label htmlFor="category">CATEGORY</label>
-              <select id="category" value={category} onChange={(e) => { setCategory(e.target.value); clearFieldError('category'); }} className={errors.category ? 'input-error' : ''} >
+              <select id="category" value={category} onChange={(e) => { setCategory(e.target.value); clearFieldError('category'); }} className={errors.category ? 'input-error' : ''} disabled={!gender}>
                 <option value="">Select Category</option>
-                <option value="Winter sets">Winter sets</option>
-                <option value="T Shirts">T Shirts</option>
-                <option value="Sleepingbags">Sleepingbags</option>
-                <option value="Dresses">Dresses</option>
+                {categoryOptions.map(c => <option key={c.name} value={c.name}>{c.name}</option>)}
               </select>
               {errors.category && <div className="field-error">{errors.category}</div>}
             </div>
