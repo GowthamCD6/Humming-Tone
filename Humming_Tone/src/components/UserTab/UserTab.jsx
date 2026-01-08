@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Outlet, Link, NavLink, useNavigate } from 'react-router-dom';
+import { Outlet, Link, NavLink, useNavigate, useLocation } from 'react-router-dom';
 import HomeIcon from '@mui/icons-material/Home';
 import GridViewIcon from '@mui/icons-material/GridView';
 import ManIcon from '@mui/icons-material/Man';
@@ -9,6 +9,8 @@ import BabyChangingStationIcon from '@mui/icons-material/BabyChangingStation';
 import SportsBasketballIcon from '@mui/icons-material/SportsBasketball';
 import TuneIcon from '@mui/icons-material/Tune';
 import ShoppingBagOutlinedIcon from '@mui/icons-material/ShoppingBagOutlined';
+import CloseIcon from '@mui/icons-material/Close';
+import MenuIcon from '@mui/icons-material/Menu';
 import logo from '../../assets/logo.png';
 import './UserTab.css';
 import { fetchSiteContent } from '../../utils/siteContentStore';
@@ -17,7 +19,14 @@ const UserTab = () => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [activeGenders, setActiveGenders] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const navigate = useNavigate();
+  const location = useLocation();
+
+  // Close mobile menu when route changes
+  useEffect(() => {
+    setMobileMenuOpen(false);
+  }, [location.pathname]);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -107,8 +116,8 @@ const UserTab = () => {
             <img src={logo} alt="Humming Tone" className="user-logo-image" />
           </Link>
 
-          {/* Navigation */}
-          <nav className="user-nav">
+          {/* Desktop Navigation */}
+          <nav className="user-nav desktop-nav">
             {loading ? (
               <div className="nav-loading">Loading...</div>
             ) : (
@@ -131,13 +140,68 @@ const UserTab = () => {
             )}
           </nav>
 
-          {/* Cart */}
-          <div className="user-cart-icon" onClick={() => navigate('/usertab/cart')}>
-            <ShoppingBagOutlinedIcon className="user-cart-bag" />
-            <span className="user-cart-badge">0</span>
+          {/* Right Section - Cart & Hamburger */}
+          <div className="user-header-right">
+            {/* Cart - Always visible */}
+            <div className="user-cart-icon" onClick={() => navigate('/usertab/cart')}>
+              <ShoppingBagOutlinedIcon className="user-cart-bag" />
+              <span className="user-cart-badge">0</span>
+            </div>
+
+            {/* Hamburger Menu Toggle - Mobile only */}
+            <button 
+              className="hamburger-menu"
+              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+              aria-label="Toggle navigation menu"
+            >
+              <MenuIcon className="hamburger-icon" />
+            </button>
           </div>
         </div>
       </header>
+
+      {/* Mobile Sidebar Drawer */}
+      <div className={`mobile-sidebar ${mobileMenuOpen ? 'open' : ''}`}>
+        {/* Close Button */}
+        <button 
+          className="sidebar-close-btn"
+          onClick={() => setMobileMenuOpen(false)}
+          aria-label="Close menu"
+        >
+          <CloseIcon />
+        </button>
+
+        {/* Mobile Navigation Links */}
+        <nav className="mobile-nav">
+          {loading ? (
+            <div className="nav-loading">Loading...</div>
+          ) : (
+            <ul className="mobile-nav-menu">
+              {navItems.map(({ path, label, Icon }) => (
+                <li key={path} className="mobile-nav-item">
+                  <NavLink
+                    to={path}
+                    className={({ isActive }) =>
+                      `mobile-nav-link${isActive ? ' active' : ''}`
+                    }
+                    onClick={() => setMobileMenuOpen(false)}
+                    end
+                  >
+                    <Icon className="mobile-nav-icon" />
+                    <span>{label}</span>
+                  </NavLink>
+                </li>
+              ))}
+            </ul>
+          )}
+        </nav>
+      </div>
+
+      {/* Mobile Menu Overlay */}
+      <div 
+        className={`mobile-menu-overlay ${mobileMenuOpen ? 'active' : ''}`}
+        onClick={() => setMobileMenuOpen(false)}
+      ></div>
 
       {/* Nested Routes Render Here */}
       <main className="user-main-content">
