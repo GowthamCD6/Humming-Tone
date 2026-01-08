@@ -478,54 +478,771 @@
     }
 }
 
-/* Responsive */
-@media (max-width: 992px) {
-    .sports-filter-row {
-        grid-template-columns: 1fr;
-        gap: 20px;
+/* ============================================
+   RESPONSIVE MEDIA QUERIES
+   ============================================ */
+
+/* Large Desktop (1200px - 1399px) */
+@media (max-width: 1399px) and (min-width: 1200px) {
+    .sports-product-grid {
+        grid-template-columns: repeat(3, 1fr);
+        gap: 4rem;
     }
-    
-    .sports-button-group {
-        justify-content: center;
-        margin-top: 20px;
-    }
-    
+}
+
+/* Desktop / Laptop (1024px - 1199px) */
+@media (max-width: 1199px) and (min-width: 1024px) {
     .sports-collection-page {
-        padding: 40px 20px;
+        padding: 50px 30px;
+    }
+    
+    .sports-product-grid {
+        grid-template-columns: repeat(3, 1fr);
+        gap: 3rem;
+    }
+    
+    .sports-product-image-container {
+        height: 380px;
+    }
+    
+    .sports-filter-container {
+        padding: 40px;
+    }
+}
+
+/* Tablet Landscape (992px - 1023px) */
+@media (max-width: 1023px) and (min-width: 992px) {
+    .sports-collection-page {
+        padding: 45px 25px;
     }
     
     .sports-title {
-        font-size: 36px;
+        font-size: 42px;
+    }
+    
+    .sports-filter-container {
+        padding: 35px;
+        margin-bottom: 60px;
     }
     
     .sports-filter-title {
-        font-size: 28px;
+        font-size: 32px;
+        margin-bottom: 40px;
+    }
+    
+    .sports-filter-row {
+        grid-template-columns: 1fr 1fr;
+        gap: 25px;
+    }
+    
+    .sports-button-group {
+        grid-column: 1 / -1;
+        justify-content: center;
+        margin-top: 10px;
     }
     
     .sports-product-grid {
         grid-template-columns: repeat(2, 1fr);
         gap: 2.5rem;
     }
+    
+    .sports-product-image-container {
+        height: 380px;
+    }
 }
 
-@media (max-width: 768px) {
+/* Tablet Portrait (768px - 991px) */
+@media (max-width: 991px) and (min-width: 768px) {
+    .sports-collection-page {
+        padding: 40px 20px;
+    }
+    
+    .sports-header {
+        margin-bottom: 35px;
+    }
+    
+    .sports-title {
+        font-size: 38px;
+        margin-bottom: 12px;
+    }
+    
+    .sports-item-count {
+        font-size: 12px;
+    }
+    
+    .sports-divider {
+        margin-bottom: 50px;
+    }
+    
+    .sports-filter-container {
+        padding: 30px 25px;
+        margin-bottom: 60px;
+        background: #ffffff;
+        border: 1px solid #e0e0e0;
+        border-top: 2px solid #000;
+    }
+    
+    .sports-filter-title {
+        font-size: 24px;
+        margin-bottom: 30px;
+        font-weight: 400;
+        text-align: center;
+    }
+    
+    .sports-filter-title::after {
+        width: 50px;
+        height: 1px;
+    }
+    
+    .sports-filter-row {
+        grid-template-columns: 1fr 1fr;
+        gap: 16px;
+    }
+    
+    .sports-button-group {
+        grid-column: 1 / -1;
+    }
+    
+    .sports-filter-label {
+        font-size: 10px;
+        font-weight: 700;
+        letter-spacing: 1.5px;
+        text-transform: uppercase;
+        color: #000;
+    }
+    
+    .sports-select {
+        padding: 12px 40px 12px 16px;
+        border: 1px solid #ddd;
+        border-radius: 2px;
+        background: #fff;
+        font-size: 14px;
+    }
+    
+    .sports-button-group {
+        justify-content: space-between;
+        margin-top: 20px;
+        flex-direction: row;
+        width: 100%;
+    }
+    
+    .sports-apply-button {
+        background: #000;
+        color: #fff;
+        padding: 14px 32px;
+        font-size: 11px;
+        font-weight: 700;
+        letter-spacing: 1.5px;
+        text-transform: uppercase;
+    }
+    
+    .sports-clear-button {
+        background: transparent;
+        color: #666;
+        padding: 14px 20px;
+        font-size: 11px;
+        font-weight: 600;
+        letter-spacing: 1.5px;
+        text-transform: uppercase;
+    }
+    
+    .sports-section-intro {
+        margin-bottom: 4rem;
+    }
+    
+    .sports-section-heading {
+        font-size: 34px;
+    }
+    
+    .sports-section-description {
+        font-size: 15px;
+    }
+    
     .sports-product-grid {
         grid-template-columns: repeat(2, 1fr);
-        gap: 1.5rem;
+        gap: 2rem;
+    }
+    
+    .sports-product-image-container {
+        height: 340px;
+    }
+    
+    .sports-product-details {
+        padding: 1.8rem;
+    }
+    
+    .sports-product-title {
+        font-size: 20px;
+    }
+    
+    .sports-product-brand {
+        font-size: 13px;
+    }
+    
+    .sports-product-price {
+        font-size: 18px;
+    }
+}
+
+/* Large Phone / Small Tablet (640px - 767px) */
+@media (max-width: 767px) and (min-width: 640px) {
+    .sports-collection-page {
+        padding: 35px 18px;
+    }
+    
+    .sports-title {
+        font-size: 34px;
+    }
+    
+    .sports-filter-container {
+        padding: 25px 20px;
+        margin-bottom: 50px;
+        background: #ffffff;
+        border: 1px solid #e0e0e0;
+        border-top: 2px solid #000;
+    }
+    
+    .sports-filter-title {
+        font-size: 22px;
+        margin-bottom: 25px;
+        font-weight: 400;
+    }
+    
+    .sports-filter-title::after {
+        width: 45px;
+    }
+    
+    .sports-filter-row {
+        grid-template-columns: 1fr 1fr;
+        gap: 14px;
+    }
+    
+    .sports-button-group {
+        grid-column: 1 / -1;
+    }
+    
+    .sports-filter-label {
+        font-size: 9px;
+        font-weight: 700;
+        letter-spacing: 1.3px;
+        text-transform: uppercase;
+    }
+    
+    .sports-select {
+        padding: 12px 35px 12px 14px;
+        font-size: 13px;
+        border: 1px solid #ddd;
+        background: #fff;
+    }
+    
+    .sports-apply-button {
+        padding: 13px 28px;
+        font-size: 10px;
+        background: #000;
+    }
+    
+    .sports-clear-button {
+        padding: 13px 16px;
+        font-size: 10px;
+    }
+    
+    .sports-button-group {
+        justify-content: space-between;
+        width: 100%;
+    }
+    
+    .sports-section-heading {
+        font-size: 30px;
+    }
+    
+    .sports-section-description {
+        font-size: 14px;
+    }
+    
+    .sports-product-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 1.8rem;
     }
     
     .sports-product-image-container {
         height: 300px;
     }
     
-    .sports-filter-container {
-        padding: 30px 20px;
+    .sports-product-details {
+        padding: 1.5rem;
+    }
+    
+    .sports-product-title {
+        font-size: 18px;
+    }
+    
+    .sports-product-price {
+        font-size: 17px;
+    }
+    
+    .sports-view-details-btn {
+        padding: 10px 28px;
+        font-size: 12px;
     }
 }
 
-@media (max-width: 480px) {
+/* Phone Landscape (480px - 639px) */
+@media (max-width: 639px) and (min-width: 480px) {
+    .sports-collection-page {
+        padding: 30px 16px;
+    }
+    
+    .sports-header {
+        margin-bottom: 30px;
+    }
+    
+    .sports-title {
+        font-size: 30px;
+    }
+    
+    .sports-item-count {
+        font-size: 11px;
+    }
+    
+    .sports-divider {
+        margin-bottom: 40px;
+    }
+    
+    .sports-filter-container {
+        padding: 22px 16px;
+        margin-bottom: 45px;
+        background: #ffffff;
+        border: 1px solid #e0e0e0;
+        border-top: 2px solid #000;
+    }
+    
+    .sports-filter-title {
+        font-size: 20px;
+        margin-bottom: 22px;
+        font-weight: 400;
+    }
+    
+    .sports-filter-title::after {
+        width: 40px;
+    }
+    
+    .sports-filter-row {
+        grid-template-columns: 1fr 1fr;
+        gap: 14px;
+    }
+    
+    .sports-button-group {
+        grid-column: 1 / -1;
+    }
+    
+    .sports-filter-label {
+        font-size: 9px;
+        font-weight: 700;
+        letter-spacing: 1.2px;
+        text-transform: uppercase;
+    }
+    
+    .sports-select {
+        padding: 11px 35px 11px 14px;
+        font-size: 12px;
+        border: 1px solid #ddd;
+        background: #fff;
+    }
+    
+    .sports-button-group {
+        flex-direction: row;
+        justify-content: space-between;
+        width: 100%;
+        gap: 12px;
+        margin-top: 18px;
+    }
+    
+    .sports-apply-button {
+        padding: 12px 24px;
+        font-size: 9px;
+        background: #000;
+        flex: 1;
+    }
+    
+    .sports-clear-button {
+        padding: 12px 16px;
+        font-size: 9px;
+        flex: 0 0 auto;
+    }
+    
+    .sports-section-intro {
+        margin-bottom: 3rem;
+    }
+    
+    .sports-section-heading {
+        font-size: 26px;
+    }
+    
+    .sports-section-description {
+        font-size: 13px;
+        max-width: 450px;
+    }
+    
+    .sports-product-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 1.5rem;
+    }
+    
+    .sports-product-image-container {
+        height: 260px;
+    }
+    
+    .sports-product-details {
+        padding: 1.2rem;
+    }
+    
+    .sports-product-title {
+        font-size: 16px;
+        margin-bottom: 8px;
+    }
+    
+    .sports-product-brand {
+        font-size: 12px;
+        margin-bottom: 12px;
+    }
+    
+    .sports-product-price {
+        font-size: 15px;
+    }
+    
+    .sports-view-details-btn {
+        padding: 10px 24px;
+        font-size: 11px;
+    }
+    
+    .sports-no-products-title {
+        font-size: 28px;
+    }
+    
+    .sports-no-products-text {
+        font-size: 14px;
+    }
+}
+
+/* Phone Portrait (380px - 479px) */
+@media (max-width: 479px) and (min-width: 380px) {
+    .sports-collection-page {
+        padding: 25px 14px;
+    }
+    
+    .sports-header {
+        margin-bottom: 25px;
+    }
+    
+    .sports-title {
+        font-size: 26px;
+    }
+    
+    .sports-divider {
+        margin-bottom: 35px;
+    }
+    
+    .sports-filter-container {
+        padding: 20px 14px;
+        margin-bottom: 40px;
+        background: #ffffff;
+        border: 1px solid #e0e0e0;
+        border-top: 2px solid #000;
+    }
+    
+    .sports-filter-title {
+        font-size: 18px;
+        margin-bottom: 20px;
+        font-weight: 400;
+    }
+    
+    .sports-filter-title::after {
+        width: 35px;
+    }
+    
+    .sports-filter-row {
+        grid-template-columns: 1fr 1fr;
+        gap: 12px;
+    }
+    
+    .sports-button-group {
+        grid-column: 1 / -1;
+    }
+    
+    .sports-filter-label {
+        font-size: 8px;
+        font-weight: 700;
+        letter-spacing: 1px;
+        text-transform: uppercase;
+    }
+    
+    .sports-select {
+        padding: 11px 32px 11px 12px;
+        font-size: 12px;
+        border: 1px solid #ddd;
+        background: #fff;
+    }
+    
+    .sports-button-group {
+        flex-direction: row;
+        justify-content: space-between;
+        width: 100%;
+        gap: 10px;
+        margin-top: 16px;
+    }
+    
+    .sports-apply-button {
+        padding: 11px 20px;
+        font-size: 9px;
+        background: #000;
+        flex: 1;
+    }
+    
+    .sports-clear-button {
+        padding: 11px 12px;
+        font-size: 9px;
+        flex: 0 0 auto;
+    }
+    
+    .sports-section-intro {
+        margin-bottom: 2.5rem;
+    }
+    
+    .sports-section-heading {
+        font-size: 24px;
+    }
+    
+    .sports-heading-accent {
+        width: 50px;
+        margin-bottom: 20px;
+    }
+    
+    .sports-section-description {
+        font-size: 12px;
+        max-width: 350px;
+    }
+    
     .sports-product-grid {
         grid-template-columns: 1fr;
+        gap: 1.5rem;
+    }
+    
+    .sports-product-image-container {
+        height: 320px;
+    }
+    
+    .sports-product-card:hover {
+        transform: translateY(-6px);
+    }
+    
+    .sports-product-details {
+        padding: 1.2rem 1rem;
+    }
+    
+    .sports-product-title {
+        font-size: 18px;
+    }
+    
+    .sports-product-brand {
+        font-size: 12px;
+    }
+    
+    .sports-product-price {
+        font-size: 16px;
+    }
+    
+    .sports-view-details-btn {
+        padding: 10px 22px;
+        font-size: 10px;
+    }
+    
+    .sports-no-products-container {
+        padding: 80px 16px;
+    }
+    
+    .sports-no-products-title {
+        font-size: 24px;
+    }
+    
+    .sports-view-all-button {
+        padding: 16px 40px;
+        font-size: 12px;
+    }
+}
+
+/* Small Phone (below 380px) */
+@media (max-width: 379px) {
+    .sports-collection-page {
+        padding: 20px 12px;
+    }
+    
+    .sports-header {
+        margin-bottom: 20px;
+    }
+    
+    .sports-title {
+        font-size: 22px;
+    }
+    
+    .sports-item-count {
+        font-size: 10px;
+    }
+    
+    .sports-divider {
+        margin-bottom: 30px;
+    }
+    
+    .sports-filter-container {
+        padding: 18px 12px;
+        margin-bottom: 35px;
+        background: #ffffff;
+        border: 1px solid #e0e0e0;
+        border-top: 2px solid #000;
+    }
+    
+    .sports-filter-title {
+        font-size: 16px;
+        margin-bottom: 18px;
+        font-weight: 400;
+    }
+    
+    .sports-filter-title::after {
+        width: 30px;
+    }
+    
+    .sports-filter-row {
+        grid-template-columns: 1fr 1fr;
+        gap: 10px;
+    }
+    
+    .sports-button-group {
+        grid-column: 1 / -1;
+    }
+    
+    .sports-filter-label {
+        font-size: 8px;
+        font-weight: 700;
+        letter-spacing: 0.8px;
+        text-transform: uppercase;
+    }
+    
+    .sports-select {
+        padding: 10px 30px 10px 12px;
+        font-size: 11px;
+        border: 1px solid #ddd;
+        background: #fff;
+    }
+    
+    .sports-button-group {
+        flex-direction: row;
+        justify-content: space-between;
+        width: 100%;
+        gap: 8px;
+        margin-top: 14px;
+    }
+    
+    .sports-apply-button {
+        padding: 10px 18px;
+        font-size: 8px;
+        background: #000;
+        flex: 1;
+        letter-spacing: 1px;
+    }
+    
+    .sports-clear-button {
+        padding: 10px 10px;
+        font-size: 8px;
+        flex: 0 0 auto;
+        letter-spacing: 1px;
+    }
+    
+    .sports-section-intro {
+        margin-bottom: 2rem;
+    }
+    
+    .sports-section-heading {
+        font-size: 20px;
+    }
+    
+    .sports-heading-accent {
+        width: 40px;
+        margin-bottom: 16px;
+    }
+    
+    .sports-section-description {
+        font-size: 11px;
+        max-width: 280px;
+    }
+    
+    .sports-product-grid {
+        grid-template-columns: 1fr;
+        gap: 1.2rem;
+    }
+    
+    .sports-product-image-container {
+        height: 280px;
+    }
+    
+    .sports-product-details {
+        padding: 1rem 0.8rem;
+    }
+    
+    .sports-product-title {
+        font-size: 16px;
+        margin-bottom: 8px;
+    }
+    
+    .sports-product-brand {
+        font-size: 11px;
+        margin-bottom: 10px;
+    }
+    
+    .sports-product-price {
+        font-size: 15px;
+    }
+    
+    .sports-view-details-btn {
+        padding: 9px 20px;
+        font-size: 9px;
+    }
+    
+    .sports-no-products-container {
+        padding: 60px 12px;
+    }
+    
+    .sports-no-products-title {
+        font-size: 20px;
+    }
+    
+    .sports-no-products-text {
+        font-size: 12px;
+    }
+    
+    .sports-view-all-button {
+        padding: 14px 32px;
+        font-size: 11px;
+    }
+}
+
+/* Touch Device Optimizations */
+@media (hover: none) and (pointer: coarse) {
+    .sports-product-hover-overlay {
+        opacity: 0.8;
+    }
+    
+    .sports-view-details-btn {
+        transform: translateY(0);
+    }
+}
+
+/* Performance & Accessibility */
+@media (prefers-reduced-motion: reduce) {
+    .sports-collection-page *,
+    .sports-collection-page *::before,
+    .sports-collection-page *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
     }
 }
 
