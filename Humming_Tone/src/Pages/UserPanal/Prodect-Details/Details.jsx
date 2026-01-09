@@ -4,10 +4,10 @@ import demoImage from "../../../assets/demo.jpeg";
 import UserFooter from "../../../components/User-Footer-Card/UserFooter";
 import AddToCartModal from "./Product-Buying modal/AddToCartModal";
 import "./Details.css";
-
+import { useNavigate } from "react-router-dom";
 const ProductDetailPage = () => {
   const { id } = useParams();
-
+  const navigate = useNavigate();
   const [selectedSize, setSelectedSize] = useState(null);
   const [quantity, setQuantity] = useState(1);
   const [activeImageIndex, setActiveImageIndex] = useState(0);
@@ -280,9 +280,10 @@ const ProductDetailPage = () => {
               <div
                 className="related-card"
                 key={item.id}
-                onClick={() =>
-                  (window.location.href = `/usertab/details/${item.id}`)
-                }
+                onClick={() =>{
+                  // (window.location.href = `/usertab/details/${item.id}`)
+                  navigate(`/usertab/details/${item.id}`)
+                }}
               >
                 <div className="related-product-image-container">
                   <img
