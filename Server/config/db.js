@@ -5,7 +5,7 @@ const mysql = require("mysql2"); // Use the non-promise version
 const pool = mysql.createPool({
   host: 'localhost',
   user: 'root',
-  password: 'GCN@6677', 
+  password: '3105', 
   database: 'hummingtone', 
   waitForConnections: true,
   connectionLimit: 10,

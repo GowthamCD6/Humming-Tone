@@ -498,10 +498,6 @@ export default function SiteContent() {
               <div className="sitecontent-form-section">
                 <div className="sitecontent-section-header">
                   <h4 className="sitecontent-section-title">Shop Links</h4>
-                  <button className="sitecontent-btn secondary small" onClick={addShopLink}>
-                    <AddIcon />
-                    Add Link
-                  </button>
                 </div>
                 <div className="sitecontent-links-list">
                   {(footerDraft?.shopLinks || []).map((link, index) => (
@@ -536,10 +532,6 @@ export default function SiteContent() {
               <div className="sitecontent-form-section">
                 <div className="sitecontent-section-header">
                   <h4 className="sitecontent-section-title">Support Links</h4>
-                  <button className="sitecontent-btn secondary small" onClick={addSupportLink}>
-                    <AddIcon />
-                    Add Link
-                  </button>
                 </div>
                 <div className="sitecontent-links-list">
                   {(footerDraft?.supportLinks || []).map((link, index) => (
