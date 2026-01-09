@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import demoImage from '../../../assets/demo.jpeg';
 import UserFooter from '../../../components/User-Footer-Card/UserFooter';
+import AddToCartModal from '../../../components/AddToCartModal/AddToCartModal';
 import './Details.css';
 
 const ProductDetailPage = () => {
@@ -18,6 +19,8 @@ const ProductDetailPage = () => {
   const [recommendedProducts, setRecommendedProducts] = useState([]);
 
   const [isInCart, setIsInCart] = useState(false);
+  const [showCartModal, setShowCartModal] = useState(false);
+  const [cartModalData, setCartModalData] = useState(null);
 
   /* ================= CART HELPERS ================= */
   const getCart = () => {
@@ -53,6 +56,16 @@ const ProductDetailPage = () => {
 
     localStorage.setItem('cart', JSON.stringify(cart));
     setIsInCart(true);
+
+    // Show the modal with product data
+    setCartModalData({
+      name: product.name,
+      size: selectedSize,
+      quantity: quantity,
+      price: variant.price,
+      image: productImages[0] || demoImage
+    });
+    setShowCartModal(true);
   };
 
   const removeFromCart = () => {
@@ -263,6 +276,13 @@ const ProductDetailPage = () => {
       </div>
 
       <UserFooter />
+
+      {/* Add to Cart Modal */}
+      <AddToCartModal
+        isOpen={showCartModal}
+        onClose={() => setShowCartModal(false)}
+        productData={cartModalData}
+      />
     </div>
   );
 };

@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 // import UserFooter from '../../../components/User-Footer-Card/UserFooter';
+import AddToCartModal from '../../../components/AddToCartModal/AddToCartModal';
 import './customize.css';
 
 const CustomizePage = () => {
@@ -15,6 +16,9 @@ const CustomizePage = () => {
   const [uploadedImage, setUploadedImage] = useState(null);
   const [selectedGalleryDesign, setSelectedGalleryDesign] = useState('');
   const [customText, setCustomText] = useState('');
+
+  const [showCartModal, setShowCartModal] = useState(false);
+  const [cartModalData, setCartModalData] = useState(null);
 
   // Placeholder Image URL
   const placeholderImg = "https://cdn-icons-png.flaticon.com/512/892/892458.png";
@@ -158,8 +162,32 @@ const CustomizePage = () => {
       size: selectedSize,
       design: designOption === 'upload' ? uploadedImage || customText : selectedGalleryDesign,
     };
+
+    // Get selected category and variant names
+    const selectedCategory = productCategories.find(c => c.id === selectedType);
+    const selectedVariantData = selectedCategory?.variants.find(v => v.id === selectedVariant);
+    const selectedColorData = colors.find(c => c.id === selectedColor);
+
+    // Add to cart (you may need to adjust pricing logic)
+    const customProduct = {
+      id: `custom-${Date.now()}`,
+      name: `Custom ${selectedCategory?.name || 'Product'}`,
+      size: selectedSize,
+      quantity: 1,
+      price: 999, // Base price - you can calculate based on selections
+      image: uploadedImage || selectedGalleryDesign || 'https://via.placeholder.com/400x500?text=Custom+Design'
+    };
+
+    // Store in cart
+    const cart = JSON.parse(localStorage.getItem('cart')) || [];
+    cart.push(customProduct);
+    localStorage.setItem('cart', JSON.stringify(cart));
+
     console.log('Customization completed:', customization);
-    alert('Your custom product has been created! Redirecting to cart...');
+
+    // Show modal
+    setCartModalData(customProduct);
+    setShowCartModal(true);
   };
 
   const getCurrentVariants = () => {
@@ -511,6 +539,13 @@ const CustomizePage = () => {
           </button>
         )}
       </div>
+
+      {/* Add to Cart Modal */}
+      <AddToCartModal
+        isOpen={showCartModal}
+        onClose={() => setShowCartModal(false)}
+        productData={cartModalData}
+      />
     </div>
   );
 };
