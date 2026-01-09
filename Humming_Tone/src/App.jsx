@@ -26,7 +26,7 @@ import AddProduct from './Pages/AdminPanal/AddProduct/AddProduct.jsx';
 import ManageOrder from './Pages/AdminPanal/ManageOrder/ManageOrder.jsx';
 import SiteContent from './Pages/AdminPanal/SiteContent/SiteContent.jsx';
 import ProductData from './Pages/AdminPanal/ProductData/ProductData.jsx';
-import ProductBuyer from './Pages/AdminPanal/ProductBuyer/Buyer.jsx';
+import ProductBuyer from './Pages/AdminPanal/BuyerData/Buyer.jsx';
 
 import './App.css';
 

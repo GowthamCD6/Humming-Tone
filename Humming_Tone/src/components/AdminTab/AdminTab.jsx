@@ -23,7 +23,7 @@ export default function AdminTab({ onLogout = () => {} }) {
     { id: 'manage-orders', path: 'manage-orders', label: 'Manage Orders', Icon: ShoppingCartIcon },
     { id: 'all-products', path: 'all-products', label: 'Product Data', Icon: ShoppingBagIcon },
     { id: 'site-content', path: 'site-content', label: 'Site Content', Icon: AccountCircleIcon },
-    { id: 'product-buyers', path: 'product-buyers', label: 'Product Buyers', Icon: PeopleIcon },
+    { id: 'product-buyers', path: 'product-buyers', label: 'Buyer Data', Icon: PeopleIcon },
     { id: 'view-store', path: '/usertab/home', label: 'View Store', Icon: OpenInNewIcon },
   ]
   const activeTabLabel =
