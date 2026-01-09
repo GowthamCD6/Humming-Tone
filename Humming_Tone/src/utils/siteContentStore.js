@@ -12,12 +12,12 @@ export const defaultSiteContent = {
       pinterest: '',
     },
     shopLinks: [
-      { label: "Men's Collection", href: '/usertab/men', active: true },
-      { label: "Children's Collection", href: '/usertab/children', active: true },
-      { label: "Baby Collection", href: '/usertab/baby', active: true },
-      { label: 'Sports Collection', href: '/usertab/sports', active: true },
-      { label: 'Customize', href: '/usertab/customize', active: true },
-      { label: 'All Products', href: '/usertabb/all-products', active: true },
+      { label: 'Featured Products', href: '/featured', active: true },
+      { label: 'Men', href: '/mens', active: true },
+      { label: 'Women', href: '/womens', active: true },
+      { label: 'Baby', href: '/baby', active: true },
+      { label: 'Kids', href: '/kids', active: true },
+      { label: 'Children', href: '/childrens', active: true },
     ],
     supportLinks: [
       { label: 'Contact Us', href: '/usertab/contact_us', active: true },
