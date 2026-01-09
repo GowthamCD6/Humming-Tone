@@ -26,6 +26,7 @@ import AddProduct from './Pages/AdminPanal/AddProduct/AddProduct.jsx';
 import ManageOrder from './Pages/AdminPanal/ManageOrder/ManageOrder.jsx';
 import SiteContent from './Pages/AdminPanal/SiteContent/SiteContent.jsx';
 import ProductData from './Pages/AdminPanal/ProductData/ProductData.jsx';
+import ProductBuyer from './Pages/AdminPanal/ProductBuyer/Buyer.jsx';
 
 import './App.css';
 
@@ -96,6 +97,7 @@ export default function App() {
           <Route path="manage-orders" element={<ManageOrder />} />
           <Route path="site-content" element={<SiteContent />} />
           <Route path="all-products" element={<ProductData />} />
+          <Route path="product-buyers" element={<ProductBuyer />} />
         </Route>
 
         {/* USER NESTED ROUTES */}

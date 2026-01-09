@@ -6,6 +6,7 @@ import ShoppingCartIcon from '@mui/icons-material/ShoppingCart'
 import OpenInNewIcon from '@mui/icons-material/OpenInNew'
 import LogoutIcon from '@mui/icons-material/Logout'
 import AccountCircleIcon from '@mui/icons-material/AccountCircle'
+import PeopleIcon from '@mui/icons-material/People'
 import { Outlet, useLocation, useNavigate } from 'react-router-dom'
 import './AdminTab.css'
 import ReactSnowfall from 'react-snowfall';
@@ -20,8 +21,9 @@ export default function AdminTab({ onLogout = () => {} }) {
     { id: 'manage-products', path: 'manage-products', label: 'Manage Products', Icon: ShoppingBagIcon },
     { id: 'add-product', path: 'add-product', label: 'Add Product', Icon: AddCircleIcon },
     { id: 'manage-orders', path: 'manage-orders', label: 'Manage Orders', Icon: ShoppingCartIcon },
-    { id: 'site-content', path: 'site-content', label: 'Site Content', Icon: AccountCircleIcon },
     { id: 'all-products', path: 'all-products', label: 'Product Data', Icon: ShoppingBagIcon },
+    { id: 'site-content', path: 'site-content', label: 'Site Content', Icon: AccountCircleIcon },
+    { id: 'product-buyers', path: 'product-buyers', label: 'Product Buyers', Icon: PeopleIcon },
     { id: 'view-store', path: '/usertab/home', label: 'View Store', Icon: OpenInNewIcon },
   ]
   const activeTabLabel =
