@@ -78,6 +78,7 @@ const PremiumCart = ({ onCheckout }) => {
 
   const handleCheckout = () => {
     if (onCheckout) onCheckout();
+    navigate('/usertab/checkout');
   };
 
   /* ================= EMPTY CART ================= */

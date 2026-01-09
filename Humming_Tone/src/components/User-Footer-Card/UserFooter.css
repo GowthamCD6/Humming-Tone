@@ -2,22 +2,72 @@
 @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Poppins:wght@300;400;500&display=swap');
 
 .footer-main-wrapper {
-    background-color: #0c0c0c; /* Exact dark black from image */
+    background: linear-gradient(180deg, #070707 0%, #0c0c0c 45%, #070707 100%);
     color: #ffffff;
     padding: 80px 0 30px 0;
     font-family: 'Poppins', sans-serif;
     width: 100%;
     box-sizing: border-box;
-    margin-bottom: -20px;
+    margin-bottom: -45px;
+}
+
+.footer-main-wrapper *,
+.footer-main-wrapper *::before,
+.footer-main-wrapper *::after {
+    box-sizing: border-box;
 }
 
 .footer-top-grid {
-    max-width: 1320px;
+    max-width: 1370px;
     margin: 0 auto;
     display: grid;
     grid-template-columns: 1.2fr 0.8fr 0.8fr 1fr;
     gap: 50px;
-    padding: 0 40px;
+    padding: 0 22px;
+}
+
+.footer-col {
+    display: flex;
+    flex-direction: column;
+}
+
+.footer-logo-wrapper {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.logo-icon-hanger {
+    width: 26px;
+    height: 18px;
+    position: relative;
+    display: inline-block;
+}
+
+.logo-icon-hanger::before {
+    content: '';
+    position: absolute;
+    left: 50%;
+    top: -2px;
+    width: 10px;
+    height: 8px;
+    border: 2px solid rgba(255, 255, 255, 0.7);
+    border-bottom: none;
+    border-radius: 12px 12px 0 0;
+    transform: translateX(-50%);
+}
+
+.logo-icon-hanger::after {
+    content: '';
+    position: absolute;
+    left: 50%;
+    top: 6px;
+    width: 22px;
+    height: 10px;
+    border: 2px solid rgba(255, 255, 255, 0.7);
+    border-top: none;
+    border-radius: 0 0 14px 14px;
+    transform: translateX(-50%);
 }
 
 /* BRAND LOGO AND ABOUT */
@@ -26,25 +76,26 @@
     font-size: 24px;
     font-weight: 600;
     margin: 0;
+    line-height: 1.2;
 }
 
 .footer-description {
     margin-top: 25px;
-    color: #888;
-    font-size: 14px;
+    color: rgba(255, 255, 255, 0.55);
+    font-size: 15px;
     line-height: 1.7;
-    max-width: 320px;
+    max-width: 440px;
 }
 
 .footer-social-tray {
     display: flex;
-    gap: 12px;
+    gap: 16px;
     margin-top: 30px;
 }
 
 .social-circle {
-    width: 38px;
-    height: 38px;
+    width: 50px;
+    height: 50px;
     border-radius: 50%;
     background-color: #1a1a1a;
     display: flex;
@@ -52,20 +103,25 @@
     justify-content: center;
     color: #fff;
     text-decoration: none;
-    transition: 0.3s ease;
+    transition: transform 0.25s ease, background-color 0.25s ease, color 0.25s ease;
+}
+
+.social-circle svg {
+    font-size: 20px !important;
 }
 
 .social-circle:hover {
     background-color: #333;
     color: #ffb2bb;
+    transform: translateY(-2px);
 }
 
 /* HEADINGS */
 .footer-header-title {
     font-family: 'Playfair Display', serif;
-    font-size: 15px;
+    font-size: 16px;
     font-weight: 700;
-    letter-spacing: 1.5px;
+    letter-spacing: 2px;
     margin-bottom: 30px;
     position: relative;
     display: inline-block;
@@ -77,8 +133,8 @@
     position: absolute;
     bottom: 0;
     left: 0;
-    width: 40px;
-    height: 1.5px;
+    width: 44px;
+    height: 2px;
     background-color: #ffffff;
 }
 
@@ -90,14 +146,14 @@
 }
 
 .footer-link-list li {
-    margin-bottom: 14px;
+    margin-bottom: 16px;
 }
 
 .footer-link-list a {
-    color: #888;
+    color: rgba(255, 255, 255, 0.55);
     text-decoration: none;
-    font-size: 14px;
-    transition: 0.2s;
+    font-size: 15px;
+    transition: color 0.2s ease;
 }
 
 .footer-link-list a:hover {
@@ -110,8 +166,8 @@
     align-items: center;
     gap: 15px;
     margin-bottom: 20px;
-    color: #888;
-    font-size: 14px;
+    color: rgba(255, 255, 255, 0.55);
+    font-size: 15px;
 }
 
 .contact-row.align-start {
@@ -120,7 +176,7 @@
 
 .contact-icon {
     font-size: 18px !important;
-    color: #fff;
+    color: rgba(255, 255, 255, 0.9);
 }
 
 .contact-row span {
@@ -129,23 +185,23 @@
 
 /* DIVIDER AND BOTTOM BAR */
 .footer-divider {
-    max-width: 1320px;
+    max-width: 1370px;
     margin: 50px auto 25px auto;
-    border-top: 1px solid #1a1a1a;
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
 }
 
 .footer-bottom-bar {
-    max-width: 1320px;
+    max-width: 1370px;
     margin: 0 auto;
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 0 40px;
+    padding: 18px 22px 12px;
 }
 
 .copyright-container p {
-    font-size: 12px;
-    color: #555;
+    font-size: 13px;
+    color: rgba(255, 255, 255, 0.38);
     margin: 0;
 }
 
@@ -155,8 +211,8 @@
 }
 
 .policy-container a {
-    font-size: 12px;
-    color: #555;
+    font-size: 13px;
+    color: rgba(255, 255, 255, 0.38);
     text-decoration: none;
     transition: 0.2s;
 }
@@ -171,13 +227,13 @@
 @media (max-width: 1399px) {
     .footer-top-grid {
         max-width: 1200px;
-        padding: 0 35px;
+        padding: 0 22px;
         gap: 45px;
     }
 
     .footer-bottom-bar {
         max-width: 1200px;
-        padding: 0 35px;
+        padding: 18px 22px 12px;
     }
 
     .footer-divider {
@@ -192,10 +248,10 @@
     }
 
     .footer-top-grid {
-        max-width: 1000px;
+        max-width: 1040px;
         grid-template-columns: 1fr 0.9fr 0.9fr 1fr;
         gap: 40px;
-        padding: 0 30px;
+        padding: 0 22px;
     }
 
     .footer-logo-text {
@@ -204,16 +260,16 @@
 
     .footer-description {
         font-size: 13px;
-        max-width: 280px;
+        max-width: 380px;
     }
 
     .footer-bottom-bar {
-        max-width: 1000px;
-        padding: 0 30px;
+        max-width: 1040px;
+        padding: 16px 22px 10px;
     }
 
     .footer-divider {
-        max-width: 1000px;
+        max-width: 1040px;
         margin: 45px auto 20px auto;
     }
 }
@@ -227,7 +283,7 @@
     .footer-top-grid {
         grid-template-columns: 1fr 1fr;
         gap: 35px;
-        padding: 0 25px;
+        padding: 0 20px;
     }
 
     .footer-logo-text {
@@ -250,7 +306,7 @@
     }
 
     .footer-bottom-bar {
-        padding: 0 25px;
+        padding: 16px 20px 10px;
     }
 
     .footer-divider {
@@ -301,7 +357,7 @@
     }
 
     .footer-bottom-bar {
-        padding: 0 20px;
+        padding: 16px 18px 10px;
     }
 
     .footer-divider {
@@ -320,7 +376,7 @@
         flex-wrap: wrap;
         justify-content: center;
         gap: 35px 20px;
-        padding: 0 30px;
+        padding: 0 16px;
         text-align: center;
     }
 
@@ -368,7 +424,7 @@
 
     .footer-description {
         margin: 20px auto 0;
-        max-width: 400px;
+        max-width: 520px;
         text-align: center;
     }
 
@@ -379,8 +435,12 @@
     }
 
     .social-circle {
-        width: 42px;
-        height: 42px;
+        width: 48px;
+        height: 48px;
+    }
+
+    .social-circle svg {
+        font-size: 23px !important;
     }
 
     .footer-header-title {
@@ -433,7 +493,7 @@
     .footer-bottom-bar {
         flex-direction: column;
         gap: 15px;
-        padding: 0 20px;
+        padding: 16px 16px 10px;
         text-align: center;
     }
 
@@ -455,7 +515,7 @@
 
     .footer-top-grid {
         gap: 30px 20px;
-        padding: 0 25px;
+        padding: 0 14px;
     }
 
     .footer-col:nth-child(2),
@@ -479,8 +539,12 @@
     }
 
     .social-circle {
-        width: 40px;
-        height: 40px;
+        width: 46px;
+        height: 46px;
+    }
+
+    .social-circle svg {
+        font-size: 22px !important;
     }
 
     .footer-header-title {
@@ -507,7 +571,7 @@
 
     .copyright-container p,
     .policy-container a {
-        font-size: 11px;
+        font-size: 13px;
     }
 
     .policy-container {
@@ -515,7 +579,7 @@
     }
 
     .footer-bottom-bar {
-        padding: 0 20px;
+        padding: 16px 20px 10px;
     }
 
     .footer-divider {
@@ -590,7 +654,7 @@
 
     .copyright-container p,
     .policy-container a {
-        font-size: 10px;
+        font-size: 11px;
     }
 
     .policy-container {
@@ -600,7 +664,7 @@
     }
 
     .footer-bottom-bar {
-        padding: 0 16px;
+        padding: 14px 16px 10px;
         gap: 12px;
     }
 
@@ -679,7 +743,7 @@
 
     .copyright-container p,
     .policy-container a {
-        font-size: 9px;
+        font-size: 10px;
     }
 
     .policy-container {
@@ -687,7 +751,7 @@
     }
 
     .footer-bottom-bar {
-        padding: 0 14px;
+        padding: 12px 14px 10px;
         gap: 10px;
     }
 
