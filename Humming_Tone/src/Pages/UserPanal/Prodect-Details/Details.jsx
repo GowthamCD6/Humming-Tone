@@ -1,9 +1,9 @@
-import React, { useState, useEffect } from 'react';
-import { useParams } from 'react-router-dom';
-import demoImage from '../../../assets/demo.jpeg';
-import UserFooter from '../../../components/User-Footer-Card/UserFooter';
-import AddToCartModal from './Product-Buying modal/AddToCartModal';
-import './Details.css';
+import React, { useState, useEffect } from "react";
+import { useParams } from "react-router-dom";
+import demoImage from "../../../assets/demo.jpeg";
+import UserFooter from "../../../components/User-Footer-Card/UserFooter";
+import AddToCartModal from "./Product-Buying modal/AddToCartModal";
+import "./Details.css";
 
 const ProductDetailPage = () => {
   const { id } = useParams();
@@ -24,20 +24,18 @@ const ProductDetailPage = () => {
 
   /* ================= CART HELPERS ================= */
   const getCart = () => {
-    return JSON.parse(localStorage.getItem('cart')) || [];
+    return JSON.parse(localStorage.getItem("cart")) || [];
   };
 
   const checkIfInCart = (size) => {
     const cart = getCart();
-    return cart.some(
-      item => item.id === product.id && item.size === size
-    );
+    return cart.some((item) => item.id === product.id && item.size === size);
   };
 
   const addToCart = () => {
     if (!selectedSize) return;
 
-    const variant = sizes.find(v => v.size === selectedSize);
+    const variant = sizes.find((v) => v.size === selectedSize);
 
     const cartItem = {
       id: product.id,
@@ -46,15 +44,15 @@ const ProductDetailPage = () => {
       price: variant.price,
       quantity,
       size: selectedSize,
-      color: product.color || 'Default',
+      color: product.color || "Default",
       stock: variant.stock_quantity,
-      image: productImages[0] || demoImage
+      image: productImages[0] || demoImage,
     };
 
     const cart = getCart();
     cart.push(cartItem);
 
-    localStorage.setItem('cart', JSON.stringify(cart));
+    localStorage.setItem("cart", JSON.stringify(cart));
     setIsInCart(true);
 
     // Show the modal with product data
@@ -63,17 +61,17 @@ const ProductDetailPage = () => {
       size: selectedSize,
       quantity: quantity,
       price: variant.price,
-      image: productImages[0] || demoImage
+      image: productImages[0] || demoImage,
     });
     setShowCartModal(true);
   };
 
   const removeFromCart = () => {
     const cart = getCart().filter(
-      item => !(item.id === product.id && item.size === selectedSize)
+      (item) => !(item.id === product.id && item.size === selectedSize)
     );
 
-    localStorage.setItem('cart', JSON.stringify(cart));
+    localStorage.setItem("cart", JSON.stringify(cart));
     setIsInCart(false);
   };
 
@@ -93,7 +91,7 @@ const ProductDetailPage = () => {
             (a, b) => b.is_primary - a.is_primary
           );
           setProductImages(
-            sortedImages.map(img => `http://localhost:5000/${img.image_path}`)
+            sortedImages.map((img) => `http://localhost:5000/${img.image_path}`)
           );
         }
 
@@ -121,13 +119,13 @@ const ProductDetailPage = () => {
   const fetchRecommendations = async (categoryId) => {
     try {
       const res = await fetch(
-        'http://localhost:5000/user/fetch_recommendations?page=1&limit=3',
+        "http://localhost:5000/user/fetch_recommendations?page=1&limit=3",
         {
-          method: 'POST',
+          method: "POST",
           headers: {
-            'Content-Type': 'application/json'
+            "Content-Type": "application/json",
           },
-          body: JSON.stringify({ category_id: categoryId })
+          body: JSON.stringify({ category_id: categoryId }),
         }
       );
 
@@ -144,7 +142,6 @@ const ProductDetailPage = () => {
     <div className="userpanal-product-details-page">
       <div className="container">
         <div className="product-detail-layout">
-
           {/* LEFT */}
           <div className="product-gallery-container">
             <div className="sticky-wrapper">
@@ -159,7 +156,9 @@ const ProductDetailPage = () => {
                 {productImages.map((src, idx) => (
                   <button
                     key={idx}
-                    className={`thumbnail ${idx === activeImageIndex ? 'active' : ''}`}
+                    className={`thumbnail ${
+                      idx === activeImageIndex ? "active" : ""
+                    }`}
                     onClick={() => setActiveImageIndex(idx)}
                   >
                     <img src={src} alt="thumb" />
@@ -175,58 +174,88 @@ const ProductDetailPage = () => {
 
             <div className="price-section">
               <div className="dynamic-price">
-                ₹{sizes.find(s => s.size === selectedSize)?.price || sizes[0]?.price}
+                ₹
+                {sizes.find((s) => s.size === selectedSize)?.price ||
+                  sizes[0]?.price}
               </div>
               <div className="original-price">
-                Original: ₹{sizes.find(s => s.size === selectedSize)?.original_price || sizes[0]?.original_price}
+                Original: ₹
+                {sizes.find((s) => s.size === selectedSize)?.original_price ||
+                  sizes[0]?.original_price}
               </div>
             </div>
 
             <div className="meta-grid">
-              <div className="meta-item"><span className="label">SKU</span><span>{product.sku}</span></div>
-              <div className="meta-item"><span className="label">BRAND</span><span>{product.brand}</span></div>
-              <div className="meta-item"><span className="label">CATEGORY</span><span>{product.category_name}</span></div>
-              <div className="meta-item"><span className="label">GENDER</span><span>{product.gender}</span></div>
-              <div className="meta-item full-width"><span className="label">SUBCATEGORY</span><span>{product.subcategory}</span></div>
+              <div className="meta-item">
+                <span className="label">SKU</span>
+                <span>{product.sku}</span>
+              </div>
+              <div className="meta-item">
+                <span className="label">BRAND</span>
+                <span>{product.brand}</span>
+              </div>
+              <div className="meta-item">
+                <span className="label">CATEGORY</span>
+                <span>{product.category_name}</span>
+              </div>
+              <div className="meta-item">
+                <span className="label">GENDER</span>
+                <span>{product.gender}</span>
+              </div>
+              <div className="meta-item full-width">
+                <span className="label">SUBCATEGORY</span>
+                <span>{product.subcategory}</span>
+              </div>
             </div>
 
             <div className="selection-section">
               <h3 className="sub-title">Select Size</h3>
               <div className="size-options">
-                {sizes.map(v => (
+                {sizes.map((v) => (
                   <button
                     key={v.size}
-                    className={`size-btn ${selectedSize === v.size ? 'selected' : ''}`}
+                    className={`size-btn ${
+                      selectedSize === v.size ? "selected" : ""
+                    }`}
                     onClick={() => setSelectedSize(v.size)}
                   >
-                    <span>{v.size}</span>
+                    <span className="size-name">{v.size}</span>
                     <span className="stock-tag">
-                      {v.stock_quantity > 0 ? 'IN STOCK' : 'OUT OF STOCK'}
+                      {v.stock_quantity > 0 ? "IN STOCK" : "OUT OF STOCK"}
                     </span>
                   </button>
                 ))}
               </div>
+
+              {selectedSize && (
+                <div className="selected-size-info">
+                  Selected: {selectedSize} - ₹
+                  {sizes.find((s) => s.size === selectedSize)?.price}
+                </div>
+              )}
             </div>
 
             <div className="selection-section">
               <h3 className="sub-title">Quantity</h3>
               <div className="quantity-ctrl">
-                <button onClick={() => setQuantity(Math.max(1, quantity - 1))}>-</button>
+                <button onClick={() => setQuantity(Math.max(1, quantity - 1))}>
+                  -
+                </button>
                 <input readOnly value={quantity} />
                 <button onClick={() => setQuantity(quantity + 1)}>+</button>
               </div>
             </div>
 
             <button
-              className={`cart-submit-btn ${selectedSize ? 'enabled' : ''}`}
+              className={`cart-submit-btn ${selectedSize ? "enabled" : ""}`}
               onClick={isInCart ? removeFromCart : addToCart}
               disabled={!selectedSize}
             >
               {!selectedSize
-                ? 'SELECT SIZE TO ADD TO CART'
+                ? "SELECT SIZE TO ADD TO CART"
                 : isInCart
-                ? 'REMOVE FROM CART'
-                : 'ADD TO CART'}
+                ? "REMOVE FROM CART"
+                : "ADD TO CART"}
             </button>
 
             <div className="description-box">
@@ -247,8 +276,14 @@ const ProductDetailPage = () => {
           <div className="related-divider"></div>
 
           <div className="related-grid">
-            {recommendedProducts.map(item => (
-              <div className="related-card" key={item.id}>
+            {recommendedProducts.map((item) => (
+              <div
+                className="related-card"
+                key={item.id}
+                onClick={() =>
+                  (window.location.href = `/usertab/details/${item.id}`)
+                }
+              >
                 <div className="related-product-image-container">
                   <img
                     src={`http://localhost:5000/${item.image_path}`}
@@ -261,17 +296,17 @@ const ProductDetailPage = () => {
                   </div>
                 </div>
                 <div className="related-product-details">
-                  <h3>{item.name}</h3>
-                  <p>{item.brand}</p>
-                  <p>₹{item.price}</p>
+                  <h3 className="related-product-title">{item.name}</h3>
+                  <p className="related-product-brand">
+                    {item.brand || "HummingTone"}
+                  </p>
+                  <p className="related-product-price">₹{item.price}</p>
                 </div>
               </div>
             ))}
           </div>
 
-          <button className="view-more-products">
-            VIEW MORE ALL-PRODUCTS
-          </button>
+          <button className="view-more-products">VIEW MORE ALL-PRODUCTS</button>
         </section>
       </div>
 

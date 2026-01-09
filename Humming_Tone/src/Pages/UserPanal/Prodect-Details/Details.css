@@ -197,6 +197,25 @@
   text-transform: uppercase;
 }
 
+.userpanal-product-details-page .selected-size-info {
+  margin-top: 30px;
+  padding: 25px 30px;
+  background: #fafafa;
+  border: 1px solid #eee;
+  border-left: 4px solid #1a1a1a;
+  font-size: 1.3rem;
+  font-weight: 500;
+  color: #1a1a1a;
+  letter-spacing: 0.3px;
+  box-shadow: none;
+  transition: all 0.3s ease;
+}
+
+.userpanal-product-details-page .selected-size-info:hover {
+  background: #f5f5f5;
+  border-left-color: #000;
+}
+
 .userpanal-product-details-page .quantity-ctrl { 
   display: inline-flex; 
   border: 2px solid #eee; 

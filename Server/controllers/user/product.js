@@ -45,7 +45,7 @@ exports.fetch_new_arrivals = (req, res, next) => {
   try {
     const sql = `
       SELECT
-        p.id AS id,                     -- ✅ product id
+        p.id AS id,                     
         p.name,
         p.about,
         pv.original_price,
@@ -67,7 +67,7 @@ exports.fetch_new_arrivals = (req, res, next) => {
         p.created_at,
         p.updated_at,
 
-        pv.id AS variant_id,            -- ✅ variant id (separate)
+        pv.id AS variant_id,            
         pv.size,
         pv.price
       FROM products p
