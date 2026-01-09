@@ -3,6 +3,7 @@ import DashboardIcon from '@mui/icons-material/Dashboard'
 import ShoppingBagIcon from '@mui/icons-material/ShoppingBag'
 import AddCircleIcon from '@mui/icons-material/AddCircle'
 import ShoppingCartIcon from '@mui/icons-material/ShoppingCart'
+import ReceiptLongIcon from '@mui/icons-material/ReceiptLong'
 import OpenInNewIcon from '@mui/icons-material/OpenInNew'
 import LogoutIcon from '@mui/icons-material/Logout'
 import AccountCircleIcon from '@mui/icons-material/AccountCircle'
@@ -21,6 +22,7 @@ export default function AdminTab({ onLogout = () => {} }) {
     { id: 'manage-products', path: 'manage-products', label: 'Manage Products', Icon: ShoppingBagIcon },
     { id: 'add-product', path: 'add-product', label: 'Add Product', Icon: AddCircleIcon },
     { id: 'manage-orders', path: 'manage-orders', label: 'Manage Orders', Icon: ShoppingCartIcon },
+    { id: 'order-details', path: 'order-details', label: 'Order Details', Icon: ReceiptLongIcon },
     { id: 'all-products', path: 'all-products', label: 'Product Data', Icon: ShoppingBagIcon },
     { id: 'site-content', path: 'site-content', label: 'Site Content', Icon: AccountCircleIcon },
     { id: 'product-buyers', path: 'product-buyers', label: 'Buyer Data', Icon: PeopleIcon },

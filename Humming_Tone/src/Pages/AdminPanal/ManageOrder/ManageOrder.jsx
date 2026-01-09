@@ -1,7 +1,10 @@
 import React, { useState, useMemo, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import VisibilityIcon from '@mui/icons-material/Visibility';
 import './ManageOrder.css';
 
 export default function ManageOrder() {
+  const navigate = useNavigate();
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showNoOrdersModal, setShowNoOrdersModal] = useState(false);
@@ -272,6 +275,7 @@ export default function ManageOrder() {
                 <th>TOTAL</th>
                 <th>STATUS</th>
                 <th>PAYMENT</th>
+                <th>ACTION</th>
               </tr>
             </thead>
             <tbody>
@@ -297,6 +301,15 @@ export default function ManageOrder() {
                   </td>
                   <td className="payment-info">
                     <span className="payment-badge">{order.payment_id ? 'PAID' : 'UNPAID'}</span>
+                  </td>
+                  <td className="action-info">
+                    <button 
+                      className="view-order-btn"
+                      onClick={() => navigate(`/admin/order/${order.id}`)}
+                      title="View Order Details"
+                    >
+                      <VisibilityIcon /> View
+                    </button>
                   </td>
                 </tr>
               ))}

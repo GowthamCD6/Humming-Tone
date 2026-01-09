@@ -1,0 +1,314 @@
+/* ===== ANIMATIONS ===== */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* ===== CONTAINER ===== */
+.order-list-container {
+  animation: fadeIn 0.3s ease-in;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  margin-top: -20px;
+}
+
+.ol-loading,
+.ol-no-orders {
+  text-align: center;
+  padding: 40px;
+  font-size: 16px;
+  color: #888;
+  background: white;
+  border-radius: 5px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+}
+
+/* ===== FILTER BAR ===== */
+.ol-filter-bar {
+  background-color: white;
+  padding: 15px 20px;
+  border-radius: 5px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+  border: 1px solid #eef0f3;
+  display: flex;
+  gap: 15px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.ol-search-wrapper {
+  flex: 1;
+  min-width: 200px;
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.ol-search-icon {
+  position: absolute;
+  left: 12px;
+  color: #888;
+  font-size: 20px !important;
+}
+
+.ol-search-box {
+  width: 100%;
+  padding: 10px 10px 10px 42px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 14px;
+  color: #555;
+  background-color: #fff;
+  transition: border-color 0.2s;
+  height: 44px;
+}
+
+.ol-search-box:focus {
+  outline: none;
+  border-color: #3498db;
+}
+
+.ol-filter-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background-color: #f8f9fa;
+  padding: 0 12px;
+  border-radius: 4px;
+  border: 1px solid #ddd;
+  height: 44px;
+}
+
+.ol-filter-icon {
+  color: #555;
+  font-size: 20px !important;
+}
+
+.ol-status-filter {
+  border: none;
+  background: transparent;
+  font-size: 14px;
+  color: #333;
+  padding: 10px 5px;
+  cursor: pointer;
+  font-family: inherit;
+  min-width: 100px;
+}
+
+.ol-status-filter:focus {
+  outline: none;
+}
+
+.ol-count-badge {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background-color: #1a1a1a;
+  color: white;
+  padding: 0 14px;
+  border-radius: 4px;
+  height: 44px;
+  font-size: 13px;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+/* ===== ORDERS GRID ===== */
+.ol-orders-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 20px;
+}
+
+/* ===== ORDER CARD ===== */
+.ol-order-card {
+  background: white;
+  border-radius: 5px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+  border: 1px solid #eef0f3;
+  overflow: hidden;
+  transition: all 0.3s ease;
+}
+
+.ol-order-card:hover {
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+  transform: translateY(-2px);
+}
+
+.ol-card-header {
+  background-color: #1a1a1a;
+  color: white;
+  padding: 12px 15px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.ol-order-number {
+  font-size: 14px;
+  font-weight: 600;
+  font-family: 'Georgia', serif;
+  letter-spacing: 0.5px;
+}
+
+.ol-status-badge {
+  padding: 4px 10px;
+  border-radius: 12px;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: capitalize;
+}
+
+.ol-status-badge.ol-status-pending { background: #f39c12; color: white; }
+.ol-status-badge.ol-status-confirmed { background: #3498db; color: white; }
+.ol-status-badge.ol-status-shipped { background: #9b59b6; color: white; }
+.ol-status-badge.ol-status-delivered { background: #27ae60; color: white; }
+.ol-status-badge.ol-status-cancelled { background: #e74c3c; color: white; }
+
+.ol-card-body {
+  padding: 15px;
+}
+
+.ol-customer-info {
+  margin-bottom: 12px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.ol-customer-name {
+  margin: 0 0 4px;
+  font-size: 15px;
+  font-weight: 600;
+  color: #333;
+}
+
+.ol-customer-email {
+  margin: 0;
+  font-size: 13px;
+  color: #888;
+}
+
+.ol-order-meta {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+.ol-meta-item {
+  display: flex;
+  flex-direction: column;
+}
+
+.ol-meta-label {
+  font-size: 10px;
+  color: #888;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 3px;
+}
+
+.ol-meta-value {
+  font-size: 13px;
+  color: #333;
+  font-weight: 500;
+}
+
+.ol-order-total {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 0;
+  border-top: 1px solid #f0f0f0;
+  border-bottom: 1px solid #f0f0f0;
+  margin-bottom: 10px;
+}
+
+.ol-total-label {
+  font-size: 12px;
+  color: #666;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.ol-total-value {
+  font-size: 18px;
+  font-weight: 600;
+  color: #1a1a1a;
+  font-family: 'Georgia', serif;
+}
+
+.ol-payment-status {
+  text-align: center;
+}
+
+.ol-payment-badge {
+  display: inline-block;
+  padding: 4px 12px;
+  border-radius: 4px;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.ol-payment-badge.paid {
+  background: #d4edda;
+  color: #155724;
+}
+
+.ol-payment-badge.unpaid {
+  background: #f8d7da;
+  color: #721c24;
+}
+
+.ol-card-footer {
+  padding: 12px 15px;
+  background: #f9f9f9;
+  border-top: 1px solid #eee;
+}
+
+.ol-view-btn {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 10px;
+  background-color: #1a1a1a;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.ol-view-btn:hover {
+  background-color: #333;
+}
+
+.ol-view-btn svg {
+  font-size: 18px !important;
+}
+
+/* ===== RESPONSIVE ===== */
+@media (max-width: 768px) {
+  .ol-filter-bar {
+    flex-direction: column;
+  }
+
+  .ol-search-wrapper,
+  .ol-filter-wrapper {
+    width: 100%;
+  }
+
+  .ol-count-badge {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .ol-orders-grid {
+    grid-template-columns: 1fr;
+  }
+}

@@ -345,6 +345,35 @@
   font-size: 16px;
 }
 
+/* View Order Button */
+.action-info {
+  text-align: center;
+}
+
+.view-order-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 6px 12px;
+  background-color: #1a1a1a;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.view-order-btn:hover {
+  background-color: #333;
+  transform: translateY(-1px);
+}
+
+.view-order-btn svg {
+  font-size: 16px !important;
+}
+
 /* --- Modal (Manage Orders) --- */
 .mo-modal-overlay {
   position: fixed;
