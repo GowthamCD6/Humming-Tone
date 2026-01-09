@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import demoImage from '../../../assets/demo.jpeg';
 import UserFooter from '../../../components/User-Footer-Card/UserFooter';
-import AddToCartModal from '../../../components/AddToCartModal/AddToCartModal';
+import AddToCartModal from './Product-Buying modal/AddToCartModal';
 import './Details.css';
 
 const ProductDetailPage = () => {

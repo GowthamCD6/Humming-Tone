@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 // import UserFooter from '../../../components/User-Footer-Card/UserFooter';
-import AddToCartModal from '../../../components/AddToCartModal/AddToCartModal';
+import AddToCartModal from '../Prodect-Details/Product-Buying modal/AddToCartModal';
 import './customize.css';
 
 const CustomizePage = () => {
