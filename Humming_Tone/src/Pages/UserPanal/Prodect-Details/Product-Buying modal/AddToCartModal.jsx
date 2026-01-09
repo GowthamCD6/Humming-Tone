@@ -9,7 +9,7 @@ const AddToCartModal = ({ isOpen, onClose, productData }) => {
 
   const handleViewCart = () => {
     onClose();
-    navigate('/cart');
+    navigate('/usertab/cart');
   };
 
   const handleContinueShopping = () => {
