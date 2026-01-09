@@ -1,27 +1,43 @@
-import React, { useEffect, useState } from 'react';
-import { Outlet, Link, NavLink, useNavigate, useLocation } from 'react-router-dom';
-import HomeIcon from '@mui/icons-material/Home';
-import GridViewIcon from '@mui/icons-material/GridView';
-import ManIcon from '@mui/icons-material/Man';
-import WomanIcon from '@mui/icons-material/Woman';
-import ChildCareIcon from '@mui/icons-material/ChildCare';
-import BabyChangingStationIcon from '@mui/icons-material/BabyChangingStation';
-import SportsBasketballIcon from '@mui/icons-material/SportsBasketball';
-import TuneIcon from '@mui/icons-material/Tune';
-import ShoppingBagOutlinedIcon from '@mui/icons-material/ShoppingBagOutlined';
-import CloseIcon from '@mui/icons-material/Close';
-import MenuIcon from '@mui/icons-material/Menu';
-import logo from '../../assets/logo.png';
-import './UserTab.css';
-import { fetchSiteContent } from '../../utils/siteContentStore';
+import React, { useEffect, useState } from "react";
+import {
+  Outlet,
+  Link,
+  NavLink,
+  useNavigate,
+  useLocation,
+} from "react-router-dom";
+import HomeIcon from "@mui/icons-material/Home";
+import GridViewIcon from "@mui/icons-material/GridView";
+import ManIcon from "@mui/icons-material/Man";
+import WomanIcon from "@mui/icons-material/Woman";
+import ChildCareIcon from "@mui/icons-material/ChildCare";
+import BabyChangingStationIcon from "@mui/icons-material/BabyChangingStation";
+import SportsBasketballIcon from "@mui/icons-material/SportsBasketball";
+import TuneIcon from "@mui/icons-material/Tune";
+import ShoppingBagOutlinedIcon from "@mui/icons-material/ShoppingBagOutlined";
+import CloseIcon from "@mui/icons-material/Close";
+import MenuIcon from "@mui/icons-material/Menu";
+import logo from "../../assets/logo.png";
+import "./UserTab.css";
+import { fetchSiteContent } from "../../utils/siteContentStore";
 
 const UserTab = () => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [activeGenders, setActiveGenders] = useState([]);
   const [loading, setLoading] = useState(true);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [cartCount, setCartCount] = useState(0);
   const navigate = useNavigate();
   const location = useLocation();
+
+  const getCartCount = () => {
+    try {
+      const cart = JSON.parse(localStorage.getItem("cart")) || [];
+      return Array.isArray(cart) ? cart.length : 0;
+    } catch {
+      return 0;
+    }
+  };
 
   // Close mobile menu when route changes
   useEffect(() => {
@@ -29,11 +45,29 @@ const UserTab = () => {
   }, [location.pathname]);
 
   useEffect(() => {
+    const refreshCount = () => setCartCount(getCartCount());
+
+    refreshCount();
+
+    const handleStorage = (e) => {
+      if (e?.key === "cart") refreshCount();
+    };
+
+    window.addEventListener("cart:updated", refreshCount);
+    window.addEventListener("storage", handleStorage);
+
+    return () => {
+      window.removeEventListener("cart:updated", refreshCount);
+      window.removeEventListener("storage", handleStorage);
+    };
+  }, [location.pathname]);
+
+  useEffect(() => {
     const handleScroll = () => {
       setIsScrolled(window.scrollY > 50);
     };
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
   useEffect(() => {
@@ -41,16 +75,24 @@ const UserTab = () => {
       try {
         const data = await fetchSiteContent();
         const genderStatus = data.genderStatus || {};
-        
+
         // Get only active genders
-        const activeGenderList = Object.keys(genderStatus)
-          .filter(gender => genderStatus[gender] === true);
-        
+        const activeGenderList = Object.keys(genderStatus).filter(
+          (gender) => genderStatus[gender] === true
+        );
+
         setActiveGenders(activeGenderList);
       } catch (error) {
-        console.error('Error loading genders:', error);
+        console.error("Error loading genders:", error);
         // Set default genders if API fails
-        setActiveGenders(['Men', 'Women', 'Children', 'Baby', 'Sports', 'Customize']);
+        setActiveGenders([
+          "Men",
+          "Women",
+          "Children",
+          "Baby",
+          "Sports",
+          "Customize",
+        ]);
       } finally {
         setLoading(false);
       }
@@ -62,24 +104,31 @@ const UserTab = () => {
   // Icon mapping for genders
   const getGenderIcon = (gender) => {
     const iconMap = {
-      'Men': ManIcon,
-      'Women': WomanIcon,
-      'Children': ChildCareIcon,
-      'Baby': BabyChangingStationIcon,
-      'Sports': SportsBasketballIcon,
-      'Customize': TuneIcon,
+      Men: ManIcon,
+      Women: WomanIcon,
+      Children: ChildCareIcon,
+      Baby: BabyChangingStationIcon,
+      Sports: SportsBasketballIcon,
+      Customize: TuneIcon,
     };
     return iconMap[gender] || GridViewIcon;
   };
 
   // Define the desired order for genders
-  const genderOrder = ['Men', 'Women', 'Children', 'Baby', 'Sports', 'Customize'];
+  const genderOrder = [
+    "Men",
+    "Women",
+    "Children",
+    "Baby",
+    "Sports",
+    "Customize",
+  ];
 
   // Sort active genders based on the defined order
   const sortedActiveGenders = activeGenders.sort((a, b) => {
     const indexA = genderOrder.indexOf(a);
     const indexB = genderOrder.indexOf(b);
-    
+
     // If both are in the order array, sort by their position
     if (indexA !== -1 && indexB !== -1) {
       return indexA - indexB;
@@ -94,14 +143,14 @@ const UserTab = () => {
 
   // Generate dynamic nav items with static items first
   const staticNavItems = [
-    { path: 'home', label: 'Home', Icon: HomeIcon },
-    { path: 'all-products', label: 'All Products', Icon: GridViewIcon },
+    { path: "home", label: "Home", Icon: HomeIcon },
+    { path: "all-products", label: "All Products", Icon: GridViewIcon },
   ];
 
-  const dynamicNavItems = sortedActiveGenders.map(gender => ({
-    path: gender.toLowerCase().replace(/ /g, '-'),
+  const dynamicNavItems = sortedActiveGenders.map((gender) => ({
+    path: gender.toLowerCase().replace(/ /g, "-"),
     label: gender,
-    Icon: getGenderIcon(gender)
+    Icon: getGenderIcon(gender),
   }));
 
   const navItems = [...staticNavItems, ...dynamicNavItems];
@@ -109,7 +158,7 @@ const UserTab = () => {
   return (
     <div className="user-app-container">
       {/* Header */}
-      <header className={`user-header ${isScrolled ? 'scrolled' : ''}`}>
+      <header className={`user-header ${isScrolled ? "scrolled" : ""}`}>
         <div className="user-header-container">
           {/* Logo */}
           <Link to="/usertab/home" className="user-logo-section">
@@ -127,7 +176,7 @@ const UserTab = () => {
                     <NavLink
                       to={path}
                       className={({ isActive }) =>
-                        `user-nav-link${isActive ? ' active' : ''}`
+                        `user-nav-link${isActive ? " active" : ""}`
                       }
                       end
                     >
@@ -143,13 +192,16 @@ const UserTab = () => {
           {/* Right Section - Cart & Hamburger */}
           <div className="user-header-right">
             {/* Cart - Always visible */}
-            <div className="user-cart-icon" onClick={() => navigate('/usertab/cart')}>
+            <div
+              className="user-cart-icon"
+              onClick={() => navigate("/usertab/cart")}
+            >
               <ShoppingBagOutlinedIcon className="user-cart-bag" />
-              <span className="user-cart-badge">0</span>
+              <span className="user-cart-badge">{cartCount}</span>
             </div>
 
             {/* Hamburger Menu Toggle - Mobile only */}
-            <button 
+            <button
               className="hamburger-menu"
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
               aria-label="Toggle navigation menu"
@@ -161,9 +213,9 @@ const UserTab = () => {
       </header>
 
       {/* Mobile Sidebar Drawer */}
-      <div className={`mobile-sidebar ${mobileMenuOpen ? 'open' : ''}`}>
+      <div className={`mobile-sidebar ${mobileMenuOpen ? "open" : ""}`}>
         {/* Close Button */}
-        <button 
+        <button
           className="sidebar-close-btn"
           onClick={() => setMobileMenuOpen(false)}
           aria-label="Close menu"
@@ -182,7 +234,7 @@ const UserTab = () => {
                   <NavLink
                     to={path}
                     className={({ isActive }) =>
-                      `mobile-nav-link${isActive ? ' active' : ''}`
+                      `mobile-nav-link${isActive ? " active" : ""}`
                     }
                     onClick={() => setMobileMenuOpen(false)}
                     end
@@ -198,8 +250,8 @@ const UserTab = () => {
       </div>
 
       {/* Mobile Menu Overlay */}
-      <div 
-        className={`mobile-menu-overlay ${mobileMenuOpen ? 'active' : ''}`}
+      <div
+        className={`mobile-menu-overlay ${mobileMenuOpen ? "active" : ""}`}
         onClick={() => setMobileMenuOpen(false)}
       ></div>
 

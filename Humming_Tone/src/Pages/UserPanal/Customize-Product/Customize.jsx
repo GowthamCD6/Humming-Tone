@@ -182,6 +182,7 @@ const CustomizePage = () => {
     const cart = JSON.parse(localStorage.getItem('cart')) || [];
     cart.push(customProduct);
     localStorage.setItem('cart', JSON.stringify(cart));
+    window.dispatchEvent(new Event('cart:updated'));
 
     console.log('Customization completed:', customization);
 
