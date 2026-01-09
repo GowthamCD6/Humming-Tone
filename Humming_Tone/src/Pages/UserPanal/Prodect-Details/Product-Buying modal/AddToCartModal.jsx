@@ -17,32 +17,32 @@ const AddToCartModal = ({ isOpen, onClose, productData }) => {
   };
 
   return (
-    <div className="add-to-cart-modal-overlay" onClick={onClose}>
-      <div className="add-to-cart-modal-content" onClick={(e) => e.stopPropagation()}>
-        <h2 className="modal-title">Item Added to Cart!</h2>
-        <p className="modal-subtitle">
+    <div className="product-modal-overlay" onClick={onClose}>
+      <div className="product-modal-content" onClick={(e) => e.stopPropagation()}>
+        <h2 className="product-modal-title">Item Added to Cart!</h2>
+        <p className="product-modal-subtitle">
           Your item has been successfully added to your shopping cart.
         </p>
 
-        <div className="cart-item-display">
-          <div className="cart-item-border"></div>
+        <div className="product-modal-item-display">
+          <div className="product-modal-item-border"></div>
           
-          <div className="cart-item-info">
-            <div className="cart-item-image">
+          <div className="product-modal-item-info">
+            <div className="product-modal-item-image">
               <img src={productData.image} alt={productData.name} />
             </div>
 
-            <div className="cart-item-details">
-              <h3 className="item-name">{productData.name}</h3>
+            <div className="product-modal-item-details">
+              <h3 className="product-modal-item-name">{productData.name}</h3>
               
-              <div className="item-meta">
-                <p className="item-size">
+              <div className="product-modal-item-meta">
+                <p className="product-modal-meta-row">
                   Size: <span>{productData.size}</span>
                 </p>
-                <p className="item-quantity">
+                <p className="product-modal-meta-row">
                   Quantity: <span>{productData.quantity}</span>
                 </p>
-                <p className="item-price">
+                <p className="product-modal-meta-row">
                   Price: <span>₹{productData.price.toFixed(2)}</span>
                 </p>
               </div>
@@ -50,15 +50,15 @@ const AddToCartModal = ({ isOpen, onClose, productData }) => {
           </div>
         </div>
 
-        <div className="modal-actions">
+        <div className="product-modal-actions">
           <button 
-            className="view-cart-btn" 
+            className="product-modal-btn product-modal-btn-primary" 
             onClick={handleViewCart}
           >
             VIEW CART
           </button>
           <button 
-            className="continue-shopping-btn" 
+            className="product-modal-btn product-modal-btn-secondary" 
             onClick={handleContinueShopping}
           >
             CONTINUE SHOPPING
