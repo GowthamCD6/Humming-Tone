@@ -1,46 +1,47 @@
 import React from 'react';
+import UserFooter from "../../../components/User-Footer-Card/UserFooter";
 
 const ShippingInfo = () => {
   return (
-    <div className="shipping-info-container">
+    <div className="support-shipping-info-page">
       {/* Internal CSS Styles */}
       <style>{`
-        /* Policy Pages Styling - Premium Design */
-        .shipping-info-container {
+        /* Shipping Info Page Styling - Scoped */
+        .support-shipping-info-page {
             font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
             color: #333;
             line-height: 1.6;
         }
 
         /* Hero Section */
-        .policy-hero {
+        .support-shipping-info-hero {
             background: linear-gradient(135deg, rgba(0,0,0,0.75) 0%, rgba(0,0,0,0.6) 50%, rgba(0,0,0,0.75) 100%), 
-                        url('https://images.unsplash.com/photo-1566576721346-d4a3b4eaad5b?ixlib=rb-4.0.3&auto=format&fit=crop&w=1950&q=80');
+                        url('https://images.unsplash.com/photo-1441986300917-64674bd600d8?ixlib=rb-4.0.3&auto=format&fit=crop&w=1950&q=80');
             background-size: cover;
-            background-position: center;
-            background-repeat: no-repeat;
-            background-attachment: fixed;
-            width: 100%;
-            max-width: 1200px;
-            margin: 0 auto;
-            min-height: 560px;
-            height: clamp(340px, 55vh, 560px);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            box-sizing: border-box;
+          background-position: center;
+          background-repeat: no-repeat;
+          background-attachment: fixed;
+          width: 100%;
+          max-width: 1340px;
+          margin: 0 auto;
+          min-height: 650px;
+          height: clamp(520px, 65vh, 720px);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          box-sizing: border-box;
             color: white;
             padding: 8rem 0 6rem;
             text-align: center;
             margin-bottom: 0;
         }
 
-        .hero-content {
+          .support-shipping-info-hero-content {
           max-width: 700px;
           margin: 0 auto;
         }
 
-        .policy-hero h1 {
+          .support-shipping-info-hero h1 {
             font-size: 3.5rem;
             margin-bottom: 1.5rem;
             font-weight: 300;
@@ -48,7 +49,7 @@ const ShippingInfo = () => {
             text-shadow: 0 4px 20px rgba(0,0,0,0.3);
         }
 
-        .policy-hero p {
+          .support-shipping-info-hero p {
             font-size: 1.3rem;
             opacity: 0.95;
             max-width: 600px;
@@ -58,14 +59,14 @@ const ShippingInfo = () => {
         }
 
         /* Main Content Area */
-        .policy-main {
+        .support-shipping-info-main {
             padding: 6rem 0;
             background: #fafafa;
             display: flex;
             justify-content: center;
         }
 
-        .policy-content {
+        .support-shipping-info-content {
             max-width: 900px;
             width: 90%;
             background: white;
@@ -73,13 +74,13 @@ const ShippingInfo = () => {
             box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
         }
 
-        .policy-section {
+        .support-shipping-info-section {
             margin-bottom: 3.5rem;
             animation: fadeInUp 0.6s ease-out forwards;
             opacity: 0;
         }
 
-        .policy-section h2 {
+        .support-shipping-info-section h2 {
             font-size: 2rem;
             margin-bottom: 1.5rem;
             color: #1a1a1a;
@@ -88,25 +89,25 @@ const ShippingInfo = () => {
             padding-bottom: 0.75rem;
         }
 
-        .policy-section p {
+          .support-shipping-info-section p {
             line-height: 1.8;
             margin-bottom: 1.5rem;
             color: #555;
             font-size: 1.05rem;
         }
 
-        .policy-section ul {
+          .support-shipping-info-section ul {
             margin: 1.5rem 0;
             padding-left: 1.5rem;
             list-style-type: disc;
         }
 
-        .policy-section li {
+          .support-shipping-info-section li {
             margin-bottom: 0.75rem;
             color: #555;
         }
 
-        .policy-update {
+          .support-shipping-info-update {
             text-align: center;
             margin-top: 4rem;
             padding-top: 2rem;
@@ -121,31 +122,31 @@ const ShippingInfo = () => {
         }
 
         /* Animation delays for sections */
-        .section-1 { animation-delay: 0.1s; }
-        .section-2 { animation-delay: 0.2s; }
-        .section-3 { animation-delay: 0.3s; }
-        .section-4 { animation-delay: 0.4s; }
+        .support-shipping-info-page .section-1 { animation-delay: 0.1s; }
+        .support-shipping-info-page .section-2 { animation-delay: 0.2s; }
+        .support-shipping-info-page .section-3 { animation-delay: 0.3s; }
+        .support-shipping-info-page .section-4 { animation-delay: 0.4s; }
 
         @media (max-width: 768px) {
-            .policy-hero h1 { font-size: 2.5rem; }
-            .policy-content { padding: 2rem; }
-            .policy-hero { background-attachment: scroll; }
+          .support-shipping-info-hero h1 { font-size: 2.5rem; }
+          .support-shipping-info-content { padding: 2rem; }
+          .support-shipping-info-hero { background-attachment: scroll; }
         }
       `}</style>
 
       {/* Hero Section */}
-      <header className="policy-hero">
-        <div className="hero-content">
+      <header className="support-shipping-info-hero">
+        <div className="support-shipping-info-hero-content">
           <h1>Shipping Information</h1>
           <p>Everything you need to know about how we get your orders to you.</p>
         </div>
       </header>
 
       {/* Main Content */}
-      <main className="policy-main">
-        <div className="policy-content">
+      <main className="support-shipping-info-main">
+        <div className="support-shipping-info-content">
           
-          <section className="policy-section section-1">
+          <section className="support-shipping-info-section section-1">
             <h2>Shipping Methods & Delivery Times</h2>
             <p>We strive to deliver your orders as quickly as possible. Our standard shipping times are as follows:</p>
             <ul>
@@ -156,7 +157,7 @@ const ShippingInfo = () => {
             <p>Please note that delivery times are estimates and may vary based on your location and external factors.</p>
           </section>
 
-          <section className="policy-section section-2">
+          <section className="support-shipping-info-section section-2">
             <h2>Shipping During Festive Seasons</h2>
             <p>During major festivals and sale periods:</p>
             <ul>
@@ -167,7 +168,7 @@ const ShippingInfo = () => {
             </ul>
           </section>
 
-          <section className="policy-section section-3">
+          <section className="support-shipping-info-section section-3">
             <h2>Undeliverable Packages</h2>
             <p>Packages may be deemed undeliverable due to:</p>
             <ul>
@@ -179,16 +180,17 @@ const ShippingInfo = () => {
             <p>In such cases, the package will be returned to our warehouse, and our customer support team will contact you to arrange for re-delivery or a refund.</p>
           </section>
 
-          <section className="policy-section section-4">
+          <section className="support-shipping-info-section section-4">
             <h2>Order Tracking</h2>
             <p>Once your order is shipped, you will receive a confirmation email and SMS with a tracking link. You can use this link to monitor the status of your delivery in real-time.</p>
           </section>
 
-          <p className="policy-update">
+          <p className="support-shipping-info-update">
             Last Updated: December 28, 2025
           </p>
         </div>
       </main>
+      <UserFooter/>
     </div>
   );
 };

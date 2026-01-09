@@ -21,6 +21,7 @@ const PremiumCart = ({ onCheckout }) => {
   const syncCart = (updatedCart) => {
     setCartItems(updatedCart);
     localStorage.setItem('cart', JSON.stringify(updatedCart));
+    window.dispatchEvent(new Event('cart:updated'));
   };
 
   const updateQuantity = (id, newQuantity) => {

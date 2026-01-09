@@ -1,4 +1,5 @@
 import React from 'react';
+import UserFooter from '../../../components/User-Footer-Card/UserFooter';
 
 const PrivacyPolicy = () => {
   return (
@@ -21,10 +22,10 @@ const PrivacyPolicy = () => {
           background-repeat: no-repeat;
           background-attachment: fixed;
           width: 100%;
-          max-width: 1200px;
+          max-width: 1340px;
           margin: 0 auto;
-          min-height: 560px;
-          height: clamp(340px, 55vh, 560px);
+          min-height: 650px;
+          height: clamp(520px, 65vh, 720px);
           display: flex;
           align-items: center;
           justify-content: center;
@@ -236,6 +237,8 @@ const PrivacyPolicy = () => {
           </p>
         </div>
       </main>
+
+      <UserFooter />
     </div>
   );
 };

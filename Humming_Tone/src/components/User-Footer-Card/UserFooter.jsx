@@ -3,7 +3,6 @@ import { Link } from "react-router-dom";
 import FacebookIcon from "@mui/icons-material/Facebook";
 import InstagramIcon from "@mui/icons-material/Instagram";
 import WhatsAppIcon from "@mui/icons-material/WhatsApp";
-import { SvgIcon } from "@mui/material";
 import EmailIcon from "@mui/icons-material/Email";
 import LocalPhoneIcon from "@mui/icons-material/LocalPhone";
 import LocationOnIcon from "@mui/icons-material/LocationOn";
@@ -13,6 +12,87 @@ import { fetchSiteContent } from "../../utils/siteContentStore";
 const Footer = () => {
   const [footer, setFooter] = useState(null);
   const [loading, setLoading] = useState(true);
+  const isExternalHref = (href = "") => {
+    const value = String(href).trim();
+    return (
+      /^https?:\/\//i.test(value) ||
+      value.startsWith("mailto:") ||
+      value.startsWith("tel:") ||
+      value.startsWith("#")
+    );
+  };
+
+  const normalizeUsertabTo = (href = "") => {
+    const value = String(href).trim();
+    if (!value) return "#";
+
+    let path = value;
+    if (!path.startsWith("/")) path = `/${path}`;
+
+    // Strip /usertab prefix if already present
+    const raw = path.replace(/^\/+/, "").replace(/^usertab\//i, "");
+    const normalizedKey = raw
+      .toLowerCase()
+      .replace(/\s+/g, "-")
+      .replace(/&/g, "and")
+      .replace(/[^a-z0-9/_-]/g, "")
+      .replace(/^\/+/, "")
+      .replace(/\/+$/, "");
+
+    const routeMap = {
+      // Support pages
+      "privacy-policy": "privacy_policy",
+      "privacy_policy": "privacy_policy",
+      "privacyandpolicy": "privacy_policy",
+      "privacy-policy/": "privacy_policy",
+
+      "terms": "terms_of_service",
+      "terms-of-service": "terms_of_service",
+      "terms_of_service": "terms_of_service",
+      "termsofservice": "terms_of_service",
+
+      "contact": "contact_us",
+      "contact-us": "contact_us",
+      "contact_us": "contact_us",
+      "contactus": "contact_us",
+
+      "shipping": "shipping_info",
+      "shipping-info": "shipping_info",
+      "shipping_info": "shipping_info",
+      "shippinginfo": "shipping_info",
+
+      "returns": "return_&_exchange",
+      "return": "return_&_exchange",
+      "return-exchange": "return_&_exchange",
+      "return-and-exchange": "return_&_exchange",
+      "return_&_exchange": "return_&_exchange",
+      "returnandexchange": "return_&_exchange",
+
+      // Shop pages
+      "mens": "men",
+      "mens-collection": "men",
+      "mens_collection": "men",
+      "women": "women",
+      "womens": "women",
+      "womens-collection": "women",
+      "childrens": "children",
+      "childrens-collection": "children",
+      "children": "children",
+      "baby": "baby",
+      "sports": "sports",
+      "customize": "customize",
+      "all-products": "all-products",
+      "all_products": "all-products",
+    };
+
+    const mapped = routeMap[normalizedKey] || routeMap[normalizedKey.replace(/^\//, "")];
+
+    // If it already looks like a nested path (e.g. support/privacy_policy), keep it.
+    const finalPath = mapped || raw.replace(/^\/+/, "");
+    if (!finalPath) return "#";
+
+    return `/usertab/${finalPath.replace(/^\/+/, "")}`;
+  };
 
   useEffect(() => {
     const loadContent = async () => {
@@ -40,9 +120,9 @@ const Footer = () => {
           legal: {
             copyright: "© 2025 humming tone | All rights reserved.",
             privacyPolicyLabel: "Privacy Policy",
-            privacyPolicyHref: "/privacy-policy",
+            privacyPolicyHref: "/usertab/privacy_policy",
             termsLabel: "Terms of Service",
-            termsHref: "/terms",
+            termsHref: "/usertab/terms_of_service",
           },
           shopLinks: [],
           supportLinks: [],
@@ -98,9 +178,6 @@ const Footer = () => {
             >
               <WhatsAppIcon />
             </a>
-            {/* <a href={footer.social?.meesho || '#'} className="social-circle" aria-label="Meesho">
-              <MeeshoIcon fontSize="small" />
-            </a> */}
           </div>
         </div>
 
@@ -112,7 +189,11 @@ const Footer = () => {
               .filter((link) => link.active === true)
               .map((link, index) => (
                 <li key={index}>
-                  <a href={link.href || "#"}>{link.label}</a>
+                  {isExternalHref(link.href) ? (
+                    <a href={link.href || "#"}>{link.label}</a>
+                  ) : (
+                    <Link to={normalizeUsertabTo(link.href)}>{link.label}</Link>
+                  )}
                 </li>
               ))}
           </ul>
@@ -126,7 +207,11 @@ const Footer = () => {
               .filter((link) => link.active === true)
               .map((link, index) => (
                 <li key={index}>
-                  <a href={link.href || "#"}>{link.label}</a>
+                  {isExternalHref(link.href) ? (
+                    <a href={link.href || "#"}>{link.label}</a>
+                  ) : (
+                    <Link to={normalizeUsertabTo(link.href)}>{link.label}</Link>
+                  )}
                 </li>
               ))}
           </ul>
@@ -184,12 +269,12 @@ const Footer = () => {
           </p>
         </div>
         <div className="policy-container">
-          <Link to={footer.legal?.privacyPolicyHref || "/privacy-policy"}>
+          <Link to={normalizeUsertabTo(footer.legal?.privacyPolicyHref || "privacy_policy")}>
             {footer.legal?.privacyPolicyLabel || "Privacy Policy"}
           </Link>
-          <a href={footer.legal?.termsHref || "/terms"}>
+          <Link to={normalizeUsertabTo(footer.legal?.termsHref || "terms_of_service")}>
             {footer.legal?.termsLabel || "Terms of Service"}
-          </a>
+          </Link>
         </div>
       </div>
     </footer>

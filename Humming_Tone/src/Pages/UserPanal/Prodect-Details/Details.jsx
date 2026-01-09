@@ -53,6 +53,7 @@ const ProductDetailPage = () => {
     cart.push(cartItem);
 
     localStorage.setItem("cart", JSON.stringify(cart));
+    window.dispatchEvent(new Event("cart:updated"));
     setIsInCart(true);
 
     // Show the modal with product data
@@ -72,6 +73,7 @@ const ProductDetailPage = () => {
     );
 
     localStorage.setItem("cart", JSON.stringify(cart));
+    window.dispatchEvent(new Event("cart:updated"));
     setIsInCart(false);
   };
 

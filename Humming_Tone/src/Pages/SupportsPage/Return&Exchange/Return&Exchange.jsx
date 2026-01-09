@@ -1,16 +1,17 @@
-import React from 'react';
+import React from "react";
+import UserFooter from "../../../components/User-Footer-Card/UserFooter";
 
 const ReturnExchange = () => {
   return (
-    <div className="policy-page-container">
+    <div className="support-return-exchange-page">
       <style>{`
-        .policy-page-container {
+        .support-return-exchange-page {
           font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
           color: #333;
           line-height: 1.6;
         }
 
-        .policy-hero {
+        .support-return-exchange-hero {
           background: linear-gradient(135deg, rgba(0,0,0,0.7) 0%, rgba(0,0,0,0.5) 50%, rgba(0,0,0,0.7) 100%),
                       url('https://images.unsplash.com/photo-1556740738-b6a63e27c4df?auto=format&fit=crop&w=1950&q=80');
           background-size: cover;
@@ -18,10 +19,10 @@ const ReturnExchange = () => {
           background-repeat: no-repeat;
           background-attachment: fixed;
           width: 100%;
-          max-width: 1200px;
+          max-width: 1340px;
           margin: 0 auto;
-          min-height: 560px;
-          height: clamp(340px, 55vh, 560px);
+          min-height: 650px;
+          height: clamp(520px, 65vh, 720px);
           display: flex;
           align-items: center;
           justify-content: center;
@@ -29,14 +30,15 @@ const ReturnExchange = () => {
           color: white;
           padding: 8rem 0 6rem;
           text-align: center;
+          margin-bottom: 0;
         }
 
-        .hero-content {
+        .support-return-exchange-hero-content {
           max-width: 700px;
           margin: 0 auto;
         }
 
-        .policy-hero h1 {
+        .support-return-exchange-hero h1 {
           font-size: 3.5rem;
           margin-bottom: 1.5rem;
           font-weight: 300;
@@ -44,7 +46,7 @@ const ReturnExchange = () => {
           text-shadow: 0 4px 20px rgba(0,0,0,0.3);
         }
 
-        .policy-hero p {
+        .support-return-exchange-hero p {
           font-size: 1.3rem;
           opacity: 0.95;
           max-width: 600px;
@@ -53,14 +55,14 @@ const ReturnExchange = () => {
           line-height: 1.6;
         }
 
-        .policy-main {
+        .support-return-exchange-main {
           padding: 6rem 0;
           background: #fafafa;
           display: flex;
           justify-content: center;
         }
 
-        .policy-content {
+        .support-return-exchange-content {
           max-width: 900px;
           width: 90%;
           background: white;
@@ -68,13 +70,13 @@ const ReturnExchange = () => {
           box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
         }
 
-        .policy-section {
+        .support-return-exchange-section {
           margin-bottom: 3.5rem;
           animation: fadeInUp 0.6s ease-out forwards;
           opacity: 0;
         }
 
-        .policy-section h2 {
+        .support-return-exchange-section h2 {
           font-size: 2rem;
           margin-bottom: 1.5rem;
           color: #1a1a1a;
@@ -83,32 +85,32 @@ const ReturnExchange = () => {
           padding-bottom: 0.75rem;
         }
 
-        .policy-section h3 {
+        .support-return-exchange-section h3 {
           font-size: 1.4rem;
           margin: 1.5rem 0 1rem;
           color: #333;
           font-weight: 500;
         }
 
-        .policy-section p {
+        .support-return-exchange-section p {
           line-height: 1.8;
           margin-bottom: 1.5rem;
           color: #555;
           font-size: 1.05rem;
         }
 
-        .policy-section ul {
+        .support-return-exchange-section ul {
           margin: 1.5rem 0;
           padding-left: 1.5rem;
           list-style-type: disc;
         }
 
-        .policy-section li {
+        .support-return-exchange-section li {
           margin-bottom: 0.75rem;
           color: #555;
         }
 
-        .policy-update {
+        .support-return-exchange-update {
           text-align: center;
           margin-top: 4rem;
           padding-top: 2rem;
@@ -122,41 +124,50 @@ const ReturnExchange = () => {
           to { opacity: 1; transform: translateY(0); }
         }
 
-        .section-1 { animation-delay: 0.1s; }
-        .section-2 { animation-delay: 0.2s; }
-        .section-3 { animation-delay: 0.3s; }
-        .section-4 { animation-delay: 0.4s; }
+        .support-return-exchange-page .section-1 { animation-delay: 0.1s; }
+        .support-return-exchange-page .section-2 { animation-delay: 0.2s; }
+        .support-return-exchange-page .section-3 { animation-delay: 0.3s; }
+        .support-return-exchange-page .section-4 { animation-delay: 0.4s; }
 
         @media (max-width: 768px) {
-          .policy-hero h1 { font-size: 2.5rem; }
-          .policy-content { padding: 2rem; }
-          .policy-hero { background-attachment: scroll; }
+          .support-return-exchange-hero h1 { font-size: 2.5rem; }
+          .support-return-exchange-content { padding: 2rem; }
+          .support-return-exchange-hero { background-attachment: scroll; }
         }
       `}</style>
 
-      <header className="policy-hero">
-        <div className="hero-content">
+      <header className="support-return-exchange-hero">
+        <div className="support-return-exchange-hero-content">
           <h1>Return & Exchange</h1>
-          <p>We want you to be completely satisfied with your purchase. Learn about our easy return and exchange process.</p>
+          <p>
+            We want you to be completely satisfied with your purchase. Learn
+            about our easy return and exchange process.
+          </p>
         </div>
       </header>
 
-      <main className="policy-main">
-        <div className="policy-content">
-          <section className="policy-section section-1">
+      <main className="support-return-exchange-main">
+        <div className="support-return-exchange-content">
+          <section className="support-return-exchange-section section-1">
             <h2>Return Policy</h2>
-            <p>Items can be returned within 7 days of delivery. To be eligible for a return, your item must be:</p>
+            <p>
+              Items can be returned within 7 days of delivery. To be eligible
+              for a return, your item must be:
+            </p>
             <ul>
               <li>Unused and in the same condition that you received it</li>
               <li>In the original packaging</li>
               <li>With all tags intact and attached</li>
             </ul>
-            <p>Certain items such as intimate apparel or customized products are non-returnable for hygiene and personalization reasons.</p>
+            <p>
+              Certain items such as intimate apparel or customized products are
+              non-returnable for hygiene and personalization reasons.
+            </p>
           </section>
 
-          <section className="policy-section section-2">
+          <section className="support-return-exchange-section section-2">
             <h2>Return Shipping</h2>
-            
+
             <h3>Free Return Shipping</h3>
             <p>We provide free return shipping for:</p>
             <ul>
@@ -174,22 +185,33 @@ const ReturnExchange = () => {
             </ul>
           </section>
 
-          <section className="policy-section section-3">
+          <section className="support-return-exchange-section section-3">
             <h2>Refund Policy</h2>
-            <p>Once your return is received and inspected, we will send you an email to notify you that we have received your returned item. We will also notify you of the approval or rejection of your refund.</p>
-            <p>If approved, your refund will be processed, and a credit will automatically be applied to your original method of payment within 5-10 business days.</p>
+            <p>
+              Once your return is received and inspected, we will send you an
+              email to notify you that we have received your returned item. We
+              will also notify you of the approval or rejection of your refund.
+            </p>
+            <p>
+              If approved, your refund will be processed, and a credit will
+              automatically be applied to your original method of payment within
+              5-10 business days.
+            </p>
           </section>
 
-          <section className="policy-section section-4">
+          <section className="support-return-exchange-section section-4">
             <h2>Exchange Policy</h2>
-            <p>We only replace items if they are defective, damaged, or if you need a different size. If you need to exchange it for the same item, please contact our support team.</p>
+            <p>
+              We only replace items if they are defective, damaged, or if you
+              need a different size. If you need to exchange it for the same
+              item, please contact our support team.
+            </p>
           </section>
 
-          <p className="policy-update">
-            Last Updated: December 28, 2025
-          </p>
+          <p className="support-return-exchange-update">Last Updated: December 28, 2025</p>
         </div>
       </main>
+      <UserFooter />
     </div>
   );
 };

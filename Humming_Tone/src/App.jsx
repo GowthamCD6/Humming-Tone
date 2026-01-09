@@ -1,23 +1,29 @@
-import { useState, useEffect } from 'react';
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { useState, useEffect } from "react";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { useLocation } from "react-router-dom";
-import Login from './Pages/LoginPage/Login.jsx';
-import AdminTab from './components/AdminTab/AdminTab.jsx';
-import UserTab from './components/UserTab/UserTab.jsx';
+import Login from "./Pages/LoginPage/Login.jsx";
+import AdminTab from "./components/AdminTab/AdminTab.jsx";
+import UserTab from "./components/UserTab/UserTab.jsx";
 
 // User pages
-import Home from './Pages/UserPanal/HomePage/Home.jsx';
-import AllProductPage from './Pages/UserPanal/All-Product/AllProduct.jsx';
-import Men from './Pages/UserPanal/Men\'s-Page/Men\'s.jsx';
-import Women from './Pages/UserPanal/Women-Page/Women\'s.jsx';
-import Children from './Pages/UserPanal/Children\'s-Page/Children\'s.jsx';
-import Baby from './Pages/UserPanal/Baby-Page/Baby.jsx';
-import Sports from './Pages/UserPanal/Sports-Page/Sports.jsx';
-import CustomizePage from './Pages/UserPanal/Customize-Product/Customize.jsx';
-import CartPage from './Pages/UserPanal/Cart-Page/CartPage.jsx';
-import ProductDetail from './Pages/UserPanal/Prodect-Details/Details.jsx';
-import CheckOut from './Pages/UserPanal/CheckOut/CheckOut.jsx';
-import PrivacyPolicy from './Pages/SupportsPage/Privacy&Policy/Privacy&Policy.jsx';
+import Home from "./Pages/UserPanal/HomePage/Home.jsx";
+import AllProductPage from "./Pages/UserPanal/All-Product/AllProduct.jsx";
+import Men from "./Pages/UserPanal/Men's-Page/Men's.jsx";
+import Women from "./Pages/UserPanal/Women-Page/Women's.jsx";
+import Children from "./Pages/UserPanal/Children's-Page/Children's.jsx";
+import Baby from "./Pages/UserPanal/Baby-Page/Baby.jsx";
+import Sports from "./Pages/UserPanal/Sports-Page/Sports.jsx";
+import CustomizePage from "./Pages/UserPanal/Customize-Product/Customize.jsx";
+import CartPage from "./Pages/UserPanal/Cart-Page/CartPage.jsx";
+import ProductDetail from "./Pages/UserPanal/Prodect-Details/Details.jsx";
+import CheckOut from "./Pages/UserPanal/CheckOut/CheckOut.jsx";
+
+// Supports page
+import PrivacyPolicy from "./Pages/SupportsPage/Privacy&Policy/Privacy&Policy.jsx";
+import TermsOfService from "./Pages/SupportsPage/TermsOfService/TermsOfService.jsx";
+import ContactUs from "./Pages/SupportsPage/ContactUs/ContactUs.jsx";
+import ShoppingInfo from "./pages/SupportsPage/ShippingInfo/ShippingInfo.jsx";
+import ReturnAndExchange from "./Pages/SupportsPage/Return&Exchange/Return&Exchange.jsx";
 
 // Admin pages
 import Dashboard from './Pages/AdminPanal/Dashboard/Dashboard.jsx';
@@ -28,7 +34,7 @@ import SiteContent from './Pages/AdminPanal/SiteContent/SiteContent.jsx';
 import ProductData from './Pages/AdminPanal/ProductData/ProductData.jsx';
 import ProductBuyer from './Pages/AdminPanal/BuyerData/Buyer.jsx';
 
-import './App.css';
+import "./App.css";
 
 export default function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -46,7 +52,7 @@ export default function App() {
 
   return (
     <BrowserRouter>
-	<ScrollToTop />
+      <ScrollToTop />
       <Routes>
         <Route
           path="/"
@@ -54,10 +60,10 @@ export default function App() {
             <Navigate
               to={
                 isAuthenticated
-                  ? userType === 'admin'
-                    ? '/admin/dashboard'
-                    : '/usertab/home'
-                  : '/login'
+                  ? userType === "admin"
+                    ? "/admin/dashboard"
+                    : "/usertab/home"
+                  : "/login"
               }
               replace
             />
@@ -68,7 +74,9 @@ export default function App() {
           path="/login"
           element={
             isAuthenticated ? (
-              <Navigate to={userType === 'admin' ? '/admin/dashboard' : '/usertab/home'} />
+              <Navigate
+                to={userType === "admin" ? "/admin/dashboard" : "/usertab/home"}
+              />
             ) : (
               <Login onSuccess={handleLogin} />
             )
@@ -85,7 +93,11 @@ export default function App() {
         <Route
           path="/admin"
           element={
-            <ProtectedRoute isAuthenticated={isAuthenticated} userType={userType} requiredType="admin">
+            <ProtectedRoute
+              isAuthenticated={isAuthenticated}
+              userType={userType}
+              requiredType="admin"
+            >
               <AdminTab onLogout={handleLogout} />
             </ProtectedRoute>
           }
@@ -104,7 +116,11 @@ export default function App() {
         <Route
           path="/usertab"
           element={
-            <ProtectedRoute isAuthenticated={isAuthenticated} userType={userType} requiredType="user">
+            <ProtectedRoute
+              isAuthenticated={isAuthenticated}
+              userType={userType}
+              requiredType="user"
+            >
               <UserTab />
             </ProtectedRoute>
           }
@@ -121,8 +137,14 @@ export default function App() {
           <Route path="cart" element={<CartPage />} />
           <Route path="product/:id" element={<ProductDetail />} />
           <Route path="checkout" element={<CheckOut />} />
+          <Route path="details/:id" element={<ProductDetail />}></Route>
+
+          {/* Supports page */}
           <Route path="privacy_policy" element={<PrivacyPolicy />} />
-		  <Route path="details/:id" element={<ProductDetail/>}></Route>
+          <Route path="terms_of_service" element={<TermsOfService/>} />
+          <Route path="contact_us" element={<ContactUs/>} />
+          <Route path="shipping_info" element={<ShoppingInfo/>} />
+          <Route path="return_&_exchange" element={<ReturnAndExchange/>} />
         </Route>
 
         <Route path="*" element={<Navigate to="/" replace />} />
@@ -144,7 +166,7 @@ const ScrollToTop = () => {
     window.scrollTo({
       top: 0,
       left: 0,
-      behavior: "instant" // or "smooth"
+      behavior: "instant", // or "smooth"
     });
   }, [pathname]);
 
