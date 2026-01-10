@@ -15,11 +15,8 @@ const siteRoutes = require('./routes/admin/siteContent');
 const productRoutes=require('./routes/admin/productData');
 const userReturnRoutes = require("./routes/user/return");
 const customizeRoutes = require("./routes/user/customize");
-<<<<<<< HEAD
 const userCheckoutRoutes = require('./routes/user/checkout')
-=======
-const adminCustomizeRoutes = require("./routes/admin/customize");
->>>>>>> 6879b1107621d16192a2d76a8a08309f2aa73b73
+const adminCustomizeRoutes = require('./routes/admin/customize')
 const app = express();
 const PORT = process.env.PORT || 5000;
 const path = require('path');
