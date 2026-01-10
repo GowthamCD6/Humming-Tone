@@ -152,6 +152,10 @@
   transition: all 0.3s ease;
 }
 
+.sitecontent-card-header-customize {
+  cursor: default;
+}
+
 .sitecontent-card-header:hover {
   background: #f9fafb;
 }
@@ -553,6 +557,12 @@
   padding-top: 1.5rem;
   border-top: 1px solid #e5e7eb;
   flex-wrap: wrap;
+}
+
+.sitecontent-card-actions-inline {
+  padding-top: 0;
+  border-top: none;
+  margin-left: auto;
 }
 
 /* ===== BUTTONS ===== */

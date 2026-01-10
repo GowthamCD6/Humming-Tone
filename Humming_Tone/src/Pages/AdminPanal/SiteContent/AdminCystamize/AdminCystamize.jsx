@@ -691,7 +691,7 @@ admin-customize-alert-error"
           },
           {
             name: "image",
-            label: "Category Image (Passport Size)",
+            label: "Category Image (Any Size)",
             type: "file",
             accept: "image/*",
             required: productCategoryModal.index === null,
