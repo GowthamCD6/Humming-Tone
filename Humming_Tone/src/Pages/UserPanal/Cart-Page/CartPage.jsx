@@ -86,6 +86,7 @@ const PremiumCart = ({ onCheckout }) => {
   const calculateTotal = () => {
     return calculateSubtotal();
   };
+  // simple
 
   const hasOutOfStock = cartItems.every(item => item.stock === 0);
 
