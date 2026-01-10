@@ -178,6 +178,15 @@ const Footer = () => {
             >
               <WhatsAppIcon />
             </a>
+            <a
+              href={footer.social?.meesho || "https://meesho.com"}
+              className="social-circle"
+              aria-label="Meesho"
+            >
+              <svg viewBox="0 0 100 100" style={{ width: '1.5rem', height: '1.5rem', fill: 'white', display: 'block' }}>
+                <path d="M15 75V45c0-8 6-15 15-15 5 0 9 2 12 6 3-4 7-6 12-6 9 0 15 7 15 15v30H60V45c0-4-3-7-7-7s-7 3-7 7v30H37V45c0-4-3-7-7-7s-7 3-7 7v30H15z"/>
+              </svg>
+            </a>
           </div>
         </div>
 

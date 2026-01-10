@@ -1,6 +1,7 @@
 import { useMemo, useState, useEffect } from "react";
 import "./SiteContent.css";
 import SuccessModal from "../../../components/SuccessModal/SuccessModal";
+import AdminCystamize from "./AdminCystamize/AdminCystamize";
 import {
   fetchSiteContent,
   updateFooter,
@@ -24,6 +25,7 @@ export default function SiteContent() {
   const [modalMessage, setModalMessage] = useState("");
   const [error, setError] = useState("");
   const [expandedCard, setExpandedCard] = useState(null);
+  const [showCustomize, setShowCustomize] = useState(false);
   const [addCategoryModalOpen, setAddCategoryModalOpen] = useState(false);
   const [categoryGender, setCategoryGender] = useState("");
   const [newCategoryName, setNewCategoryName] = useState("");
@@ -258,6 +260,9 @@ export default function SiteContent() {
     setExpandedCard(null);
   };
 
+  const handleOpenCustomize = () => {
+    setShowCustomize(true);
+  };
   if (loading) {
     return (
       <section className="tab-content">
@@ -746,7 +751,56 @@ export default function SiteContent() {
             </div>
           )}
         </div>
+
+        {/* Customize Product Options Card (at bottom) */}
+        <div className="sitecontent-main-card sitecontent-main-card-customize">
+          <div
+            className="sitecontent-card-header sitecontent-card-header-customize"
+          >
+            <div className="sitecontent-card-icon">
+              <CategoryIcon />
+            </div>
+            <div className="sitecontent-card-info">
+              <h3 className="sitecontent-card-title">Customize Product Options</h3>
+              <p className="sitecontent-card-desc">
+                Manage customize categories, colors, materials, sizes and gallery designs
+              </p>
+            </div>
+            <div className="sitecontent-card-actions sitecontent-card-actions-inline">
+              <button
+                type="button"
+                className="sitecontent-btn primary"
+                onClick={handleOpenCustomize}
+              >
+                Open Customize
+              </button>
+            </div>
+          </div>
+        </div>
       </div>
+
+      {/* Customize Product Options Modal */}
+      {showCustomize && (
+        <div className="sitecontent-modal-overlay">
+          <div
+            className="sitecontent-modal-content"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="sitecontent-modal-header">
+              <h3>Customize Product Options</h3>
+              <button
+                className="sitecontent-modal-close"
+                onClick={() => setShowCustomize(false)}
+              >
+                ×
+              </button>
+            </div>
+            <div className="sitecontent-modal-body">
+              <AdminCystamize onBack={() => setShowCustomize(false)} />
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Add Category Modal */}
       {addCategoryModalOpen && (

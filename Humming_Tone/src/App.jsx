@@ -33,6 +33,7 @@ import ManageOrder from './Pages/AdminPanal/ManageOrder/ManageOrder.jsx';
 import SiteContent from './Pages/AdminPanal/SiteContent/SiteContent.jsx';
 import ProductData from './Pages/AdminPanal/ProductData/ProductData.jsx';
 import ProductBuyer from './Pages/AdminPanal/BuyerData/Buyer.jsx';
+import OrderDetails from "./Pages/AdminPanal/ManageOrder/OrderDetails/OrderDetails.jsx";
 
 import "./App.css";
 
@@ -107,6 +108,7 @@ export default function App() {
           <Route path="manage-products" element={<ManageProduct />} />
           <Route path="add-product" element={<AddProduct />} />
           <Route path="manage-orders" element={<ManageOrder />} />
+          <Route path="order/:orderId" element={<OrderDetails />} />
           <Route path="site-content" element={<SiteContent />} />
           <Route path="all-products" element={<ProductData />} />
           <Route path="product-buyers" element={<ProductBuyer />} />

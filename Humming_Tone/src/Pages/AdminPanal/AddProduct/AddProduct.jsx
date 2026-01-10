@@ -183,7 +183,8 @@ const AddProduct = () => {
   };
 
   return (
-    <div className="add-product-container">
+    <div className="admin-add-product-page">
+      <div className="add-product-container">
 
       <div className="product-form">
         <section className="form-section">
@@ -384,6 +385,7 @@ const AddProduct = () => {
           </div>
         </div>
       )}
+      </div>
     </div>
   );
 };

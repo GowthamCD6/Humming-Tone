@@ -16,16 +16,38 @@ export default function AdminTab({ onLogout = () => {} }) {
   const location = useLocation()
   const navigate = useNavigate()
 
-  const menuItems = [
-    { id: 'dashboard', path: 'dashboard', label: 'Dashboard', Icon: DashboardIcon },
-    { id: 'manage-products', path: 'manage-products', label: 'Manage Products', Icon: ShoppingBagIcon },
-    { id: 'add-product', path: 'add-product', label: 'Add Product', Icon: AddCircleIcon },
-    { id: 'manage-orders', path: 'manage-orders', label: 'Manage Orders', Icon: ShoppingCartIcon },
-    { id: 'all-products', path: 'all-products', label: 'Product Data', Icon: ShoppingBagIcon },
-    { id: 'site-content', path: 'site-content', label: 'Site Content', Icon: AccountCircleIcon },
-    { id: 'product-buyers', path: 'product-buyers', label: 'Buyer Data', Icon: PeopleIcon },
-    { id: 'view-store', path: '/usertab/home', label: 'View Store', Icon: OpenInNewIcon },
+  const menuSections = [
+    {
+      title: null,
+      items: [
+        { id: 'dashboard', path: 'dashboard', label: 'Dashboard', Icon: DashboardIcon },
+      ]
+    },
+    {
+      title: 'MANAGEMENT',
+      items: [
+        { id: 'manage-products', path: 'manage-products', label: 'Manage Products', Icon: ShoppingBagIcon },
+        { id: 'add-product', path: 'add-product', label: 'Add Product', Icon: AddCircleIcon },
+        { id: 'manage-orders', path: 'manage-orders', label: 'Manage Orders', Icon: ShoppingCartIcon },
+      ]
+    },
+    {
+      title: 'ANALYTICS',
+      items: [
+        { id: 'all-products', path: 'all-products', label: 'Product Data', Icon: ShoppingBagIcon },
+        { id: 'product-buyers', path: 'product-buyers', label: 'Buyer Data', Icon: PeopleIcon },
+      ]
+    },
+    {
+      title: 'SETTINGS',
+      items: [
+        { id: 'site-content', path: 'site-content', label: 'Site Content', Icon: AccountCircleIcon },
+        { id: 'view-store', path: '/usertab/home', label: 'View Store', Icon: OpenInNewIcon },
+      ]
+    },
   ]
+
+  const menuItems = menuSections.flatMap(section => section.items)
   const activeTabLabel =
     menuItems.find(item => item.id === activeTab)?.label || 'Dashboard'
 
@@ -55,26 +77,31 @@ export default function AdminTab({ onLogout = () => {} }) {
 
         {/* Navigation Menu */}
         <nav className="sidebar-nav">
-          {menuItems.map(item => {
-            const Icon = item.Icon
-            return (
-              <button
-                key={item.id}
-                onClick={() => {
-                  if (item.id === 'view-store') {
-                    navigate(item.path)
-                  } else {
-                    setActiveTab(item.id)
-                    navigate(item.path)
-                  }
-                }}
-                className={`admin-nav-item ${activeTab === item.id ? 'active' : ''}`}
-              >
-                <Icon className="admin-nav-icon" />
-                <span className="admin-nav-label">{item.label}</span>
-              </button>
-            )
-          })}
+          {menuSections.map((section, sectionIndex) => (
+            <div key={sectionIndex} className="nav-section">
+              {section.title && <div className="nav-section-title">{section.title}</div>}
+              {section.items.map(item => {
+                const Icon = item.Icon
+                return (
+                  <button
+                    key={item.id}
+                    onClick={() => {
+                      if (item.id === 'view-store') {
+                        navigate(item.path)
+                      } else {
+                        setActiveTab(item.id)
+                        navigate(item.path)
+                      }
+                    }}
+                    className={`admin-nav-item ${activeTab === item.id ? 'active' : ''}`}
+                  >
+                    <Icon className="admin-nav-icon" />
+                    <span className="admin-nav-label">{item.label}</span>
+                  </button>
+                )
+              })}
+            </div>
+          ))}
         </nav>
 
         {/* Sidebar Footer - Logout */}
