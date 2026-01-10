@@ -2,11 +2,13 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import LocalShippingIcon from '@mui/icons-material/LocalShipping';
+import demoImage from '../../../../assets/demo.jpeg';
 import './OrderDetails.css';
 
 export default function OrderDetails() {
   const { orderId } = useParams();
   const navigate = useNavigate();
+  
   const [order, setOrder] = useState(null);
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -83,7 +85,7 @@ export default function OrderDetails() {
     return (
       <section className="order-details-container">
         <div className="od-error">Order not found</div>
-        <button className="od-back-btn" onClick={() => navigate('/admin/manage-orders')}>
+        <button className="od-back-btn" onClick={() => navigate(-1)}>
           <ArrowBackIcon /> Back to Orders
         </button>
       </section>
@@ -94,7 +96,7 @@ export default function OrderDetails() {
     <section className="order-details-container">
       {/* Header */}
       <div className="od-header">
-        <button className="od-back-btn" onClick={() => navigate('/admin/manage-orders')}>
+        <button className="od-back-btn" onClick={() => navigate(-1)}>
           <ArrowBackIcon /> Back to Orders
         </button>
         <div className="od-header-info">
@@ -131,7 +133,7 @@ export default function OrderDetails() {
       {/* Main Content Grid */}
       <div className="od-content-grid">
         {/* Customer Info Card */}
-        <div className="od-card">
+        <div className="od-card od-card-buyer">
           <h3 className="od-card-title">Customer Information</h3>
           <div className="od-card-body">
             <div className="od-info-row">
@@ -209,7 +211,7 @@ export default function OrderDetails() {
                   <img 
                     src={`http://localhost:5000${item.image_path}`} 
                     alt={item.product_name}
-                    onError={(e) => { e.target.src = '/placeholder.png'; }}
+                    onError={(e) => { e.target.src = demoImage; }}
                   />
                 ) : (
                   <div className="od-item-placeholder">No Image</div>

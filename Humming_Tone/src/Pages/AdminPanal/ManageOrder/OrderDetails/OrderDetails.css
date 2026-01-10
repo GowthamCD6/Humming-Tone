@@ -166,6 +166,17 @@
   overflow: hidden;
 }
 
+/* Buyer (Customer) details card: fixed height with scroll */
+.od-card-buyer {
+  max-height: 240px;
+  display: flex;
+  flex-direction: column;
+}
+
+.od-card-buyer .od-card-body {
+  overflow-y: auto;
+}
+
 .od-card-title {
   background: #1a1a1a;
   color: white;
@@ -209,6 +220,13 @@
 .od-value {
   font-size: 14px;
   color: #333;
+}
+
+/* Prevent long buyer details (name/email/phone) from overflowing */
+.od-card-buyer .od-value,
+.od-card-buyer .od-link {
+  word-break: break-word;
+  overflow-wrap: anywhere;
 }
 
 .od-link {

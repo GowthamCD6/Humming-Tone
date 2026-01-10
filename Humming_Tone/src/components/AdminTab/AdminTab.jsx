@@ -22,7 +22,6 @@ export default function AdminTab({ onLogout = () => {} }) {
     { id: 'manage-products', path: 'manage-products', label: 'Manage Products', Icon: ShoppingBagIcon },
     { id: 'add-product', path: 'add-product', label: 'Add Product', Icon: AddCircleIcon },
     { id: 'manage-orders', path: 'manage-orders', label: 'Manage Orders', Icon: ShoppingCartIcon },
-    { id: 'order-details', path: 'order-details', label: 'Order Details', Icon: ReceiptLongIcon },
     { id: 'all-products', path: 'all-products', label: 'Product Data', Icon: ShoppingBagIcon },
     { id: 'site-content', path: 'site-content', label: 'Site Content', Icon: AccountCircleIcon },
     { id: 'product-buyers', path: 'product-buyers', label: 'Buyer Data', Icon: PeopleIcon },

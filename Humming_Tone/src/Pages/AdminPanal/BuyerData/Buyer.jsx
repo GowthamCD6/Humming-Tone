@@ -8,18 +8,17 @@ export default function Buyer() {
   const [buyers, setBuyers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
-  const [orderFilter, setOrderFilter] = useState('all');
+  const [orderFilter, setOrderFilter] = useState('');
 
   useEffect(() => {
     const fetchBuyers = async () => {
       try {
-        // Fetch orders which contain buyer information
         const response = await fetch('http://localhost:5000/api/orders/manage');
         if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
         const data = await response.json();
         setBuyers(Array.isArray(data) ? data : []);
       } catch (error) {
-        console.error("Fetch error:", error);
+        console.error('Fetch error:', error);
         setBuyers([]);
       } finally {
         setLoading(false);
@@ -28,85 +27,76 @@ export default function Buyer() {
     fetchBuyers();
   }, []);
 
-  // Group buyers by email and count orders
+  // 🔹 Group buyers by email and count orders
   const groupedBuyers = useMemo(() => {
-    const buyerMap = new Map();
-    
-    buyers.forEach(buyer => {
+    const map = new Map();
+
+    buyers.forEach((buyer) => {
       const email = buyer.customer_email?.toLowerCase() || 'unknown';
-      if (buyerMap.has(email)) {
-        const existing = buyerMap.get(email);
-        existing.orderCount += 1;
+      if (map.has(email)) {
+        map.get(email).orderCount += 1;
       } else {
-        buyerMap.set(email, {
+        map.set(email, {
           ...buyer,
-          orderCount: 1
+          orderCount: 1,
         });
       }
     });
-    
-    return Array.from(buyerMap.values());
+
+    return Array.from(map.values());
   }, [buyers]);
 
-  // Filter buyers based on search term and order count
+  // 🔹 Manual Order Filter + Search
   const filteredBuyers = useMemo(() => {
     let result = groupedBuyers;
-    
-    // Apply order count filter
-    if (orderFilter !== 'all') {
-      if (orderFilter === '1') {
-        result = result.filter(buyer => buyer.orderCount === 1);
-      } else if (orderFilter === '2-5') {
-        result = result.filter(buyer => buyer.orderCount >= 2 && buyer.orderCount <= 5);
-      } else if (orderFilter === '5+') {
-        result = result.filter(buyer => buyer.orderCount > 5);
+
+    // ----- ORDER FILTER -----
+    if (orderFilter.trim()) {
+      const filter = orderFilter.toLowerCase();
+
+      // all
+      if (filter !== 'all') {
+        // Exact number (e.g., 1, 3)
+        if (/^\d+$/.test(filter)) {
+          const num = Number(filter);
+          result = result.filter((b) => b.orderCount === num);
+        }
+
+        // Range (e.g., 2-5)
+        else if (/^\d+\s*-\s*\d+$/.test(filter)) {
+          const [min, max] = filter.split('-').map(Number);
+          result = result.filter(
+            (b) => b.orderCount >= min && b.orderCount <= max
+          );
+        }
+
+        // Greater than (5+, >5)
+        else if (filter.includes('+') || filter.startsWith('>')) {
+          const num = parseInt(filter.replace(/\D/g, ''), 10);
+          if (!isNaN(num)) {
+            result = result.filter((b) => b.orderCount > num);
+          }
+        }
       }
     }
-    
-    // Apply search filter
+
+    // ----- SEARCH FILTER -----
     if (searchTerm.trim()) {
       const search = searchTerm.toLowerCase();
-      result = result.filter(buyer => 
-        buyer.customer_name?.toLowerCase().includes(search) ||
-        buyer.customer_email?.toLowerCase().includes(search) ||
-        buyer.customer_phone?.toLowerCase().includes(search) ||
-        buyer.customer_address?.toLowerCase().includes(search) ||
-        buyer.city?.toLowerCase().includes(search) ||
-        buyer.state?.toLowerCase().includes(search) ||
-        buyer.pincode?.toLowerCase().includes(search)
+      result = result.filter(
+        (buyer) =>
+          buyer.customer_name?.toLowerCase().includes(search) ||
+          buyer.customer_email?.toLowerCase().includes(search) ||
+          buyer.customer_phone?.toLowerCase().includes(search) ||
+          buyer.customer_address?.toLowerCase().includes(search) ||
+          buyer.city?.toLowerCase().includes(search) ||
+          buyer.state?.toLowerCase().includes(search) ||
+          buyer.pincode?.toLowerCase().includes(search)
       );
     }
-    
+
     return result;
-  }, [groupedBuyers, searchTerm]);
-
-  // Calculate stats
-  const stats = useMemo(() => ({
-    totalBuyers: groupedBuyers.length,
-    totalOrders: buyers.length
-  }), [buyers, groupedBuyers]);
-
-  const formatDate = (dateStr) => {
-    if (!dateStr) return 'N/A';
-    const d = new Date(dateStr);
-    if (isNaN(d.getTime())) return 'Invalid Date';
-    return d.toLocaleDateString('en-IN', { 
-      day: '2-digit', 
-      month: 'short', 
-      year: 'numeric' 
-    });
-  };
-
-  const formatTime = (dateStr) => {
-    if (!dateStr) return '';
-    const d = new Date(dateStr);
-    if (isNaN(d.getTime())) return '';
-    return d.toLocaleTimeString('en-IN', { 
-      hour: '2-digit', 
-      minute: '2-digit',
-      hour12: true 
-    });
-  };
+  }, [groupedBuyers, searchTerm, orderFilter]);
 
   if (loading) {
     return (
@@ -119,8 +109,10 @@ export default function Buyer() {
   return (
     <section className="buyer-page-container">
 
-      {/* Search & Filter Bar */}
+      {/* 🔹 Search & Filter Bar */}
       <div className="buyer-filter-container">
+
+        {/* Search */}
         <div className="buyer-search-wrapper">
           <SearchIcon className="buyer-search-icon" />
           <input
@@ -131,70 +123,95 @@ export default function Buyer() {
             onChange={(e) => setSearchTerm(e.target.value)}
           />
         </div>
+
+        {/* Manual Order Filter */}
         <div className="buyer-filter-wrapper">
           <FilterListIcon className="buyer-filter-icon" />
-          <select
+          <input
+            type="text"
             className="buyer-order-filter"
+            placeholder=" Search by Order count"
             value={orderFilter}
             onChange={(e) => setOrderFilter(e.target.value)}
-          >
-            <option value="all">All Orders</option>
-            <option value="1">1 Order</option>
-            <option value="2-5">2-5 Orders</option>
-            <option value="5+">5+ Orders</option>
-          </select>
+          />
         </div>
+
+        {/* Total Buyers */}
         <div className="buyer-total-badge">
           <PeopleIcon className="buyer-total-icon" />
           <span>{filteredBuyers.length} Buyers</span>
         </div>
       </div>
 
-        {/* Buyers Cards */}
+      {/* 🔹 Buyers Cards */}
       {filteredBuyers.length === 0 ? (
         <div className="no-buyers">
-          {searchTerm ? 'No buyers found matching your search.' : 'No buyers found.'}
+          No buyers found.
         </div>
       ) : (
         <div className="buyer-cards-grid">
           {filteredBuyers.map((buyer, index) => (
-            <div key={buyer.customer_email || index} className="buyer-card">
+            <div
+              key={buyer.customer_email || index}
+              className="buyer-card"
+            >
               <div className="buyer-card-header">
-                <h3 className="buyer-card-name">{buyer.customer_name || 'N/A'}</h3>
-                <span className="buyer-order-badge">{buyer.orderCount} {buyer.orderCount === 1 ? 'Order' : 'Orders'}</span>
+                <h3 className="buyer-card-name">
+                  {buyer.customer_name || 'N/A'}
+                </h3>
+                <span className="buyer-order-badge">
+                  {buyer.orderCount} {buyer.orderCount === 1 ? 'Order' : 'Orders'}
+                </span>
               </div>
+
               <div className="buyer-card-body">
                 <div className="buyer-card-row">
                   <span className="buyer-card-label">Email</span>
-                  <a href={`mailto:${buyer.customer_email}`} className="buyer-card-value buyer-card-link">
+                  <a
+                    href={`mailto:${buyer.customer_email}`}
+                    className="buyer-card-value buyer-card-link"
+                  >
                     {buyer.customer_email || 'N/A'}
                   </a>
                 </div>
+
                 <div className="buyer-card-row">
                   <span className="buyer-card-label">Phone</span>
-                  <a href={`tel:${buyer.customer_phone}`} className="buyer-card-value buyer-card-link">
+                  <a
+                    href={`tel:${buyer.customer_phone}`}
+                    className="buyer-card-value buyer-card-link"
+                  >
                     {buyer.customer_phone || 'N/A'}
                   </a>
                 </div>
+
                 <div className="buyer-card-row">
                   <span className="buyer-card-label">Address</span>
-                  <span className="buyer-card-value">{buyer.customer_address || 'N/A'}</span>
+                  <span className="buyer-card-value">
+                    {buyer.customer_address || 'N/A'}
+                  </span>
                 </div>
+
                 <div className="buyer-card-row-inline">
                   <div className="buyer-card-item">
                     <span className="buyer-card-label">City</span>
                     <span className="buyer-card-value">{buyer.city || 'N/A'}</span>
                   </div>
+
                   <div className="buyer-card-item">
                     <span className="buyer-card-label">State</span>
                     <span className="buyer-card-value">{buyer.state || 'N/A'}</span>
                   </div>
+
                   <div className="buyer-card-item">
                     <span className="buyer-card-label">PIN</span>
-                    <span className="buyer-card-value buyer-card-pin">{buyer.pincode || 'N/A'}</span>
+                    <span className="buyer-card-value buyer-card-pin">
+                      {buyer.pincode || 'N/A'}
+                    </span>
                   </div>
                 </div>
               </div>
+
             </div>
           ))}
         </div>
