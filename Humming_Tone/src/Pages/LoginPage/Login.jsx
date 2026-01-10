@@ -67,32 +67,32 @@ export default function Login({ onSuccess }) {
   };
 
   return (
-    <div className="login-container">
-      <div className="login-card">
+    <div className="admin-login-page">
+      <div className="admin-login-card">
         
         {/* Header */}
-        <div className="login-header">
-          <h1 className="login-title">Admin Portal</h1>
-          <p className="login-subtitle">Please log in to continue</p>
+        <div className="admin-login-header">
+          <h1 className="admin-login-title">Admin Portal</h1>
+          <p className="admin-login-subtitle">Please log in to continue</p>
         </div>
 
         {/* Error Alert UI */}
         {error && (
-          <div className="error-alert">
-            <span className="error-icon">!</span>
+          <div className="admin-login-error-alert">
+            <span className="admin-login-error-icon">!</span>
             {error}
           </div>
         )}
 
         {/* Form */}
-        <form onSubmit={handleSubmit} className="login-form">
-          <div className="form-group">
+        <form onSubmit={handleSubmit} className="admin-login-form">
+          <div className="admin-login-form-group">
             <label htmlFor="username">Username</label>
             <input
               type="text"
               id="username"
               name="username"
-              className={`form-input ${error ? 'input-error' : ''}`}
+              className={`admin-login-form-input ${error ? 'admin-login-input-error' : ''}`}
               placeholder="Enter your username"
               value={formData.username}
               onChange={handleChange}
@@ -100,34 +100,34 @@ export default function Login({ onSuccess }) {
             />
           </div>
 
-          <div className="form-group">
+          <div className="admin-login-form-group">
             <label htmlFor="password">Password</label>
-            <div className="password-input-container">
+            <div className="admin-login-password-container">
               <input
                 type={showPassword ? "text" : "password"}
                 id="password"
                 name="password"
-                className={`form-input ${error ? 'input-error' : ''}`}
+                className={`admin-login-form-input ${error ? 'admin-login-input-error' : ''}`}
                 placeholder="Enter your password"
                 value={formData.password}
                 onChange={handleChange}
               />
               <button
                 type="button"
-                className="password-toggle-btn"
+                className="admin-login-password-toggle"
                 onClick={togglePasswordVisibility}
                 aria-label={showPassword ? "Hide password" : "Show password"}
               >
                 {showPassword ? (
-                  <VisibilityOff className="password-icon" />
+                  <VisibilityOff className="admin-login-password-icon" />
                 ) : (
-                  <Visibility className="password-icon" />
+                  <Visibility className="admin-login-password-icon" />
                 )}
               </button>
             </div>
           </div>
 
-          <button type="submit" className="btn-login">
+          <button type="submit" className="admin-login-btn">
             Log In
           </button>
         </form>
