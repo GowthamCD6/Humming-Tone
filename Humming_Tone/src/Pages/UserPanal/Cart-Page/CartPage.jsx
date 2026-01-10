@@ -10,6 +10,7 @@ const PremiumCart = ({ onCheckout }) => {
   const [instructions, setInstructions] = useState('');
   const [alert, setAlert] = useState(null);
   const [removeModal, setRemoveModal] = useState({ show: false, itemId: null, itemName: '' });
+  const [clearCartModal, setClearCartModal] = useState(false);
 
   /* ================= LOAD CART FROM LOCALSTORAGE ================= */
   useEffect(() => {
@@ -60,11 +61,18 @@ const PremiumCart = ({ onCheckout }) => {
   };
 
   const clearCart = () => {
-    if (window.confirm('Are you sure you want to clear your cart?')) {
-      syncCart([]);
-      setAlert({ type: 'success', message: 'Cart cleared successfully.' });
-      setTimeout(() => setAlert(null), 3000);
-    }
+    setClearCartModal(true);
+  };
+
+  const confirmClearCart = () => {
+    syncCart([]);
+    setClearCartModal(false);
+    setAlert({ type: 'success', message: 'Cart cleared successfully.' });
+    setTimeout(() => setAlert(null), 3000);
+  };
+
+  const cancelClearCart = () => {
+    setClearCartModal(false);
   };
 
   const calculateSubtotal = () => {
@@ -269,6 +277,28 @@ const PremiumCart = ({ onCheckout }) => {
               </button>
               <button className="userpanal-cart-modal-btn userpanal-cart-modal-btn-confirm" onClick={confirmRemove}>
                 Remove
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Clear Cart Confirmation Modal */}
+      {clearCartModal && (
+        <div className="userpanal-cart-remove-modal-overlay" onClick={cancelClearCart}>
+          <div className="userpanal-cart-remove-modal" onClick={(e) => e.stopPropagation()}>
+            <div className="userpanal-cart-remove-modal-header">
+              <h3>Clear Cart</h3>
+            </div>
+            <div className="userpanal-cart-remove-modal-body">
+              <p>Are you sure you want to clear all items from your cart?</p>
+            </div>
+            <div className="userpanal-cart-remove-modal-footer">
+              <button className="userpanal-cart-modal-btn userpanal-cart-modal-btn-cancel" onClick={cancelClearCart}>
+                Cancel
+              </button>
+              <button className="userpanal-cart-modal-btn userpanal-cart-modal-btn-confirm" onClick={confirmClearCart}>
+                Clear Cart
               </button>
             </div>
           </div>
