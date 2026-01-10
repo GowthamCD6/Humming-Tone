@@ -15,6 +15,7 @@ const siteRoutes = require('./routes/admin/siteContent');
 const productRoutes=require('./routes/admin/productData');
 const userReturnRoutes = require("./routes/user/return");
 const customizeRoutes = require("./routes/user/customize");
+const userCheckoutRoutes = require('./routes/user/checkout')
 const app = express();
 const PORT = process.env.PORT || 5000;
 const path = require('path');
@@ -43,6 +44,7 @@ app.use("/", userProductRoute);
 app.use("/", userPromoRoutes);
 app.use("/",userReturnRoutes);
 app.use("/", customizeRoutes);
+app.use("/", userCheckoutRoutes);
 
 // Site content routes
 app.use('/api/site-content', siteRoutes);
