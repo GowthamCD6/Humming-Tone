@@ -1,177 +1,227 @@
 const db = require("../../config/db.js");
 const createError = require("http-errors");
+const razorpayInstance = require("../../utils/rajorpay.js");
 
-exports.checkoutOrders = async (req, res, next) => {
-  try {
-    const order_number = `ORD-${Date.now()}`;
-    const {
-      customer_name,
-      customer_email,
-      customer_phone,
-      customer_address,
-      city,
-      state,
-      pincode,
-      order_instructions,
-      promo_code,
-      discount_amount,
-      subtotal,
-      shipping,
-      total_amount,
-      payment_id,
-      razorpay_order_id,
-      razorpay_signature,
-      order_status,
-      status,
-    } = req.body;
-    /* ================= REQUIRED STRING FIELDS ================= */
-    const requiredStrings = {
-      customer_name,
-      customer_email,
-      customer_phone,
-      customer_address,
-      city,
-      state,
-      pincode,
-      payment_id,
-      razorpay_order_id,
-      razorpay_signature,
-    };
+exports.create_order = (req, res, next) => {
+  db.getConnection((err, connection) => {
+    if (err) return next(err);
 
-    for (const [key, value] of Object.entries(requiredStrings)) {
-      if (!value || typeof value !== "string" || value.trim() === "") {
-        return next(createError.BadRequest(`${key} is required`));
+    connection.beginTransaction(async (err) => {
+      if (err) {
+        connection.release();
+        return next(err);
       }
-    }
 
-    /* ================= EMAIL VALIDATION ================= */
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(customer_email)) {
-      return next(createError.BadRequest("Invalid customer_email format"));
-    }
+      try {
+        const order_number = `ORD-${Date.now()}`;
 
-    /* ================= PHONE VALIDATION (India) ================= */
-    const phoneRegex = /^[6-9]\d{9}$/;
-    if (!phoneRegex.test(customer_phone)) {
-      return next(createError.BadRequest("Invalid customer_phone number"));
-    }
+        const {
+          customer_name,
+          customer_email,
+          customer_phone,
+          customer_address,
+          city,
+          state,
+          pincode,
+          order_instructions,
+          promo_code,
+          discount_amount = 0,
+          shipping = 0,
+          items
+        } = req.body;
 
-    /* ================= PINCODE VALIDATION (India) ================= */
-    const pincodeRegex = /^\d{6}$/;
-    if (!pincodeRegex.test(pincode)) {
-      return next(createError.BadRequest("Invalid pincode"));
-    }
-
-    /* ================= NUMBER VALIDATIONS ================= */
-    const numericFields = {
-      subtotal,
-      shipping,
-      total_amount,
-    };
-
-    for (const [key, value] of Object.entries(numericFields)) {
-      if (
-        value === undefined ||
-        value === null ||
-        isNaN(value) ||
-        Number(value) < 0
-      ) {
-        return next(createError.BadRequest(`${key} must be a valid number`));
-      }
-    }
-
-    /* ================= OPTIONAL NUMBERS ================= */
-    if (
-      discount_amount !== undefined &&
-      (isNaN(discount_amount) || discount_amount < 0)
-    ) {
-      return next(
-        createError.BadRequest("discount_amount must be a valid number")
-      );
-    }
-
-    /* ================= OPTIONAL STRINGS ================= */
-    if (order_instructions && typeof order_instructions !== "string") {
-      return next(
-        createError.BadRequest("order_instructions must be a string")
-      );
-    }
-
-    if (promo_code && typeof promo_code !== "string") {
-      return next(createError.BadRequest("promo_code must be a string"));
-    }
-
-    /* ================= STATUS VALIDATION ================= */
-    const validOrderStatus = ["pending", "paid", "failed", "cancelled"];
-    if (order_status && !validOrderStatus.includes(order_status)) {
-      return next(createError.BadRequest("Invalid order_status"));
-    }
-
-    const validStatus = [
-      "pending",
-      "confirmed",
-      "shipped",
-      "delivered",
-      "cancelled",
-    ];
-
-    if (!status || !validStatus.includes(status)) {
-      return next(createError.BadRequest("Invalid status"));
-    }
-
-    const sql = `insert into orders (order_number,customer_name,
-      customer_email,
-      customer_phone,
-      customer_address,
-      city,
-      state,
-      pincode,
-      order_instructions,
-      promo_code,
-      discount_amount,
-      subtotal,
-      shipping,
-      total_amount,
-      payment_id,
-      razorpay_order_id,
-      razorpay_signature,
-      order_status,
-      status) values(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`;
-    db.query(
-      sql,
-      [
-        order_number,
-        customer_name,
-        customer_email,
-        customer_phone,
-        customer_address,
-        city,
-        state,
-        pincode,
-        order_instructions,
-        promo_code,
-        discount_amount,
-        subtotal,
-        shipping,
-        total_amount,
-        payment_id,
-        razorpay_order_id,
-        razorpay_signature,
-        order_status,
-        status,
-      ],
-      async (error, result) => {
-        if (error) {
-          return next(error);
+        if (!customer_name || !customer_email || !customer_phone) {
+          throw createError.BadRequest("Customer details are required");
         }
-        return res.status(201).json({
-          success: true,
-          message: "order placed successfully",
-          order_id: result.insertId,
+
+        if (!Array.isArray(items) || items.length === 0) {
+          throw createError.BadRequest("Order items are required");
+        }
+
+        const allowedSizes = ['XS','S','M','L','XL','XXL','XXXL','4XL','5XL'];
+        let subtotal = 0;
+
+        for (const item of items) {
+          const { product_id, quantity, size } = item;
+
+          if (!product_id || !quantity || quantity <= 0 || !size) {
+            throw createError.BadRequest("Invalid cart item");
+          }
+
+          if (!allowedSizes.includes(size)) {
+            throw createError.BadRequest("Invalid size selected");
+          }
+
+          const [rows] = await connection.promise().query(
+            `
+            SELECT 
+              v.id   AS variant_id,
+              v.price,
+              p.name AS product_name
+            FROM product_variants v
+            JOIN products p ON p.id = v.product_id
+            WHERE v.product_id = ? AND v.size = ?
+            LIMIT 1
+            `,
+            [product_id, size]
+          );
+
+          if (rows.length === 0) {
+            throw createError.BadRequest("Product variant not found");
+          }
+
+          const { price, variant_id, product_name } = rows[0];
+
+          subtotal += price * quantity;
+
+          // attach verified data
+          item._verified_price = price;
+          item._variant_id = variant_id;
+          item._product_name = product_name;
+        }
+
+        const safeDiscount = Math.min(discount_amount, subtotal);
+        const total_amount = subtotal - safeDiscount + shipping;
+
+        if (total_amount <= 0) {
+          throw createError.BadRequest("Invalid total amount");
+        }
+
+        const razorpayOrder = await razorpayInstance.orders.create({
+          amount: Math.round(total_amount * 100), // paise
+          currency: "INR",
+          receipt: order_number,
+          payment_capture: 1,
+          notes: {
+            customer_name,
+            customer_email,
+            customer_phone
+          }
+        });
+
+        if (!razorpayOrder || !razorpayOrder.id) {
+          throw createError.ServiceUnavailable("Payment gateway error");
+        }
+
+        connection.query(
+          `
+          INSERT INTO orders (
+            order_number,
+            customer_name,
+            customer_email,
+            customer_phone,
+            customer_address,
+            city,
+            state,
+            pincode,
+            order_instructions,
+            promo_code,
+            discount_amount,
+            subtotal,
+            shipping,
+            total_amount,
+            razorpay_order_id,
+            order_status,
+            status
+          )
+          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'pending', 'pending')
+          `,
+          [
+            order_number,
+            customer_name,
+            customer_email,
+            customer_phone,
+            customer_address,
+            city,
+            state,
+            pincode,
+            order_instructions || null,
+            promo_code || null,
+            safeDiscount,
+            subtotal,
+            shipping,
+            total_amount,
+            razorpayOrder.id
+          ],
+          (err, orderResult) => {
+            if (err) {
+              return connection.rollback(() => {
+                connection.release();
+                next(err);
+              });
+            }
+
+            const orderId = orderResult.insertId;
+
+            const itemPromises = items.map(item =>
+              connection.promise().query(
+                `
+                INSERT INTO order_items (
+                  order_id,
+                  product_id,
+                  variant_id,
+                  product_name,
+                  product_price,
+                  quantity,
+                  size,
+                  color
+                )
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+                `,
+                [
+                  orderId,
+                  item.product_id,
+                  item._variant_id,
+                  item._product_name,
+                  item._verified_price,
+                  item.quantity,
+                  item.size,
+                  item.color || null
+                ]
+              )
+            );
+
+            Promise.all(itemPromises)
+              .then(() => {
+                connection.commit(err => {
+                  if (err) {
+                    return connection.rollback(() => {
+                      connection.release();
+                      next(err);
+                    });
+                  }
+
+                  connection.release();
+                  res.status(201).json({
+                    success: true,
+                    message: "Order created successfully",
+                    data: {
+                      order_id: orderId,
+                      order_number,
+                      razorpay_order_id: razorpayOrder.id,
+                      amount: razorpayOrder.amount,
+                      currency: razorpayOrder.currency,
+                      customer_name:customer_name,
+                      customer_email:customer_email
+                    }
+                  });
+                });
+              })
+              .catch(err => {
+                connection.rollback(() => {
+                  connection.release();
+                  next(err);
+                });
+              });
+          }
+        );
+
+      } catch (error) {
+        connection.rollback(() => {
+          connection.release();
+          next(error);
         });
       }
-    );
-  } catch (error) {
-    next(error);
-  }
+    });
+  });
 };
