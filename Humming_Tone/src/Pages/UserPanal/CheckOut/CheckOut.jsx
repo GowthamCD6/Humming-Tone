@@ -6,6 +6,61 @@ import UserFooter from "../../../components/User-Footer-Card/UserFooter";
 const CheckOut = ({ onBack }) => {
   const navigate = useNavigate();
   const [promoCode, setPromoCode] = useState("");
+  const [formData, setFormData] = useState({
+    customer_name: "",
+    customer_email: "",
+    customer_phone: "",
+    customer_address: "",
+    city: "",
+    state: "",
+    pincode: "",
+    order_instructions: "",
+  });
+
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const handleCheckout = async () => {
+    try {
+      const payload = {
+        ...formData,
+
+        promo_code: promoCode || null,
+        discount_amount: 0,
+
+        subtotal,
+        shipping,
+        total_amount: total,
+
+        payment_id: "null",
+        razorpay_order_id: "null",
+        razorpay_signature: "null",
+
+        order_status: "paid",
+        status: "pending",
+      };
+      const res = await fetch("http://localhost:5000/user/checkout", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(payload),
+      });
+
+      const data = await res.json();
+      if (!res.ok) {
+        alert(data.error?.message || "checkout failed");
+        return;
+      }
+      alert("order placed successfully");
+      navigate("/usertab/home");
+    } catch (err) {
+      console.error(err);
+      alert("something went wrong");
+    }
+  };
 
   // Mock cart data (placeholder)
   const [cartItems] = useState([
@@ -57,8 +112,11 @@ const CheckOut = ({ onBack }) => {
                   </label>
                   <input
                     type="text"
+                    name="customer_name"
                     className="userpanal-checkout-form-input"
                     placeholder="Enter your full name"
+                    value={formData.customer_name}
+                    onChange={handleChange}
                   />
                 </div>
 
@@ -68,8 +126,11 @@ const CheckOut = ({ onBack }) => {
                   </label>
                   <input
                     type="email"
+                    name="customer_email"
                     className="userpanal-checkout-form-input"
                     placeholder="Enter your email address"
+                    value={formData.customer_email}
+                    onChange={handleChange}
                   />
                 </div>
 
@@ -78,9 +139,12 @@ const CheckOut = ({ onBack }) => {
                     Phone Number
                   </label>
                   <input
-                    type="tel"
+                    type="text"
+                    name="customer_phone"
                     className="userpanal-checkout-form-input"
-                    placeholder="Enter your phone number"
+                    placeholder="Enter your full name"
+                    value={formData.customer_phone}
+                    onChange={handleChange}
                   />
                 </div>
 
@@ -89,8 +153,11 @@ const CheckOut = ({ onBack }) => {
                     Complete Address
                   </label>
                   <textarea
+                    name="customer_address"
                     className="userpanal-checkout-form-textarea"
                     placeholder="Enter your complete delivery address"
+                    value={formData.customer_address}
+                    onChange={handleChange}
                   />
                 </div>
 
@@ -100,8 +167,11 @@ const CheckOut = ({ onBack }) => {
                   </label>
                   <input
                     type="text"
+                    name="city"
                     className="userpanal-checkout-form-input"
                     placeholder="Enter your city"
+                    value={formData.city}
+                    onChange={handleChange}
                   />
                 </div>
 
@@ -111,8 +181,11 @@ const CheckOut = ({ onBack }) => {
                   </label>
                   <input
                     type="text"
+                    name="state"
                     className="userpanal-checkout-form-input"
                     placeholder="Enter your state"
+                    value={formData.state}
+                    onChange={handleChange}
                   />
                 </div>
 
@@ -122,8 +195,11 @@ const CheckOut = ({ onBack }) => {
                   </label>
                   <input
                     type="text"
+                    name="pincode"
                     className="userpanal-checkout-form-input"
                     placeholder="Enter PIN code"
+                    value={formData.pincode}
+                    onChange={handleChange}
                   />
                 </div>
 
@@ -132,13 +208,20 @@ const CheckOut = ({ onBack }) => {
                     Order Instructions (Optional)
                   </label>
                   <textarea
+                    name="order_instructions"
                     className="userpanal-checkout-form-textarea"
                     placeholder="Any special instructions for your order..."
+                    value={formData.order_instructions}
+                    onChange={handleChange}
                   />
                 </div>
               </form>
 
-              <button className="userpanal-checkout-btn" type="button">
+              <button
+                className="userpanal-checkout-btn"
+                type="button"
+                onClick={handleCheckout}
+              >
                 PROCEED TO PAYMENT - ₹{total.toFixed(2)}
               </button>
             </section>

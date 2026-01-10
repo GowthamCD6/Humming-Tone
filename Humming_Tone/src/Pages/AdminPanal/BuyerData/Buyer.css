@@ -1,0 +1,355 @@
+/* ===== ANIMATIONS ===== */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ===== BUYER PAGE CONTAINER ===== */
+.buyer-page-container {
+  animation: fadeIn 0.3s ease-in;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  margin-top: -20px;
+}
+
+/* ===== PAGE HEADING ===== */
+.buyer-page-heading {
+  font-size: 2rem;
+  font-weight: 400;
+  color: #1a1a1a;
+  margin: 0 0 1.5rem;
+  letter-spacing: -0.5px;
+  font-family: 'Georgia', 'Times New Roman', serif;
+  margin-bottom: 35px;
+}
+
+/* Loading State */
+.buyer-loading {
+  text-align: center;
+  padding: 40px;
+  font-size: 16px;
+  color: #888;
+}
+
+/* No Buyers State */
+.no-buyers {
+  text-align: center;
+  padding: 40px;
+  background-color: white;
+  border-radius: 5px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+  color: #888;
+  font-size: 16px;
+}
+
+/* --- Stats Section --- */
+.buyer-stats-container {
+  display: flex;
+  gap: 20px;
+  margin-bottom: 20px;
+  animation: fadeIn 0.5s ease-in;
+  flex-wrap: wrap;
+}
+
+.buyer-stat-card {
+  flex: 1;
+  min-width: 200px;
+  background-color: white;
+  padding: 30px;
+  border-radius: 5px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+  text-align: center;
+}
+
+.buyer-stat-card h3 {
+  font-family: 'Georgia', serif;
+  font-size: 14px;
+  color: #666;
+  margin: 0 0 15px;
+  text-transform: uppercase;
+  font-weight: normal;
+  letter-spacing: 1px;
+}
+
+.buyer-stat-number {
+  font-size: 28px;
+  font-weight: bold;
+  color: #3498db;
+}
+
+/* --- Filter Section --- */
+.buyer-filter-container {
+  background-color: white;
+  padding: 15px 20px;
+  border-radius: 5px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+  margin-bottom: 20px;
+  animation: fadeIn 0.4s ease-in;
+  border: 1px solid #eef0f3;
+  display: flex;
+  gap: 15px;
+  align-items: center;
+}
+
+.buyer-search-wrapper {
+  flex: 1;
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.buyer-search-icon {
+  position: absolute;
+  left: 12px;
+  color: #888;
+  font-size: 20px !important;
+}
+
+.buyer-search-box {
+  width: 100%;
+  padding: 10px 10px 10px 42px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 14px;
+  color: #555;
+  background-color: #fff;
+  transition: border-color 0.2s;
+  height: 44px;
+}
+
+.buyer-search-box:focus {
+  outline: none;
+  border-color: #3498db;
+}
+
+.buyer-filter-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background-color: #f8f9fa;
+  padding: 0 12px;
+  border-radius: 4px;
+  border: 1px solid #ddd;
+  height: 44px;
+}
+
+.buyer-filter-icon {
+  color: #555;
+  font-size: 20px !important;
+}
+
+.buyer-order-filter {
+  border: none;
+  background: transparent;
+  font-size: 14px;
+  color: #333;
+  padding: 10px 5px;
+  cursor: pointer;
+  font-family: inherit;
+  min-width: 100px;
+}
+
+.buyer-order-filter:focus {
+  outline: none;
+}
+
+.buyer-total-badge {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background-color: #1a1a1a;
+  color: white;
+  padding: 0 14px;
+  border-radius: 4px;
+  height: 44px;
+  font-size: 13px;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.buyer-total-icon {
+  font-size: 18px !important;
+  color: #3498db;
+}
+
+/* --- Cards Grid --- */
+.buyer-cards-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 15px;
+  animation: fadeIn 0.6s ease-in;
+}
+
+/* --- Buyer Card --- */
+.buyer-card {
+  background-color: white;
+  border-radius: 5px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+  overflow: hidden;
+  transition: all 0.3s ease;
+  border: 1px solid #eef0f3;
+}
+
+.buyer-card:hover {
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+  transform: translateY(-2px);
+}
+
+.buyer-card-header {
+  background-color: #1a1a1a;
+  color: white;
+  padding: 12px 15px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.buyer-card-name {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 600;
+  font-family: 'Georgia', serif;
+  letter-spacing: 0.5px;
+}
+
+.buyer-order-badge {
+  background-color: #3498db;
+  color: white;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 4px 10px;
+  border-radius: 12px;
+  letter-spacing: 0.5px;
+}
+
+.buyer-card-body {
+  padding: 12px 15px;
+}
+
+.buyer-card-row {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 10px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.buyer-card-row:last-child {
+  margin-bottom: 0;
+  padding-bottom: 0;
+  border-bottom: none;
+}
+
+.buyer-card-row-inline {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+}
+
+.buyer-card-item {
+  display: flex;
+  flex-direction: column;
+}
+
+.buyer-card-label {
+  font-size: 10px;
+  font-weight: 600;
+  color: #888;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-bottom: 4px;
+}
+
+.buyer-card-value {
+  font-size: 13px;
+  color: #333;
+  line-height: 1.4;
+  word-break: break-word;
+}
+
+.buyer-card-link {
+  color: #3498db;
+  text-decoration: none;
+  transition: color 0.2s;
+}
+
+.buyer-card-link:hover {
+  color: #2980b9;
+  text-decoration: underline;
+}
+
+.buyer-card-pin {
+  font-weight: 600;
+  font-family: 'Georgia', serif;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .buyer-page-heading {
+    font-size: 1.5rem;
+  }
+
+  .buyer-stats-container {
+    flex-direction: column;
+  }
+
+  .buyer-stat-card {
+    min-width: 100%;
+  }
+
+  .buyer-filter-container {
+    flex-direction: column;
+    padding: 15px;
+  }
+
+  .buyer-search-wrapper {
+    width: 100%;
+  }
+
+  .buyer-filter-wrapper {
+    width: 100%;
+    justify-content: flex-start;
+  }
+
+  .buyer-order-filter {
+    flex: 1;
+  }
+
+  .buyer-cards-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .buyer-card-row-inline {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+}
+
+@media (max-width: 480px) {
+  .buyer-page-container {
+    margin-top: -10px;
+  }
+
+  .buyer-stat-card {
+    padding: 20px;
+  }
+
+  .buyer-stat-number {
+    font-size: 24px;
+  }
+
+  .buyer-card-header {
+    padding: 15px;
+  }
+
+  .buyer-card-body {
+    padding: 15px;
+  }
+}
