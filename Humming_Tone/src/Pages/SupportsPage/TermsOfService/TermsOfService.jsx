@@ -13,41 +13,73 @@ const TermsOfService = () => {
 						line-height: 1.6;
 				}
 
+				/* Animations */
+				@keyframes fadeInUp {
+						from { 
+								opacity: 0; 
+								transform: translateY(30px); 
+						}
+						to { 
+								opacity: 1; 
+								transform: translateY(0); 
+						}
+				}
+
+				@keyframes fadeIn {
+						from { opacity: 0; }
+						to { opacity: 1; }
+				}
+
+				@keyframes slideInFromLeft {
+						from { 
+								opacity: 0; 
+								transform: translateX(-30px); 
+						}
+						to { 
+								opacity: 1; 
+								transform: translateX(0); 
+						}
+				}
+
+				@keyframes scaleIn {
+						from { 
+								opacity: 0; 
+								transform: scale(0.95); 
+						}
+						to { 
+								opacity: 1; 
+								transform: scale(1); 
+						}
+				}
+
 				/* Hero Section - Preserving your Master Image Style */
         .terms-of-service-page .policy-hero {
             background: linear-gradient(135deg, rgba(0,0,0,0.75) 0%, rgba(0,0,0,0.6) 50%, rgba(0,0,0,0.75) 100%), 
                         url('https://images.unsplash.com/photo-1441986300917-64674bd600d8?ixlib=rb-4.0.3&auto=format&fit=crop&w=1950&q=80');
             background-size: cover;
-          background-position: center;
-          background-repeat: no-repeat;
-          background-attachment: fixed;
-          width: 100%;
-          max-width: 1340px;
-          margin: 0 auto;
-          min-height: 650px;
-          height: clamp(520px, 65vh, 720px);
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          box-sizing: border-box;
+						background-position: center;
+						background-repeat: no-repeat;
+						background-attachment: fixed;
+						width: 100%;
+						max-width: 1340px;
+						margin: 0 auto;
+						min-height: 650px;
+						height: clamp(520px, 65vh, 720px);
+						display: flex;
+						align-items: center;
+						justify-content: center;
+						box-sizing: border-box;
             color: white;
-            padding: 8rem 0 6rem;
+            padding: 8rem 2rem 6rem;
             text-align: center;
             margin-bottom: 0;
+						animation: fadeIn 0.8s ease-out;
         }
 
         .terms-of-service-page .hero-content {
 						max-width: 700px;
 						margin: 0 auto;
-				}
-
-				@media (max-width: 768px) {
-            .terms-of-service-page .policy-hero {
-								min-height: 320px;
-								height: clamp(320px, 55vh, 440px);
-								background-attachment: scroll;
-						}
-            .terms-of-service-page .policy-hero h1 { font-size: 2.5rem; }
+						animation: fadeInUp 1s ease-out 0.3s both;
 				}
 
         .terms-of-service-page .policy-hero h1 {
@@ -56,6 +88,7 @@ const TermsOfService = () => {
 						font-weight: 300;
 						letter-spacing: -0.02em;
 						text-shadow: 0 4px 20px rgba(0,0,0,0.3);
+						animation: slideInFromLeft 0.8s ease-out 0.5s both;
 				}
 
         .terms-of-service-page .policy-hero p {
@@ -65,11 +98,12 @@ const TermsOfService = () => {
 						margin: 0 auto;
 						font-weight: 300;
 						line-height: 1.6;
+						animation: fadeInUp 0.8s ease-out 0.7s both;
 				}
 
 				/* Main Content Area */
         .terms-of-service-page .policy-main {
-						padding: 6rem 0;
+						padding: 6rem 2rem;
 						background: #fafafa;
 						display: flex;
 						justify-content: center;
@@ -77,10 +111,11 @@ const TermsOfService = () => {
 
         .terms-of-service-page .policy-content {
 						max-width: 900px;
-						width: 90%;
+						width: 100%;
 						background: white;
 						padding: 4rem;
 						box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+						animation: scaleIn 0.6s ease-out;
 				}
 
         .terms-of-service-page .policy-section {
@@ -96,6 +131,7 @@ const TermsOfService = () => {
 						font-weight: 400;
 						border-bottom: 2px solid #f0f0f0;
 						padding-bottom: 0.75rem;
+						transition: color 0.3s ease;
 				}
 
         .terms-of-service-page .policy-section p {
@@ -114,6 +150,12 @@ const TermsOfService = () => {
         .terms-of-service-page .policy-section li {
 						margin-bottom: 0.75rem;
 						color: #555;
+						transition: color 0.3s ease, transform 0.3s ease;
+				}
+
+				.terms-of-service-page .policy-section li:hover {
+						color: #1a1a1a;
+						transform: translateX(5px);
 				}
 
         .terms-of-service-page .policy-update {
@@ -123,11 +165,7 @@ const TermsOfService = () => {
 						border-top: 1px solid #e9ecef;
 						color: #666;
 						font-style: italic;
-				}
-
-				@keyframes fadeInUp {
-						from { opacity: 0; transform: translateY(20px); }
-						to { opacity: 1; transform: translateY(0); }
+						animation: fadeIn 0.8s ease-out 1s both;
 				}
 
 				/* Animation delays for sections */
@@ -137,6 +175,168 @@ const TermsOfService = () => {
 				.section-4 { animation-delay: 0.4s; }
 				.section-5 { animation-delay: 0.5s; }
 				.section-6 { animation-delay: 0.6s; }
+
+				/* Responsive Design - Tablet */
+				@media (max-width: 1024px) {
+						.terms-of-service-page .policy-hero {
+								height: clamp(450px, 60vh, 650px);
+								padding: 6rem 2rem 5rem;
+						}
+
+						.terms-of-service-page .policy-hero h1 {
+								font-size: 3rem;
+						}
+
+						.terms-of-service-page .policy-hero p {
+								font-size: 1.2rem;
+						}
+
+						.terms-of-service-page .policy-main {
+								padding: 4rem 1.5rem;
+						}
+
+						.terms-of-service-page .policy-content {
+								padding: 3rem;
+						}
+
+						.terms-of-service-page .policy-section h2 {
+								font-size: 1.75rem;
+						}
+				}
+
+				/* Responsive Design - Mobile Large */
+				@media (max-width: 768px) {
+            .terms-of-service-page .policy-hero {
+								min-height: 400px;
+								height: clamp(400px, 55vh, 550px);
+								background-attachment: scroll;
+								padding: 5rem 1.5rem 4rem;
+						}
+
+						.terms-of-service-page .policy-hero h1 { 
+								font-size: 2.5rem;
+								margin-bottom: 1rem;
+						}
+
+						.terms-of-service-page .policy-hero p {
+								font-size: 1.1rem;
+						}
+
+						.terms-of-service-page .policy-main {
+								padding: 3rem 1rem;
+						}
+
+						.terms-of-service-page .policy-content {
+								padding: 2.5rem 2rem;
+								width: 95%;
+						}
+
+						.terms-of-service-page .policy-section {
+								margin-bottom: 2.5rem;
+						}
+
+						.terms-of-service-page .policy-section h2 {
+								font-size: 1.5rem;
+								margin-bottom: 1rem;
+						}
+
+						.terms-of-service-page .policy-section p {
+								font-size: 1rem;
+								line-height: 1.7;
+						}
+
+						.terms-of-service-page .policy-section ul {
+								padding-left: 1.25rem;
+						}
+
+						.terms-of-service-page .policy-section li {
+								font-size: 0.95rem;
+								margin-bottom: 0.6rem;
+						}
+
+						.terms-of-service-page .policy-update {
+								margin-top: 3rem;
+								padding-top: 1.5rem;
+								font-size: 0.95rem;
+						}
+				}
+
+				/* Responsive Design - Mobile Small */
+				@media (max-width: 480px) {
+						.terms-of-service-page .policy-hero {
+								height: auto;
+								min-height: 350px;
+								padding: 4rem 1rem 3rem;
+						}
+
+						.terms-of-service-page .policy-hero h1 {
+								font-size: 2rem;
+								line-height: 1.2;
+						}
+
+						.terms-of-service-page .policy-hero p {
+								font-size: 1rem;
+								line-height: 1.5;
+						}
+
+						.terms-of-service-page .policy-main {
+								padding: 2rem 0.75rem;
+						}
+
+						.terms-of-service-page .policy-content {
+								padding: 2rem 1.5rem;
+								width: 100%;
+						}
+
+						.terms-of-service-page .policy-section {
+								margin-bottom: 2rem;
+						}
+
+						.terms-of-service-page .policy-section h2 {
+								font-size: 1.3rem;
+								padding-bottom: 0.5rem;
+						}
+
+						.terms-of-service-page .policy-section p {
+								font-size: 0.95rem;
+								margin-bottom: 1rem;
+						}
+
+						.terms-of-service-page .policy-section ul {
+								margin: 1rem 0;
+								padding-left: 1rem;
+						}
+
+						.terms-of-service-page .policy-section li {
+								font-size: 0.9rem;
+								margin-bottom: 0.5rem;
+						}
+
+						.terms-of-service-page .policy-update {
+								margin-top: 2rem;
+								padding-top: 1rem;
+								font-size: 0.85rem;
+						}
+				}
+
+				/* Extra Small Devices */
+				@media (max-width: 360px) {
+						.terms-of-service-page .policy-hero h1 {
+								font-size: 1.75rem;
+						}
+
+						.terms-of-service-page .policy-hero p {
+								font-size: 0.95rem;
+						}
+
+						.terms-of-service-page .policy-content {
+								padding: 1.5rem 1rem;
+						}
+
+						.terms-of-service-page .policy-section h2 {
+								font-size: 1.2rem;
+						}
+				}
 			`}</style>
 
       {/* Hero Section */}

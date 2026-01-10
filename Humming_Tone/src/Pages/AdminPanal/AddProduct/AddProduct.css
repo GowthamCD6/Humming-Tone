@@ -1,13 +1,6 @@
-/* Reset and Base Styles */
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-}
-
-body {
+/* ===== SCOPED STYLES FOR ADD PRODUCT PAGE ===== */
+.admin-add-product-page {
   font-family: 'Playfair Display', 'Georgia', serif;
-  background-color: #f5f5f5;
 }
 
 /* ===== ANIMATIONS ===== */
@@ -34,7 +27,7 @@ body {
 }
 
 /* Main Container */
-.add-product-container {
+.admin-add-product-page .add-product-container {
   max-width: 1400px;
   margin: 0 auto;
   padding: 2rem;
@@ -45,12 +38,12 @@ body {
 }
 
 /* Page Header */
-.page-header {
+.admin-add-product-page .page-header {
   margin-bottom: 2.5rem;
   animation: fadeIn 0.4s ease-in;
 }
 
-.page-header h1 {
+.admin-add-product-page .page-header h1 {
   font-size: 2rem;
   font-weight: 400;
   color: #1a1a1a;
@@ -59,7 +52,7 @@ body {
 }
 
 /* Product Form */
-.product-form {
+.admin-add-product-page .product-form {
   background-color: #ffffff;
   border-radius: 8px;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
@@ -67,17 +60,18 @@ body {
 }
 
 /* Form Section */
-.form-section {
-  padding: 2.5rem;
+.admin-add-product-page .form-section {
+  padding: 1.5rem 2.5rem 1rem;
   border-bottom: 1px solid #e5e7eb;
   animation: fadeIn 0.3s ease-in;
 }
 
-.form-section:last-of-type {
+.admin-add-product-page .form-section:last-of-type {
   border-bottom: none;
+  padding-bottom: 1rem;
 }
 
-.section-title {
+.admin-add-product-page .section-title {
   font-size: 1.5rem;
   font-weight: 400;
   margin-bottom: 0.5rem;
@@ -85,7 +79,7 @@ body {
   font-family: 'Georgia', 'Times New Roman', serif;
 }
 
-.section-subtitle {
+.admin-add-product-page .section-subtitle {
   font-size: 0.9rem;
   color: #6b7280;
   margin-bottom: 2rem;
@@ -93,23 +87,23 @@ body {
 }
 
 /* Form Grid */
-.form-grid {
+.admin-add-product-page .form-grid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
-  gap: 1.5rem;
+  gap: 1rem;
 }
 
-.form-grid .full-width {
+.admin-add-product-page .form-grid .full-width {
   grid-column: 1 / -1;
 }
 
 /* Form Groups */
-.form-group {
+.admin-add-product-page .form-group {
   display: flex;
   flex-direction: column;
 }
 
-.form-group label {
+.admin-add-product-page .form-group label {
   font-size: 0.75rem;
   letter-spacing: 1.5px;
   color: #1a1a1a;
@@ -118,11 +112,11 @@ body {
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
 }
 
-.form-group input[type="text"],
-.form-group input[type="number"],
-.form-group input[type="file"],
-.form-group textarea,
-.form-group select {
+.admin-add-product-page .form-group input[type="text"],
+.admin-add-product-page .form-group input[type="number"],
+.admin-add-product-page .form-group input[type="file"],
+.admin-add-product-page .form-group textarea,
+.admin-add-product-page .form-group select {
   width: 100%;
   padding: 0.875rem 1rem;
   border: 1px solid #e5e7eb;
@@ -134,35 +128,35 @@ body {
   background-color: #ffffff;
 }
 
-.form-group input:focus,
-.form-group textarea:focus,
-.form-group select:focus {
+.admin-add-product-page .form-group input:focus,
+.admin-add-product-page .form-group textarea:focus,
+.admin-add-product-page .form-group select:focus {
   outline: none;
   border-color: #1a1a1a;
   box-shadow: 0 0 0 3px rgba(26, 26, 26, 0.05);
 }
 
-.form-group input::placeholder,
-.form-group textarea::placeholder {
+.admin-add-product-page .form-group input::placeholder,
+.admin-add-product-page .form-group textarea::placeholder {
   color: #9ca3af;
 }
 
-.form-group textarea {
+.admin-add-product-page .form-group textarea {
   resize: vertical;
-  min-height: 120px;
+  min-height: 100px;
   font-family: 'Georgia', serif;
   line-height: 1.6;
 }
 
 /* ===== IMAGE UPLOAD STYLES ===== */
-.images-upload-grid {
+.admin-add-product-page .images-upload-grid {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
   gap: 1.5rem;
   animation: fadeIn 0.4s ease-in;
 }
 
-.image-upload-box {
+.admin-add-product-page .image-upload-box {
   position: relative;
   aspect-ratio: 1;
   border: 2px dashed #e5e7eb;
@@ -173,19 +167,19 @@ body {
   cursor: pointer;
 }
 
-.image-upload-box.main-image {
+.admin-add-product-page .image-upload-box.main-image {
   grid-column: span 2;
   grid-row: span 2;
 }
 
-.image-upload-box:hover {
+.admin-add-product-page .image-upload-box:hover {
   border-color: #1a1a1a;
   background-color: #f3f4f6;
   transform: translateY(-2px);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
 }
 
-.upload-placeholder {
+.admin-add-product-page .upload-placeholder {
   width: 100%;
   height: 100%;
   display: flex;
@@ -197,21 +191,21 @@ body {
   transition: all 0.3s ease;
 }
 
-.image-upload-box:hover .upload-placeholder {
+.admin-add-product-page .image-upload-box:hover .upload-placeholder {
   transform: scale(1.05);
 }
 
-.upload-icon {
+.admin-add-product-page .upload-icon {
   font-size: 3rem !important;
   color: #9ca3af;
   transition: all 0.3s ease;
 }
 
-.image-upload-box:hover .upload-icon {
+.admin-add-product-page .image-upload-box:hover .upload-icon {
   color: #1a1a1a;
 }
 
-.upload-text {
+.admin-add-product-page .upload-text {
   font-size: 0.95rem;
   font-weight: 600;
   color: #4b5563;
@@ -219,27 +213,27 @@ body {
   letter-spacing: 0.5px;
 }
 
-.upload-subtext {
+.admin-add-product-page .upload-subtext {
   font-size: 0.75rem;
   color: #9ca3af;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
 }
 
-.image-preview {
+.admin-add-product-page .image-preview {
   width: 100%;
   height: 100%;
   position: relative;
   animation: scaleIn 0.3s ease-out;
 }
 
-.image-preview img {
+.admin-add-product-page .image-preview img {
   width: 100%;
   height: 100%;
   object-fit: cover;
   display: block;
 }
 
-.remove-image-btn {
+.admin-add-product-page .remove-image-btn {
   position: absolute;
   top: 10px;
   right: 10px;
@@ -259,21 +253,21 @@ body {
   backdrop-filter: blur(4px);
 }
 
-.image-preview:hover .remove-image-btn {
+.admin-add-product-page .image-preview:hover .remove-image-btn {
   opacity: 1;
   transform: scale(1);
 }
 
-.remove-image-btn:hover {
+.admin-add-product-page .remove-image-btn:hover {
   background: rgba(239, 68, 68, 0.95);
   transform: scale(1.15);
 }
 
-.remove-image-btn svg {
+.admin-add-product-page .remove-image-btn svg {
   font-size: 1.3rem;
 }
 
-.image-badge {
+.admin-add-product-page .image-badge {
   position: absolute;
   bottom: 12px;
   left: 12px;
@@ -289,7 +283,7 @@ body {
 }
 
 /* Variant Card */
-.variant-card {
+.admin-add-product-page .variant-card {
   background-color: #fafafa;
   border: 1px solid #e5e7eb;
   border-radius: 8px;
@@ -298,7 +292,7 @@ body {
   animation: fadeIn 0.3s ease-in;
 }
 
-.variant-header {
+.admin-add-product-page .variant-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -307,7 +301,7 @@ body {
   border-bottom: 1px solid #e5e7eb;
 }
 
-.variant-number {
+.admin-add-product-page .variant-number {
   font-size: 0.9rem;
   font-weight: 600;
   color: #1a1a1a;
@@ -315,7 +309,7 @@ body {
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
 }
 
-.btn-remove-icon {
+.admin-add-product-page .btn-remove-icon {
   background: #ef4444;
   color: white;
   border: none;
@@ -332,19 +326,19 @@ body {
   padding: 0;
 }
 
-.btn-remove-icon:hover {
+.admin-add-product-page .btn-remove-icon:hover {
   background: #dc2626;
   transform: scale(1.1);
 }
 
-.variant-fields {
+.admin-add-product-page .variant-fields {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
   gap: 1rem;
 }
 
 /* Buttons */
-.btn-add-variant {
+.admin-add-product-page .btn-add-variant {
   background-color: #10b981;
   color: white;
   border: none;
@@ -359,20 +353,20 @@ body {
   width: 100%;
 }
 
-.btn-add-variant:hover {
+.admin-add-product-page .btn-add-variant:hover {
   background-color: #059669;
   transform: translateY(-2px);
   box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
 }
 
 /* Checkbox Grid */
-.checkbox-grid {
+.admin-add-product-page .checkbox-grid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
   gap: 1.5rem;
 }
 
-.checkbox-card {
+.admin-add-product-page .checkbox-card {
   display: flex;
   align-items: flex-start;
   gap: 1rem;
@@ -384,12 +378,12 @@ body {
   background-color: #fafafa;
 }
 
-.checkbox-card:hover {
+.admin-add-product-page .checkbox-card:hover {
   border-color: #1a1a1a;
   background-color: #f3f4f6;
 }
 
-.checkbox-card input[type="checkbox"] {
+.admin-add-product-page .checkbox-card input[type="checkbox"] {
   margin-top: 0.25rem;
   width: 20px;
   height: 20px;
@@ -398,13 +392,13 @@ body {
   flex-shrink: 0;
 }
 
-.checkbox-content {
+.admin-add-product-page .checkbox-content {
   display: flex;
   flex-direction: column;
   gap: 0.25rem;
 }
 
-.checkbox-title {
+.admin-add-product-page .checkbox-title {
   font-size: 0.75rem;
   font-weight: 600;
   letter-spacing: 1.5px;
@@ -412,14 +406,14 @@ body {
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
 }
 
-.checkbox-desc {
+.admin-add-product-page .checkbox-desc {
   font-size: 0.85rem;
   color: #6b7280;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
 }
 
 /* Form Actions */
-.form-actions {
+.admin-add-product-page .form-actions {
   display: flex;
   justify-content: flex-end;
   gap: 1rem;
@@ -428,7 +422,7 @@ body {
   border-radius: 0 0 8px 8px;
 }
 
-.btn-cancel {
+.admin-add-product-page .btn-cancel {
   background-color: #e5e7eb;
   color: #1a1a1a;
   border: none;
@@ -442,13 +436,13 @@ body {
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
 }
 
-.btn-cancel:hover {
+.admin-add-product-page .btn-cancel:hover {
   background-color: #d1d5db;
   transform: translateY(-2px);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
 
-.btn-submit {
+.admin-add-product-page .btn-submit {
   background-color: #1a1a1a;
   color: white;
   border: none;
@@ -462,7 +456,7 @@ body {
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
 }
 
-.btn-submit:hover {
+.admin-add-product-page .btn-submit:hover {
   background-color: #2a2a2a;
   transform: translateY(-2px);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
@@ -470,115 +464,115 @@ body {
 
 /* Responsive Design */
 @media (max-width: 1200px) {
-  .images-upload-grid {
+  .admin-add-product-page .images-upload-grid {
     grid-template-columns: repeat(3, 1fr);
   }
 
-  .image-upload-box.main-image {
+  .admin-add-product-page .image-upload-box.main-image {
     grid-column: span 2;
     grid-row: span 2;
   }
 }
 
 @media (max-width: 1024px) {
-  .variant-fields {
+  .admin-add-product-page .variant-fields {
     grid-template-columns: repeat(2, 1fr);
   }
 
-  .checkbox-grid {
+  .admin-add-product-page .checkbox-grid {
     grid-template-columns: 1fr;
   }
 
-  .images-upload-grid {
+  .admin-add-product-page .images-upload-grid {
     grid-template-columns: repeat(2, 1fr);
   }
 
-  .image-upload-box.main-image {
+  .admin-add-product-page .image-upload-box.main-image {
     grid-column: span 2;
     grid-row: span 1;
   }
 }
 
 @media (max-width: 768px) {
-  .add-product-container {
+  .admin-add-product-page .add-product-container {
     padding: 1rem;
   }
 
-  .product-form {
+  .admin-add-product-page .product-form {
     border-radius: 6px;
   }
 
-  .form-section {
+  .admin-add-product-page .form-section {
     padding: 1.5rem;
   }
 
-  .page-header h1 {
+  .admin-add-product-page .page-header h1 {
     font-size: 1.75rem;
   }
 
-  .section-title {
+  .admin-add-product-page .section-title {
     font-size: 1.25rem;
   }
 
-  .form-grid {
+  .admin-add-product-page .form-grid {
     grid-template-columns: 1fr;
   }
 
-  .variant-fields {
+  .admin-add-product-page .variant-fields {
     grid-template-columns: 1fr;
   }
 
-  .images-upload-grid {
+  .admin-add-product-page .images-upload-grid {
     grid-template-columns: 1fr;
   }
 
-  .image-upload-box.main-image {
+  .admin-add-product-page .image-upload-box.main-image {
     grid-column: span 1;
     grid-row: span 1;
   }
 
-  .form-actions {
+  .admin-add-product-page .form-actions {
     flex-direction: column;
     padding: 1.5rem;
   }
 
-  .btn-cancel,
-  .btn-submit {
+  .admin-add-product-page .btn-cancel,
+  .admin-add-product-page .btn-submit {
     width: 100%;
   }
 
-  .upload-icon {
+  .admin-add-product-page .upload-icon {
     font-size: 2.5rem !important;
   }
 
-  .upload-text {
+  .admin-add-product-page .upload-text {
     font-size: 0.85rem;
   }
 }
 
 @media (max-width: 480px) {
-  .add-product-container {
+  .admin-add-product-page .add-product-container {
     padding: 0.75rem;
   }
 
-  .form-section {
+  .admin-add-product-page .form-section {
     padding: 1rem;
   }
 
-  .page-header h1 {
+  .admin-add-product-page .page-header h1 {
     font-size: 1.5rem;
   }
 
-  .section-title {
+  .admin-add-product-page .section-title {
     font-size: 1.1rem;
   }
 
-  .image-badge {
+  .admin-add-product-page .image-badge {
     font-size: 0.65rem;
     padding: 0.25rem 0.625rem;
   }
 
-  .remove-image-btn {
+  .admin-add-product-page .remove-image-btn {
     width: 32px;
     height: 32px;
     top: 8px;
@@ -587,7 +581,7 @@ body {
 }
 
 /* ===== VALIDATION STYLES ===== */
-.field-error {
+.admin-add-product-page .field-error {
   margin: 0.5rem 0 0;
   color: #dc2626;
   font-size: 0.8rem;
@@ -595,18 +589,18 @@ body {
   animation: fadeIn 0.2s ease-in;
 }
 
-.input-error {
+.admin-add-product-page .input-error {
   border-color: #dc2626 !important;
   box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.15) !important;
 }
 
-.upload-error {
+.admin-add-product-page .upload-error {
   border-color: #dc2626 !important;
   background-color: rgba(220, 38, 38, 0.05);
 }
 
 /* ===== SUCCESS MODAL STYLES ===== */
-.ap-modal-overlay {
+.admin-add-product-page .ap-modal-overlay {
   position: fixed;
   inset: 0;
   background: rgba(0, 0, 0, 0.6);
@@ -618,7 +612,7 @@ body {
   backdrop-filter: blur(4px);
 }
 
-.ap-modal {
+.admin-add-product-page .ap-modal {
   width: 92%;
   max-width: 520px;
   background: #ffffff;
@@ -639,7 +633,7 @@ body {
   }
 }
 
-.ap-modal-header {
+.admin-add-product-page .ap-modal-header {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -649,7 +643,7 @@ body {
   text-align: center;
 }
 
-.success-icon {
+.admin-add-product-page .success-icon {
   color: #16a34a;
   font-size: 4rem !important;
   margin-bottom: 1rem;
@@ -660,7 +654,7 @@ body {
   animation: scaleIn 0.4s ease-out 0.2s both;
 }
 
-.ap-modal-title {
+.admin-add-product-page .ap-modal-title {
   margin: 3rem 0 0;
   font-family: 'Georgia', 'Times New Roman', serif;
   font-size: 1.5rem;
@@ -669,7 +663,7 @@ body {
   letter-spacing: -0.5px;
 }
 
-.ap-modal-close {
+.admin-add-product-page .ap-modal-close {
   position: absolute;
   top: 1rem;
   right: 1rem;
@@ -685,17 +679,17 @@ body {
   justify-content: center;
 }
 
-.ap-modal-close:hover {
+.admin-add-product-page .ap-modal-close:hover {
   background: rgba(0, 0, 0, 0.1);
   color: #1a1a1a;
 }
 
-.ap-modal-body {
+.admin-add-product-page .ap-modal-body {
   padding: 2rem;
   text-align: center;
 }
 
-.success-message {
+.admin-add-product-page .success-message {
   font-size: 1rem;
   color: #4b5563;
   margin-bottom: 1.5rem;
@@ -703,7 +697,7 @@ body {
   line-height: 1.6;
 }
 
-.success-details {
+.admin-add-product-page .success-details {
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
@@ -713,25 +707,25 @@ body {
   border: 1px solid #e2e8f0;
 }
 
-.product-name-display {
+.admin-add-product-page .product-name-display {
   font-weight: 600;
   color: #1a1a1a;
   font-size: 1.1rem;
   font-family: 'Georgia', 'Times New Roman', serif;
 }
 
-.success-sub {
+.admin-add-product-page .success-sub {
   font-size: 0.9rem;
   color: #64748b;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
 }
 
-.ap-modal-footer {
+.admin-add-product-page .ap-modal-footer {
   padding: 1.5rem 2rem 2rem;
   text-align: center;
 }
 
-.btn-primary {
+.admin-add-product-page .btn-primary {
   background: #1f2937;
   color: #ffffff;
   border: none;
@@ -747,7 +741,7 @@ body {
   min-width: 140px;
 }
 
-.btn-primary:hover {
+.admin-add-product-page .btn-primary:hover {
   background: #111827;
   transform: translateY(-1px);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
