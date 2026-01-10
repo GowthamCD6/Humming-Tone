@@ -56,7 +56,7 @@ exports.getSiteContent = (req, res) => {
                         genderStatus[g.name] = !!g.is_active; 
                     });
 
-                    // Build response
+                    // Base response (footer + gender data)
                     const response = {
                         footer: {
                             brandName: brandData.brand_name || 'Humming & Tone',
