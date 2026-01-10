@@ -2,9 +2,13 @@ import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import './CartPage.css';
 import UserFooter from '../../../components/User-Footer-Card/UserFooter';
+import { useLocation } from "react-router-dom";
+
 
 const PremiumCart = ({ onCheckout }) => {
   const navigate = useNavigate();
+  const location = useLocation();
+
 
   const [cartItems, setCartItems] = useState([]);
   const [instructions, setInstructions] = useState('');
@@ -91,7 +95,8 @@ const PremiumCart = ({ onCheckout }) => {
   };
 
   /* ================= EMPTY CART ================= */
-  if (cartItems.length === 0) {
+  if (cartItems.length === 0 && !location.pathname.includes("checkout")) {
+
     return (
       <>
         <div className="userpanal-cart-page" style={{ maxWidth: '1400px', margin: '0 auto', padding: '2rem' }}>

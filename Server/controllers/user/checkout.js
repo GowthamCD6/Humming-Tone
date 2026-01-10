@@ -200,7 +200,9 @@ exports.create_order = (req, res, next) => {
                       order_number,
                       razorpay_order_id: razorpayOrder.id,
                       amount: razorpayOrder.amount,
-                      currency: razorpayOrder.currency
+                      currency: razorpayOrder.currency,
+                      customer_name:customer_name,
+                      customer_email:customer_email
                     }
                   });
                 });
