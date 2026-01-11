@@ -248,17 +248,20 @@ exports.web_hook = (req,res,next) => {
     let fetchSql = "select * from orders where razorpay_order_id = ? limit 1"
     db.query(fetchSql,[paymentDetails.order_id],(error,result) => {
       if(error)return next(error);
+      if (result.length === 0) {
+        return res.status(404).json({ msg: "Order not found" });
+      }
+      // Idempotency check
+      if (result[0].status === paymentDetails.status) {
+        return res.status(200).json({ msg: "Webhook already processed" });
+      }
+      const FINAL_STATUSES = ["captured", "failed"];
+      if (FINAL_STATUSES.includes(result[0].status)) {
+        return res.status(200).json({ msg: "Final state already set" });
+      }
       let updatesql = "update orders set status = ? where razorpay_order_id = ?";
       db.query(updatesql,[paymentDetails.status, paymentDetails.order_id],(error1,result1) => {
         if(error1)return next(error1);
-        if (result.length === 0) {
-          return res.status(404).json({ msg: "Order not found" });
-        }
-
-        if (result[0].status === paymentDetails.status) {
-          return res.status(200).json({ msg: "Webhook already processed" });
-        }
-
         res.status(200).json({msg:"Webhook received successfully!"});
       })
     })
