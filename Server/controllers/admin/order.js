@@ -11,7 +11,6 @@ exports.getManageOrders = async (req, res) => {
                 o.customer_phone,
                 o.created_at,
                 o.total_amount,
-                o.status,
                 o.payment_id,
                 COUNT(oi.id) AS unique_items_count,
                 IFNULL(SUM(oi.quantity), 0) AS total_qty
