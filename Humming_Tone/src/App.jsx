@@ -24,6 +24,8 @@ import TermsOfService from "./Pages/SupportsPage/TermsOfService/TermsOfService.j
 import ContactUs from "./Pages/SupportsPage/ContactUs/ContactUs.jsx";
 import ShoppingInfo from "./pages/SupportsPage/ShippingInfo/ShippingInfo.jsx";
 import ReturnAndExchange from "./Pages/SupportsPage/Return&Exchange/Return&Exchange.jsx";
+import PaymentSuccess from "./Pages/UserPanal/PaymentSuccess/PaymentSuccess.jsx";
+import PaymentFailure from "./Pages/UserPanal/PayementFailure/PaymentFailure.jsx";
 
 // Admin pages
 import Dashboard from './Pages/AdminPanal/Dashboard/Dashboard.jsx';
@@ -139,6 +141,8 @@ export default function App() {
           <Route path="cart" element={<CartPage />} />
           <Route path="product/:id" element={<ProductDetail />} />
           <Route path="checkout" element={<CheckOut />} />
+          <Route path="payment-success" element={<PaymentSuccess />} />
+          <Route path="payment-failure" element={<PaymentFailure />} />
           <Route path="details/:id" element={<ProductDetail />}></Route>
 
           {/* Supports page */}

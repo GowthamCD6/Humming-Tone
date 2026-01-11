@@ -74,76 +74,56 @@ const handleCheckout = async (e) => {
       state: formData.state,
       pincode: formData.pincode,
       order_instructions: formData.order_instructions || null,
-
       promo_code: promoCode || null,
       discount_amount: discountAmount,
       shipping,
-
-      items: cartItems.map((item) => ({
+      items: cartItems.map(item => ({
         product_id: item.id,
         quantity: item.quantity,
         size: item.size,
-        color: item.color || null,
-      })),
+        color: item.color || null
+      }))
     };
 
-    const res = await fetch(
-      "http://localhost:5000/user/create_order",
-      {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-      }
-    );
+    const res = await fetch("http://localhost:5000/user/create_order", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    });
 
     const result = await res.json();
-
     if (!res.ok || !result.success) {
       alert(result?.message || "Order creation failed");
       return;
     }
 
-    const { razorpay_order_id, amount, currency } = result.data;
+    const { razorpay_order_id, amount, currency, order_number } = result.data;
 
     const options = {
       key: RAZORPAY_KEY,
-
-      // Razorpay expects paise
       amount: Number(amount),
       currency,
       order_id: razorpay_order_id,
-
       name: "Humming Tone",
       description: "Order Payment",
-
       prefill: {
-        name: result.data.customer_name,
-        email: result.data.customer_email,
+        name: payload.customer_name,
+        email: payload.customer_email,
       },
-
-      theme: { color: "#F37254" },
-
-      handler: function (response) {
-        console.log("Payment success:", response);
-
-        // clear cart ONLY after payment
-        localStorage.removeItem("cart");
-
-        alert("Payment successful");
-        navigate("/usertab/home");
+      handler: function () {
+        // redirects to success page 
+        navigate("/usertab/payment-success", {
+          state: { order_number }
+        });
       },
-
-      modal: {
+      modal: { // it will be called on dismissed
         ondismiss: function () {
-          console.log("Payment popup closed");
+          navigate("/usertab/payment-failure", {
+            state: { order_number }
+          });
         },
       },
     };
-
-    if (!window.Razorpay) {
-      alert("Razorpay SDK not loaded");
-      return;
-    }
 
     const razorpay = new window.Razorpay(options);
     razorpay.open();
@@ -153,6 +133,7 @@ const handleCheckout = async (e) => {
     alert("Something went wrong");
   }
 };
+
 
 
   const handleBack = () => {
