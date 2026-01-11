@@ -1,5 +1,6 @@
 const db = require("../../config/db.js");
 const createError = require("http-errors");
+const crypto = require("crypto");
 const razorpayInstance = require("../../utils/rajorpay.js");
 
 exports.create_order = (req, res, next) => {
@@ -225,3 +226,32 @@ exports.create_order = (req, res, next) => {
     });
   });
 };
+
+exports.web_hook = (req,res,next) => {
+  try{
+    const body = JSON.stringify(req.body);
+       
+    const webhookSignature = req.headers["x-razorpay-signature"]
+
+    const expectedSignature = crypto
+    .createHmac("sha256", process.env.RAZORPAY_WEBHOOK_SECRET)
+    .update(body)
+    .digest("hex"); 
+
+    const isWebhookValid = expectedSignature === webhookSignature
+
+    if(!isWebhookValid){
+     return res.status(400).json({msg:"webhook signature is invalid!"})
+    }
+
+       // update the payment status in DB
+
+      //  const paymentDetails = req.body.payload.payment.entity; // req.body()
+      //  const payment = await paymentModel.findOne({orderId: paymentDetails.order_id})       
+      //  payment.status = paymentDetails.status;
+      //  await payment.save();
+  }
+  catch(error){
+    next(error);
+  }
+}
