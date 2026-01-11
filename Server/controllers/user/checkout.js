@@ -229,13 +229,12 @@ exports.create_order = (req, res, next) => {
 
 exports.web_hook = (req,res,next) => {
   try{
-    const body = JSON.stringify(req.body);
        
     const webhookSignature = req.headers["x-razorpay-signature"]
 
     const expectedSignature = crypto
     .createHmac("sha256", process.env.RAZORPAY_WEBHOOK_SECRET)
-    .update(body)
+    .update(req.rawBody)
     .digest("hex"); 
 
     const isWebhookValid = expectedSignature === webhookSignature
@@ -244,12 +243,26 @@ exports.web_hook = (req,res,next) => {
      return res.status(400).json({msg:"webhook signature is invalid!"})
     }
 
-       // update the payment status in DB
+    const paymentDetails = req.body.payload.payment.entity
 
-      //  const paymentDetails = req.body.payload.payment.entity; // req.body()
-      //  const payment = await paymentModel.findOne({orderId: paymentDetails.order_id})       
-      //  payment.status = paymentDetails.status;
-      //  await payment.save();
+    let fetchSql = "select * from orders where razorpay_order_id = ? limit 1"
+    db.query(fetchSql,[paymentDetails.order_id],(error,result) => {
+      if(error)return next(error);
+      let updatesql = "update orders set status = ? where razorpay_order_id = ?";
+      db.query(updatesql,[paymentDetails.status, paymentDetails.order_id],(error1,result1) => {
+        if(error1)return next(error1);
+        if (result.length === 0) {
+          return res.status(404).json({ msg: "Order not found" });
+        }
+
+        if (result[0].status === paymentDetails.status) {
+          return res.status(200).json({ msg: "Webhook already processed" });
+        }
+
+        res.status(200).json({msg:"Webhook received successfully!"});
+      })
+    })
+    
   }
   catch(error){
     next(error);

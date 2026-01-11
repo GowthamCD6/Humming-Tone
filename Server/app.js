@@ -29,7 +29,13 @@ app.use(cors({
 }));
 
 app.use(morgan('dev'));
-app.use(bodyParser.json());
+app.use(
+  bodyParser.json({
+    verify: (req, res, buf) => {
+      req.rawBody = buf;
+    }
+  })
+);
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 // Admin routes
