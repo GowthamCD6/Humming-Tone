@@ -1,0 +1,256 @@
+/* Root container */
+.payment-result {
+  max-width: 1100px;
+  margin: 2rem auto;
+  padding: 2.5rem;
+  background: #ffffff;
+  border-radius: 14px;
+  box-shadow: 0 15px 40px rgba(0, 0, 0, 0.08);
+  font-family: "Inter", "Segoe UI", sans-serif;
+  color: #1f2937;
+}
+
+/* Header */
+.result-header {
+  text-align: center;
+  margin-bottom: 3rem;
+}
+
+.result-icon {
+  font-size: 4rem !important;
+  margin-bottom: 1rem;
+}
+
+.result-header h1 {
+  font-size: 2.4rem;
+  font-weight: 700;
+  margin-bottom: 0.5rem;
+}
+
+.result-header p {
+  max-width: 700px;
+  margin: 0 auto;
+  color: #6b7280;
+  line-height: 1.7;
+}
+
+/* Error Details */
+.error-details {
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  border-radius: 12px;
+  padding: 2rem;
+  margin-bottom: 3rem;
+}
+
+.error-details h3 {
+  font-size: 1.4rem;
+  font-weight: 600;
+  margin-bottom: 1rem;
+}
+
+.error-message {
+  display: flex;
+  align-items: center;
+  font-size: 1.05rem;
+  font-weight: 500;
+  margin-bottom: 1rem;
+}
+
+/* Meta info */
+.error-meta {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 1.5rem;
+}
+
+.meta-item {
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+  padding: 1rem;
+}
+
+.meta-label {
+  display: block;
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #6b7280;
+  margin-bottom: 0.3rem;
+}
+
+.meta-value {
+  font-weight: 600;
+  color: #111827;
+}
+
+/* Next steps */
+.next-steps {
+  margin-bottom: 3rem;
+}
+
+.next-steps h3 {
+  font-size: 1.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.step-item {
+  display: flex;
+  gap: 1.2rem;
+  padding: 1.2rem;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  margin-bottom: 1rem;
+  background: #fafafa;
+}
+
+.step-icon {
+  font-size: 2rem !important;
+  flex-shrink: 0;
+}
+
+.step-title {
+  font-weight: 600;
+  margin-bottom: 0.3rem;
+}
+
+.step-description {
+  color: #6b7280;
+  line-height: 1.6;
+}
+
+/* Buttons */
+.result-actions {
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+  margin-bottom: 3rem;
+  flex-wrap: wrap;
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.75rem 1.6rem;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  border: none;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.btn svg {
+  font-size: 1.2rem;
+}
+
+.btn-primary {
+  background: #2563eb;
+  color: #ffffff;
+}
+
+.btn-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(37, 99, 235, 0.3);
+}
+
+.btn-secondary {
+  background: #e5e7eb;
+  color: #111827;
+}
+
+.btn-secondary:hover {
+  background: #d1d5db;
+}
+
+/* Support section */
+.support-info {
+  background: #eff6ff;
+  border: 1px solid #bfdbfe;
+  border-radius: 12px;
+  padding: 2rem;
+  margin-bottom: 3rem;
+}
+
+.support-info h4 {
+  font-size: 1.4rem;
+  margin-bottom: 0.5rem;
+}
+
+.support-details {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 1.2rem;
+  margin-top: 1.5rem;
+}
+
+.support-item {
+  background: #ffffff;
+  border-radius: 8px;
+  padding: 1rem;
+  border: 1px solid #e5e7eb;
+}
+
+.support-label {
+  display: block;
+  font-size: 0.8rem;
+  color: #6b7280;
+  margin-bottom: 0.3rem;
+}
+
+.support-value {
+  font-weight: 600;
+}
+
+/* Reference note */
+.reference-note {
+  margin-top: 1.5rem;
+  padding: 1rem;
+  background: #ffffff;
+  border-left: 4px solid #2563eb;
+  border-radius: 6px;
+  font-size: 0.95rem;
+}
+
+/* Important notes */
+.important-notes {
+  background: #fff7ed;
+  border: 1px solid #fed7aa;
+  border-radius: 10px;
+  padding: 1.5rem;
+  margin-bottom: 2.5rem;
+  font-size: 0.95rem;
+  line-height: 1.7;
+}
+
+/* Footer */
+.payment-footer {
+  text-align: center;
+  color: #6b7280;
+  font-size: 0.9rem;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .payment-result {
+    padding: 1.5rem;
+  }
+
+  .result-header h1 {
+    font-size: 1.9rem;
+  }
+
+  .step-item {
+    flex-direction: column;
+  }
+
+  .result-actions {
+    flex-direction: column;
+  }
+
+  .btn {
+    width: 100%;
+    justify-content: center;
+  }
+}

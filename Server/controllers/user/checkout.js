@@ -1,5 +1,6 @@
 const db = require("../../config/db.js");
 const createError = require("http-errors");
+const crypto = require("crypto");
 const razorpayInstance = require("../../utils/rajorpay.js");
 
 exports.create_order = (req, res, next) => {
@@ -121,10 +122,9 @@ exports.create_order = (req, res, next) => {
             shipping,
             total_amount,
             razorpay_order_id,
-            order_status,
-            status
+            order_status
           )
-          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'pending', 'pending')
+          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'pending')
           `,
           [
             order_number,
@@ -225,3 +225,83 @@ exports.create_order = (req, res, next) => {
     });
   });
 };
+
+exports.web_hook = (req,res,next) => {
+  try{
+       
+    const webhookSignature = req.headers["x-razorpay-signature"]
+
+    const expectedSignature = crypto
+    .createHmac("sha256", process.env.RAZORPAY_WEBHOOK_SECRET)
+    .update(req.rawBody)
+    .digest("hex"); 
+
+    const isWebhookValid = expectedSignature === webhookSignature
+
+    if(!isWebhookValid){
+     return res.status(400).json({msg:"webhook signature is invalid!"})
+    }
+
+    const paymentDetails = req.body.payload.payment.entity
+
+    let fetchSql = "select * from orders where razorpay_order_id = ? limit 1"
+    db.query(fetchSql,[paymentDetails.order_id],(error,result) => {
+      if(error)return next(error);
+      if (!result || result.length === 0) {
+        return res.status(404).json({ msg: "Order not found" });
+      }
+      // Idempotency check
+      if (result[0].payment_verified == 1) {
+        return res.status(200).json({ msg: "Webhook already processed" });
+      }
+      const FINAL_STATUSES = ["captured", "failed"];
+      if (FINAL_STATUSES.includes(result[0].payment_status)) {
+        return res.status(200).json({ msg: "Final state already set" });
+      }
+      if(paymentDetails.status == "captured"){
+        let updatesql = "update orders set payment_verified = ?, payment_status = ?, razorpay_signature = ? where razorpay_order_id = ?";
+        db.query(updatesql,[1, paymentDetails.status, webhookSignature, paymentDetails.order_id],(error1,result1) => {
+          if(error1)return next(error1);
+          res.status(200).json({msg:"Webhook received successfully!"});
+        })
+      }
+      else if(paymentDetails.status == "failed"){
+        let updatesql = "update orders set payment_status = ? where razorpay_order_id = ?";
+        db.query(updatesql,[paymentDetails.status, paymentDetails.order_id],(error1,result1) => {
+          if(error1)return next(error1);
+          res.status(200).json({msg:"Webhook received successfully!"});
+        })
+      }
+    })
+    
+  }
+  catch(error){
+    next(error);
+  }
+}
+
+exports.verify_payment = (req,res,next) => {
+  try{
+    const{order_number} = req.body;
+    if(!order_number || order_number.trim() == ""){
+      return next(createError.BadRequest('Invalid order_id!'));
+    }
+    let fetchSql = "select payment_verified, payment_status from orders where order_number = ?";
+    db.query(fetchSql,[order_number],(error,result) => {
+      if(error)return next(error);
+      if(result[0].payment_verified && result[0].payment_status == "captured"){
+        return res.status(200).json({
+          "msg":"payment verified"
+        })
+      }
+      else if(!result[0].payment_verified || result[0].payment_status == "failed"){
+        return res.status(200).json({
+          "msg":"payment not verified"
+        })
+      }
+    })
+  }
+  catch(error){
+    next(error);
+  }
+}
