@@ -1,4 +1,5 @@
 const db = require("../../config/db");
+const createError = require("http-errors");
 
 exports.getManageOrders = async (req, res) => {
     try {
@@ -34,3 +35,20 @@ exports.getManageOrders = async (req, res) => {
         });
     }
 };
+
+exports.getOrderItems = (req,res,next) => {
+    try{
+       const{order_id} = req.body;
+       if(!order_id || order_id.trim() == ""){
+        return next(createError.BadRequest('Invalid order id!'));
+       }
+       let sql = "select * from order_items where order_id = ?";
+       db.query(sql,[order_id],(error,result) => {
+        if(error)return next(error);
+        res.send(result);
+       })
+    }
+    catch(error){
+        next(error);
+    }
+}
