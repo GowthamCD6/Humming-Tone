@@ -38,7 +38,7 @@ exports.getManageOrders = async (req, res) => {
 
 exports.getOrderItems = (req,res,next) => {
     try{
-       const{order_id} = req.body;
+       const{order_id} = req.params;
        if(!order_id || order_id.trim() == ""){
         return next(createError.BadRequest('Invalid order id!'));
        }
