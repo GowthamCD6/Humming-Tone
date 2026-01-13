@@ -1,6 +1,6 @@
-@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&family=Poppins:wght@300;400;500;600;700&display=swap');
-@import url('https://fonts.googleapis.com/icon?family=Material+Icons'); /* my end _J */
-/* Container */
+/* @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&family=Poppins:wght@300;400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/icon?family=Material+Icons');
+
 .customize-page {
     max-width: 1400px;
    
@@ -11,7 +11,6 @@
     font-family: 'Poppins', -apple-system, BlinkMacSystemFont, sans-serif;
 }
 
-/* Header Section */
 .customize-header {
     text-align: center;
     margin-bottom: 30px;
@@ -41,7 +40,6 @@
     margin-bottom: 50px;
 }
 
-/* Progress Indicator */
 .progress-container {
     margin-bottom: 60px;
     animation: fadeInUp 0.8s ease-out 0.2s both;
@@ -127,7 +125,6 @@
     transition: width 0.5s ease;
 }
 
-/* Step Content */
 .customize-content {
     background-color: #ffffff;
     padding: 50px;
@@ -153,7 +150,6 @@
     letter-spacing: -0.01em;
 }
 
-/* Options Grid */
 .options-grid {
     display: grid;
     gap: 25px;
@@ -178,7 +174,6 @@
     margin: 0 auto;
 }
 
-/* Option Card */
 .option-card {
     background-color: #f8f8f8;
     border: 2px solid #e5e5e5;
@@ -221,10 +216,9 @@
     box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
 }
 
-/* --- IMAGE SIZE LOGIC START --- */
 .option-image-wrapper {
     width: 100%;
-    height: 180px; /* Adjust this value to control bounding box height */
+    height: 180px;
     margin-bottom: 15px;
     border-radius: 6px;
     overflow: hidden;
@@ -237,14 +231,13 @@
 .option-card-image {
     width: 100%; 
     height: 100%;
-    object-fit: contain; /* Ensures whole product is visible without cropping */
+    object-fit: contain;
     transition: transform 0.4s ease;
 }
 
 .option-card:hover .option-card-image {
-    transform: scale(1.05); /* Gentle zoom on hover */
+    transform: scale(1.05);
 }
-/* --- IMAGE SIZE LOGIC END --- */
 
 .option-icon {
     font-size: 48px !important;
@@ -293,7 +286,6 @@
     }
 }
 
-/* Color Card */
 .color-card {
     padding: 20px;
 }
@@ -317,7 +309,6 @@
     box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
 }
 
-/* Custom Color Picker */
 .custom-color-picker {
     position: relative;
     width: 80px;
@@ -370,7 +361,6 @@
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
 }
 
-/* Size Card */
 .size-guide-note {
     display: flex;
     align-items: center;
@@ -429,7 +419,6 @@
     animation: scaleIn 0.3s ease;
 }
 
-/* Design Options */
 .design-options {
     display: flex;
     gap: 20px;
@@ -470,7 +459,6 @@
     border-color: #1a1a1a;
 }
 
-/* Upload Section */
 .upload-section {
     display: flex;
     flex-direction: column;
@@ -555,7 +543,6 @@
     font-size: 20px;
 }
 
-/* Text Section */
 .text-section {
     text-align: center;
 }
@@ -594,7 +581,6 @@
     box-shadow: 0 0 0 3px rgba(26, 26, 26, 0.1);
 }
 
-/* Gallery Section */
 .gallery-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
@@ -649,7 +635,6 @@
     letter-spacing: 0.5px;
 }
 
-/* Navigation Buttons */
 .navigation-buttons {
     display: flex;
     justify-content: space-between;
@@ -740,7 +725,6 @@
     display: none;
 }
 
-/* Animations */
 @keyframes fadeInUp {
     from {
         opacity: 0;
@@ -761,7 +745,6 @@
     }
 }
 
-/* Responsive */
 @media (max-width: 992px) {
     .customize-page {
         padding: 40px 20px 0;
@@ -858,10 +841,9 @@
     }
 }
 
-/* Footer Full Width */
 .customize-page .footer-main-wrapper {
     width: 100vw;
     margin-left: calc(-50vw + 50%);
     margin-top: 0;
     box-sizing: border-box;
-}
+} */
