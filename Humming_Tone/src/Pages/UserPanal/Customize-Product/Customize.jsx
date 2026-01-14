@@ -552,3 +552,730 @@
 // };
 
 // export default CustomizePage;
+// TshirtCustomizer.jsx
+// TshirtCustomizer.jsx
+import React, { useState, useEffect, useRef } from 'react';
+import TShirtSVG from './../../../components/CustomizeT-shirt/TShirtSVG';
+import HoodieSVG from './../../../components/CustomizeT-shirt/HoodieSVG';
+import LongSleeveSVG from './../../../components/CustomizeT-shirt/LongSleeveSVG';
+import PoloShirtSVG from './../../../components/CustomizeT-shirt/PoloSVG';
+import './Customize.css';
+
+const TshirtCustomizer = () => {
+  // Product types with detailed specifications
+  const [productTypes] = useState([
+    { 
+      id: 1, 
+      name: 'Classic T-Shirt', 
+      type: 'tshirt', 
+      basePrice: 25, 
+      sleeve: 'Half Sleeve',
+      fabric: '100% Cotton',
+      fit: 'Regular Fit',
+      component: TShirtSVG
+    },
+    { 
+      id: 2, 
+      name: 'Premium Hoodie', 
+      type: 'hoodie', 
+      basePrice: 45, 
+      sleeve: 'Full Sleeve',
+      fabric: 'Cotton Blend',
+      fit: 'Oversized Fit',
+      component: HoodieSVG
+    },
+    { 
+      id: 3, 
+      name: 'Long Sleeve Shirt', 
+      type: 'longsleeve', 
+      basePrice: 32, 
+      sleeve: 'Full Sleeve',
+      fabric: 'Premium Cotton',
+      fit: 'Slim Fit',
+      component: LongSleeveSVG
+    },
+    { 
+      id: 4, 
+      name: 'Polo Shirt', 
+      type: 'polo', 
+      basePrice: 35, 
+      sleeve: 'Half Sleeve',
+      fabric: 'Piqué Cotton',
+      fit: 'Classic Fit',
+      component: PoloShirtSVG
+    }
+  ]);
+
+  // State management
+  const [selectedProduct, setSelectedProduct] = useState(1);
+  const [selectedColor, setSelectedColor] = useState('#FFFFFF');
+  const [selectedSize, setSelectedSize] = useState('M');
+  const [totalPrice, setTotalPrice] = useState(25.00);
+  const [designSide, setDesignSide] = useState('front');
+  
+  // Design states
+  const [frontDesign, setFrontDesign] = useState(null);
+  const [backDesign, setBackDesign] = useState(null);
+  const [designType, setDesignType] = useState('text');
+  const [designText, setDesignText] = useState('YOUR DESIGN HERE');
+  const [textColor, setTextColor] = useState('#333333');
+  const [textSize, setTextSize] = useState(24);
+  const [fontFamily, setFontFamily] = useState('Inter');
+  const [isBold, setIsBold] = useState(true);
+  
+  // Upload states
+  const [uploadedImages, setUploadedImages] = useState([]);
+  const [activeImage, setActiveImage] = useState(null);
+  
+  // Refs
+  const fileInputRef = useRef(null);
+
+  // Color options with color codes
+  const colorOptions = [
+    { name: 'White', value: '#FFFFFF', textColor: '#333333' },
+    { name: 'Black', value: '#333333', textColor: '#FFFFFF' },
+    { name: 'Red', value: '#FF3B30', textColor: '#FFFFFF' },
+    { name: 'Royal Blue', value: '#007AFF', textColor: '#FFFFFF' },
+    { name: 'Forest Green', value: '#34C759', textColor: '#FFFFFF' },
+    { name: 'Heather Gray', value: '#8E8E93', textColor: '#333333' },
+    { name: 'Navy Blue', value: '#0A2472', textColor: '#FFFFFF' },
+    { name: 'Burgundy', value: '#800020', textColor: '#FFFFFF' },
+    { name: 'Mustard Yellow', value: '#FFCC00', textColor: '#333333' },
+    { name: 'Light Pink', value: '#FFAFCC', textColor: '#333333' }
+  ];
+
+  // Size options with measurements
+  const sizeOptions = [
+    { label: 'XS', chest: '34-36"' },
+    { label: 'S', chest: '36-38"' },
+    { label: 'M', chest: '40-42"' },
+    { label: 'L', chest: '42-44"' },
+    { label: 'XL', chest: '46-48"' },
+    { label: 'XXL', chest: '50-52"' }
+  ];
+
+  // Font options
+  const fontOptions = [
+    { name: 'Inter', value: 'Inter, sans-serif' },
+    { name: 'Roboto', value: 'Roboto, sans-serif' },
+    { name: 'Open Sans', value: 'Open Sans, sans-serif' },
+    { name: 'Montserrat', value: 'Montserrat, sans-serif' },
+    { name: 'Poppins', value: 'Poppins, sans-serif' },
+    { name: 'Lato', value: 'Lato, sans-serif' },
+    { name: 'Arial', value: 'Arial, sans-serif' },
+    { name: 'Helvetica', value: 'Helvetica, sans-serif' },
+    { name: 'Georgia', value: 'Georgia, serif' },
+    { name: 'Courier New', value: 'Courier New, monospace' }
+  ];
+
+  // Calculate price
+  useEffect(() => {
+    const baseProduct = productTypes.find(p => p.id === selectedProduct);
+    let price = baseProduct?.basePrice || 25;
+    
+    // Size premium
+    const sizeLabels = sizeOptions.map(s => s.label);
+    const sizeIndex = sizeLabels.indexOf(selectedSize);
+    const sizePremium = [0, 0, 0, 2, 3, 5];
+    price += sizePremium[sizeIndex] || 0;
+    
+    // Design premium
+    if ((frontDesign || backDesign) && designType === 'image') {
+      price += 8; // Premium for custom images
+    } else if ((frontDesign || backDesign) && designType === 'text') {
+      price += 3; // Small premium for custom text
+    }
+    
+    setTotalPrice(price.toFixed(2));
+  }, [selectedProduct, selectedSize, designType, frontDesign, backDesign]);
+
+  // Get current product
+  const getCurrentProduct = () => {
+    return productTypes.find(p => p.id === selectedProduct);
+  };
+
+  // Get current design
+  const getCurrentDesign = () => {
+    return designSide === 'front' ? frontDesign : backDesign;
+  };
+
+  // Handle product change
+  const handleProductChange = (productId) => {
+    setSelectedProduct(productId);
+  };
+
+  // Handle color change
+  const handleColorChange = (color) => {
+    setSelectedColor(color);
+    // Auto-adjust text color for contrast
+    const selectedColorObj = colorOptions.find(c => c.value === color);
+    if (selectedColorObj && designType === 'text') {
+      setTextColor(selectedColorObj.textColor);
+    }
+  };
+
+  // Handle size change
+  const handleSizeChange = (size) => {
+    setSelectedSize(size);
+  };
+
+  // Handle design type change
+  const handleDesignTypeChange = (type) => {
+    setDesignType(type);
+    if (type === 'text') {
+      setDesignText('YOUR DESIGN HERE');
+    }
+  };
+
+  // Update text design
+  const updateTextDesign = () => {
+    const design = {
+      type: 'text',
+      content: designText,
+      color: textColor,
+      size: textSize,
+      font: fontFamily,
+      bold: isBold
+    };
+    
+    if (designSide === 'front') {
+      setFrontDesign(design);
+    } else {
+      setBackDesign(design);
+    }
+  };
+
+  // Handle text change
+  const handleTextChange = (text) => {
+    setDesignText(text);
+    updateTextDesign();
+  };
+
+  // Handle text style change
+  const handleTextStyleChange = (property, value) => {
+    switch (property) {
+      case 'color':
+        setTextColor(value);
+        break;
+      case 'size':
+        setTextSize(value);
+        break;
+      case 'font':
+        setFontFamily(value);
+        break;
+      case 'bold':
+        setIsBold(value);
+        break;
+      default:
+        break;
+    }
+    updateTextDesign();
+  };
+
+  // Handle image upload
+  const handleImageUpload = (event) => {
+    const files = Array.from(event.target.files);
+    const newImages = files.map(file => ({
+      id: Date.now() + Math.random(),
+      file,
+      url: URL.createObjectURL(file),
+      name: file.name.replace(/\.[^/.]+$/, ""), // Remove extension
+      size: (file.size / 1024).toFixed(1) + ' KB'
+    }));
+    
+    setUploadedImages(prev => [...prev, ...newImages]);
+    
+    // Auto-select first uploaded image
+    if (newImages.length > 0) {
+      selectUploadedImage(newImages[0].url);
+    }
+  };
+
+  // Select uploaded image
+  const selectUploadedImage = (imageUrl) => {
+    setActiveImage(imageUrl);
+    const design = { 
+      type: 'image', 
+      content: imageUrl,
+      scale: 1,
+      position: { x: 0, y: 0 }
+    };
+    
+    if (designSide === 'front') {
+      setFrontDesign(design);
+    } else {
+      setBackDesign(design);
+    }
+  };
+
+  // Clear current design
+  const clearCurrentDesign = () => {
+    if (designSide === 'front') {
+      setFrontDesign(null);
+    } else {
+      setBackDesign(null);
+    }
+  };
+
+  // Clear all designs
+  const clearAllDesigns = () => {
+    setFrontDesign(null);
+    setBackDesign(null);
+    setDesignText('YOUR DESIGN HERE');
+  };
+
+  // Trigger file upload
+  const triggerFileUpload = () => {
+    fileInputRef.current.click();
+  };
+
+  // Save design
+  const saveDesign = () => {
+    const design = {
+      id: Date.now(),
+      product: selectedProduct,
+      color: selectedColor,
+      size: selectedSize,
+      frontDesign,
+      backDesign,
+      price: totalPrice,
+      timestamp: new Date().toISOString()
+    };
+    
+    const savedDesigns = JSON.parse(localStorage.getItem('customDesigns') || '[]');
+    savedDesigns.push(design);
+    localStorage.setItem('customDesigns', JSON.stringify(savedDesigns));
+    
+    alert('Design saved successfully! You can access it later from Saved Designs.');
+  };
+
+  // Add to cart
+  const addToCart = () => {
+    const product = getCurrentProduct();
+    const cartItem = {
+      productId: selectedProduct,
+      productName: product.name,
+      color: colorOptions.find(c => c.value === selectedColor)?.name,
+      size: selectedSize,
+      frontDesign: frontDesign ? 'Custom Design' : 'None',
+      backDesign: backDesign ? 'Custom Design' : 'None',
+      designType: designType,
+      price: totalPrice,
+      quantity: 1
+    };
+    
+    // In real app, you would use Redux or Context
+    const cart = JSON.parse(localStorage.getItem('cart') || '[]');
+    cart.push(cartItem);
+    localStorage.setItem('cart', JSON.stringify(cart));
+    
+    alert(`Added to cart: ${cartItem.productName} - $${cartItem.price}`);
+  };
+
+  // Get current Product Component
+  const ProductComponent = getCurrentProduct().component;
+
+  return (
+    <div className="tshirt-customizer">
+      <div className="customizer-header">
+        <h1>T-Shirt Customizer Studio</h1>
+        <p>Design your perfect custom apparel with real-time preview</p>
+      </div>
+
+      <div className="customizer-grid">
+        {/* Left Column - Product Preview */}
+        <div className="preview-column">
+          <div className="preview-container">
+            <div className="preview-header">
+              <h2>Live Preview</h2>
+              <div className="side-toggle">
+                <button
+                  className={`side-btn ${designSide === 'front' ? 'active' : ''}`}
+                  onClick={() => setDesignSide('front')}
+                >
+                  <span className="btn-icon">👕</span>
+                  Front Design
+                </button>
+                <button
+                  className={`side-btn ${designSide === 'back' ? 'active' : ''}`}
+                  onClick={() => setDesignSide('back')}
+                >
+                  <span className="btn-icon">👚</span>
+                  Back Design
+                </button>
+              </div>
+            </div>
+
+            <div className="product-preview">
+              <div className="preview-wrapper">
+                <ProductComponent
+                  color={selectedColor}
+                  design={getCurrentDesign()}
+                  side={designSide}
+                />
+              </div>
+              
+              <div className="preview-info">
+                <div className="info-row">
+                  <span>Currently Editing:</span>
+                  <strong className="editing-side">{designSide.toUpperCase()} SIDE</strong>
+                </div>
+                <div className="info-row">
+                  <span>Design Type:</span>
+                  <strong>{getCurrentDesign()?.type?.toUpperCase() || 'NONE'}</strong>
+                </div>
+              </div>
+            </div>
+
+            {/* Design Controls */}
+            <div className="design-controls-panel">
+              <div className="design-type-selector">
+                <div className="type-tabs">
+                  <button
+                    className={`type-tab ${designType === 'text' ? 'active' : ''}`}
+                    onClick={() => handleDesignTypeChange('text')}
+                  >
+                    Text Design
+                  </button>
+                  <button
+                    className={`type-tab ${designType === 'image' ? 'active' : ''}`}
+                    onClick={() => handleDesignTypeChange('image')}
+                  >
+                    Upload Image
+                  </button>
+                </div>
+              </div>
+
+              {designType === 'text' ? (
+                <div className="text-design-panel">
+                  <div className="text-input-group">
+                    <label htmlFor="designText">Your Text:</label>
+                    <input
+                      id="designText"
+                      type="text"
+                      value={designText}
+                      onChange={(e) => handleTextChange(e.target.value)}
+                      placeholder="Enter your custom text here"
+                      className="text-input"
+                      maxLength="50"
+                    />
+                    <div className="char-count">{designText.length}/50</div>
+                  </div>
+
+                  <div className="text-style-controls">
+                    <div className="style-group">
+                      <label>Text Color</label>
+                      <div className="color-picker-wrapper">
+                        <input
+                          type="color"
+                          value={textColor}
+                          onChange={(e) => handleTextStyleChange('color', e.target.value)}
+                          className="color-picker"
+                        />
+                        <span className="color-value">{textColor}</span>
+                      </div>
+                    </div>
+
+                    <div className="style-group">
+                      <label>Font Size: {textSize}px</label>
+                      <input
+                        type="range"
+                        min="12"
+                        max="48"
+                        value={textSize}
+                        onChange={(e) => handleTextStyleChange('size', parseInt(e.target.value))}
+                        className="size-slider"
+                      />
+                    </div>
+
+                    <div className="style-group">
+                      <label>Font Family</label>
+                      <select
+                        value={fontFamily}
+                        onChange={(e) => handleTextStyleChange('font', e.target.value)}
+                        className="font-select"
+                      >
+                        {fontOptions.map(font => (
+                          <option key={font.value} value={font.value}>
+                            {font.name}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+
+                    <div className="style-group">
+                      <label className="checkbox-label">
+                        <input
+                          type="checkbox"
+                          checked={isBold}
+                          onChange={(e) => handleTextStyleChange('bold', e.target.checked)}
+                          className="bold-checkbox"
+                        />
+                        <span className="checkbox-custom"></span>
+                        Bold Text
+                      </label>
+                    </div>
+                  </div>
+                </div>
+              ) : (
+                <div className="image-upload-panel">
+                  <input
+                    type="file"
+                    ref={fileInputRef}
+                    onChange={handleImageUpload}
+                    accept="image/*"
+                    multiple
+                    className="file-input-hidden"
+                  />
+                  
+                  <div className="upload-area" onClick={triggerFileUpload}>
+                    <div className="upload-icon">📁</div>
+                    <div className="upload-text">
+                      <strong>Click to upload images</strong>
+                      <p>PNG, JPG, SVG up to 5MB each</p>
+                    </div>
+                    <button className="upload-button">Browse Files</button>
+                  </div>
+
+                  {uploadedImages.length > 0 && (
+                    <div className="uploaded-images-section">
+                      <h4>Your Uploads ({uploadedImages.length})</h4>
+                      <div className="image-grid">
+                        {uploadedImages.map(img => (
+                          <div
+                            key={img.id}
+                            className={`image-thumbnail ${activeImage === img.url ? 'active' : ''}`}
+                            onClick={() => selectUploadedImage(img.url)}
+                          >
+                            <img src={img.url} alt={img.name} className="thumbnail-image" />
+                            <div className="thumbnail-info">
+                              <div className="image-name">{img.name}</div>
+                              <div className="image-size">{img.size}</div>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              <div className="design-actions">
+                <button className="btn-clear" onClick={clearCurrentDesign}>
+                  Clear {designSide} Design
+                </button>
+                <button className="btn-clear-all" onClick={clearAllDesigns}>
+                  Clear All Designs
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Right Column - Customization Options */}
+        <div className="options-column">
+          {/* Product Selection */}
+          <div className="options-section">
+            <h3 className="section-title">SELECT PRODUCT TYPE</h3>
+            <div className="product-selection-grid">
+              {productTypes.map(product => {
+                const ProductIcon = product.component;
+                return (
+                  <div
+                    key={product.id}
+                    className={`product-selection-card ${selectedProduct === product.id ? 'selected' : ''}`}
+                    onClick={() => handleProductChange(product.id)}
+                  >
+                    <div className="product-icon-container">
+                      <ProductIcon color="#FFFFFF" design={null} side="front" />
+                    </div>
+                    <div className="product-info">
+                      <h4 className="product-name">{product.name}</h4>
+                      <div className="product-price">${product.basePrice}</div>
+                      <div className="product-specs">
+                        <span className="spec">{product.sleeve}</span>
+                        <span className="spec">{product.fabric}</span>
+                        <span className="spec">{product.fit}</span>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Color Selection */}
+          <div className="options-section">
+            <h3 className="section-title">PRODUCT COLOR</h3>
+            <div className="color-selection-grid">
+              {colorOptions.map(color => (
+                <div
+                  key={color.value}
+                  className={`color-option ${selectedColor === color.value ? 'selected' : ''}`}
+                  onClick={() => handleColorChange(color.value)}
+                  title={color.name}
+                >
+                  <div
+                    className="color-swatch"
+                    style={{ backgroundColor: color.value }}
+                  />
+                  <span className="color-name">{color.name}</span>
+                </div>
+              ))}
+            </div>
+            <div className="current-selection-display">
+              Selected: <span className="selected-color-name">{colorOptions.find(c => c.value === selectedColor)?.name}</span>
+            </div>
+          </div>
+
+          {/* Size Selection */}
+          <div className="options-section">
+            <h3 className="section-title">SELECT SIZE</h3>
+            <div className="size-selection-grid">
+              {sizeOptions.map(size => (
+                <div
+                  key={size.label}
+                  className={`size-option ${selectedSize === size.label ? 'selected' : ''}`}
+                  onClick={() => handleSizeChange(size.label)}
+                >
+                  <div className="size-label">{size.label}</div>
+                  <div className="size-measurement">{size.chest}</div>
+                </div>
+              ))}
+            </div>
+            <div className="size-guide-link">
+              <a href="#size-guide">View Size Guide →</a>
+            </div>
+          </div>
+
+          {/* Design Layers */}
+          <div className="options-section">
+            <h3 className="section-title">DESIGN LAYERS</h3>
+            <div className="layers-container">
+              <div className="layer-item">
+                <div className="layer-header">
+                  <span className="layer-title">Front Design</span>
+                  <button 
+                    className="layer-edit-btn"
+                    onClick={() => setDesignSide('front')}
+                  >
+                    {frontDesign ? 'Edit' : 'Add Design'}
+                  </button>
+                </div>
+                <div className="layer-content">
+                  {frontDesign ? (
+                    <div className="layer-preview-small">
+                      {frontDesign.type === 'text' ? (
+                        <div className="text-preview" style={{
+                          color: frontDesign.color,
+                          fontSize: '14px',
+                          fontFamily: frontDesign.font,
+                          fontWeight: frontDesign.bold ? 'bold' : 'normal'
+                        }}>
+                          {frontDesign.content}
+                        </div>
+                      ) : (
+                        <img src={frontDesign.content} alt="Front design" className="image-preview" />
+                      )}
+                    </div>
+                  ) : (
+                    <div className="layer-empty">No design added</div>
+                  )}
+                </div>
+              </div>
+
+              <div className="layer-item">
+                <div className="layer-header">
+                  <span className="layer-title">Back Design</span>
+                  <button 
+                    className="layer-edit-btn"
+                    onClick={() => setDesignSide('back')}
+                  >
+                    {backDesign ? 'Edit' : 'Add Design'}
+                  </button>
+                </div>
+                <div className="layer-content">
+                  {backDesign ? (
+                    <div className="layer-preview-small">
+                      {backDesign.type === 'text' ? (
+                        <div className="text-preview" style={{
+                          color: backDesign.color,
+                          fontSize: '14px',
+                          fontFamily: backDesign.font,
+                          fontWeight: backDesign.bold ? 'bold' : 'normal'
+                        }}>
+                          {backDesign.content}
+                        </div>
+                      ) : (
+                        <img src={backDesign.content} alt="Back design" className="image-preview" />
+                      )}
+                    </div>
+                  ) : (
+                    <div className="layer-empty">No design added</div>
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Price Summary */}
+          <div className="options-section price-summary">
+            <h3 className="section-title">PRICE SUMMARY</h3>
+            <div className="price-details">
+              <div className="price-row">
+                <span>Base Price:</span>
+                <span>${getCurrentProduct().basePrice}.00</span>
+              </div>
+              <div className="price-row">
+                <span>Size ({selectedSize}):</span>
+                <span>
+                  ${sizeOptions.find(s => s.label === selectedSize) ? 
+                    ['XS','S','M','L','XL','XXL'].indexOf(selectedSize) > 2 ? 
+                    (['XS','S','M','L','XL','XXL'].indexOf(selectedSize) - 2) * 2 : 0 
+                    : 0}.00
+                </span>
+              </div>
+              <div className="price-row">
+                <span>Custom Design:</span>
+                <span>
+                  ${((frontDesign || backDesign) && designType === 'image') ? '8.00' : 
+                    ((frontDesign || backDesign) && designType === 'text') ? '3.00' : '0.00'}
+                </span>
+              </div>
+              <div className="price-total">
+                <span>TOTAL:</span>
+                <span className="total-amount">${totalPrice}</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Action Buttons */}
+          <div className="action-buttons-section">
+            <button className="btn-add-to-cart" onClick={addToCart}>
+              <span className="btn-icon">🛒</span>
+              Add to Cart - ${totalPrice}
+            </button>
+            <button className="btn-save-design" onClick={saveDesign}>
+              <span className="btn-icon">💾</span>
+              Save Design for Later
+            </button>
+          </div>
+
+          {/* Instructions */}
+          <div className="instructions-section">
+            <h4>How to Customize:</h4>
+            <ol className="instructions-list">
+              <li><strong>Choose Product:</strong> Select T-Shirt, Hoodie, Long Sleeve, or Polo</li>
+              <li><strong>Pick Color:</strong> Choose from 10+ colors</li>
+              <li><strong>Select Size:</strong> XS to XXL with measurements</li>
+              <li><strong>Add Design:</strong> Switch between Front/Back and add text or upload image</li>
+              <li><strong>Preview & Order:</strong> See real-time preview and add to cart</li>
+            </ol>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default TshirtCustomizer;
