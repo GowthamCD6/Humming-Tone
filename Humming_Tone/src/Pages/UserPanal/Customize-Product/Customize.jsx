@@ -552,8 +552,7 @@
 // };
 
 // export default CustomizePage;
-// TshirtCustomizer.jsx
-// TshirtCustomizer.jsx
+
 import React, { useState, useEffect, useRef } from 'react';
 import TShirtSVG from './../../../components/CustomizeT-shirt/TShirtSVG';
 import HoodieSVG from './../../../components/CustomizeT-shirt/HoodieSVG';
@@ -1255,22 +1254,6 @@ const TshirtCustomizer = () => {
               <span className="btn-icon">🛒</span>
               Add to Cart - ${totalPrice}
             </button>
-            <button className="btn-save-design" onClick={saveDesign}>
-              <span className="btn-icon">💾</span>
-              Save Design for Later
-            </button>
-          </div>
-
-          {/* Instructions */}
-          <div className="instructions-section">
-            <h4>How to Customize:</h4>
-            <ol className="instructions-list">
-              <li><strong>Choose Product:</strong> Select T-Shirt, Hoodie, Long Sleeve, or Polo</li>
-              <li><strong>Pick Color:</strong> Choose from 10+ colors</li>
-              <li><strong>Select Size:</strong> XS to XXL with measurements</li>
-              <li><strong>Add Design:</strong> Switch between Front/Back and add text or upload image</li>
-              <li><strong>Preview & Order:</strong> See real-time preview and add to cart</li>
-            </ol>
           </div>
         </div>
       </div>
