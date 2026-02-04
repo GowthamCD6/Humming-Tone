@@ -13,6 +13,7 @@ exports.getManageOrders = async (req, res) => {
                 o.created_at,
                 o.total_amount,
                 o.payment_id,
+                o.status,
                 COUNT(oi.id) AS unique_items_count,
                 IFNULL(SUM(oi.quantity), 0) AS total_qty
             FROM orders o
@@ -49,6 +50,40 @@ exports.getOrderItems = (req,res,next) => {
        })
     }
     catch(error){
+        next(error);
+    }
+}
+
+exports.updateOrderStatus = async (req, res, next) => {
+    try {
+        const { orderId } = req.params;
+        const { status } = req.body;
+
+        if (!orderId || !status) {
+            return next(createError.BadRequest('Order ID and status are required'));
+        }
+
+        // Validate status
+        const validStatuses = ['pending', 'confirmed', 'shipped', 'delivered', 'cancelled'];
+        if (!validStatuses.includes(status.toLowerCase())) {
+            return next(createError.BadRequest('Invalid status value'));
+        }
+
+        const sql = "UPDATE orders SET status = ? WHERE id = ?";
+        const [result] = await db.promise().query(sql, [status, orderId]);
+
+        if (result.affectedRows === 0) {
+            return next(createError.NotFound('Order not found'));
+        }
+
+        res.status(200).json({ 
+            success: true, 
+            message: 'Order status updated successfully',
+            status: status
+        });
+
+    } catch (error) {
+        console.error("Update status error:", error);
         next(error);
     }
 }

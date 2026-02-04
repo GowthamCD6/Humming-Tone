@@ -14,54 +14,53 @@ export default function OrderDetails() {
   const [loading, setLoading] = useState(true);
   const [updating, setUpdating] = useState(false);
 
-  /* ================= FETCH ORDER ITEMS ================= */
+  /* ================= FETCH ORDER DATA ================= */
   useEffect(() => {
-    const fetchOrderItems = async () => {
+    const fetchOrderData = async () => {
       try {
-        const res = await fetch(
+        // Fetch all orders and find the specific one
+        const ordersRes = await fetch('http://localhost:5000/api/orders/manage');
+        if (!ordersRes.ok) throw new Error('Failed to fetch orders');
+        
+        const ordersData = await ordersRes.json();
+        const foundOrder = ordersData.find(o => o.id == orderId);
+        
+        if (!foundOrder) {
+          setLoading(false);
+          return;
+        }
+
+        // Fetch order items
+        const itemsRes = await fetch(
           `http://localhost:5000/admin/get_order_items/${orderId}`
         );
 
-        if (!res.ok) throw new Error('Failed to fetch order items');
+        if (!itemsRes.ok) throw new Error('Failed to fetch order items');
 
-        const itemsData = await res.json();
+        const itemsData = await itemsRes.json();
         setItems(itemsData);
 
-        // Derive a minimal order object (TEMP until order API exists)
-        if (itemsData.length > 0) {
-          setOrder({
-            id: orderId,
-            order_number: orderId,
-            status: 'pending',
-            created_at: new Date(),
-            customer_name: 'Customer',
-            customer_email: 'customer@email.com',
-            customer_phone: '',
-            customer_address: '',
-            city: '',
-            state: '',
-            pincode: '',
-            payment_verified: false,
-            subtotal: itemsData.reduce(
-              (sum, i) => sum + Number(i.product_price) * i.quantity,
-              0
-            ),
-            discount_amount: 0,
-            shipping: 0,
-            total_amount: itemsData.reduce(
-              (sum, i) => sum + Number(i.product_price) * i.quantity,
-              0
-            )
-          });
-        }
+        // Calculate total from items
+        const calculatedTotal = itemsData.reduce(
+          (sum, item) => sum + (Number(item.product_price) || 0) * (Number(item.quantity) || 0),
+          0
+        );
+
+        // Set order with proper data
+        setOrder({
+          ...foundOrder,
+          status: foundOrder.status || 'pending',
+          total_amount: calculatedTotal
+        });
+
       } catch (error) {
-        console.error('Error fetching order items:', error);
+        console.error('Error fetching order data:', error);
       } finally {
         setLoading(false);
       }
     };
 
-    fetchOrderItems();
+    fetchOrderData();
   }, [orderId]);
 
   /* ================= UPDATE STATUS ================= */
@@ -184,9 +183,52 @@ export default function OrderDetails() {
 
       {/* Summary */}
       <div className="od-summary">
-        <div className="od-summary-row od-total">
-          <span>Total Amount</span>
-          <span>₹{order.total_amount.toFixed(2)}</span>
+        <h3 className="od-section-title">Order Summary</h3>
+        
+        <div className="od-summary-content">
+          {/* Items Breakdown */}
+          <div className="od-summary-items">
+            {items.map((item, index) => {
+              const itemTotal = Number(item.product_price) * Number(item.quantity);
+              return (
+                <div key={item.id} className="od-summary-item-row">
+                  <span className="od-summary-item-name">
+                    {item.product_name} ({item.size}, {item.color}) × {item.quantity}
+                  </span>
+                  <span className="od-summary-item-amount">₹{itemTotal.toFixed(2)}</span>
+                </div>
+              );
+            })}
+          </div>
+
+          {/* Divider */}
+          <div className="od-summary-divider"></div>
+
+          {/* Subtotal */}
+          <div className="od-summary-row">
+            <span>Subtotal</span>
+            <span>₹{items.reduce((sum, item) => sum + (Number(item.product_price) * Number(item.quantity)), 0).toFixed(2)}</span>
+          </div>
+
+          {/* Shipping */}
+          <div className="od-summary-row">
+            <span>Shipping</span>
+            <span>₹{(order.shipping || 0).toFixed(2)}</span>
+          </div>
+
+          {/* Discount */}
+          {order.discount_amount > 0 && (
+            <div className="od-summary-row od-discount">
+              <span>Discount</span>
+              <span>-₹{order.discount_amount.toFixed(2)}</span>
+            </div>
+          )}
+
+          {/* Total */}
+          <div className="od-summary-row od-total">
+            <span>Total Amount</span>
+            <span>₹{order.total_amount.toFixed(2)}</span>
+          </div>
         </div>
       </div>
 
