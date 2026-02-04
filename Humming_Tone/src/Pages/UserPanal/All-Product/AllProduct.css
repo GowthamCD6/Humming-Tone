@@ -4,7 +4,7 @@
 .all-products-collection-page {
     max-width: 1400px;
     margin: 0 auto;
-    padding: 60px 40px;
+    padding: 20px 40px;
     background-color: #fafafa;
     min-height: 100vh;
     font-family: 'Poppins', -apple-system, BlinkMacSystemFont, sans-serif;
@@ -12,18 +12,18 @@
 
 /* Header Section */
 .all-products-header {
-    margin-bottom: 40px;
-    animation: fadeInUp 0.8s ease-out;
+    margin-bottom: 15px;
+    animation: fadeInUp 0.6s ease-out;
 }
 
 .all-products-title {
     font-family: 'Playfair Display', serif;
-    font-size: 48px;
+    font-size: 36px;
     font-weight: 300;
     color: #1a1a1a;
-    margin-bottom: 15px;
+    margin-bottom: 8px;
     letter-spacing: -0.02em;
-    animation: fadeInUp 0.8s ease-out 0.1s both;
+    animation: fadeInUp 0.6s ease-out 0.05s;
 }
 
 .all-products-item-count {
@@ -31,41 +31,41 @@
     color: #999;
     letter-spacing: 2px;
     font-weight: 400;
-    animation: fadeInUp 0.8s ease-out 0.2s both;
+    animation: fadeInUp 0.6s ease-out 0.1s;
 }
 
 .all-products-divider {
     width: 100%;
     height: 1px;
     background-color: #d1d5db;
-    margin-bottom: 60px;
-    animation: fadeInUp 0.8s ease-out 0.3s both;
+    margin-bottom: 20px;
+    animation: fadeInUp 0.6s ease-out 0.15s;
 }
 
 /* Filter Section */
 .all-products-filter-container {
     background-color: #ffffff;
-    padding: 50px;
-    margin-bottom: 80px;
+    padding: 25px 35px;
+    margin-bottom: 25px;
     border: 1px solid #e5e5e5;
     border-top: 3px solid #1a1a1a;
-    animation: fadeInUp 0.8s ease-out 0.4s both;
+    animation: fadeInUp 0.6s ease-out 0.2s;
 }
 
 .all-products-filter-title {
     font-family: 'Playfair Display', serif;
-    font-size: 36px;
+    font-size: 28px;
     font-weight: 400;
     color: #1a1a1a;
     text-align: center;
-    margin-bottom: 50px;
+    margin-bottom: 20px;
     letter-spacing: -0.01em;
 }
 
 .all-products-filter-row {
     display: grid;
     grid-template-columns: 1fr 1fr auto;
-    gap: 30px;
+    gap: 20px;
     align-items: end;
 }
 
@@ -88,8 +88,8 @@
 
 .all-products-select {
     width: 100%;
-    padding: 16px 20px;
-    font-size: 15px;
+    padding: 12px 16px;
+    font-size: 14px;
     color: #1a1a1a;
     background-color: #f8f8f8;
     border: 1px solid #e0e0e0;
@@ -161,18 +161,19 @@
 
 /* Products Section */
 .all-products-products-section {
-    animation: fadeInUp 0.8s ease-out 0.5s both;
+    max-width: 100%;
+    animation: fadeInUp 0.6s ease-out 0.25s;
 }
 
 .all-products-section-intro {
     text-align: center;
-    margin-bottom: 5rem;
-    animation: fadeIn 0.8s ease-out;
+    margin-bottom: 1.5rem;
+    animation: fadeIn 0.6s ease-out;
 }
 
 .all-products-intro-header {
     position: relative;
-    margin-bottom: 1.5rem;
+    margin-bottom: 0.5rem;
 }
 
 .all-products-intro-left {
@@ -194,10 +195,10 @@
 
 .all-products-section-heading {
     font-family: 'Playfair Display', serif;
-    font-size: clamp(28px, 4vw, 42px);
+    font-size: clamp(26px, 3.5vw, 36px);
     font-weight: 500;
     color: #1a1a1a;
-    margin-bottom: 1rem;
+    margin-bottom: 0.5rem;
     letter-spacing: -0.02em;
 }
 
@@ -211,11 +212,11 @@
 
 .all-products-section-description {
     color: #666;
-    font-size: 16px;
+    font-size: 14px;
     font-weight: 300;
     max-width: 600px;
-    margin: 1.5rem auto 0;
-    line-height: 1.8;
+    margin: 0.25rem auto 0;
+    line-height: 1.5;
     text-align: center;
 }
 
@@ -283,17 +284,19 @@
 /* Product Grid with dynamic columns */
 .all-products-product-grid {
     display: grid;
-    gap: 2.5rem;
-    animation: fadeIn 0.8s ease-out;
-    justify-content: center;
+    gap: 5rem;
+    max-width: 100%;
+    margin: 0 auto;
 }
 
 .all-products-product-grid.grid-cols-3 {
-    grid-template-columns: repeat(3, minmax(300px, 380px));
+    grid-template-columns: repeat(3, 1fr);
+    max-width: 1300px;
 }
 
 .all-products-product-grid.grid-cols-4 {
-    grid-template-columns: repeat(4, minmax(240px, 290px));
+    grid-template-columns: repeat(4, 1fr);
+    max-width: 1320px;
 }
 
 /* Adjust card image heights based on grid columns */
@@ -337,21 +340,10 @@
     overflow: hidden;
     position: relative;
     cursor: pointer;
-    opacity: 0;
-    animation: revealCard 0.6s ease-out forwards;
+    opacity: 1;
     max-width: 380px;
     width: 100%;
 }
-
-.all-products-product-card:nth-child(1) { animation-delay: 0.1s; }
-.all-products-product-card:nth-child(2) { animation-delay: 0.2s; }
-.all-products-product-card:nth-child(3) { animation-delay: 0.3s; }
-.all-products-product-card:nth-child(4) { animation-delay: 0.4s; }
-.all-products-product-card:nth-child(5) { animation-delay: 0.5s; }
-.all-products-product-card:nth-child(6) { animation-delay: 0.6s; }
-.all-products-product-card:nth-child(7) { animation-delay: 0.7s; }
-.all-products-product-card:nth-child(8) { animation-delay: 0.8s; }
-.all-products-product-card:nth-child(9) { animation-delay: 0.9s; }
 
 .all-products-product-card::before {
     content: '';
