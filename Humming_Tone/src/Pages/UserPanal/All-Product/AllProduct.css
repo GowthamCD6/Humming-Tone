@@ -170,6 +170,28 @@
     animation: fadeIn 0.8s ease-out;
 }
 
+.all-products-intro-header {
+    position: relative;
+    margin-bottom: 1.5rem;
+}
+
+.all-products-intro-left {
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.all-products-intro-right {
+    position: absolute;
+    right: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    display: flex;
+    align-items: center;
+    gap: 30px;
+}
+
 .all-products-section-heading {
     font-family: 'Playfair Display', serif;
     font-size: clamp(28px, 4vw, 42px);
@@ -183,7 +205,7 @@
     width: 70px;
     height: 2px;
     background: linear-gradient(90deg, transparent, #1a1a1a, transparent);
-    margin: 0 auto 30px;
+    margin: 0 0 0 0;
     border-radius: 10px;
 }
 
@@ -194,14 +216,116 @@
     max-width: 600px;
     margin: 1.5rem auto 0;
     line-height: 1.8;
+    text-align: center;
 }
 
+/* Grid Controls */
+.all-products-grid-toggle {
+    display: flex;
+    gap: 10px;
+}
+
+.all-products-grid-btn {
+    background: white;
+    border: 2px solid #e0e0e0;
+    width: 50px;
+    height: 50px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 4px;
+}
+
+.all-products-grid-btn:hover {
+    border-color: #1a1a1a;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.all-products-grid-btn.active {
+    background: #1a1a1a;
+    border-color: #1a1a1a;
+}
+
+.all-products-grid-btn.active .grid-icon-2 span,
+.all-products-grid-btn.active .grid-icon-3 span,
+.all-products-grid-btn.active .grid-icon-4 span,
+.all-products-grid-btn.active .grid-icon-5 span {
+    background: white;
+}
+
+.grid-icon-2, .grid-icon-3, .grid-icon-4, .grid-icon-5 {
+    display: flex;
+    gap: 3px;
+    align-items: center;
+}
+
+.grid-icon-2 span, .grid-icon-3 span, .grid-icon-4 span, .grid-icon-5 span {
+    width: 6px;
+    height: 20px;
+    background: #1a1a1a;
+    transition: background 0.3s ease;
+}
+
+.all-products-count {
+    font-size: 14px;
+    color: #666;
+    font-weight: 500;
+}
+
+.all-products-count-number {
+    color: #1a1a1a;
+    font-weight: 600;
+}
+
+/* Product Grid with dynamic columns */
 .all-products-product-grid {
     display: grid;
-    grid-template-columns: repeat(3, 380px);
-    gap: 5.5rem;
+    gap: 2.5rem;
     animation: fadeIn 0.8s ease-out;
     justify-content: center;
+}
+
+.all-products-product-grid.grid-cols-3 {
+    grid-template-columns: repeat(3, minmax(300px, 380px));
+}
+
+.all-products-product-grid.grid-cols-4 {
+    grid-template-columns: repeat(4, minmax(240px, 290px));
+}
+
+/* Adjust card image heights based on grid columns */
+.all-products-product-grid.grid-cols-3 .all-products-product-image-container {
+    height: 480px;
+}
+
+.all-products-product-grid.grid-cols-4 .all-products-product-image-container {
+    height: 360px;
+}
+
+/* Adjust product card padding for 4 columns */
+.all-products-product-grid.grid-cols-4 .all-products-product-card {
+    padding: 0;
+}
+
+.all-products-product-grid.grid-cols-4 .all-products-product-details {
+    padding: 18px;
+}
+
+.all-products-product-grid.grid-cols-4 .all-products-product-title {
+    font-size: 15px;
+    margin-bottom: 6px;
+}
+
+.all-products-product-grid.grid-cols-4 .all-products-product-brand {
+    font-size: 12px;
+    margin-bottom: 8px;
+}
+
+.all-products-product-grid.grid-cols-4 .all-products-product-price {
+    font-size: 16px;
 }
 
 /* Product Card */
@@ -492,9 +616,12 @@
 
 /* Large Desktop (1200px - 1399px) */
 @media (max-width: 1399px) and (min-width: 1200px) {
-    .all-products-product-grid {
+    .all-products-product-grid.grid-cols-3 {
         grid-template-columns: repeat(3, 1fr);
-        gap: 4rem;
+    }
+    
+    .all-products-product-grid.grid-cols-4 {
+        grid-template-columns: repeat(4, 1fr);
     }
 }
 
@@ -504,9 +631,12 @@
         padding: 50px 30px;
     }
     
-    .all-products-product-grid {
+    .all-products-product-grid.grid-cols-3 {
         grid-template-columns: repeat(3, 1fr);
-        gap: 3rem;
+    }
+    
+    .all-products-product-grid.grid-cols-4 {
+        grid-template-columns: repeat(3, 1fr); /* Show 3 columns on smaller screens */
     }
     
     .all-products-product-image-container {

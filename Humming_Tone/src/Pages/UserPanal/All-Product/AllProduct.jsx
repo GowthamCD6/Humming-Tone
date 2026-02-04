@@ -37,6 +37,7 @@ const ProductCard = React.memo(({ product }) => (
 const AllProductPage = ({ onViewDetails = () => {} }) => {
   const [selectedGender, setSelectedGender] = useState('All');
   const [selectedCategory, setSelectedCategory] = useState('All Categories');
+  const [gridColumns, setGridColumns] = useState(3); // Grid layout state
 
   const [allProducts, setAllProducts] = useState([]);
   const [products, setProducts] = useState([]);
@@ -190,14 +191,45 @@ const AllProductPage = ({ onViewDetails = () => {} }) => {
       ) : (
         <div className="all-products-products-section">
           <div className="all-products-section-intro">
-            <h2 className="all-products-section-heading">All Products</h2>
-            <div className="all-products-heading-accent"></div>
+            <div className="all-products-intro-header">
+              <div className="all-products-intro-left">
+                <h2 className="all-products-section-heading">All Products</h2>
+                <div className="all-products-heading-accent"></div>
+              </div>
+              
+              <div className="all-products-intro-right">
+                <div className="all-products-grid-toggle">
+                  <button
+                    className={`all-products-grid-btn ${gridColumns === 3 ? 'active' : ''}`}
+                    onClick={() => setGridColumns(3)}
+                    title="3 columns"
+                  >
+                    <div className="grid-icon-3">
+                      <span></span><span></span><span></span>
+                    </div>
+                  </button>
+                  <button
+                    className={`all-products-grid-btn ${gridColumns === 4 ? 'active' : ''}`}
+                    onClick={() => setGridColumns(4)}
+                    title="4 columns"
+                  >
+                    <div className="grid-icon-4">
+                      <span></span><span></span><span></span><span></span>
+                    </div>
+                  </button>
+                </div>
+                <div className="all-products-count">
+                  <span className="all-products-count-number">{products.length} Products</span>
+                </div>
+              </div>
+            </div>
+            
             <p className="all-products-section-description">
               Explore our complete collection of premium products
             </p>
           </div>
 
-          <div className="all-products-product-grid">
+          <div className={`all-products-product-grid grid-cols-${gridColumns}`}>
             {products.map(product => (
               <ProductCard key={product.id} product={product} />
             ))}
