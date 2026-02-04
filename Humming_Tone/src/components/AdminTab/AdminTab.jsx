@@ -47,10 +47,11 @@ export default function AdminTab({ onLogout = () => {} }) {
   ]
 
   const menuItems = menuSections.flatMap(section => section.items)
+
   const activeTabLabel =
     menuItems.find(item => item.id === activeTab)?.label || 'Dashboard'
 
-  // Keep activeTab in sync with URL
+  // Sync active tab with URL
   useEffect(() => {
     const current = menuItems.find(item =>
       item.path && location.pathname.startsWith(`/admin/${item.path}`)
@@ -70,14 +71,17 @@ export default function AdminTab({ onLogout = () => {} }) {
           <p className="sidebar-subtitle">ADMIN PANEL</p>
         </div>
 
-        {/* Sidebar Divider */}
+        {/* Divider */}
         <div className="sidebar-divider"></div>
 
-        {/* Navigation Menu */}
+        {/* Navigation */}
         <nav className="sidebar-nav">
           {menuSections.map((section, sectionIndex) => (
             <div key={sectionIndex} className="nav-section">
-              {section.title && <div className="nav-section-title">{section.title}</div>}
+              {section.title && (
+                <div className="nav-section-title">{section.title}</div>
+              )}
+
               {section.items.map(item => {
                 const Icon = item.Icon
                 return (
@@ -91,7 +95,9 @@ export default function AdminTab({ onLogout = () => {} }) {
                         navigate(item.path)
                       }
                     }}
-                    className={`admin-nav-item ${activeTab === item.id ? 'active' : ''}`}
+                    className={`admin-nav-item ${
+                      activeTab === item.id ? 'active' : ''
+                    }`}
                   >
                     <Icon className="admin-nav-icon" />
                     <span className="admin-nav-label">{item.label}</span>
@@ -102,7 +108,7 @@ export default function AdminTab({ onLogout = () => {} }) {
           ))}
         </nav>
 
-        {/* Sidebar Footer - Logout */}
+        {/* Logout */}
         <div className="sidebar-footer">
           <button onClick={onLogout} className="admin-logout-btn">
             <LogoutIcon className="nav-icon" />
@@ -111,7 +117,7 @@ export default function AdminTab({ onLogout = () => {} }) {
         </div>
       </aside>
 
-      {/* Main Content Area */}
+      {/* Main Content */}
       <main className="admin-main">
         {/* Header */}
         <header className="admin-header">
@@ -122,9 +128,8 @@ export default function AdminTab({ onLogout = () => {} }) {
           </div>
         </header>
 
-        {/* Content Container */}
+        {/* Page Content */}
         <div className="admin-content">
-          {/* Nested admin routes render here */}
           <Outlet />
         </div>
       </main>
