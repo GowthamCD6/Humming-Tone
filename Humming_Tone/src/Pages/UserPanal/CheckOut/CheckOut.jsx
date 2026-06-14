@@ -205,6 +205,7 @@ const handleCheckout = async (e) => {
                     {name === "customer_address" ? (
                       <textarea
                         name={name}
+                        placeholder={`Enter your ${label.toLowerCase()}`}
                         className="userpanal-checkout-form-textarea"
                         value={formData[name]}
                         onChange={handleChange}
@@ -213,6 +214,7 @@ const handleCheckout = async (e) => {
                       <input
                         type="text"
                         name={name}
+                        placeholder={`Enter your ${label.toLowerCase()}`}
                         className="userpanal-checkout-form-input"
                         value={formData[name]}
                         onChange={handleChange}
@@ -227,6 +229,7 @@ const handleCheckout = async (e) => {
                   </label>
                   <textarea
                     name="order_instructions"
+                    placeholder="Any special instructions for your order?"
                     className="userpanal-checkout-form-textarea"
                     value={formData.order_instructions}
                     onChange={handleChange}
@@ -251,6 +254,7 @@ const handleCheckout = async (e) => {
                 <div className="userpanal-checkout-promo-input-group">
                   <input
                     type="text"
+                    placeholder="Enter promo code"
                     className="userpanal-checkout-promo-input"
                     value={promoCode}
                     onChange={(e) => setPromoCode(e.target.value)}
@@ -294,21 +298,21 @@ const handleCheckout = async (e) => {
 
               <div className="userpanal-checkout-order-summary">
                 <div className="userpanal-checkout-summary-row">
-                  <span>Subtotal</span>
-                  <span>₹{formatMoney(subtotal)}</span>
+                  <span className="userpanal-checkout-summary-label">Subtotal</span>
+                  <span className="userpanal-checkout-summary-value">₹{formatMoney(subtotal)}</span>
                 </div>
                 <div className="userpanal-checkout-summary-row">
-                  <span>Discount</span>
-                  <span>-₹{formatMoney(discountAmount)}</span>
+                  <span className="userpanal-checkout-summary-label">Discount</span>
+                  <span className="userpanal-checkout-summary-value">-₹{formatMoney(discountAmount)}</span>
                 </div>
                 <div className="userpanal-checkout-summary-row">
-                  <span>Shipping</span>
-                  <span>₹{formatMoney(shipping)}</span>
+                  <span className="userpanal-checkout-summary-label">Shipping</span>
+                  <span className="userpanal-checkout-summary-value">₹{formatMoney(shipping)}</span>
                 </div>
                 <div className="userpanal-checkout-summary-divider" />
                 <div className="userpanal-checkout-summary-row userpanal-checkout-summary-row-last">
-                  <span>Total</span>
-                  <span>₹{formatMoney(total)}</span>
+                  <span className="userpanal-checkout-summary-label">Total</span>
+                  <span className="userpanal-checkout-summary-total">₹{formatMoney(total)}</span>
                 </div>
               </div>
             </section>
