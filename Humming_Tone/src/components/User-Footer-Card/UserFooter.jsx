@@ -68,6 +68,14 @@ const Footer = () => {
       "return_&_exchange": "return_&_exchange",
       "returnandexchange": "return_&_exchange",
 
+      // About page
+      "about": "about-us",
+      "about-us": "about-us",
+      "about_us": "about-us",
+      "aboutus": "about-us",
+      "our-store": "about-us",
+      "our_store": "about-us",
+
       // Shop pages
       "mens": "men",
       "mens-collection": "men",

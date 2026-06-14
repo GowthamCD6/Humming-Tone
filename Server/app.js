@@ -17,6 +17,7 @@ const userReturnRoutes = require("./routes/user/return");
 const customizeRoutes = require("./routes/user/customize");
 const userCheckoutRoutes = require('./routes/user/checkout')
 const adminCustomizeRoutes = require('./routes/admin/customize')
+const adminAuth = require('./middlewares/adminAuth');
 const app = express();
 const PORT = process.env.PORT || 5000;
 const path = require('path');
@@ -37,6 +38,18 @@ app.use(
   })
 );
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+
+// Admin Auth Middleware Protection
+app.use('/admin', (req, res, next) => {
+  if (req.path === '/auth/login') {
+    return next(); // Skip auth for login
+  }
+  // Allow OPTIONS preflight through
+  if (req.method === 'OPTIONS') {
+    return next();
+  }
+  adminAuth(req, res, next);
+});
 
 // Admin routes
 app.use("/", adminProductRoute);

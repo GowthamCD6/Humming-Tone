@@ -2,18 +2,15 @@ const createError = require("http-errors");
 const db = require("../../config/db");
 
 exports.fetch_products = (req,res,next) => { // api request should be /user/fetch_products?gender=men
-    const{gender} = req.query;
-    if(gender === undefined || gender == null || !gender || gender.trim() === ""){
-      return next(createError.BadRequest('gender not found!'));
-    }
-    const allowedGenders = ['men', 'women', 'children', 'babies', 'sports'];
-    if(!allowedGenders.includes(gender))return next(createError.BadRequest('Invalid Gender!'));
-    try{
+    const { gender } = req.query;
+    
+    try {
       let fetchSql = `SELECT 
                         p.id,
                         p.name,
                         p.brand,
-                        p.subcategory,
+                        p.subcategory as category,
+                        p.gender,
                         p.is_featured,
                         (
                             SELECT pi.image_path
@@ -27,13 +24,28 @@ exports.fetch_products = (req,res,next) => { // api request should be /user/fetc
                         FROM products p
                         LEFT JOIN product_variants pv 
                         ON pv.product_id = p.id
-                        WHERE p.is_active = 1 and p.gender = ?
-                        GROUP BY p.id order by created_at DESC`;
-      db.query(fetchSql,[gender],(error,result) => {
-        if(error || result.length === 0){
-            return next(error || createError.NotFound('Products not found!'));
+                        WHERE p.is_active = 1`;
+
+      const params = [];
+
+      // If a gender is provided, filter by it. Otherwise, fetch all active products.
+      if (gender && gender.trim() !== "") {
+        const allowedGenders = ['men', 'women', 'children', 'babies', 'sports'];
+        if (!allowedGenders.includes(gender)) {
+          return next(createError.BadRequest('Invalid Gender!'));
         }
-        res.send(result);
+        fetchSql += ` AND p.gender = ?`;
+        params.push(gender);
+      }
+
+      fetchSql += ` GROUP BY p.id ORDER BY p.created_at DESC`;
+
+      db.query(fetchSql, params, (error, result) => {
+        if(error){
+            return next(error);
+        }
+        // If result is empty, just return an empty array instead of 404
+        res.send(result || []);
       })
     }
     catch(error){

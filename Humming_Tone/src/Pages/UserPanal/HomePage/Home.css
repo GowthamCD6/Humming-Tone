@@ -132,6 +132,48 @@
     background: #000000;
     color: #ffffff;
 }
+
+/* Hero Buttons Container */
+.userpanal-homepage .hero-buttons {
+    display: flex;
+    gap: 20px;
+    align-items: center;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+/* Secondary Button for About Us */
+.userpanal-homepage .hero-secondary-button {
+    background: transparent;
+    color: #ffffff;
+    border: 2px solid #ffffff;
+    padding: 18px 50px;
+    font-size: 14px;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    border-radius: 2px;
+    cursor: pointer;
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    text-transform: uppercase;
+    font-family: 'Poppins', sans-serif;
+    position: relative;
+    overflow: hidden;
+    animation: fadeInUp 1s ease-out 0.7s both;
+    text-decoration: none;
+    display: inline-block;
+}
+
+.userpanal-homepage .hero-secondary-button:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 16px 48px rgba(255, 255, 255, 0.2);
+    background: #ffffff;
+    color: #000000;
+}
+
+.userpanal-homepage .hero-secondary-button:active {
+    transform: translateY(-2px);
+}
+
 .userpanal-homepage .hero-scroll-down {
     position: absolute;
     bottom: 40px;

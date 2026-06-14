@@ -4,7 +4,7 @@ import AddPhotoAlternateIcon from '@mui/icons-material/AddPhotoAlternate';
 import CloseIcon from '@mui/icons-material/Close';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 
-const AddProduct = () => {
+const AddProductAdmin = () => {
   const [productName, setProductName] = useState('');
   const [about, setAbout] = useState('');
   const [variants, setVariants] = useState([{ size: '', price: '', originalPrice: '', stock: '' }]);
@@ -35,7 +35,7 @@ const AddProduct = () => {
   const colorOptions = ['Red', 'Blue', 'Green', 'Yellow', 'Black', 'White', 'Pink', 'Purple', 'Orange', 'Brown', 'Gray', 'Multicolor'];
   const materialOptions = ['Cotton', 'Polyester', 'Wool', 'Silk', 'Denim', 'Leather', 'Linen', 'Nylon', 'Rayon', 'Velvet', 'Mixed'];
 
-  // Fetch genders and categories from backend
+  // Fetch genders and categories from backend (forces remount/refetch on HMR)
   useEffect(() => {
     const fetchGendersAndCategories = async () => {
       try {
@@ -59,7 +59,7 @@ const AddProduct = () => {
     if (gender && genderCategoryMap[gender]) {
       setCategoryOptions(genderCategoryMap[gender]);
       // Reset category if current category is not valid for selected gender
-      if (category && !genderCategoryMap[gender].some(c => c.name === category)) {
+      if (category && !genderCategoryMap[gender].some(c => c.slug === category)) {
         setCategory('');
       }
     } else {
@@ -131,12 +131,11 @@ const AddProduct = () => {
     if (!validateForm()) return;
 
     const formData = new FormData();
-    const categorySlugMap = { "Winter sets": "winter_sets", "T Shirts": "t_shirts", "Sleepingbags": "sleeping_bags", "Dresses": "dresses" };
 
     formData.append("name", productName);
     formData.append("about", about);
     formData.append("sku", sku);
-    formData.append("category", categorySlugMap[category] || category);
+    formData.append("category", category); // Category now directly holds the database slug
     formData.append("subcategory", subcategory);
     formData.append("brand", brand);
     formData.append("color", color);
@@ -252,7 +251,7 @@ const AddProduct = () => {
               <label htmlFor="category">CATEGORY</label>
               <select id="category" value={category} onChange={(e) => { setCategory(e.target.value); clearFieldError('category'); }} className={errors.category ? 'input-error' : ''} disabled={!gender}>
                 <option value="">Select Category</option>
-                {categoryOptions.map(c => <option key={c.name} value={c.name}>{c.name}</option>)}
+                {categoryOptions.map(c => <option key={c.slug} value={c.slug}>{c.name}</option>)}
               </select>
               {errors.category && <div className="field-error">{errors.category}</div>}
             </div>
@@ -390,4 +389,4 @@ const AddProduct = () => {
   );
 };
 
-export default AddProduct;
+export default AddProductAdmin;

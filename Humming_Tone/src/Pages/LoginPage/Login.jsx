@@ -33,32 +33,40 @@ export default function Login({ onSuccess }) {
     if (error) setError('');
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
-    // 1. Check for empty fields
     if (!formData.username.trim() || !formData.password.trim()) {
       setError('Please fill in all fields.');
       return;
     }
 
-    // 2. Validate Admin Credentials
-    if (formData.username === VALID_USERNAME && formData.password === VALID_PASSWORD) {
-      setError('');
-      console.log('Admin Login Successful');
-      // Trigger parent function to navigate to admin panel
-      if (onSuccess) onSuccess('admin'); 
-    } 
-    // 3. Validate User Credentials
-    else if (formData.username === USER_USERNAME && formData.password === USER_PASSWORD) {
-      setError('');
-      console.log('User Login Successful');
-      // Trigger parent function to navigate to user page
-      if (onSuccess) onSuccess('user');
-    } 
-    else {
-      // 4. Set Error for invalid credentials
-      setError('Invalid username or password.');
+    try {
+      const response = await fetch('http://localhost:5000/admin/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          username: formData.username,
+          password: formData.password
+        })
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        setError('');
+        console.log('Admin Login Successful');
+        // Save the JWT token
+        localStorage.setItem('adminToken', data.token);
+        
+        // Trigger parent function to navigate to admin panel
+        if (onSuccess) onSuccess('admin'); 
+      } else {
+        setError(data.error?.message || data.message || 'Invalid username or password.');
+      }
+    } catch (err) {
+      setError('Failed to connect to the server. Please try again.');
+      console.error('Login error:', err);
     }
   };
 

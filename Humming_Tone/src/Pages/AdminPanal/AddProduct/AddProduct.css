@@ -170,6 +170,7 @@
 .admin-add-product-page .image-upload-box.main-image {
   grid-column: span 2;
   grid-row: span 2;
+  aspect-ratio: auto; /* Let the grid spanning dictate the height to prevent squishing */
 }
 
 .admin-add-product-page .image-upload-box:hover {
@@ -180,6 +181,9 @@
 }
 
 .admin-add-product-page .upload-placeholder {
+  position: absolute;
+  top: 0;
+  left: 0;
   width: 100%;
   height: 100%;
   display: flex;
@@ -220,16 +224,23 @@
 }
 
 .admin-add-product-page .image-preview {
+  position: absolute;
+  top: 0;
+  left: 0;
   width: 100%;
   height: 100%;
-  position: relative;
   animation: scaleIn 0.3s ease-out;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #f3f4f6;
 }
 
 .admin-add-product-page .image-preview img {
   width: 100%;
   height: 100%;
   object-fit: cover;
+  object-position: center;
   display: block;
 }
 

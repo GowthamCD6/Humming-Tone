@@ -17,6 +17,7 @@ import CustomizePage from "./Pages/UserPanal/Customize-Product/Customize.jsx";
 import CartPage from "./Pages/UserPanal/Cart-Page/CartPage.jsx";
 import ProductDetail from "./Pages/UserPanal/Prodect-Details/Details.jsx";
 import CheckOut from "./Pages/UserPanal/CheckOut/CheckOut.jsx";
+import AboutUs from "./Pages/UserPanal/About-Us/AboutUs.jsx";
 
 // Supports page
 import PrivacyPolicy from "./Pages/SupportsPage/Privacy&Policy/Privacy&Policy.jsx";
@@ -36,12 +37,71 @@ import SiteContent from './Pages/AdminPanal/SiteContent/SiteContent.jsx';
 import ProductData from './Pages/AdminPanal/ProductData/ProductData.jsx';
 import ProductBuyer from './Pages/AdminPanal/BuyerData/Buyer.jsx';
 import OrderDetails from "./Pages/AdminPanal/ManageOrder/OrderDetails/OrderDetails.jsx";
+import axios from 'axios';
 
 import "./App.css";
 
+// --- GLOBAL API INTERCEPTORS ---
+// Automatically inject the JWT token into all outgoing axios requests
+axios.interceptors.request.use(config => {
+  const token = localStorage.getItem('adminToken');
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`;
+  }
+  return config;
+});
+
+// Automatically inject the JWT token into all outgoing fetch requests
+const originalFetch = window.fetch;
+window.fetch = async function () {
+  let [resource, config] = arguments;
+  
+  const token = localStorage.getItem('adminToken');
+  if (token) {
+    if (!config) config = {};
+    if (!config.headers) config.headers = {};
+    
+    if (config.headers instanceof Headers) {
+      config.headers.set('Authorization', `Bearer ${token}`);
+    } else {
+      config.headers['Authorization'] = `Bearer ${token}`;
+    }
+  }
+  
+  return originalFetch(resource, config);
+};
+// -------------------------------
+
 export default function App() {
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [userType, setUserType] = useState(null);
+  const [isAuthenticated, setIsAuthenticated] = useState(!!localStorage.getItem('adminToken'));
+  const [userType, setUserType] = useState(localStorage.getItem('adminToken') ? 'admin' : null);
+
+  // Background verification of token to ensure it hasn't expired or been revoked
+  useEffect(() => {
+    const verifyToken = async () => {
+      const token = localStorage.getItem('adminToken');
+      if (!token) return;
+
+      try {
+        const response = await fetch('http://localhost:5000/admin/auth/verify', {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        });
+        
+        if (!response.ok) {
+          // Token is invalid or expired
+          localStorage.removeItem('adminToken');
+          setIsAuthenticated(false);
+          setUserType(null);
+        }
+      } catch (err) {
+        console.error('Failed to verify token:', err);
+      }
+    };
+
+    verifyToken();
+  }, []);
 
   const handleLogin = (type) => {
     setIsAuthenticated(true);
@@ -49,6 +109,7 @@ export default function App() {
   };
 
   const handleLogout = () => {
+    localStorage.removeItem('adminToken');
     setIsAuthenticated(false);
     setUserType(null);
   };
@@ -59,27 +120,14 @@ export default function App() {
       <Routes>
         <Route
           path="/"
-          element={
-            <Navigate
-              to={
-                isAuthenticated
-                  ? userType === "admin"
-                    ? "/admin/dashboard"
-                    : "/usertab/home"
-                  : "/login"
-              }
-              replace
-            />
-          }
+          element={<Navigate to="/usertab/home" replace />}
         />
 
         <Route
           path="/login"
           element={
-            isAuthenticated ? (
-              <Navigate
-                to={userType === "admin" ? "/admin/dashboard" : "/usertab/home"}
-              />
+            isAuthenticated && userType === "admin" ? (
+              <Navigate to="/admin/dashboard" replace />
             ) : (
               <Login onSuccess={handleLogin} />
             )
@@ -116,19 +164,8 @@ export default function App() {
           <Route path="product-buyers" element={<ProductBuyer />} />
         </Route>
 
-        {/* USER NESTED ROUTES */}
-        <Route
-          path="/usertab"
-          element={
-            <ProtectedRoute
-              isAuthenticated={isAuthenticated}
-              userType={userType}
-              requiredType="user"
-            >
-              <UserTab />
-            </ProtectedRoute>
-          }
-        >
+        {/* USER NESTED ROUTES (PUBLIC) */}
+        <Route path="/usertab" element={<UserTab />}>
           <Route index element={<Navigate to="home" />} />
           <Route path="home" element={<Home />} />
           <Route path="all-products" element={<AllProductPage />} />
@@ -151,6 +188,7 @@ export default function App() {
           <Route path="contact_us" element={<ContactUs/>} />
           <Route path="shipping_info" element={<ShoppingInfo/>} />
           <Route path="return_&_exchange" element={<ReturnAndExchange/>} />
+          <Route path="about-us" element={<AboutUs/>} />
         </Route>
 
         <Route path="*" element={<Navigate to="/" replace />} />

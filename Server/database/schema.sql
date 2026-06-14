@@ -18,7 +18,8 @@ CREATE TABLE users (
 CREATE TABLE categories (
   id INT AUTO_INCREMENT PRIMARY KEY,
   name VARCHAR(100) NOT NULL,
-  slug VARCHAR(100) NOT NULL UNIQUE
+  slug VARCHAR(100) NOT NULL UNIQUE,
+  gender_name VARCHAR(100) DEFAULT NULL
 );
 
 CREATE TABLE products (
@@ -96,8 +97,8 @@ CREATE TABLE orders (
   payment_id VARCHAR(255),
   razorpay_order_id VARCHAR(255),
   razorpay_signature VARCHAR(500),
-  order_status ENUM('pending','confirmed','shipped','delivered','cancelled') DEFAULT 'pending'
-  payment_status ENUM('captrured','failed','created') DEFAULT 'created',
+  order_status ENUM('pending','confirmed','shipped','delivered','cancelled') DEFAULT 'pending',
+  payment_status ENUM('captured','failed','created') DEFAULT 'created',
   payment_verified TINYINT(1) DEFAULT 0,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP

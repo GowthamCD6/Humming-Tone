@@ -13,7 +13,7 @@ exports.getManageOrders = async (req, res) => {
                 o.created_at,
                 o.total_amount,
                 o.payment_id,
-                o.status,
+                o.order_status AS status,
                 COUNT(oi.id) AS unique_items_count,
                 IFNULL(SUM(oi.quantity), 0) AS total_qty
             FROM orders o
@@ -69,7 +69,7 @@ exports.updateOrderStatus = async (req, res, next) => {
             return next(createError.BadRequest('Invalid status value'));
         }
 
-        const sql = "UPDATE orders SET status = ? WHERE id = ?";
+        const sql = "UPDATE orders SET order_status = ? WHERE id = ?";
         const [result] = await db.promise().query(sql, [status, orderId]);
 
         if (result.affectedRows === 0) {
