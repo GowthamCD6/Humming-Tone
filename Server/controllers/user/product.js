@@ -90,10 +90,10 @@ exports.fetch_new_arrivals = (req, res, next) => {
     `;
 
     db.query(sql, (error, result) => {
-      if (error || result.length === 0) {
-        return next(createError.BadRequest(error || createError.NotFound('Products not found!')));
+      if (error) {
+        return next(error);
       }
-      res.send(result);
+      res.send(result || []);
     });
   } catch (error) {
     next(error);
@@ -139,10 +139,10 @@ exports.fetch_featured_products = (req, res, next) => {
     `;
 
     db.query(sql, (error, result) => {
-      if (error || result.length === 0) {
-        return next(createError.BadRequest(error || createError.NotFound('Products not found!')));
+      if (error) {
+        return next(error);
       }
-      res.send(result);
+      res.send(result || []);
     });
   } catch (error) {
     next(error);

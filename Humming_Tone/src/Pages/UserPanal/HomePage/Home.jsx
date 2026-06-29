@@ -10,34 +10,43 @@ import { Link } from 'react-router-dom';
 const Home = ({ onViewDetails = () => {} }) => {
   const [featuredProducts, setFeaturedProducts] = useState([]); // State for featured products
   const [newArrivals, setNewArrivals] = useState([]); // State for new arrivals
+  const [loadingFeatured, setLoadingFeatured] = useState(true);
+  const [loadingNewArrivals, setLoadingNewArrivals] = useState(true);
 
   // Fetch featured products and new arrivals from the backend
   useEffect(() => {
-    const fetchProducts = async () => {
+    const fetchNewArrivals = async () => {
       try {
-        // Fetch new arrivals
-        const newArrivalsResponse = await axios.get('http://localhost:5000/user/fetch_new_arrivals');
-        console.log('New Arrivals:', newArrivalsResponse.data);  // Debug log to verify response
-        setNewArrivals(newArrivalsResponse.data.map(product => ({
+        const response = await axios.get('http://localhost:5000/user/fetch_new_arrivals');
+        setNewArrivals(response.data.map(product => ({
           ...product,
-          price: parseFloat(product.price),  // Ensure price is a float
-          image: product.image_path ? `http://localhost:5000/${product.image_path}` : demoImage,  // Handle image path
+          price: parseFloat(product.price),
+          image: product.image_path ? `http://localhost:5000/${product.image_path}` : demoImage,
         })));
-        // Fetch featured products
-        const featuredResponse = await axios.get('http://localhost:5000/user/fetch_featured_products');
-        console.log('Featured Products:', featuredResponse.data);  // Debug log to verify response
-        setFeaturedProducts(featuredResponse.data.map(product => ({
-          ...product,
-          price: parseFloat(product.price),  // Ensure price is a float
-          image: product.image_path ? `http://localhost:5000/${product.image_path}` : demoImage,  // Handle image path
-        })));
-
       } catch (error) {
-        console.error('Error fetching products:', error);
+        console.error('Error fetching new arrivals:', error);
+      } finally {
+        setLoadingNewArrivals(false);
       }
     };
 
-    fetchProducts();
+    const fetchFeaturedProducts = async () => {
+      try {
+        const response = await axios.get('http://localhost:5000/user/fetch_featured_products');
+        setFeaturedProducts(response.data.map(product => ({
+          ...product,
+          price: parseFloat(product.price),
+          image: product.image_path ? `http://localhost:5000/${product.image_path}` : demoImage,
+        })));
+      } catch (error) {
+        console.error('Error fetching featured products:', error);
+      } finally {
+        setLoadingFeatured(false);
+      }
+    };
+
+    fetchNewArrivals();
+    fetchFeaturedProducts();
   }, []);  // Empty dependency array means this will run once when the component mounts
 
   // Reusable Product Card Component for cleaner code
@@ -91,12 +100,14 @@ const Home = ({ onViewDetails = () => {} }) => {
         </div>
 
         <div className="product-layout-grid">
-          {featuredProducts.length > 0 ? (
+          {loadingFeatured ? (
+            <p className="loading-message">Loading featured products...</p>
+          ) : featuredProducts.length > 0 ? (
             featuredProducts.map(item => (
               <ProductCard key={item.id} product={item} />
             ))
           ) : (
-            <p>Loading featured products...</p>
+            <p className="no-products-message" style={{ gridColumn: '1 / -1', textAlign: 'center', width: '100%', color: '#666', padding: '2rem 0' }}>No featured products available at the moment.</p>
           )}
         </div>
       </section>
@@ -110,12 +121,14 @@ const Home = ({ onViewDetails = () => {} }) => {
         </div>
 
         <div className="product-layout-grid">
-          {newArrivals.length > 0 ? (
+          {loadingNewArrivals ? (
+            <p className="loading-message">Loading new arrivals...</p>
+          ) : newArrivals.length > 0 ? (
             newArrivals.map(item => (
               <ProductCard key={item.id} product={item} />
             ))
           ) : (
-            <p>Loading new arrivals...</p>
+            <p className="no-products-message" style={{ gridColumn: '1 / -1', textAlign: 'center', width: '100%', color: '#666', padding: '2rem 0' }}>No new arrivals available at the moment.</p>
           )}
         </div>
       </section>
