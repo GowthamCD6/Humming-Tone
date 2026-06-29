@@ -4,6 +4,7 @@ const cors = require("cors");
 const morgan = require("morgan");
 const createError = require("http-errors");
 const bodyParser = require("body-parser");
+const cookieParser = require("cookie-parser");
 const adminProductRoute = require("./routes/admin/product");
 const adminAuthRoute = require("./routes/admin/auth");
 const adminDashboardRoute = require("./routes/admin/dashboard");
@@ -30,6 +31,7 @@ app.use(cors({
 }));
 
 app.use(morgan('dev'));
+app.use(cookieParser());
 app.use(
   bodyParser.json({
     verify: (req, res, buf) => {

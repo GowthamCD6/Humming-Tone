@@ -9,9 +9,24 @@ const Baby = ({ onViewDetails = () => {} }) => {
   const [selectedGender, setSelectedGender] = useState('Baby');  // Default to 'Baby'
   const [selectedCategory, setSelectedCategory] = useState('All Categories');
   const [products, setProducts] = useState([]);  // Empty array for "No Products Found" state
+  const [allProducts, setAllProducts] = useState([]);
+  const [categoryOptions, setCategoryOptions] = useState(['All Categories']);
 
   const genderOptions = getGenderOptions();
-  const categoryOptions = getCategoryOptionsForGender(selectedGender);
+
+  // Fetch categories dynamically
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        let url = 'http://localhost:5000/user/fetch_categories?gender=babies';
+        const response = await axios.get(url);
+        setCategoryOptions(['All Categories', ...response.data]);
+      } catch (error) {
+        console.error('Error fetching categories:', error);
+      }
+    };
+    fetchCategories();
+  }, [selectedGender]);
 
   // Fetch products from the API when the gender or category changes
   useEffect(() => {
@@ -25,6 +40,7 @@ const Baby = ({ onViewDetails = () => {} }) => {
           image: product.image_path ? `http://localhost:5000/${product.image_path}` : '',  // Use image path from backend
         }));
         setProducts(fetchedProducts);  // Update the state with fetched products
+        setAllProducts(fetchedProducts);
       } catch (error) {
         console.error('Error fetching products:', error);
       }
@@ -34,14 +50,17 @@ const Baby = ({ onViewDetails = () => {} }) => {
   }, [selectedGender]);  // Trigger API call when gender changes
 
   const handleApplyFilters = () => {
-    console.log('Applying filters:', { selectedGender, selectedCategory });
-    // You can add logic here to filter products based on category
+    let filtered = [...allProducts];
+    if (selectedCategory !== 'All Categories') {
+      filtered = filtered.filter(p => p.category === selectedCategory);
+    }
+    setProducts(filtered);
   };
 
   const handleClearAll = () => {
     setSelectedGender('Baby');
     setSelectedCategory('All Categories');
-    setProducts([]); // Reset products when filters are cleared
+    setProducts(allProducts); // Reset products when filters are cleared
   };
 
   const handleViewAll = () => {
@@ -94,7 +113,7 @@ const Baby = ({ onViewDetails = () => {} }) => {
               <select 
                 className="baby-select"
                 value={selectedGender}
-                onChange={(e) => setSelectedGender(e.target.value)}
+                disabled
               >
                 {genderOptions.map(option => (
                   <option key={option} value={option}>{option}</option>

@@ -35,7 +35,7 @@ exports.get_return_request_status = (req,res,next) => {
         const{id} = req.params;
         if(!id || id.trim() === "")return next(createError.BadRequest('id not found!'));
         let sql = "select * from return_requests where id = ?";
-        db.query(sql,(error,result) => {
+        db.query(sql, [id], (error,result) => {
             if(error)return next(error);
             if(result.length === 0)return next(createError.NotFound('return request not found!'));
             res.send(result);

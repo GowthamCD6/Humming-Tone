@@ -89,7 +89,7 @@ exports.fetch_new_arrivals = (req, res, next) => {
       LIMIT 9
     `;
 
-    db.query(sql, (error, result) => {
+    db.query(sql, [], (error, result) => {
       if (error) {
         return next(error);
       }
@@ -138,7 +138,7 @@ exports.fetch_featured_products = (req, res, next) => {
       ORDER BY p.created_at DESC
     `;
 
-    db.query(sql, (error, result) => {
+    db.query(sql, [], (error, result) => {
       if (error) {
         return next(error);
       }
@@ -192,6 +192,29 @@ exports.fetch_recommendations = (req, res, next) => {
         count: rows.length,
         data: rows
       });
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+exports.fetch_categories = (req, res, next) => {
+  try {
+    const { gender } = req.query;
+    let sql = `SELECT DISTINCT subcategory AS category FROM products WHERE is_active = 1`;
+    const params = [];
+
+    if (gender && gender !== 'All' && gender !== 'All Gender') {
+      sql += ` AND gender = ?`;
+      params.push(gender);
+    }
+    
+    sql += ` AND subcategory IS NOT NULL AND subcategory != '' ORDER BY subcategory ASC`;
+
+    db.query(sql, params, (error, result) => {
+      if (error) return next(error);
+      const categories = result.map(row => row.category);
+      res.send(categories);
     });
   } catch (error) {
     next(error);

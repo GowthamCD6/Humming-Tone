@@ -82,7 +82,7 @@ const ProductDetailPage = () => {
     const fetchProduct = async () => {
       try {
         const res = await fetch(
-          `http://localhost:5000/admin/fetch_variants/${id}`
+          `http://localhost:5000/user/fetch_variants/${id}`
         );
         const data = await res.json();
 

@@ -12,9 +12,9 @@ const Men = ({ onViewDetails = () => {} }) => {
   
   const [allProducts, setAllProducts] = useState([]);
   const [products, setProducts] = useState([]);
+  const [categoryOptions, setCategoryOptions] = useState(['All Categories']);
 
   const genderOptions = ['All Gender', ...getGenderOptions()];
-  const categoryOptions = selectedGender === 'All' ? ['All Categories'] : getCategoryOptionsForGender(selectedGender);
 
   // Fetch all products initially
   useEffect(() => {
@@ -35,6 +35,24 @@ const Men = ({ onViewDetails = () => {} }) => {
     };
     fetchProducts();
   }, []);
+
+  // Fetch categories dynamically when gender changes
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        let url = 'http://localhost:5000/user/fetch_categories';
+        if (selectedGender !== 'All' && selectedGender !== 'All Gender') {
+           url += `?gender=${selectedGender}`;
+        }
+        const response = await fetch(url);
+        const data = await response.json();
+        setCategoryOptions(['All Categories', ...data]);
+      } catch (error) {
+        console.error('Error fetching categories:', error);
+      }
+    };
+    fetchCategories();
+  }, [selectedGender]);
 
   const handleApplyFilters = () => {
     let filtered = [...allProducts];

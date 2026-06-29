@@ -10,9 +10,27 @@ const Women = ({ onViewDetails = () => {} }) => {
   const [selectedGender, setSelectedGender] = useState('Women');
   const [selectedCategory, setSelectedCategory] = useState('All Categories');
   const [products, setProducts] = useState([]);
+  const [allProducts, setAllProducts] = useState([]);
+  const [categoryOptions, setCategoryOptions] = useState(['All Categories']);
 
   const genderOptions = getGenderOptions();
-  const categoryOptions = getCategoryOptionsForGender(selectedGender);
+
+  // Fetch categories dynamically
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        let url = 'http://localhost:5000/user/fetch_categories';
+        if (selectedGender !== 'All' && selectedGender !== 'All Gender') {
+           url += `?gender=${selectedGender}`;
+        }
+        const response = await axios.get(url);
+        setCategoryOptions(['All Categories', ...response.data]);
+      } catch (error) {
+        console.error('Error fetching categories:', error);
+      }
+    };
+    fetchCategories();
+  }, [selectedGender]);
 
   // Fetch products when gender changes
   useEffect(() => {
@@ -31,6 +49,7 @@ const Women = ({ onViewDetails = () => {} }) => {
         }));
 
         setProducts(fetchedProducts);
+        setAllProducts(fetchedProducts);
       } catch (error) {
         console.error('Error fetching products:', error);
       }
@@ -40,12 +59,17 @@ const Women = ({ onViewDetails = () => {} }) => {
   }, [selectedGender]);
 
   const handleApplyFilters = () => {
-    console.log('Applying filters:', { selectedGender, selectedCategory });
+    let filtered = [...allProducts];
+    if (selectedCategory !== 'All Categories') {
+      filtered = filtered.filter(p => p.category === selectedCategory);
+    }
+    setProducts(filtered);
   };
 
   const handleClearAll = () => {
     setSelectedGender('Women');
     setSelectedCategory('All Categories');
+    setProducts(allProducts);
   };
 
   const ProductCard = ({ product }) => (
@@ -97,7 +121,7 @@ const Women = ({ onViewDetails = () => {} }) => {
               <select
                 className="women-select"
                 value={selectedGender}
-                onChange={(e) => setSelectedGender(e.target.value)}
+                disabled
               >
                 {genderOptions.map(option => (
                   <option key={option} value={option}>{option}</option>
