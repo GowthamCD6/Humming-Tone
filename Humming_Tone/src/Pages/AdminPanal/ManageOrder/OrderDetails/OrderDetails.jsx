@@ -18,8 +18,13 @@ export default function OrderDetails() {
   useEffect(() => {
     const fetchOrderData = async () => {
       try {
+        const token = localStorage.getItem('adminToken');
+        const authHeaders = token ? { 'Authorization': `Bearer ${token}` } : {};
+
         // Fetch all orders and find the specific one
-        const ordersRes = await fetch('http://localhost:5000/api/orders/manage');
+        const ordersRes = await fetch('http://localhost:5000/api/orders/manage', {
+          headers: authHeaders
+        });
         if (!ordersRes.ok) throw new Error('Failed to fetch orders');
         
         const ordersData = await ordersRes.json();
@@ -32,7 +37,8 @@ export default function OrderDetails() {
 
         // Fetch order items
         const itemsRes = await fetch(
-          `http://localhost:5000/admin/get_order_items/${orderId}`
+          `http://localhost:5000/admin/get_order_items/${orderId}`,
+          { headers: authHeaders }
         );
 
         if (!itemsRes.ok) throw new Error('Failed to fetch order items');
@@ -67,11 +73,15 @@ export default function OrderDetails() {
   const handleStatusUpdate = async (newStatus) => {
     setUpdating(true);
     try {
+      const token = localStorage.getItem('adminToken');
       const res = await fetch(
         `http://localhost:5000/api/orders/${orderId}/status`,
         {
           method: 'PUT',
-          headers: { 'Content-Type': 'application/json' },
+          headers: {
+            'Content-Type': 'application/json',
+            ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+          },
           body: JSON.stringify({ status: newStatus })
         }
       );

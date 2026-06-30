@@ -404,30 +404,29 @@ exports.add_product = (req, res, next) => {
                     return next(err);
                 }
 
-                // 1. Get Category ID
+                // 1. Get Category ID (or insert new if not found)
                 connection.query(
-                    "SELECT id FROM categories WHERE slug = ? LIMIT 1",
-                    [category],
+                    "SELECT id FROM categories WHERE slug = ? OR (name = ? AND gender_name = ?) LIMIT 1",
+                    [category, category, gender],
                     (err, catRows) => {
                         if (err) return rollback(err);
 
-                        let category_id = catRows.length > 0 ? catRows[0].id : null;
-
-                        // fallback category
-                        if (!category_id) {
+                        if (catRows.length > 0) {
+                            insertProduct(catRows[0].id);
+                        } else {
+                            // Category not found, create it dynamically
+                            const newSlug = category.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+                            // prefix with gender to ensure uniqueness if needed, or just insert
+                            const finalSlug = `${gender ? gender.toLowerCase() + '_' : ''}${newSlug}`;
+                            
                             connection.query(
-                                "SELECT id FROM categories LIMIT 1",
-                                (err, allCats) => {
-                                    if (err) return rollback(err);
-                                    if (allCats.length === 0) {
-                                        return rollback(createError.NotFound("Please add categories to your database first!"));
-                                    }
-                                    category_id = allCats[0].id;
-                                    insertProduct(category_id);
+                                "INSERT INTO categories (name, slug, gender_name) VALUES (?, ?, ?)",
+                                [category, finalSlug, gender || 'General'],
+                                (insertErr, result) => {
+                                    if (insertErr) return rollback(insertErr);
+                                    insertProduct(result.insertId);
                                 }
                             );
-                        } else {
-                            insertProduct(category_id);
                         }
                     }
                 );
@@ -706,33 +705,58 @@ exports.update_product = (req, res, next) => {
                 return next(err);
             }
 
-            // 1. Update products table
+            // 1. Get or Create Category ID
             connection.query(
-                "UPDATE products SET name=?, sku=?, subcategory=?, gender=?, about=? WHERE id=?",
-                [name, sku, category, gender, about, id],
-                err => {
+                "SELECT id FROM categories WHERE slug = ? OR (name = ? AND gender_name = ?) LIMIT 1",
+                [category, category, gender],
+                (err, catRows) => {
                     if (err) return rollback(err);
 
-                    // 2. Update first variant
-                    connection.query(
-                        "UPDATE product_variants SET price=?, stock_quantity=? WHERE product_id=? LIMIT 1",
-                        [Number(price), Number(stock), id],
-                        err => {
-                            if (err) return rollback(err);
-
-                            connection.commit(err => {
-                                if (err) return rollback(err);
-
-                                connection.release();
-                                res.json({
-                                    success: true,
-                                    message: "Product updated successfully!"
-                                });
-                            });
-                        }
-                    );
+                    if (catRows.length > 0) {
+                        updateProductWithCategory(catRows[0].id);
+                    } else {
+                        const newSlug = category.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+                        const finalSlug = `${gender ? gender.toLowerCase() + '_' : ''}${newSlug}`;
+                        
+                        connection.query(
+                            "INSERT INTO categories (name, slug, gender_name) VALUES (?, ?, ?)",
+                            [category, finalSlug, gender || 'General'],
+                            (insertErr, result) => {
+                                if (insertErr) return rollback(insertErr);
+                                updateProductWithCategory(result.insertId);
+                            }
+                        );
+                    }
                 }
             );
+
+            function updateProductWithCategory(category_id) {
+                connection.query(
+                    "UPDATE products SET name=?, sku=?, category_id=?, subcategory=?, gender=?, about=? WHERE id=?",
+                    [name, sku, category_id, category, gender, about, id],
+                    err => {
+                        if (err) return rollback(err);
+
+                        connection.query(
+                            "UPDATE product_variants SET price=?, stock_quantity=? WHERE product_id=? LIMIT 1",
+                            [Number(price), Number(stock), id],
+                            err => {
+                                if (err) return rollback(err);
+
+                                connection.commit(err => {
+                                    if (err) return rollback(err);
+
+                                    connection.release();
+                                    res.json({
+                                        success: true,
+                                        message: "Product updated successfully!"
+                                    });
+                                });
+                            }
+                        );
+                    }
+                );
+            }
 
             function rollback(error) {
                 connection.rollback(() => {

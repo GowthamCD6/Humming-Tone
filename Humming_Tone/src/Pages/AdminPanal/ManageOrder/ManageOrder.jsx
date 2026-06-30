@@ -19,8 +19,10 @@ export default function ManageOrder() {
   useEffect(() => {
     const fetchOrders = async () => {
       try {
-        const response = await fetch('http://localhost:5000/api/orders/manage');
-        if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+        const token = localStorage.getItem('adminToken');
+        const response = await fetch('http://localhost:5000/api/orders/manage', {
+          headers: token ? { 'Authorization': `Bearer ${token}` } : {}
+        });        if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
         const data = await response.json();
         setOrders(Array.isArray(data) ? data : []);
       } catch (error) {

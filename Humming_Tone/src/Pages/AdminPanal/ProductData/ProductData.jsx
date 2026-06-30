@@ -402,6 +402,11 @@ import axios from 'axios';
 
 const API_BASE_URL = 'http://localhost:5000'; // Change to your API URL
 
+const getAxiosConfig = () => {
+  const token = localStorage.getItem('adminToken');
+  return token ? { headers: { 'Authorization': `Bearer ${token}` } } : {};
+};
+
 const AllProducts = () => {
   const [products, setProducts] = useState([]);
   const [filteredProducts, setFilteredProducts] = useState([]);
@@ -419,7 +424,7 @@ const AllProducts = () => {
   const fetchProducts = async () => {
     try {
       setLoading(true);
-      const response = await axios.get(`${API_BASE_URL}/admin/fetch_deleted_products`);
+      const response = await axios.get(`${API_BASE_URL}/admin/fetch_deleted_products`, getAxiosConfig());
       
       if (Array.isArray(response.data)) {
         const formattedProducts = response.data.map(p => ({
@@ -494,7 +499,7 @@ const AllProducts = () => {
     }
 
     try {
-      const response = await axios.delete(`${API_BASE_URL}/products`);
+      const response = await axios.delete(`${API_BASE_URL}/products`, getAxiosConfig());
       
       if (response.data.success) {
         alert(response.data.message);
@@ -543,7 +548,7 @@ const AllProducts = () => {
     }
 
     try {
-      const response = await axios.delete(`${API_BASE_URL}/products/${productId}`);
+      const response = await axios.delete(`${API_BASE_URL}/products/${productId}`, getAxiosConfig());
       
       if (response.data.success) {
         alert(response.data.message);
@@ -565,7 +570,7 @@ const AllProducts = () => {
   const restoreProductStatus = async () => {
     if (!productToRestore) return;
     try {
-      const response = await axios.patch(`${API_BASE_URL}/admin/restore_product/${productToRestore._id}`);
+      const response = await axios.patch(`${API_BASE_URL}/admin/restore_product/${productToRestore._id}`, {}, getAxiosConfig());
       
       if (response.data.success) {
         setShowRestoreModal(false);

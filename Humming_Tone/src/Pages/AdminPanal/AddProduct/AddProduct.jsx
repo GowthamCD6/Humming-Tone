@@ -35,11 +35,15 @@ const AddProductAdmin = () => {
   const colorOptions = ['Red', 'Blue', 'Green', 'Yellow', 'Black', 'White', 'Pink', 'Purple', 'Orange', 'Brown', 'Gray', 'Multicolor'];
   const materialOptions = ['Cotton', 'Polyester', 'Wool', 'Silk', 'Denim', 'Leather', 'Linen', 'Nylon', 'Rayon', 'Velvet', 'Mixed'];
 
-  // Fetch genders and categories from backend (forces remount/refetch on HMR)
+  // Fetch genders and categories from backend
   useEffect(() => {
     const fetchGendersAndCategories = async () => {
       try {
-        const response = await fetch('http://localhost:5000/api/site-content/genders-categories');
+        const token = localStorage.getItem('adminToken');
+        const response = await fetch('http://localhost:5000/api/site-content/genders-categories', {
+          headers: token ? { 'Authorization': `Bearer ${token}` } : {}
+        });
+        if (!response.ok) throw new Error('Failed to fetch genders/categories');
         const data = await response.json();
         if (data.genders) {
           setGenderOptions(data.genders);
@@ -58,13 +62,17 @@ const AddProductAdmin = () => {
   useEffect(() => {
     if (gender && genderCategoryMap[gender]) {
       setCategoryOptions(genderCategoryMap[gender]);
-      // Reset category if current category is not valid for selected gender
-      if (category && !genderCategoryMap[gender].some(c => c.slug === category)) {
-        setCategory('');
-      }
     } else {
-      setCategoryOptions([]);
-      setCategory('');
+      // If no gender selected, show ALL categories from all genders
+      const allCats = [];
+      Object.values(genderCategoryMap).forEach(cats => {
+        cats.forEach(c => {
+          if (!allCats.some(existing => existing.name === c.name)) {
+            allCats.push(c);
+          }
+        });
+      });
+      setCategoryOptions(allCats);
     }
   }, [gender, genderCategoryMap]);
 
@@ -158,8 +166,10 @@ const AddProductAdmin = () => {
 
     images.forEach(img => { if (img?.file) formData.append("images", img.file); });
 
+    const token = localStorage.getItem('adminToken');
     fetch("http://localhost:5000/admin/add_product", {
       method: "POST",
+      headers: token ? { 'Authorization': `Bearer ${token}` } : {},
       body: formData
     })
     .then(async res => {
@@ -207,7 +217,7 @@ const AddProductAdmin = () => {
           <div className="form-grid">
             <div className="form-group">
               <label htmlFor="gender">GENDER</label>
-              <select id="gender" value={gender} onChange={(e) => { setGender(e.target.value); clearFieldError('gender'); }} className={errors.gender ? 'input-error' : ''} >
+              <select id="gender" value={gender} onChange={(e) => { setGender(e.target.value); clearFieldError('gender'); }} className={errors.gender ? 'input-error' : ''}>
                 <option value="">Select Gender</option>
                 {genderOptions.map(g => <option key={g} value={g}>{g}</option>)}
               </select>
@@ -249,10 +259,10 @@ const AddProductAdmin = () => {
             </div>
             <div className="form-group">
               <label htmlFor="category">CATEGORY</label>
-              <select id="category" value={category} onChange={(e) => { setCategory(e.target.value); clearFieldError('category'); }} className={errors.category ? 'input-error' : ''} disabled={!gender}>
-                <option value="">Select Category</option>
-                {categoryOptions.map(c => <option key={c.slug} value={c.slug}>{c.name}</option>)}
-              </select>
+              <input type="text" id="category" list="category-options" placeholder="Select or type category" value={category} onChange={(e) => { setCategory(e.target.value); clearFieldError('category'); }} className={errors.category ? 'input-error' : ''} />
+              <datalist id="category-options">
+                {categoryOptions.map(c => <option key={c.slug} value={c.name} />)}
+              </datalist>
               {errors.category && <div className="field-error">{errors.category}</div>}
             </div>
             <div className="form-group">

@@ -733,6 +733,14 @@ import './ManageProduct.css'
 
 const BASE_URL = 'http://localhost:5000';
 
+const getAuthHeaders = (contentType) => {
+  const token = localStorage.getItem('adminToken');
+  const headers = {};
+  if (token) headers['Authorization'] = `Bearer ${token}`;
+  if (contentType) headers['Content-Type'] = contentType;
+  return headers;
+};
+
 export default function ManageProducts() {
   const navigate = useNavigate();
   const [products, setProducts] = useState([])
@@ -763,7 +771,9 @@ export default function ManageProducts() {
   useEffect(() => {
     const fetchGendersAndCategories = async () => {
       try {
-        const response = await fetch(`${BASE_URL}/api/site-content/genders-categories`);
+        const response = await fetch(`${BASE_URL}/api/site-content/genders-categories`, {
+          headers: getAuthHeaders()
+        });
         const data = await response.json();
         if (data.genders) {
           setGenderOptions(data.genders);
@@ -800,13 +810,23 @@ export default function ManageProducts() {
     if (editingProduct?.gender && genderCategoryMap[editingProduct.gender]) {
       setEditCategoryOptions(genderCategoryMap[editingProduct.gender]);
     } else {
-      setEditCategoryOptions([]);
+      const allCats = [];
+      Object.values(genderCategoryMap).forEach(cats => {
+        cats.forEach(c => {
+          if (!allCats.some(existing => existing.name === c.name)) {
+            allCats.push(c);
+          }
+        });
+      });
+      setEditCategoryOptions(allCats);
     }
   }, [editingProduct?.gender, genderCategoryMap]);
 
   const loadData = async () => {
     try {
-      const prodRes = await fetch(`${BASE_URL}/admin/fetch_products`);
+      const prodRes = await fetch(`${BASE_URL}/admin/fetch_products`, {
+        headers: getAuthHeaders()
+      });
       const prodData = await prodRes.json();
       if (Array.isArray(prodData)) {
         setProducts(prodData.map(p => ({
@@ -818,7 +838,9 @@ export default function ManageProducts() {
           stock: p.stock_quantity || 0
         })));
       }
-      const promoRes = await fetch(`${BASE_URL}/admin/fetch_promos`);
+      const promoRes = await fetch(`${BASE_URL}/admin/fetch_promos`, {
+        headers: getAuthHeaders()
+      });
       const promoData = await promoRes.json();
       if (Array.isArray(promoData)) setPromoCodes(promoData);
     } catch (err) { console.error(err); }
@@ -848,7 +870,7 @@ export default function ManageProducts() {
   const handleSaveProduct = async () => {
     const res = await fetch(`${BASE_URL}/admin/update_product/${editingProduct.id}`, {
       method: 'PATCH',
-      headers: { 'Content-Type': 'application/json' },
+      headers: getAuthHeaders('application/json'),
       body: JSON.stringify(editingProduct)
     });
     const data = await res.json();
@@ -864,7 +886,7 @@ export default function ManageProducts() {
     if (!productToDelete) return;
     const res = await fetch(`${BASE_URL}/admin/delete_product`, {
       method: 'DELETE',
-      headers: { 'Content-Type': 'application/json' },
+      headers: getAuthHeaders('application/json'),
       body: JSON.stringify({ id: productToDelete.id })
     });
     const data = await res.json();
@@ -886,7 +908,7 @@ export default function ManageProducts() {
     try {
       const res = await fetch(`${BASE_URL}/admin/update_promo_code/${editingPromo.id}`, {
         method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
+        headers: getAuthHeaders('application/json'),
         body: JSON.stringify({
           code: editingPromo.code,
           discount_type: editingPromo.discount_type,
@@ -914,7 +936,7 @@ export default function ManageProducts() {
     try {
       const res = await fetch(`${BASE_URL}/admin/remove_promo_code/${editingPromo.id}`, {
         method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' }
+        headers: getAuthHeaders()
       });
       if (res.ok) {
         setShowDeletePromoModal(false);
@@ -930,7 +952,7 @@ export default function ManageProducts() {
   const handleAddPromo = async () => {
     const res = await fetch(`${BASE_URL}/admin/add_promo_code`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: getAuthHeaders('application/json'),
       body: JSON.stringify({
         ...newPromo,
         discount_type: newPromo.type,
@@ -1072,15 +1094,15 @@ export default function ManageProducts() {
               </div>
               <div className="form-row">
                 <div className="form-group"><label>CATEGORY</label>
-                  <select value={editingProduct.category} onChange={(e) => setEditingProduct({...editingProduct, category: e.target.value})} className="form-input" disabled={!editingProduct.gender}>
-                    <option value="">Select Category</option>
-                    {editCategoryOptions.map(c => <option key={c.name} value={c.name}>{c.name}</option>)}
-                  </select>
+                  <input type="text" list="edit-category-options" placeholder="Select or type category" value={editingProduct.category} onChange={(e) => setEditingProduct({...editingProduct, category: e.target.value})} className="form-input" />
+                  <datalist id="edit-category-options">
+                    {editCategoryOptions.map(c => <option key={c.name} value={c.name} />)}
+                  </datalist>
                 </div>
                 <div className="form-group"><label>GENDER</label>
                   <select value={editingProduct.gender} onChange={(e) => setEditingProduct({...editingProduct, gender: e.target.value, category: ''})} className="form-input">
                     <option value="">Select Gender</option>
-                    {genderOptions.map(g => <option key={g} value={g.toLowerCase()}>{g}</option>)}
+                    {genderOptions.map(g => <option key={g} value={g}>{g}</option>)}
                   </select>
                 </div>
               </div>

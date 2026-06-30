@@ -201,15 +201,15 @@ exports.fetch_recommendations = (req, res, next) => {
 exports.fetch_categories = (req, res, next) => {
   try {
     const { gender } = req.query;
-    let sql = `SELECT DISTINCT subcategory AS category FROM products WHERE is_active = 1`;
+    let sql = `SELECT name AS category FROM categories WHERE 1=1`;
     const params = [];
 
     if (gender && gender !== 'All' && gender !== 'All Gender') {
-      sql += ` AND gender = ?`;
+      sql += ` AND gender_name = ?`;
       params.push(gender);
     }
     
-    sql += ` AND subcategory IS NOT NULL AND subcategory != '' ORDER BY subcategory ASC`;
+    sql += ` ORDER BY name ASC`;
 
     db.query(sql, params, (error, result) => {
       if (error) return next(error);
