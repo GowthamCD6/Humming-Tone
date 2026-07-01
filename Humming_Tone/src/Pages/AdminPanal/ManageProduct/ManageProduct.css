@@ -499,8 +499,8 @@
   padding: 2rem;
   
   /* SCROLL SETTINGS */
-  overflow-y: auto; /* Only the body scrolls */
-  flex-grow: 1; /* Takes up all available space between header and footer */
+  overflow-y: auto; 
+  flex-grow: 1; 
 }
 
 /* Custom Scrollbar for the Modal Body */
