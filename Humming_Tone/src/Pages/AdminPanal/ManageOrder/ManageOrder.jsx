@@ -134,22 +134,33 @@ export default function ManageOrder() {
       }
 
       // 2. Date & Time Filter Logic
-      const orderDateTime = new Date(order.created_at).getTime();
-
+      // Parse the order's created_at safely as local time to avoid UTC drift
+      const orderDate = new Date(order.created_at);
+      
       // Start Boundary
       if (filters.startDate) {
-        // If time isn't provided, default to start of day (00:00)
-        const startString = `${filters.startDate}T${filters.startTime || '00:00'}`;
-        const startLimit = new Date(startString).getTime();
-        if (orderDateTime < startLimit) return false;
+        const [year, month, day] = filters.startDate.split('-');
+        let startLimit;
+        if (filters.startTime) {
+          const [hours, minutes] = filters.startTime.split(':');
+          startLimit = new Date(year, month - 1, day, hours, minutes).getTime();
+        } else {
+          startLimit = new Date(year, month - 1, day, 0, 0, 0).getTime();
+        }
+        if (orderDate.getTime() < startLimit) return false;
       }
 
       // End Boundary
       if (filters.endDate) {
-        // If time isn't provided, default to end of day (23:59)
-        const endString = `${filters.endDate}T${filters.endTime || '23:59'}`;
-        const endLimit = new Date(endString).getTime();
-        if (orderDateTime > endLimit) return false;
+        const [year, month, day] = filters.endDate.split('-');
+        let endLimit;
+        if (filters.endTime) {
+          const [hours, minutes] = filters.endTime.split(':');
+          endLimit = new Date(year, month - 1, day, hours, minutes).getTime();
+        } else {
+          endLimit = new Date(year, month - 1, day, 23, 59, 59).getTime();
+        }
+        if (orderDate.getTime() > endLimit) return false;
       }
 
       return true;
@@ -191,6 +202,8 @@ export default function ManageOrder() {
             >
               <option>All Statuses</option>
               <option>Pending</option>
+              <option>Confirmed</option>
+              <option>Shipped</option>
               <option>Delivered</option>
               <option>Cancelled</option>
             </select>

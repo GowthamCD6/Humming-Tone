@@ -848,21 +848,22 @@ export default function ManageProducts() {
 
   useEffect(() => { loadData(); }, []);
 
-  const normalizeGender = (v) => {
-    const s = String(v || '').toLowerCase();
-    if (s === 'men') return 'Men';
-    if (s === 'children') return 'Children';
-    if (s === 'babies' || s === 'baby') return 'Baby';
-    if (s === 'sports') return 'Sports';
-    return v;
-  }
-
   const filteredProducts = products.filter((p) => {
-    const genOk = filterGender === 'All' || normalizeGender(p.gender) === filterGender
-    const catOk = filterCategory === 'All' || p.category === filterCategory
-    const nameOk = String(p.name || '').toLowerCase().includes(searchQuery.toLowerCase())
-    return genOk && catOk && nameOk
-  })
+    const pGender = String(p.gender || '').toLowerCase();
+    const fGender = String(filterGender || '').toLowerCase();
+    
+    // Case-insensitive check, plus handle the legacy 'babies' edge case if fGender is 'baby'
+    const genOk = filterGender === 'All' || 
+                  pGender === fGender || 
+                  (fGender === 'baby' && (pGender === 'babies' || pGender === 'baby'));
+                  
+    const catOk = filterCategory === 'All' || 
+                  String(p.category || '').toLowerCase() === String(filterCategory || '').toLowerCase();
+                  
+    const nameOk = String(p.name || '').toLowerCase().includes(searchQuery.toLowerCase());
+    
+    return genOk && catOk && nameOk;
+  });
 
   // --- PRODUCT HANDLERS ---
   const handleEditProduct = (p) => { setEditingProduct({ ...p }); setShowEditModal(true); }
@@ -1018,7 +1019,7 @@ export default function ManageProducts() {
           </div>
           <div className="filter-item">
             <label className="filter-label">GENDER</label>
-            <select className="filter-select" value={filterGender} onChange={(e) => setFilterGender(e.target.value)}>
+            <select className="filter-select" value={filterGender} onChange={(e) => { setFilterGender(e.target.value); setFilterCategory('All'); }}>
               <option value="All">All</option>
               {genderOptions.map(g => <option key={g} value={g}>{g}</option>)}
             </select>
@@ -1060,7 +1061,7 @@ export default function ManageProducts() {
                     <td className="product-price">₹{p.price}.00</td>
                     <td className="product-stock">{p.stock}</td>
                     <td className="product-category">{p.category}</td>
-                    <td className="product-gender">{normalizeGender(p.gender)}</td>
+                    <td className="product-gender">{p.gender ? p.gender.charAt(0).toUpperCase() + p.gender.slice(1).toLowerCase() : ''}</td>
                     <td>
                       <div className="action-btns">
                         <button className="btn-edit" onClick={() => handleEditProduct(p)}>EDIT</button>
