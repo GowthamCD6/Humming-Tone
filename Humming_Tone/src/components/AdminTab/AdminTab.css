@@ -2,8 +2,8 @@
 .admin-tab-layout {
   display: flex;
   height: 100vh;
-  background: #f5f5f5;
-  font-family: 'Georgia', 'Times New Roman', serif;
+  background: #f3f4f6;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol';
   overflow: hidden;
 }
 
@@ -11,7 +11,7 @@
 .admin-sidebar {
   width: 290px;
   min-width: 290px;
-  background: #2a2a2a;
+  background: #111827;
   color: white;
   display: flex;
   flex-direction: column;
@@ -26,31 +26,29 @@
 .sidebar-header {
   padding: 2.5rem 1.5rem;
   text-align: center;
-  border-bottom: 1px solid #404040;
+  border-bottom: 1px solid #1f2937;
 }
 
 .sidebar-brand {
-  font-size: 2rem;
-  font-weight: 300;
+  font-size: 1.75rem;
+  font-weight: 700;
   margin: 0;
   letter-spacing: 0.5px;
   color: #ffffff;
-  font-family: 'Georgia', 'Times New Roman', serif;
-  font-style: italic;
 }
 
 .sidebar-subtitle {
-  font-size: 1rem;
-  color: #999;
-  margin: 0.75rem 0 0;
-  letter-spacing: 3px;
+  font-size: 0.85rem;
+  color: #9ca3af;
+  margin: 0.5rem 0 0;
+  letter-spacing: 2px;
   font-weight: 600;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  text-transform: uppercase;
 }
 
 .sidebar-divider {
   height: 1px;
-  background: linear-gradient(90deg, transparent, #404040, transparent);
+  background: linear-gradient(90deg, transparent, #1f2937, transparent);
 }
 
 /* ===== SIDEBAR NAVIGATION ===== */
@@ -78,9 +76,8 @@
   font-size: 0.75rem;
   font-weight: 700;
   letter-spacing: 1.5px;
-  color: #666;
+  color: #6b7280;
   text-transform: uppercase;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   margin-top: 0.2rem;
 }
 
@@ -94,52 +91,41 @@
 }
 
 .sidebar-nav::-webkit-scrollbar-thumb {
-  background: #505050;
+  background: #374151;
   border-radius: 4px;
   transition: all 0.3s ease;
 }
 
 .sidebar-nav::-webkit-scrollbar-thumb:hover {
-  background: #6b7280;
+  background: #4b5563;
 }
 
 .admin-sidebar .admin-nav-item {
   display: flex;
   align-items: center;
   gap: 1rem;
-  padding: 1.4rem 1.5rem;
+  padding: 1.2rem 1.5rem;
   background: none;
   border: none;
-  color: #999;
+  color: #9ca3af;
   cursor: pointer;
-  transition: all 0.3s ease;
-  font-size: 1.1rem;
-  border-left: 3px solid transparent;
+  transition: all 0.2s ease;
+  font-size: 1rem;
+  border-left: 4px solid transparent;
   position: relative;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   text-align: left;
   width: 100%;
 }
 
 .admin-sidebar .admin-nav-item:hover {
   background: rgba(255, 255, 255, 0.05);
-  color: #fff;
+  color: #f3f4f6;
 }
 
 .admin-sidebar .admin-nav-item.active {
-  background: rgba(255, 255, 255, 0.1);
-  color: #fff;
-  border-left-color: #ffffff;
-}
-
-.admin-sidebar .admin-nav-item.active::before {
-  content: '';
-  position: absolute;
-  left: 0;
-  top: 0;
-  bottom: 0;
-  width: 3px;
-  background: #ffffff;
+  background: rgba(59, 130, 246, 0.1);
+  color: #60a5fa;
+  border-left-color: #3b82f6;
 }
 
 .admin-sidebar .admin-nav-icon {
@@ -161,7 +147,7 @@
 /* ===== SIDEBAR FOOTER ===== */
 .sidebar-footer {
   padding: 1rem 0;
-  border-top: 1px solid #404040;
+  border-top: 1px solid #1f2937;
   margin-top: auto;
 }
 
@@ -170,14 +156,13 @@
   align-items: center;
   gap: 1rem;
   width: 100%;
-  padding: 0.4rem 1.5rem;
+  padding: 0.8rem 1.5rem;
   background: none;
   border: none;
-  color: #999;
+  color: #9ca3af;
   cursor: pointer;
-  transition: all 0.3s ease;
+  transition: all 0.2s ease;
   font-size: 0.95rem;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   text-align: left;
 }
 
@@ -191,7 +176,7 @@
   flex: 1;
   display: flex;
   flex-direction: column;
-  background: #f5f5f5;
+  background: #f3f4f6;
   margin-left: 290px;
   height: 100vh;
   overflow: hidden;
@@ -202,19 +187,20 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0.8rem 3rem;
+  padding: 1.25rem 3rem;
+  background: #ffffff;
   border-bottom: 1px solid #e5e7eb;
-  background: #f5f5f5;
+  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
   flex-shrink: 0;
+  z-index: 10;
 }
 
 .admin-header .page-title {
-  font-size: 2.25rem;
-  font-weight: 400;
-  color: #1a1a1a;
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: #111827;
   margin: 0;
   letter-spacing: -0.5px;
-  font-family: 'Georgia', 'Times New Roman', serif;
 }
 
 .admin-user {
@@ -224,34 +210,31 @@
 }
 
 .user-avatar {
-  width: 50px;
-  height: 50px;
-  border-radius: 8px;
-  background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 1.75rem;
+  font-size: 1.5rem;
   color: white;
   flex-shrink: 0;
-  box-shadow: 0 4px 12px rgba(26, 26, 26, 0.3);
-  border: none;
-  transition: all 0.3s ease;
+  box-shadow: 0 2px 4px rgba(59, 130, 246, 0.3);
+  border: 2px solid white;
+  transition: all 0.2s ease;
   position: relative;
 }
 
 .user-avatar:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 6px 16px rgba(26, 26, 26, 0.4);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 6px rgba(59, 130, 246, 0.4);
 }
 
 .user-label {
-  font-size: 1.05rem;
-  color: #1a1a1a;
-  font-weight: 700;
-  font-family: 'Georgia', 'Times New Roman', serif;
-  letter-spacing: 1px;
-  text-transform: uppercase;
+  font-size: 0.95rem;
+  font-weight: 500;
+  color: #374151;
 }
 
 /* ===== ADMIN CONTENT ===== */
@@ -265,11 +248,7 @@
   min-height: 0;
 }
 
-.admin-content .tab-content {
-  animation: fadeIn 0.3s ease-in;
-}
 
-@keyframes fadeIn {
   from {
     opacity: 0;
     transform: translateY(10px);
@@ -278,23 +257,21 @@
     opacity: 1;
     transform: translateY(0);
   }
-}
+
 
 .content-title {
-  font-size: 3rem;
-  font-weight: 400;
-  color: #1a1a1a;
+  font-size: 2.25rem;
+  font-weight: 600;
+  color: #111827;
   margin: 0 0 2.5rem;
   letter-spacing: -0.5px;
-  font-family: 'Georgia', 'Times New Roman', serif;
 }
 
 .content-subtitle {
-  font-size: 1.75rem;
-  font-weight: 400;
-  color: #1a1a1a;
+  font-size: 1.5rem;
+  font-weight: 500;
+  color: #374151;
   margin: 3rem 0 2rem;
-  font-family: 'Georgia', 'Times New Roman', serif;
 }
 
 /* ===== STATS GRID ===== */
@@ -323,20 +300,18 @@
 
 .stat-label {
   font-size: 0.75rem;
-  color: #999;
-  letter-spacing: 2px;
+  color: #6b7280;
+  letter-spacing: 1.5px;
   margin: 0 0 1.5rem;
-  font-weight: 500;
+  font-weight: 600;
   text-transform: uppercase;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
 }
 
 .stat-value {
-  font-size: 3.5rem;
-  font-weight: 400;
-  color: #1a1a1a;
+  font-size: 3rem;
+  font-weight: 700;
+  color: #111827;
   margin: 0;
-  font-family: 'Georgia', 'Times New Roman', serif;
 }
 
 /* ===== SECTION CONTAINER ===== */
@@ -370,20 +345,18 @@
 
 .category-label {
   font-size: 0.75rem;
-  color: #999;
-  letter-spacing: 2px;
+  color: #6b7280;
+  letter-spacing: 1.5px;
   margin: 0 0 1.5rem;
-  font-weight: 500;
+  font-weight: 600;
   text-transform: uppercase;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
 }
 
 .category-count {
-  font-size: 3.5rem;
-  font-weight: 400;
-  color: #1a1a1a;
+  font-size: 3rem;
+  font-weight: 700;
+  color: #111827;
   margin: 0;
-  font-family: 'Georgia', 'Times New Roman', serif;
 }
 
 /* ===== SCROLLBAR STYLING ===== */
@@ -1019,3 +992,6 @@
     scroll-behavior: smooth;
   }
 }
+
+.admin-tab-layout * { font-family: inherit; }
+

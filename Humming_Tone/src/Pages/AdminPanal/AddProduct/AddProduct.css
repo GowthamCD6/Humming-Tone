@@ -1,10 +1,6 @@
 /* ===== SCOPED STYLES FOR ADD PRODUCT PAGE ===== */
-.admin-add-product-page {
-  font-family: 'Playfair Display', 'Georgia', serif;
-}
 
 /* ===== ANIMATIONS ===== */
-@keyframes fadeIn {
   from {
     opacity: 0;
     transform: translateY(10px);
@@ -13,9 +9,7 @@
     opacity: 1;
     transform: translateY(0);
   }
-}
 
-@keyframes scaleIn {
   from {
     opacity: 0;
     transform: scale(0.9);
@@ -24,46 +18,41 @@
     opacity: 1;
     transform: scale(1);
   }
-}
 
 /* Main Container */
 .admin-add-product-page .add-product-container {
   max-width: 1400px;
   margin: 0 auto;
   padding: 2rem;
-  background-color: #f5f5f5;
+  background-color: #f3f4f6;
   min-height: 100vh;
-  animation: fadeIn 0.3s ease-in;
   margin-top: -45px;
 }
 
 /* Page Header */
 .admin-add-product-page .page-header {
   margin-bottom: 2.5rem;
-  animation: fadeIn 0.4s ease-in;
 }
 
 .admin-add-product-page .page-header h1 {
-  font-size: 2rem;
-  font-weight: 400;
-  color: #1a1a1a;
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: #111827;
   letter-spacing: -0.5px;
-  font-family: 'Georgia', 'Times New Roman', serif;
 }
 
 /* Product Form */
 .admin-add-product-page .product-form {
   background-color: #ffffff;
   border-radius: 8px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-  animation: fadeIn 0.5s ease-in;
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px -1px rgba(0, 0, 0, 0.1);
+  border: 1px solid #e5e7eb;
 }
 
 /* Form Section */
 .admin-add-product-page .form-section {
   padding: 1.5rem 2.5rem 1rem;
   border-bottom: 1px solid #e5e7eb;
-  animation: fadeIn 0.3s ease-in;
 }
 
 .admin-add-product-page .form-section:last-of-type {
@@ -72,18 +61,16 @@
 }
 
 .admin-add-product-page .section-title {
-  font-size: 1.5rem;
-  font-weight: 400;
+  font-size: 1.15rem;
+  font-weight: 600;
   margin-bottom: 0.5rem;
-  color: #1a1a1a;
-  font-family: 'Georgia', 'Times New Roman', serif;
+  color: #111827;
 }
 
 .admin-add-product-page .section-subtitle {
   font-size: 0.9rem;
   color: #6b7280;
   margin-bottom: 2rem;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
 }
 
 /* Form Grid */
@@ -105,11 +92,11 @@
 
 .admin-add-product-page .form-group label {
   font-size: 0.75rem;
-  letter-spacing: 1.5px;
-  color: #1a1a1a;
+  letter-spacing: 1px;
+  color: #4b5563;
   margin-bottom: 0.5rem;
   font-weight: 600;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  text-transform: uppercase;
 }
 
 .admin-add-product-page .form-group input[type="text"],
@@ -122,7 +109,6 @@
   border: 1px solid #e5e7eb;
   border-radius: 6px;
   font-size: 0.95rem;
-  font-family: 'Georgia', serif;
   transition: all 0.3s ease;
   color: #1a1a1a;
   background-color: #ffffff;
@@ -132,8 +118,8 @@
 .admin-add-product-page .form-group textarea:focus,
 .admin-add-product-page .form-group select:focus {
   outline: none;
-  border-color: #1a1a1a;
-  box-shadow: 0 0 0 3px rgba(26, 26, 26, 0.05);
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
 }
 
 .admin-add-product-page .form-group input:disabled,
@@ -160,7 +146,6 @@
 .admin-add-product-page .form-group textarea {
   resize: vertical;
   min-height: 100px;
-  font-family: 'Georgia', serif;
   line-height: 1.6;
 }
 
@@ -169,7 +154,6 @@
   display: grid;
   grid-template-columns: repeat(4, 1fr);
   gap: 1.5rem;
-  animation: fadeIn 0.4s ease-in;
 }
 
 .admin-add-product-page .image-upload-box {
@@ -225,14 +209,12 @@
   font-size: 0.95rem;
   font-weight: 600;
   color: #4b5563;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   letter-spacing: 0.5px;
 }
 
 .admin-add-product-page .upload-subtext {
   font-size: 0.75rem;
   color: #9ca3af;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
 }
 
 .admin-add-product-page .image-preview {
@@ -244,7 +226,6 @@
   width: 100%;
   height: 100%;
   display: block;
-  animation: scaleIn 0.3s ease-out;
   background: #fafafa;
 }
 
@@ -301,7 +282,6 @@
   font-size: 0.7rem;
   font-weight: 700;
   letter-spacing: 1.5px;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
 }
 
@@ -312,7 +292,6 @@
   border-radius: 8px;
   padding: 1.5rem;
   margin-bottom: 1.5rem;
-  animation: fadeIn 0.3s ease-in;
 }
 
 .admin-add-product-page .variant-header {
@@ -329,7 +308,6 @@
   font-weight: 600;
   color: #1a1a1a;
   letter-spacing: 1px;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
 }
 
 .admin-add-product-page .btn-remove-icon {
@@ -372,7 +350,6 @@
   border-radius: 6px;
   transition: all 0.3s ease;
   font-weight: 600;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   width: 100%;
 }
 
@@ -426,13 +403,11 @@
   font-weight: 600;
   letter-spacing: 1.5px;
   color: #1a1a1a;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
 }
 
 .admin-add-product-page .checkbox-desc {
   font-size: 0.85rem;
   color: #6b7280;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
 }
 
 /* Form Actions */
@@ -456,7 +431,6 @@
   border-radius: 6px;
   transition: all 0.3s ease;
   font-weight: 600;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
 }
 
 .admin-add-product-page .btn-cancel:hover {
@@ -476,7 +450,6 @@
   border-radius: 6px;
   transition: all 0.3s ease;
   font-weight: 600;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
 }
 
 .admin-add-product-page .btn-submit:hover {
@@ -608,8 +581,6 @@
   margin: 0.5rem 0 0;
   color: #dc2626;
   font-size: 0.8rem;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-  animation: fadeIn 0.2s ease-in;
 }
 
 .admin-add-product-page .input-error {
@@ -631,7 +602,6 @@
   align-items: center;
   justify-content: center;
   z-index: 2000;
-  animation: fadeIn 0.2s ease-in;
   backdrop-filter: blur(4px);
 }
 
@@ -642,10 +612,8 @@
   border-radius: 12px;
   box-shadow: 0 25px 50px rgba(0, 0, 0, 0.35);
   overflow: hidden;
-  animation: slideUpModal 0.3s ease-out;
 }
 
-@keyframes slideUpModal {
   from {
     opacity: 0;
     transform: translateY(40px) scale(0.95);
@@ -654,7 +622,6 @@
     opacity: 1;
     transform: translateY(0) scale(1);
   }
-}
 
 .admin-add-product-page .ap-modal-header {
   display: flex;
@@ -674,15 +641,13 @@
   top: 1.5rem;
   left: 50%;
   transform: translateX(-50%);
-  animation: scaleIn 0.4s ease-out 0.2s both;
 }
 
 .admin-add-product-page .ap-modal-title {
   margin: 3rem 0 0;
-  font-family: 'Georgia', 'Times New Roman', serif;
   font-size: 1.5rem;
-  font-weight: 500;
-  color: #1a1a1a;
+  font-weight: 600;
+  color: #111827;
   letter-spacing: -0.5px;
 }
 
@@ -716,7 +681,6 @@
   font-size: 1rem;
   color: #4b5563;
   margin-bottom: 1.5rem;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   line-height: 1.6;
 }
 
@@ -734,13 +698,11 @@
   font-weight: 600;
   color: #1a1a1a;
   font-size: 1.1rem;
-  font-family: 'Georgia', 'Times New Roman', serif;
 }
 
 .admin-add-product-page .success-sub {
   font-size: 0.9rem;
   color: #64748b;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
 }
 
 .admin-add-product-page .ap-modal-footer {
@@ -749,14 +711,13 @@
 }
 
 .admin-add-product-page .btn-primary {
-  background: #1f2937;
+  background: #2563eb;
   color: #ffffff;
   border: none;
   padding: 0.875rem 2.5rem;
   border-radius: 6px;
   font-size: 0.9rem;
-  font-weight: 500;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-weight: 600;
   cursor: pointer;
   transition: all 0.2s ease;
   text-transform: uppercase;
@@ -765,7 +726,7 @@
 }
 
 .admin-add-product-page .btn-primary:hover {
-  background: #111827;
+  background: #1d4ed8;
   transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 4px 6px -1px rgba(37, 99, 235, 0.2);
 }

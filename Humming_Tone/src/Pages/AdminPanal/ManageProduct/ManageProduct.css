@@ -1,6 +1,5 @@
 /* ===== MANAGE PRODUCTS CONTAINER ===== */
 .manage-products-container {
-  animation: fadeIn 0.3s ease-in;
   display: flex;
   flex-direction: column;
   height: 100%;
@@ -8,7 +7,6 @@
   margin-top: -20px;
 }
 
-@keyframes fadeIn {
   from {
     opacity: 0;
     transform: translateY(10px);
@@ -17,7 +15,6 @@
     opacity: 1;
     transform: translateY(0);
   }
-}
 
 /* ===== PAGE HEADING ===== */
 .page-heading {
@@ -26,7 +23,6 @@
   color: #1a1a1a;
   margin: 0 0 1.5rem;
   letter-spacing: -0.5px;
-  font-family: 'Georgia', 'Times New Roman', serif;
 }
 
 /* ===== ACTION BUTTONS ===== */
@@ -46,36 +42,36 @@
   letter-spacing: 1.5px;
   cursor: pointer;
   transition: all 0.3s ease;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
 }
 
 .btn-add-product {
-  background: #1a1a1a;
+  background: #2563eb;
   color: #ffffff;
+  border-radius: 6px;
 }
 
 .btn-add-product:hover {
-  background: #2a2a2a;
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  background: #1d4ed8;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 6px -1px rgba(37, 99, 235, 0.2);
 }
 
 .btn-manage-promo {
   background: #10b981;
   color: #ffffff;
+  border-radius: 6px;
 }
 
 .btn-manage-promo:hover {
   background: #059669;
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 6px -1px rgba(16, 185, 129, 0.2);
 }
 
 /* ===== PROMO SECTION ===== */
 .promo-section {
   margin-bottom: 2rem;
   flex-shrink: 0;
-  animation: fadeIn 0.4s ease-in;
 }
 
 .section-header {
@@ -86,17 +82,15 @@
 }
 
 .section-title {
-  font-size: 1.5rem;
-  font-weight: 400;
-  color: #1a1a1a;
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #111827;
   margin: 0;
-  font-family: 'Georgia', 'Times New Roman', serif;
 }
 
 .product-section {
   margin-bottom: 20px;
   margin-top: 10px;
-  animation: fadeIn 0.5s ease-in;
 }
 
 /* ===== PROMO TABLE ===== */
@@ -110,29 +104,26 @@
 .promo-table {
   width: 100%;
   border-collapse: collapse;
-  font-family: 'Georgia', 'Times New Roman', serif;
 }
 
 .promo-table thead {
-  background: #1a1a1a;
-  color: #ffffff;
+  background: #f9fafb;
+  color: #4b5563;
+  border-bottom: 1px solid #e5e7eb;
 }
 
 .promo-table thead th {
   padding: 1rem 1.5rem;
   text-align: left;
-  font-size: 0.7rem;
+  font-size: 0.75rem;
   font-weight: 600;
-  letter-spacing: 2px;
+  letter-spacing: 1px;
   text-transform: uppercase;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-
 }
 
 .promo-table tbody tr {
   border-bottom: 1px solid #e5e7eb;
   transition: background 0.2s ease;
-  animation: fadeIn 0.3s ease-in;
 }
 
 .promo-table tbody tr:hover {
@@ -147,7 +138,6 @@
 
 .promo-code {
   font-weight: 600;
-  font-family: 'Georgia', 'Times New Roman', serif;
   font-size: 1.125rem;
 }
 
@@ -157,7 +147,6 @@
   border-radius: 4px;
   font-size: 0.875rem;
   font-weight: 500;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
 }
 
 .status-active {
@@ -175,12 +164,12 @@
 .btn-delete {
   padding: 0.5rem 1rem;
   border: none;
-  font-size: 0.7rem;
+  border-radius: 4px;
+  font-size: 0.75rem;
   font-weight: 600;
-  letter-spacing: 1px;
+  letter-spacing: 0.5px;
   cursor: pointer;
   transition: all 0.2s ease;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
 }
 
 .btn-edit {
@@ -222,22 +211,27 @@
   display: flex;
   flex-direction: column;
   min-height: 0;
-  animation: fadeIn 0.6s ease-in;
 }
 
 /* ===== PRODUCTS FILTERS ===== */
 .products-filters {
   display: flex;
   justify-content: space-between;
-  align-items: flex-end;
-  gap: 1rem;
-  margin: 0 0 1rem;
+  align-items: center;
+  gap: 1.5rem;
+  margin: 0 0 1.5rem;
+  background: #ffffff;
+  padding: 1.25rem 2rem;
+  border-radius: 12px;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+  border: 1px solid #f3f4f6;
 }
 
 .filters-left {
   display: flex;
-  gap: 1rem;
+  gap: 1.5rem;
   flex-wrap: wrap;
+  align-items: flex-end;
 }
 
 .filter-item {
@@ -252,39 +246,41 @@
 }
 
 .filter-label {
-  font-size: 0.7rem;
-  font-weight: 700;
-  letter-spacing: 1.5px;
-  color: #1a1a1a;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 1px;
+  color: #4b5563;
+  text-transform: uppercase;
 }
 
 .filter-select {
   width: 100%;
-  padding: 0.7rem 1rem;
-  border: 1px solid #ddd;
-  border-radius: 6px;
-  background: #fff;
+  padding: 0.6rem 1rem;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  background: #f9fafb;
   font-size: 0.9rem;
-  font-family: 'Georgia', serif;
-  color: #1a1a1a;
+  color: #111827;
+  transition: all 0.2s ease;
 }
 
 .filter-input {
   width: 100%;
-  padding: 0.7rem 1.5rem;
-  border: 1px solid #ddd;
-  border-radius: 6px;
-  background: #fff;
+  padding: 0.6rem 1.25rem;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  background: #f9fafb;
   font-size: 0.9rem;
-  font-family: 'Georgia', serif;
-  color: #1a1a1a;
+  color: #111827;
+  transition: all 0.2s ease;
 }
 
 .filter-select:focus,
 .filter-input:focus {
   outline: none;
-  border-color: #1a1a1a;
+  background: #ffffff;
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
 }
 
 .filters-right {
@@ -298,7 +294,6 @@
 .filters-count {
   font-size: 0.9rem;
   color: #4b5563;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
 }
 
 .btn-clear-filters {
@@ -311,7 +306,6 @@
   letter-spacing: 1.5px;
   cursor: pointer;
   transition: all 0.2s ease;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   border-radius: 6px;
 }
 
@@ -330,7 +324,7 @@
   background: #ffffff;
   border-radius: 8px;
   overflow: auto;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px -1px rgba(0, 0, 0, 0.1);
   flex: 1;
   scroll-behavior: smooth;
   min-height: 645px;
@@ -340,7 +334,6 @@
 .products-table {
   width: 100%;
   border-collapse: collapse;
-  font-family: 'Georgia', 'Times New Roman', serif;
 }
 
 .products-table thead {
@@ -354,17 +347,15 @@
 .products-table thead th {
   padding: 1rem 1.5rem;
   text-align: left;
-  font-size: 0.7rem;
+  font-size: 0.75rem;
   font-weight: 600;
-  letter-spacing: 2px;
+  letter-spacing: 1px;
   text-transform: uppercase;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
 }
 
 .products-table tbody tr {
   border-bottom: 1px solid #e5e7eb;
   transition: background 0.2s ease;
-  animation: fadeIn 0.3s ease-in;
 }
 
 .products-table tbody tr:hover {
@@ -373,8 +364,8 @@
 
 .products-table tbody td {
   padding: 1rem 1.5rem;
-  color: #1a1a1a;
-  font-size: 1rem;
+  color: #374151;
+  font-size: 0.95rem;
   vertical-align: middle;
 }
 
@@ -389,31 +380,25 @@
 .product-name {
   font-size: 1.125rem;
   font-weight: 400;
-  font-family: 'Georgia', 'Times New Roman', serif;
 }
 
 .product-sku {
-  font-family: 'Georgia', 'Times New Roman', serif;
   font-size: 1rem;
 }
 
 .product-price {
-  font-family: 'Georgia', 'Times New Roman', serif;
   font-size: 1rem;
 }
 
 .product-stock {
-  font-family: 'Georgia', 'Times New Roman', serif;
   font-size: 1rem;
 }
 
 .product-category {
-  font-family: 'Georgia', 'Times New Roman', serif;
   font-size: 1rem;
 }
 
 .product-gender {
-  font-family: 'Georgia', 'Times New Roman', serif;
   font-size: 1rem;
 }
 
@@ -429,7 +414,6 @@
   align-items: center;
   justify-content: center;
   z-index: 1000;
-  animation: fadeIn 0.2s ease-in;
   backdrop-filter: blur(4px);
 }
 
@@ -449,7 +433,6 @@
   overflow: hidden; /* Hides scrollbar on the container itself */
   
   box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-  animation: slideUp 0.3s ease-out;
 }
 
 /* Compact modal (used for short forms like Add Promo) */
@@ -462,7 +445,6 @@
   flex-grow: 0;
 }
 
-@keyframes slideUp {
   from {
     opacity: 0;
     transform: translateY(30px);
@@ -471,7 +453,7 @@
     opacity: 1;
     transform: translateY(0);
   }
-}
+
 
 .modal-header {
   display: flex;
@@ -490,7 +472,6 @@
   font-weight: 400;
   color: #1a1a1a;
   margin: 0;
-  font-family: 'Georgia', 'Times New Roman', serif;
 }
 
 .modal-close {
@@ -548,7 +529,6 @@
   color: #1a1a1a;
   margin-bottom: 0.5rem;
   font-weight: 600;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
 }
 
 .form-input {
@@ -557,7 +537,6 @@
   border: 1px solid #ddd;
   border-radius: 4px;
   font-size: 0.95rem;
-  font-family: 'Georgia', serif;
   transition: border-color 0.3s ease;
   color: #1a1a1a;
   /* Ensure padding doesn't affect width */
@@ -588,7 +567,6 @@
   margin: 0.5rem 0 0;
   color: #dc2626;
   font-size: 0.8rem;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
 }
 
 .form-input.input-error {
@@ -623,7 +601,6 @@
   letter-spacing: 1.5px;
   cursor: pointer;
   transition: all 0.3s ease;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   border-radius: 4px;
 }
 
