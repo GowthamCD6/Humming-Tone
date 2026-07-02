@@ -743,19 +743,47 @@ exports.update_product = (req, res, next) => {
                             err => {
                                 if (err) return rollback(err);
 
-                                connection.commit(err => {
-                                    if (err) return rollback(err);
-
-                                    connection.release();
-                                    res.json({
-                                        success: true,
-                                        message: "Product updated successfully!"
-                                    });
-                                });
+                                // If a new image was uploaded, update the primary image
+                                if (req.file) {
+                                    connection.query(
+                                        "UPDATE product_images SET image_path=? WHERE product_id=? AND is_primary=1 LIMIT 1",
+                                        [req.file.path, id],
+                                        (imgErr, imgResult) => {
+                                            if (imgErr) return rollback(imgErr);
+                                            
+                                            // If no primary image row existed, insert one
+                                            if (imgResult.affectedRows === 0) {
+                                                connection.query(
+                                                    "INSERT INTO product_images (product_id, image_path, is_primary) VALUES (?, ?, 1)",
+                                                    [id, req.file.path],
+                                                    (insertErr) => {
+                                                        if (insertErr) return rollback(insertErr);
+                                                        commitAndRespond();
+                                                    }
+                                                );
+                                            } else {
+                                                commitAndRespond();
+                                            }
+                                        }
+                                    );
+                                } else {
+                                    commitAndRespond();
+                                }
                             }
                         );
                     }
                 );
+
+                function commitAndRespond() {
+                    connection.commit(err => {
+                        if (err) return rollback(err);
+                        connection.release();
+                        res.json({
+                            success: true,
+                            message: "Product updated successfully!"
+                        });
+                    });
+                }
             }
 
             function rollback(error) {

@@ -5,6 +5,7 @@ import AddCircleIcon from '@mui/icons-material/AddCircle'
 import ShoppingCartIcon from '@mui/icons-material/ShoppingCart'
 import OpenInNewIcon from '@mui/icons-material/OpenInNew'
 import LogoutIcon from '@mui/icons-material/Logout'
+import InventoryIcon from '@mui/icons-material/Inventory'
 import AccountCircleIcon from '@mui/icons-material/AccountCircle'
 import PeopleIcon from '@mui/icons-material/People'
 import { Outlet, useLocation, useNavigate } from 'react-router-dom'
@@ -27,6 +28,7 @@ export default function AdminTab({ onLogout = () => {} }) {
       items: [
         { id: 'manage-products', path: 'manage-products', label: 'Manage Products', Icon: ShoppingBagIcon },
         { id: 'add-product', path: 'add-product', label: 'Add Product', Icon: AddCircleIcon },
+        { id: 'inventory', path: 'inventory', label: 'Inventory', Icon: InventoryIcon },
         { id: 'manage-orders', path: 'manage-orders', label: 'Manage Orders', Icon: ShoppingCartIcon },
       ]
     },

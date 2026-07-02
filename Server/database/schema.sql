@@ -220,3 +220,28 @@ CREATE TABLE customize (
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 ) ENGINE=InnoDB
 DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE IF NOT EXISTS inventory_materials (
+  material_id INT PRIMARY KEY AUTO_INCREMENT,
+  material_code VARCHAR(50) UNIQUE NOT NULL,
+  material_name VARCHAR(100) NOT NULL,
+  material_type VARCHAR(50),
+  category VARCHAR(50),
+  description TEXT,
+  unit_of_measurement VARCHAR(20) NOT NULL,
+  current_stock DECIMAL(10,2) DEFAULT 0,
+  min_stock_level DECIMAL(10,2) DEFAULT 0,
+  max_stock_level DECIMAL(10,2),
+  reorder_point DECIMAL(10,2),
+  unit_price DECIMAL(10,2),
+  standard_cost DECIMAL(10,2) DEFAULT 0,
+  reorder_level DECIMAL(10,2) DEFAULT 0,
+  reorder_quantity DECIMAL(10,2) DEFAULT 0,
+  lead_time_days INT DEFAULT 0,
+  specifications JSON,
+  warehouse_location VARCHAR(100),
+  preferred_supplier VARCHAR(100),
+  is_active BOOLEAN DEFAULT TRUE,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;

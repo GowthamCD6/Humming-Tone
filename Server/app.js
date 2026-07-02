@@ -18,6 +18,7 @@ const userReturnRoutes = require("./routes/user/return");
 const customizeRoutes = require("./routes/user/customize");
 const userCheckoutRoutes = require('./routes/user/checkout')
 const adminCustomizeRoutes = require('./routes/admin/customize')
+const adminInventoryRoutes = require('./routes/admin/inventory')
 const adminAuth = require('./middlewares/adminAuth');
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -59,9 +60,12 @@ app.use("/", adminOrderRoute);
 app.use("/", adminDashboardRoute);
 app.use("/", adminAuthRoute);
 app.use("/api/orders", adminOrderRoute);
+app.use('/api', adminOrderRoute);
+app.use('/api', siteRoutes);
+app.use('/', adminInventoryRoutes);
+app.use('/api', adminCustomizeRoutes);
 app.use("/", adminPromoRoute);
 app.use('/api', productRoutes);
-app.use('/api', adminCustomizeRoutes);
 // User routes
 app.use("/", userProductRoute);
 app.use("/", userPromoRoutes);

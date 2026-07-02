@@ -37,6 +37,7 @@ import SiteContent from './Pages/AdminPanal/SiteContent/SiteContent.jsx';
 import ProductData from './Pages/AdminPanal/ProductData/ProductData.jsx';
 import ProductBuyer from './Pages/AdminPanal/BuyerData/Buyer.jsx';
 import OrderDetails from "./Pages/AdminPanal/ManageOrder/OrderDetails/OrderDetails.jsx";
+import Inventory from "./Pages/AdminPanal/Inventory/Inventory.jsx";
 import axios from 'axios';
 
 import "./App.css";
@@ -162,6 +163,7 @@ export default function App() {
           <Route path="site-content" element={<SiteContent />} />
           <Route path="all-products" element={<ProductData />} />
           <Route path="product-buyers" element={<ProductBuyer />} />
+          <Route path="inventory" element={<Inventory />} />
         </Route>
 
         {/* USER NESTED ROUTES (PUBLIC) */}
