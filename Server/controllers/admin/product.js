@@ -538,7 +538,7 @@ exports.fetch_products = (req, res, next) => {
     try {
         const getSql = `
             SELECT p.*, 
-            (SELECT price FROM product_variants WHERE product_id = p.id LIMIT 1) AS price,
+            (SELECT price FROM product_variants WHERE product_id = p.id ORDER BY id ASC LIMIT 1) AS price,
             (SELECT SUM(stock_quantity) FROM product_variants WHERE product_id = p.id) AS stock_quantity
             FROM products p 
             WHERE p.is_active = 1
@@ -738,8 +738,16 @@ exports.update_product = (req, res, next) => {
                         if (err) return rollback(err);
 
                         connection.query(
-                            "UPDATE product_variants SET price=?, stock_quantity=? WHERE product_id=? LIMIT 1",
-                            [Number(price), Number(stock), id],
+                            `UPDATE product_variants pv
+                             JOIN (
+                               SELECT id
+                               FROM product_variants
+                               WHERE product_id = ?
+                               ORDER BY id ASC
+                               LIMIT 1
+                             ) first_variant ON first_variant.id = pv.id
+                             SET pv.price = ?, pv.stock_quantity = ?`,
+                            [id, Number(price), Number(stock)],
                             err => {
                                 if (err) return rollback(err);
 

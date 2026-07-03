@@ -113,8 +113,24 @@ exports.update_promo = (req,res,next) => {
       return next(createError.BadRequest('Invalid minimum order amount'));
     }
 
-    if(typeof is_active != "boolean"){
-      return next(createError.BadRequest('Inalid status'));
+    if (typeof is_active === "string") {
+      if (is_active === "true") {
+        is_active = true;
+      } else if (is_active === "false") {
+        is_active = false;
+      }
+    }
+
+    if (typeof is_active === "number") {
+      if (is_active === 1) {
+        is_active = true;
+      } else if (is_active === 0) {
+        is_active = false;
+      }
+    }
+
+    if (typeof is_active !== "boolean"){
+      return next(createError.BadRequest('Invalid status'));
     }
 
     is_active = is_active ? 1 : 0;

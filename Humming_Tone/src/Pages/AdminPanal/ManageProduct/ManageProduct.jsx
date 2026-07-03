@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Plus, Search, Edit, Trash2, X } from 'lucide-react'
 import './ManageProduct.css'
@@ -33,12 +33,19 @@ export default function ManageProducts() {
   const [filterGender, setFilterGender] = useState('All')
   const [filterCategory, setFilterCategory] = useState('All')
   const [searchQuery, setSearchQuery] = useState('')
+  const [productPage, setProductPage] = useState(1)
+  const [productLimit, setProductLimit] = useState(10)
 
   // Fetch from backend
   const [genderOptions, setGenderOptions] = useState([]);
   const [genderCategoryMap, setGenderCategoryMap] = useState({});
   const [filterCategoryOptions, setFilterCategoryOptions] = useState([]);
   const [editCategoryOptions, setEditCategoryOptions] = useState([]);
+
+  const formatCurrency = (value) => {
+    const num = Number(value || 0);
+    return `₹${num.toLocaleString('en-IN', { minimumFractionDigits: 0, maximumFractionDigits: 2 })}`;
+  };
 
   // Fetch genders and categories from backend
   useEffect(() => {
@@ -135,6 +142,23 @@ export default function ManageProducts() {
     
     return genOk && catOk && nameOk;
   });
+
+  const totalProductPages = Math.max(1, Math.ceil(filteredProducts.length / productLimit));
+  const safeProductPage = Math.min(Math.max(1, productPage), totalProductPages);
+  const pagedProducts = useMemo(() => {
+    const start = (safeProductPage - 1) * productLimit;
+    return filteredProducts.slice(start, start + productLimit);
+  }, [filteredProducts, safeProductPage, productLimit]);
+
+  useEffect(() => {
+    setProductPage(1);
+  }, [searchQuery, filterGender, filterCategory, productLimit]);
+
+  useEffect(() => {
+    if (productPage > totalProductPages) {
+      setProductPage(totalProductPages);
+    }
+  }, [productPage, totalProductPages]);
 
   // --- PRODUCT HANDLERS ---
   const handleEditProduct = (p) => { setEditingProduct({ ...p }); setEditImageFile(null); setShowEditModal(true); }
@@ -258,29 +282,21 @@ export default function ManageProducts() {
   return (
     <div className="mp-page">
 
-      {/* --- Page Header --- */}
-      <div className="mp-header">
-        <div>
-          <h1 className="mp-header-title">Manage Products</h1>
-          <p className="mp-header-sub">View and manage your product catalog</p>
-        </div>
-        <div className="mp-header-actions">
-          <button className="mp-btn mp-btn-outline" onClick={() => setShowAddPromoModal(true)}>
-            <Plus size={16} />
-            Add Promo
-          </button>
-          <button className="mp-btn mp-btn-primary" onClick={() => navigate('/admin/add-product')}>
-            <Plus size={16} />
-            Add Product
-          </button>
-        </div>
-      </div>
-
       {/* --- Promo Codes Table --- */}
       <div className="mp-card">
         <div className="mp-card-header">
           <h3 className="mp-card-title">Active Promo Codes</h3>
-          <span style={{ fontSize: '13px', color: '#94a3b8' }}>{promoCodes.length} codes</span>
+          <div className="mp-card-header-actions">
+            <span className="mp-card-count">{promoCodes.length} codes</span>
+            <button className="mp-btn mp-btn-outline" onClick={() => setShowAddPromoModal(true)}>
+              <Plus size={16} />
+              Add Promo Code
+            </button>
+            <button className="mp-btn mp-btn-primary" onClick={() => navigate('/admin/add-product')}>
+              <Plus size={16} />
+              Add Product
+            </button>
+          </div>
         </div>
         <table className="mp-table">
           <thead>
@@ -299,8 +315,8 @@ export default function ManageProducts() {
               <tr key={p.id}>
                 <td><span className="mp-text-bold">{p.code}</span></td>
                 <td>{p.discount_type}</td>
-                <td>₹{p.discount_value}.00</td>
-                <td>₹{p.min_order_amount}.00</td>
+                <td><span className="mp-amount">{formatCurrency(p.discount_value)}</span></td>
+                <td><span className="mp-amount">{formatCurrency(p.min_order_amount)}</span></td>
                 <td>{p.used_count || 0} / {p.usage_limit || '∞'}</td>
                 <td>
                   <span className={`mp-badge ${p.is_active ? 'mp-badge-green' : 'mp-badge-red'}`}>
@@ -326,15 +342,8 @@ export default function ManageProducts() {
 
       {/* --- Products Table --- */}
       <div className="mp-card">
-        <div className="mp-card-header">
-          <h3 className="mp-card-title">Active Products</h3>
-          <span style={{ fontSize: '13px', color: '#94a3b8' }}>
-            Showing {filteredProducts.length} of {products.length}
-          </span>
-        </div>
-
-        {/* Filters */}
         <div className="mp-filters">
+          <h3 className="mp-products-title">Active Products</h3>
           <div className="mp-search-wrap">
             <Search className="mp-search-icon" size={16} />
             <input
@@ -361,6 +370,7 @@ export default function ManageProducts() {
             <option value="All">All Categories</option>
             {filterCategoryOptions.map(c => <option key={c.name} value={c.name}>{c.name}</option>)}
           </select>
+          <span className="mp-products-count">{filteredProducts.length} matched / {products.length} total</span>
         </div>
 
         <table className="mp-table">
@@ -376,8 +386,8 @@ export default function ManageProducts() {
             </tr>
           </thead>
           <tbody>
-            {filteredProducts.length > 0 ? (
-              filteredProducts.map((p) => (
+            {pagedProducts.length > 0 ? (
+              pagedProducts.map((p) => (
                 <tr key={p.id}>
                   <td>
                     <div className="mp-product-cell">
@@ -391,7 +401,7 @@ export default function ManageProducts() {
                     </div>
                   </td>
                   <td>{p.sku}</td>
-                  <td><span className="mp-text-bold">₹{p.price}.00</span></td>
+                  <td><span className="mp-text-bold mp-amount">{formatCurrency(p.price)}</span></td>
                   <td>
                     <span className={`mp-badge ${p.stock > 0 ? 'mp-badge-green' : 'mp-badge-red'}`}>
                       {p.stock > 0 ? `${p.stock} in stock` : 'Out of stock'}
@@ -422,6 +432,42 @@ export default function ManageProducts() {
             )}
           </tbody>
         </table>
+
+        <div className="mp-table-footer">
+          <span className="mp-footer-text">
+            Showing {filteredProducts.length === 0 ? 0 : (safeProductPage - 1) * productLimit + 1}–{Math.min(safeProductPage * productLimit, filteredProducts.length)} of {filteredProducts.length} products
+          </span>
+
+          <div className="mp-pagination-group">
+            <label className="mp-limit-label" htmlFor="mp-limit-select">Rows</label>
+            <select
+              id="mp-limit-select"
+              className="mp-limit-select"
+              value={productLimit}
+              onChange={(e) => setProductLimit(Number(e.target.value))}
+            >
+              <option value={10}>10</option>
+              <option value={25}>25</option>
+              <option value={50}>50</option>
+            </select>
+
+            <button
+              className="mp-page-btn"
+              onClick={() => setProductPage((p) => Math.max(1, p - 1))}
+              disabled={safeProductPage === 1}
+            >
+              Previous
+            </button>
+            <span className="mp-page-indicator">Page {safeProductPage} / {totalProductPages}</span>
+            <button
+              className="mp-page-btn"
+              onClick={() => setProductPage((p) => Math.min(totalProductPages, p + 1))}
+              disabled={safeProductPage === totalProductPages}
+            >
+              Next
+            </button>
+          </div>
+        </div>
       </div>
 
       {/* ==============================================
