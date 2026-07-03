@@ -24,7 +24,12 @@
 .inv-container {
   padding: 2px;
   max-width: 1440px;
+  width: 100%;
   margin: 0 auto;
+  height: calc(100vh - 20px);
+  display: flex;
+  flex-direction: column;
+  overflow-x: hidden;
 }
 
 /* --- Stats Cards --- */
@@ -33,6 +38,7 @@
   grid-template-columns: repeat(4, 1fr);
   gap: 16px;
   margin-bottom: 20px;
+  flex-shrink: 0;
 }
 
 .inv-stat-card {
@@ -47,6 +53,15 @@
 .inv-stat-card:hover {
   box-shadow: var(--inv-shadow-md);
   transform: translateY(-1px);
+}
+
+.inv-stat-card.is-clickable {
+  cursor: pointer;
+}
+
+.inv-stat-card.is-active {
+  border-color: #93c5fd;
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.18);
 }
 
 .inv-stat-header {
@@ -87,37 +102,58 @@
   justify-content: space-between;
   align-items: center;
   gap: 16px;
+  flex-wrap: nowrap; /* keep tabs + search + add in one line */
   background-color: var(--inv-white);
   border-bottom: 1px solid var(--inv-border-light);
 }
 
+.inv-toolbar,
+.inv-tabs-container {
+  min-height: 0; /* allow children to scroll inside flex parents */
+}
+
 /* Segmented Tabs */
 .inv-tabs-container {
-  display: inline-flex;
-  gap: 6px;
-  min-width: max-content;
+  display: flex;
+  gap: 8px;
+  flex-wrap: nowrap; /* keep tabs on a single line */
+  width: max-content; /* allow container to grow horizontally so outer box can scroll */
   align-items: center;
 }
 
 .inv-tabs-scroll-box {
   position: relative;
-  flex: 1;
+  flex: 0 0 clamp(300px, 34vw, 420px);
   min-width: 0;
+  width: clamp(300px, 34vw, 420px);
+  max-width: clamp(300px, 34vw, 420px);
+  box-sizing: border-box;
   background: #f1f5f9;
   border: 1px solid #e2e8f0;
   border-radius: 12px;
-  padding: 4px 6px;
-  overflow: visible;
+  padding: 8px;
+  height: auto; /* no fixed height so it stays a single-line box */
+  max-height: none;
+  overflow-x: auto; /* horizontal scroll when tabs exceed width */
+  overflow-y: hidden;
+  -webkit-overflow-scrolling: touch;
+  white-space: nowrap;
+}
+
+/* hide scrollbar visually but keep scrolling functional */
+.inv-tabs-scroll-box {
+  -ms-overflow-style: none; /* IE and Edge */
+  scrollbar-width: none; /* Firefox */
+}
+.inv-tabs-scroll-box::-webkit-scrollbar {
+  width: 0;
+  height: 0;
 }
 
 .inv-tabs-fixed {
-  width: 100%;
-  overflow-x: auto;
-  overflow-y: hidden;
-  scrollbar-width: none;
-  -ms-overflow-style: none;
   display: flex;
   align-items: center;
+  min-width: max-content;
 }
 
 .inv-tabs-fixed::-webkit-scrollbar {
@@ -127,7 +163,7 @@
 .inv-tab {
   border: 1.5px solid #e2e8f0;
   background: #ffffff;
-  padding: 7px 14px;
+  padding: 7px 12px;
   border-radius: 8px;
   font-size: 14px;
   font-weight: 500;
@@ -137,8 +173,9 @@
   white-space: nowrap;
   display: inline-flex;
   align-items: center;
-  gap: 7px;
-  flex-shrink: 0;
+  gap: 8px;
+  flex: 0 0 auto;
+  max-width: 100%;
 }
 
 .inv-tab.active {
@@ -181,12 +218,17 @@
 .inv-actions {
   display: flex;
   align-items: center;
+  flex-wrap: nowrap; /* keep search and button on one row */
   gap: 10px;
-  flex-shrink: 0;
+  flex: 0 0 auto;
+  min-width: 0;
+  margin-left: auto;
 }
 
 .inv-search-wrapper {
   position: relative;
+  flex: 1 1 220px; /* search box can shrink first */
+  min-width: 140px;
 }
 
 .inv-search-icon {
@@ -206,11 +248,32 @@
   font-family: 'Inter', sans-serif;
   font-size: 14px;
   font-weight: 400;
-  width: 240px;
+  width: 100%;
+  min-width: 140px;
+  max-width: 260px;
   outline: none;
   color: var(--inv-text-dark);
   background-color: var(--inv-white);
   transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+@media (max-width: 900px) {
+  .inv-toolbar {
+    align-items: stretch;
+    flex-wrap: wrap;
+  }
+
+  .inv-tabs-scroll-box {
+    flex: 1 1 100%;
+    width: 100%;
+    max-width: 100%;
+  }
+
+  .inv-actions {
+    width: 100%;
+    justify-content: flex-end;
+    margin-left: 0;
+  }
 }
 
 .inv-search-input:focus {
@@ -250,18 +313,20 @@
 
 /* --- Table --- */
 .inv-table-wrapper {
-  overflow-x: auto;
+  flex: 1;
+  overflow: auto;
 }
 
 .inv-table {
   width: 100%;
   border-collapse: collapse;
+  table-layout: auto; /* let content decide width to prevent cell collision */
 }
 
 .inv-table th {
   background-color: #f1f5f9;
   text-align: left;
-  padding: 14px 24px;
+  padding: 9px 16px;
   font-family: 'Inter', sans-serif;
   font-size: 11px;
   font-weight: 700;
@@ -270,12 +335,15 @@
   letter-spacing: 0.05em;
   border-top: 1px solid var(--inv-border-light);
   border-bottom: 1px solid var(--inv-border);
+  white-space: nowrap;
 }
 
 .inv-table td {
-  padding: 16px 24px;
+  padding: 10px 16px;
   border-bottom: 1px solid var(--inv-border-light);
   vertical-align: middle;
+  height: auto; /* allow compact rows so 5 paginated items fit without clipping */
+  white-space: nowrap;
 }
 
 .inv-table tbody tr:hover {
@@ -302,6 +370,9 @@
   font-size: 16px;
   line-height: 1.4;
   margin-bottom: 3px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .text-sub {
@@ -309,6 +380,9 @@
   font-weight: 400;
   color: var(--inv-text-light);
   line-height: 1.3;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .text-normal {
@@ -367,8 +441,9 @@
 .action-cell {
   display: flex;
   align-items: center;
-  justify-content: flex-end;
+  justify-content: center;
   gap: 8px;
+  min-width: 150px;
 }
 
 .btn-update {
@@ -508,4 +583,228 @@
 }.inv-modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; z-index: 1000; } .inv-modal-content { background: #fff; padding: 24px; border-radius: 8px; width: 400px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); }
 
 
-.inv-layout-container { display: flex; gap: 20px; align-items: flex-start; } .inv-gender-sidebar { width: 220px; background: #fff; padding: 20px; border-radius: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); flex-shrink: 0; } .inv-sidebar-title { margin-top: 0; margin-bottom: 16px; font-size: 14px; font-weight: 600; color: #475569; text-transform: uppercase; letter-spacing: 0.5px; } .inv-sidebar-list { list-style: none; padding: 0; margin: 0; } .inv-sidebar-item { padding: 10px 16px; margin-bottom: 8px; border-radius: 8px; cursor: pointer; color: #475569; font-size: 15px; font-weight: 500; transition: all 0.2s; } .inv-sidebar-item:hover { background: #f1f5f9; } .inv-sidebar-item.active { background: #eef2ff; color: #3b82f6; font-weight: 600; } .inv-main-card { flex-grow: 1; min-width: 0; }
+.inv-layout-container { 
+  display: flex; 
+  gap: 20px; 
+  align-items: stretch; 
+  flex: 1;
+  min-height: 0;
+  overflow-x: hidden;
+} 
+
+.inv-gender-sidebar { 
+  width: 280px; 
+  min-width: 280px;
+  max-width: 280px;
+  background: var(--inv-white); 
+  padding: 24px; 
+  border-radius: 12px; 
+  box-shadow: var(--inv-shadow-sm);
+  border: 1px solid var(--inv-border);
+  flex-shrink: 0; 
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
+  overflow-y: auto;
+} 
+
+.inv-sidebar-title { 
+  margin-top: 0; 
+  margin-bottom: 20px; 
+  font-size: 14px; 
+  font-weight: 700; 
+  color: var(--inv-text-dark); 
+  text-transform: uppercase; 
+  letter-spacing: 0.5px; 
+} 
+
+.inv-sidebar-list { 
+  list-style: none; 
+  padding: 0; 
+  margin: 0; 
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+} 
+
+.inv-sidebar-item { 
+  padding: 14px 18px; 
+  border-radius: 10px; 
+  cursor: pointer; 
+  color: var(--inv-text-medium); 
+  font-size: 15px; 
+  font-weight: 500; 
+  transition: background 0.15s ease, border-color 0.15s ease;
+  border: 1.5px solid var(--inv-border);
+  background-color: var(--inv-white);
+  box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+} 
+
+.inv-sidebar-item:hover { 
+  background-color: var(--inv-bg); 
+  border-color: #cbd5e1;
+} 
+
+.inv-sidebar-item.active { 
+  background-color: #eff6ff; 
+  border: 1.5px solid #bfdbfe;
+  color: var(--inv-primary); 
+  font-weight: 600; 
+  box-shadow: 0 1px 4px rgba(37,99,235,0.08);
+} 
+
+.inv-main-card { 
+  flex: 1; 
+  min-width: 0; 
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  overflow-x: hidden;
+}
+
+/* --- Details Side Panel --- */
+.inv-details-panel {
+  position: fixed;
+  right: -440px;
+  top: 0;
+  width: 420px;
+  max-width: 100vw;
+  height: 100vh;
+  background: #ffffff;
+  border-left: 1px solid #dbe3ee;
+  box-shadow: -8px 0 24px rgba(15, 23, 42, 0.12);
+  display: flex;
+  flex-direction: column;
+  transition: right 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  z-index: 1100;
+}
+
+.inv-details-panel.open {
+  right: 0;
+}
+
+.inv-details-form {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.inv-details-header {
+  padding: 22px 24px;
+  border-bottom: 1px solid #e2e8f0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.inv-close-btn {
+  background: none;
+  border: none;
+  color: #64748b;
+  cursor: pointer;
+  padding: 6px;
+  display: flex;
+  align-items: center;
+  border-radius: 6px;
+  transition: all 0.2s;
+}
+
+.inv-close-btn:hover {
+  background-color: #f1f5f9;
+  color: #0f172a;
+}
+
+.inv-panel-title {
+  font-size: 24px;
+  font-weight: 700;
+  color: #0f172a;
+  margin: 0;
+}
+
+.inv-form-body {
+  padding: 24px;
+  flex: 1;
+  overflow-y: auto;
+}
+
+.inv-form-body::-webkit-scrollbar {
+  width: 6px;
+}
+
+.inv-form-body::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.inv-form-body::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 3px;
+}
+
+.inv-form-group {
+  margin-bottom: 20px;
+}
+
+.inv-form-row {
+  display: flex;
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
+.inv-form-group.half {
+  flex: 1;
+  margin-bottom: 0;
+}
+
+.inv-label {
+  display: block;
+  font-size: 13px;
+  font-weight: 700;
+  color: #64748b;
+  margin-bottom: 8px;
+}
+
+.inv-input,
+.inv-textarea {
+  width: 100%;
+  padding: 10px 14px;
+  border: 1px solid #cbd5e1;
+  border-radius: 7px;
+  font-size: 15px;
+  font-weight: 500;
+  color: #0f172a;
+  background-color: #ffffff;
+  outline: none;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.inv-input:focus,
+.inv-textarea:focus {
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.12);
+}
+
+.inv-input::placeholder,
+.inv-textarea::placeholder {
+  color: #94a3b8;
+}
+
+.inv-textarea {
+  min-height: 80px;
+  resize: vertical;
+}
+
+.inv-details-footer {
+  padding: 16px 24px;
+  border-top: 1px solid #e2e8f0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background-color: #f8fafc;
+}
+
+@media (max-width: 640px) {
+  .inv-details-panel {
+    width: 100vw;
+    right: -100vw;
+  }
+}

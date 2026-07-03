@@ -60,7 +60,7 @@ exports.fetch_new_arrivals = (req, res, next) => {
         p.id AS id,                     
         p.name,
         p.about,
-        pv.original_price,
+        MIN(pv.original_price) AS original_price,
         p.sku,
         p.category_id,
         p.subcategory,
@@ -72,19 +72,20 @@ exports.fetch_new_arrivals = (req, res, next) => {
         p.age_range,
         p.weight,
         p.dimensions,
-        pv.stock_quantity,
+        SUM(pv.stock_quantity) AS stock_quantity,
         p.is_featured,
         p.is_active,
         p.image_path,
         p.created_at,
         p.updated_at,
 
-        pv.id AS variant_id,            
-        pv.size,
-        pv.price
+        MIN(pv.id) AS variant_id,            
+        MIN(pv.size) AS size,
+        MIN(pv.price) AS price
       FROM products p
       JOIN product_variants pv ON p.id = pv.product_id
       WHERE p.is_active = 1
+      GROUP BY p.id
       ORDER BY p.created_at DESC
       LIMIT 9
     `;
@@ -109,7 +110,7 @@ exports.fetch_featured_products = (req, res, next) => {
         p.id AS id,                   
         p.name,
         p.about,
-        pv.original_price,
+        MIN(pv.original_price) AS original_price,
         p.sku,
         p.category_id,
         p.subcategory,
@@ -121,20 +122,21 @@ exports.fetch_featured_products = (req, res, next) => {
         p.age_range,
         p.weight,
         p.dimensions,
-        pv.stock_quantity,
+        SUM(pv.stock_quantity) AS stock_quantity,
         p.is_featured,
         p.is_active,
         p.image_path,
         p.created_at,
         p.updated_at,
 
-        pv.id AS variant_id,
-        pv.size,
-        pv.price
+        MIN(pv.id) AS variant_id,
+        MIN(pv.size) AS size,
+        MIN(pv.price) AS price
       FROM products p
       JOIN product_variants pv ON p.id = pv.product_id
       WHERE p.is_featured = 1
         AND p.is_active = 1
+      GROUP BY p.id
       ORDER BY p.created_at DESC
     `;
 

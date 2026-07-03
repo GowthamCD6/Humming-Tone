@@ -4,6 +4,7 @@ exports.fetch_inventory = (req, res) => {
   const query = `
     SELECT 
       v.id as material_id,
+      p.id as product_id,
       p.sku as material_code,
       p.name as material_name,
       c.name as category,
@@ -12,6 +13,13 @@ exports.fetch_inventory = (req, res) => {
       v.price as standard_cost,
       v.size as unit_of_measurement,
       p.gender,
+      p.color,
+      p.material,
+      p.care_instructions,
+      p.age_range,
+      p.weight,
+      p.dimensions,
+      p.about,
       5 as reorder_level
     FROM product_variants v
     JOIN products p ON v.product_id = p.id
@@ -25,6 +33,87 @@ exports.fetch_inventory = (req, res) => {
       return res.status(500).json({ success: false, message: "Database error" });
     }
     return res.status(200).json({ success: true, data: results });
+  });
+};
+
+exports.update_inventory_full = (req, res) => {
+  const { id } = req.params; // variant id
+  const {
+    product_id,
+    material_name,
+    material_code,
+    preferred_supplier,
+    gender,
+    color,
+    material,
+    care_instructions,
+    age_range,
+    weight,
+    dimensions,
+    about,
+    current_stock,
+    standard_cost
+  } = req.body;
+
+  if (!product_id) {
+    return res.status(400).json({ success: false, message: "Product ID is required" });
+  }
+
+  // Transaction to update both tables
+  db.getConnection((err, connection) => {
+    if (err) return res.status(500).json({ success: false, message: "Database connection error" });
+    
+    connection.beginTransaction(err => {
+      if (err) {
+        connection.release();
+        return res.status(500).json({ success: false, message: "Transaction start error" });
+      }
+
+      // Update variant
+      const variantQuery = `UPDATE product_variants SET stock_quantity = ?, price = ? WHERE id = ?`;
+      connection.query(variantQuery, [current_stock, standard_cost, id], (err, varResult) => {
+        if (err) {
+          return connection.rollback(() => {
+            connection.release();
+            res.status(500).json({ success: false, message: "Variant update error" });
+          });
+        }
+
+        // Update product
+        const productQuery = `
+          UPDATE products SET 
+            name = ?, sku = ?, brand = ?, gender = ?, color = ?, 
+            material = ?, care_instructions = ?, age_range = ?, weight = ?, 
+            dimensions = ?, about = ?
+          WHERE id = ?
+        `;
+        const productValues = [
+          material_name, material_code, preferred_supplier, gender, color,
+          material, care_instructions, age_range, weight, dimensions, about,
+          product_id
+        ];
+
+        connection.query(productQuery, productValues, (err, prodResult) => {
+          if (err) {
+            return connection.rollback(() => {
+              connection.release();
+              res.status(500).json({ success: false, message: "Product update error" });
+            });
+          }
+
+          connection.commit(err => {
+            if (err) {
+              return connection.rollback(() => {
+                connection.release();
+                res.status(500).json({ success: false, message: "Commit error" });
+              });
+            }
+            connection.release();
+            res.status(200).json({ success: true, message: "Inventory updated successfully" });
+          });
+        });
+      });
+    });
   });
 };
 

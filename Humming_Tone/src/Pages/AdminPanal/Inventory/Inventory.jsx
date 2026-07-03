@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { Package, AlertTriangle, XCircle, DollarSign, Search, Plus, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Package, AlertTriangle, XCircle, DollarSign, Search, Plus, ChevronLeft, ChevronRight, Edit, X } from 'lucide-react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import './Inventory.css';
 import axios from 'axios';
@@ -14,15 +14,91 @@ const InventoryDashboard = () => {
   const [error, setError] = useState(null);
   const [activeTab, setActiveTab] = useState('All Materials');
   const [activeGender, setActiveGender] = useState('All');
+  const [activeStockFilter, setActiveStockFilter] = useState('All');
   const [searchQuery, setSearchQuery] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
   const [editingItem, setEditingItem] = useState(null);
   const [showEditModal, setShowEditModal] = useState(false);
+  const [detailsPanelItem, setDetailsPanelItem] = useState(null); // Item currently open in right side panel
 
   const mapStatus = (stock, reorder) => {
     if (stock <= 0) return { status: 'Out of Stock', statusClass: 'badge-red', stockColor: 'text-red' };
     if (stock <= reorder) return { status: 'Low Stock', statusClass: 'badge-orange', stockColor: 'text-orange' };
     return { status: 'In Stock', statusClass: 'badge-green', stockColor: 'text-dark' };
+  };
+
+  const handleOpenDetails = (item) => {
+    setDetailsPanelItem({
+      ...item,
+      updateName: item.name,
+      updateCode: item.code,
+      updateSupplier: item.supplierName !== '-' ? item.supplierName : '',
+      updateGender: item.gender !== '-' ? item.gender : '',
+      updateColor: item.color,
+      updateMaterial: item.material,
+      updateCare: item.careInstructions,
+      updateAge: item.ageRange,
+      updateWeight: item.weight,
+      updateDimensions: item.dimensions,
+      updateAbout: item.about,
+      updateStock: item.rawStock,
+      updatePrice: item.standardCost
+    });
+  };
+
+  const handleCloseDetails = () => {
+    setDetailsPanelItem(null);
+  };
+
+  const handleUpdateFullDetails = async (e) => {
+    e.preventDefault();
+    try {
+      setLoading(true);
+      const res = await axios.patch(`${API_BASE_URL}/update_inventory_full/${detailsPanelItem.materialId}`, {
+        product_id: detailsPanelItem.productId,
+        material_name: detailsPanelItem.updateName,
+        material_code: detailsPanelItem.updateCode,
+        preferred_supplier: detailsPanelItem.updateSupplier,
+        gender: detailsPanelItem.updateGender,
+        color: detailsPanelItem.updateColor,
+        material: detailsPanelItem.updateMaterial,
+        care_instructions: detailsPanelItem.updateCare,
+        age_range: detailsPanelItem.updateAge,
+        weight: detailsPanelItem.updateWeight,
+        dimensions: detailsPanelItem.updateDimensions,
+        about: detailsPanelItem.updateAbout,
+        current_stock: detailsPanelItem.updateStock,
+        standard_cost: detailsPanelItem.updatePrice
+      });
+      if (res.data.success) {
+        setDetailsPanelItem(null);
+        fetchInventory();
+      }
+    } catch (err) {
+      console.error(err);
+      alert('Failed to update details');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleSaveStock = async () => {
+    try {
+      setLoading(true);
+      const res = await axios.patch(`${API_BASE_URL}/update_inventory/${editingItem.materialId}`, {
+        current_stock: editingItem.updateStock,
+        standard_cost: editingItem.updatePrice
+      });
+      if (res.data.success) {
+        setShowEditModal(false);
+        fetchInventory();
+      }
+    } catch (err) {
+      console.error(err);
+      alert('Failed to update stock');
+    } finally {
+      setLoading(false);
+    }
   };
 
   const fetchInventory = async () => {
@@ -43,6 +119,14 @@ const InventoryDashboard = () => {
             supplier: item.preferred_supplier ? `Supplier: ${item.preferred_supplier}` : 'Supplier: -',
             category: item.category || '-',
             gender: item.gender || '-',
+            productId: item.product_id,
+            color: item.color || '',
+            material: item.material || '',
+            careInstructions: item.care_instructions || '',
+            ageRange: item.age_range || '',
+            weight: item.weight || '',
+            dimensions: item.dimensions || '',
+            about: item.about || '',
             rawStock: stock,
             standardCost: cost,
             stock: stock.toLocaleString(),
@@ -77,15 +161,26 @@ const InventoryDashboard = () => {
   }, [location.state]);
 
   const categoryTabs = useMemo(() => {
+    let filtered = allMaterials;
+
+    if (activeGender !== 'All') {
+      const selectedGender = activeGender.toLowerCase().trim();
+      filtered = filtered.filter((item) => (item.gender || '').toLowerCase().trim() === selectedGender);
+    }
+
+    if (activeStockFilter !== 'All') {
+      filtered = filtered.filter((item) => item.status === activeStockFilter);
+    }
+
     const categories = Array.from(
       new Set(
-        allMaterials
+        filtered
           .map((item) => (item.category || '').trim())
           .filter((c) => Boolean(c) && c !== '-')
       )
     );
     return ['All Materials', ...categories];
-  }, [allMaterials]);
+  }, [allMaterials, activeGender, activeStockFilter]);
 
   const genderTabs = useMemo(() => {
     const genders = Array.from(
@@ -99,14 +194,25 @@ const InventoryDashboard = () => {
   }, [allMaterials]);
 
   const tabCounts = useMemo(() => {
-    const counts = { 'All Materials': allMaterials.length };
+    let filtered = allMaterials;
+
+    if (activeGender !== 'All') {
+      const selectedGender = activeGender.toLowerCase().trim();
+      filtered = filtered.filter((item) => (item.gender || '').toLowerCase().trim() === selectedGender);
+    }
+
+    if (activeStockFilter !== 'All') {
+      filtered = filtered.filter((item) => item.status === activeStockFilter);
+    }
+
+    const counts = { 'All Materials': filtered.length };
     categoryTabs.slice(1).forEach((cat) => {
-      counts[cat] = allMaterials.filter(
+      counts[cat] = filtered.filter(
         (item) => (item.category || '').toLowerCase().trim() === cat.toLowerCase().trim()
       ).length;
     });
     return counts;
-  }, [allMaterials, categoryTabs]);
+  }, [allMaterials, categoryTabs, activeGender, activeStockFilter]);
 
   useEffect(() => {
     if (!categoryTabs.includes(activeTab)) {
@@ -116,6 +222,10 @@ const InventoryDashboard = () => {
 
   const filteredMaterials = useMemo(() => {
     let filtered = allMaterials;
+
+    if (activeStockFilter !== 'All') {
+      filtered = filtered.filter((item) => item.status === activeStockFilter);
+    }
 
     if (activeTab !== 'All Materials') {
       const selectedCategory = activeTab.toLowerCase().trim();
@@ -143,7 +253,7 @@ const InventoryDashboard = () => {
     }
 
     return filtered;
-  }, [allMaterials, activeTab, searchQuery]);
+  }, [allMaterials, activeStockFilter, activeTab, searchQuery, activeGender]);
 
   const totalValue = useMemo(() =>
     allMaterials.reduce((sum, m) => sum + m.rawStock * m.standardCost, 0)
@@ -153,7 +263,19 @@ const InventoryDashboard = () => {
   const safePage = Math.min(Math.max(1, currentPage), totalPages);
   const pagedMaterials = filteredMaterials.slice((safePage - 1) * PAGE_SIZE, safePage * PAGE_SIZE);
 
-  useEffect(() => { setCurrentPage(1); }, [activeTab, searchQuery, activeGender]);
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [activeTab, searchQuery, activeGender, activeStockFilter]);
+
+  useEffect(() => {
+    if (currentPage > totalPages) {
+      setCurrentPage(totalPages);
+    }
+  }, [currentPage, totalPages]);
+
+  const handleStockCardClick = (nextFilter) => {
+    setActiveStockFilter((prev) => (prev === nextFilter ? 'All' : nextFilter));
+  };
 
   const handleAddMaterial = () => {
     navigate('/admin/add-product');
@@ -195,21 +317,54 @@ const InventoryDashboard = () => {
 
       {/* --- Stats Row --- */}
       <div className="inv-stats-grid">
-        <div className="inv-stat-card">
+        <div
+          className={`inv-stat-card is-clickable ${activeStockFilter === 'All' ? 'is-active' : ''}`}
+          onClick={() => setActiveStockFilter('All')}
+          role="button"
+          tabIndex={0}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+              e.preventDefault();
+              setActiveStockFilter('All');
+            }
+          }}
+        >
           <div className="inv-stat-header">
             <span className="inv-stat-label">Total Materials</span>
             <Package size={20} className="icon-blue" />
           </div>
           {loading ? <div className="inv-skeleton-val" /> : <div className="inv-stat-value">{allMaterials.length}</div>}
         </div>
-        <div className="inv-stat-card">
+        <div
+          className={`inv-stat-card is-clickable ${activeStockFilter === 'Low Stock' ? 'is-active' : ''}`}
+          onClick={() => handleStockCardClick('Low Stock')}
+          role="button"
+          tabIndex={0}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+              e.preventDefault();
+              handleStockCardClick('Low Stock');
+            }
+          }}
+        >
           <div className="inv-stat-header">
             <span className="inv-stat-label">Low Stock Items</span>
             <AlertTriangle size={20} className="icon-orange" />
           </div>
           {loading ? <div className="inv-skeleton-val" /> : <div className="inv-stat-value">{allMaterials.filter(m => m.status === 'Low Stock').length}</div>}
         </div>
-        <div className="inv-stat-card">
+        <div
+          className={`inv-stat-card is-clickable ${activeStockFilter === 'Out of Stock' ? 'is-active' : ''}`}
+          onClick={() => handleStockCardClick('Out of Stock')}
+          role="button"
+          tabIndex={0}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+              e.preventDefault();
+              handleStockCardClick('Out of Stock');
+            }
+          }}
+        >
           <div className="inv-stat-header">
             <span className="inv-stat-label">Out of Stock</span>
             <XCircle size={20} className="icon-red" />
@@ -291,19 +446,18 @@ const InventoryDashboard = () => {
           <table className="inv-table">
             <thead>
               <tr>
-                <th>MATERIAL</th>
-                <th>CATEGORY</th>
-                <th>STOCK LEVEL</th>
-                <th>UNIT</th>
-                <th>MIN. REQUIRED</th>
-                <th>STATUS</th>
-                <th style={{ textAlign: 'center' }}>ACTIONS</th>
+                <th style={{ width: '27%' }}>MATERIAL</th>
+                <th style={{ width: '20%' }}>CATEGORY</th>
+                <th style={{ width: '14%' }}>STOCK LEVEL</th>
+                <th style={{ width: '9%' }}>UNIT</th>
+                <th style={{ width: '14%' }}>STATUS</th>
+                <th style={{ width: '16%', textAlign: 'center' }}>ACTIONS</th>
               </tr>
             </thead>
             <tbody>
               {loading && Array.from({ length: PAGE_SIZE }).map((_, i) => (
                 <tr key={`skel-${i}`} className="inv-skeleton-row">
-                  {Array.from({ length: 7 }).map((__, j) => (
+                  {Array.from({ length: 6 }).map((__, j) => (
                     <td key={j}><div className="inv-skeleton-cell" /></td>
                   ))}
                 </tr>
@@ -313,7 +467,7 @@ const InventoryDashboard = () => {
                   {/* Material (name + code) */}
                   <td>
                     <div className="text-bold">{item.name}</div>
-                    <div className="text-sub">Code: {item.code} · {item.supplierName !== '-' ? item.supplierName : ''}</div>
+                    <div className="text-sub">Code: {item.code}</div>
                   </td>
                   
                   {/* Category */}
@@ -325,9 +479,6 @@ const InventoryDashboard = () => {
                   {/* Unit */}
                   <td className="text-normal">{item.unit}</td>
                   
-                  {/* Reorder */}
-                  <td className="text-light-blue">{item.reorder}</td>
-                  
                   {/* Status */}
                   <td>
                     <span className={`status-badge ${item.statusClass}`}>{item.status}</span>
@@ -337,13 +488,16 @@ const InventoryDashboard = () => {
                   <td>
                     <div className="action-cell">
                       <button className="btn-update" onClick={() => handleUpdateStock(item)}>Update Stock</button>
+                      <button className="btn-page" style={{ padding: '7px' }} onClick={() => handleOpenDetails(item)}>
+                         <Edit size={16} />
+                      </button>
                     </div>
                   </td>
                 </tr>
               ))}
               {!loading && pagedMaterials.length === 0 && (
                 <tr>
-                  <td colSpan={7} style={{ textAlign: 'center', padding: '20px', color: '#64748b' }}>
+                  <td colSpan={6} style={{ textAlign: 'center', padding: '20px', color: '#64748b' }}>
                     No materials found.
                   </td>
                 </tr>
@@ -367,41 +521,146 @@ const InventoryDashboard = () => {
 
       </div>
       </div>
+      
+      {/* --- Details Side Panel --- */}
+      <div className={`inv-details-panel ${detailsPanelItem ? 'open' : ''}`}>
+        {detailsPanelItem && (
+          <form className="inv-details-form" onSubmit={handleUpdateFullDetails}>
+            <div className="inv-details-header">
+              <h2 className="inv-panel-title">Edit Details</h2>
+              <button type="button" className="inv-close-btn" onClick={handleCloseDetails}>
+                <X size={20} />
+              </button>
+            </div>
+            
+            <div className="inv-form-body">
+              <div className="inv-form-group">
+                <label className="inv-label">Product Name</label>
+                <input required type="text" className="inv-input" value={detailsPanelItem.updateName} onChange={e => setDetailsPanelItem({...detailsPanelItem, updateName: e.target.value})} />
+              </div>
+              
+              <div className="inv-form-row">
+                <div className="inv-form-group half">
+                  <label className="inv-label">SKU</label>
+                  <input required type="text" className="inv-input" value={detailsPanelItem.updateCode} onChange={e => setDetailsPanelItem({...detailsPanelItem, updateCode: e.target.value})} />
+                </div>
+                <div className="inv-form-group half">
+                  <label className="inv-label">Brand</label>
+                  <input required type="text" className="inv-input" value={detailsPanelItem.updateSupplier} onChange={e => setDetailsPanelItem({...detailsPanelItem, updateSupplier: e.target.value})} />
+                </div>
+              </div>
+              
+              <div className="inv-form-row">
+                <div className="inv-form-group half">
+                  <label className="inv-label">Gender</label>
+                  <select required className="inv-input" value={detailsPanelItem.updateGender} onChange={e => setDetailsPanelItem({...detailsPanelItem, updateGender: e.target.value})}>
+                     <option value="men">Men</option>
+                     <option value="women">Women</option>
+                     <option value="children">Children</option>
+                     <option value="babies">Babies</option>
+                     <option value="unisex">Unisex</option>
+                     <option value="sports">Sports</option>
+                  </select>
+                </div>
+                <div className="inv-form-group half">
+                  <label className="inv-label">Color</label>
+                  <input required type="text" className="inv-input" value={detailsPanelItem.updateColor} onChange={e => setDetailsPanelItem({...detailsPanelItem, updateColor: e.target.value})} />
+                </div>
+              </div>
+              
+              <div className="inv-form-row">
+                <div className="inv-form-group half">
+                  <label className="inv-label">Material</label>
+                  <input type="text" className="inv-input" value={detailsPanelItem.updateMaterial} onChange={e => setDetailsPanelItem({...detailsPanelItem, updateMaterial: e.target.value})} />
+                </div>
+                <div className="inv-form-group half">
+                  <label className="inv-label">Age Range</label>
+                  <input type="text" className="inv-input" value={detailsPanelItem.updateAge} onChange={e => setDetailsPanelItem({...detailsPanelItem, updateAge: e.target.value})} />
+                </div>
+              </div>
+
+              <div className="inv-form-row">
+                <div className="inv-form-group half">
+                  <label className="inv-label">Weight</label>
+                  <input type="number" step="0.01" className="inv-input" value={detailsPanelItem.updateWeight} onChange={e => setDetailsPanelItem({...detailsPanelItem, updateWeight: e.target.value})} />
+                </div>
+                <div className="inv-form-group half">
+                  <label className="inv-label">Dimensions</label>
+                  <input type="text" className="inv-input" value={detailsPanelItem.updateDimensions} onChange={e => setDetailsPanelItem({...detailsPanelItem, updateDimensions: e.target.value})} />
+                </div>
+              </div>
+              
+              <div className="inv-form-group">
+                <label className="inv-label">Care Instructions</label>
+                <input type="text" className="inv-input" value={detailsPanelItem.updateCare} onChange={e => setDetailsPanelItem({...detailsPanelItem, updateCare: e.target.value})} />
+              </div>
+
+              <div className="inv-form-group">
+                <label className="inv-label">About Product</label>
+                <textarea required className="inv-textarea" value={detailsPanelItem.updateAbout} onChange={e => setDetailsPanelItem({...detailsPanelItem, updateAbout: e.target.value})} />
+              </div>
+
+              <div className="inv-form-row">
+                <div className="inv-form-group half">
+                  <label className="inv-label">Stock Quantity ({detailsPanelItem.unit})</label>
+                  <input required type="number" className="inv-input" value={detailsPanelItem.updateStock} onChange={e => setDetailsPanelItem({...detailsPanelItem, updateStock: e.target.value})} />
+                </div>
+                <div className="inv-form-group half">
+                  <label className="inv-label">Price (₹)</label>
+                  <input required type="number" className="inv-input" value={detailsPanelItem.updatePrice} onChange={e => setDetailsPanelItem({...detailsPanelItem, updatePrice: e.target.value})} />
+                </div>
+              </div>
+            </div>
+            
+            <div className="inv-details-footer">
+              <button type="button" className="btn-page" onClick={handleCloseDetails}>Cancel</button>
+              <button type="submit" className="inv-btn-primary" disabled={loading}>
+                {loading ? 'Saving...' : 'Save Changes'}
+              </button>
+            </div>
+          </form>
+        )}
+      </div>
+
       {/* Modal for Quick Edit */}
       {showEditModal && editingItem && (
         <div className="inv-modal-overlay">
           <div className="inv-modal-content">
-            <h3 style={{ marginTop: 0, marginBottom: '20px' }}>Update {editingItem.name}</h3>
-            <div style={{ marginBottom: '15px' }}>
-              <label style={{ display: 'block', marginBottom: '5px' }}>Stock Quantity</label>
-              <input 
-                type="number" 
-                value={editingItem.updateStock} 
-                onChange={(e) => setEditingItem({...editingItem, updateStock: e.target.value})}
-                style={{ width: '100%', padding: '8px', borderRadius: '4px', border: '1px solid #ccc' }}
-              />
-            </div>
-            <div style={{ marginBottom: '20px' }}>
-              <label style={{ display: 'block', marginBottom: '5px' }}>Price (₹)</label>
-              <input 
-                type="number" 
-                value={editingItem.updatePrice} 
-                onChange={(e) => setEditingItem({...editingItem, updatePrice: e.target.value})}
-                style={{ width: '100%', padding: '8px', borderRadius: '4px', border: '1px solid #ccc' }}
-              />
-            </div>
-            <div style={{ display: 'flex', gap: '10px', justifyContent: 'flex-end' }}>
-              <button 
-                onClick={() => setShowEditModal(false)}
-                style={{ padding: '8px 16px', borderRadius: '4px', border: '1px solid #ccc', background: '#fff', cursor: 'pointer' }}
-              >
-                Cancel
+            <div className="inv-details-header" style={{ padding: '0 0 16px 0', borderBottom: '1px solid #f1f5f9', marginBottom: '20px' }}>
+              <h3 className="inv-panel-title">Update Stock & Price</h3>
+              <button type="button" className="inv-close-btn" onClick={() => setShowEditModal(false)}>
+                <X size={20} />
               </button>
-              <button 
-                onClick={submitUpdate}
-                style={{ padding: '8px 16px', borderRadius: '4px', border: 'none', background: '#3b82f6', color: '#fff', cursor: 'pointer' }}
-              >
-                Save Changes
+            </div>
+            
+            <p style={{ fontSize: '14px', color: '#64748b', margin: '0 0 20px 0' }}>
+              Editing Variant: <strong>{editingItem.name}</strong> <span style={{ fontSize: '13px', opacity: 0.8 }}>({editingItem.code})</span>
+            </p>
+
+            <div className="inv-form-group">
+              <label className="inv-label">New Stock Quantity ({editingItem.unit})</label>
+              <input 
+                type="number" 
+                className="inv-input" 
+                value={editingItem.updateStock} 
+                onChange={e => setEditingItem({...editingItem, updateStock: e.target.value})} 
+              />
+            </div>
+            
+            <div className="inv-form-group" style={{ marginBottom: '30px' }}>
+              <label className="inv-label">New Price (₹)</label>
+              <input 
+                type="number" 
+                className="inv-input" 
+                value={editingItem.updatePrice} 
+                onChange={e => setEditingItem({...editingItem, updatePrice: e.target.value})} 
+              />
+            </div>
+            
+            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '12px' }}>
+              <button className="btn-page" onClick={() => setShowEditModal(false)}>Cancel</button>
+              <button className="inv-btn-primary" onClick={handleSaveStock} disabled={loading}>
+                {loading ? 'Saving...' : 'Save Changes'}
               </button>
             </div>
           </div>

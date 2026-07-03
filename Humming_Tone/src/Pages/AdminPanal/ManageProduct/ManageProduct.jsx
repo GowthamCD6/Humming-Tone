@@ -285,13 +285,13 @@ export default function ManageProducts() {
         <table className="mp-table">
           <thead>
             <tr>
-              <th>Code</th>
-              <th>Type</th>
-              <th>Discount</th>
-              <th>Min Order</th>
-              <th>Usage</th>
-              <th>Status</th>
-              <th className="mp-text-center">Actions</th>
+              <th style={{ width: '20%' }}>Code</th>
+              <th style={{ width: '15%' }}>Type</th>
+              <th style={{ width: '15%' }}>Discount</th>
+              <th style={{ width: '15%' }}>Min Order</th>
+              <th style={{ width: '10%' }}>Usage</th>
+              <th style={{ width: '12%' }}>Status</th>
+              <th className="mp-text-center" style={{ width: '13%' }}>Actions</th>
             </tr>
           </thead>
           <tbody>
@@ -366,13 +366,13 @@ export default function ManageProducts() {
         <table className="mp-table">
           <thead>
             <tr>
-              <th>Product</th>
-              <th>SKU</th>
-              <th>Price</th>
-              <th>Stock</th>
-              <th>Category</th>
-              <th>Gender</th>
-              <th className="mp-text-center">Actions</th>
+              <th style={{ width: '25%' }}>Product</th>
+              <th style={{ width: '15%' }}>SKU</th>
+              <th style={{ width: '12%' }}>Price</th>
+              <th style={{ width: '12%' }}>Stock</th>
+              <th style={{ width: '13%' }}>Category</th>
+              <th style={{ width: '10%' }}>Gender</th>
+              <th className="mp-text-center" style={{ width: '13%' }}>Actions</th>
             </tr>
           </thead>
           <tbody>
