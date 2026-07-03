@@ -121,7 +121,7 @@ export default function OrderDetails() {
     return (
       <section className="order-details-container">
         <div className="od-error">Order not found</div>
-        <button className="od-back-btn" onClick={() => navigate(-1)}>
+        <button className="od-back-btn" onClick={() => navigate('/admin/manage-orders')}>
           <ArrowBackIcon /> Back to Orders
         </button>
       </section>
@@ -134,12 +134,14 @@ export default function OrderDetails() {
 
       {/* Header */}
       <div className="od-header">
-        <button className="od-back-btn" onClick={() => navigate(-1)}>
-          <ArrowBackIcon /> Back to Orders
-        </button>
-        <div className="od-header-info">
-          <h1 className="od-title">Order #{order.order_number}</h1>
-          <span className="od-date">{formatDate(order.created_at)}</span>
+        <div className="od-header-top">
+          <button className="od-back-btn" onClick={() => navigate('/admin/manage-orders')}>
+            <ArrowBackIcon /> Back to Orders
+          </button>
+          <div className="od-header-info">
+            <h1 className="od-title">Order #{order.order_number}</h1>
+            <span className="od-date">{formatDate(order.created_at)}</span>
+          </div>
         </div>
       </div>
 

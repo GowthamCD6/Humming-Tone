@@ -1,13 +1,33 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import VisibilityIcon from '@mui/icons-material/Visibility';
+import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
+import HourglassBottomIcon from '@mui/icons-material/HourglassBottom';
+import LocalShippingIcon from '@mui/icons-material/LocalShipping';
+import CancelIcon from '@mui/icons-material/Cancel';
+import FilterAltIcon from '@mui/icons-material/FilterAlt';
+import SearchIcon from '@mui/icons-material/Search';
+import DownloadIcon from '@mui/icons-material/Download';
+import RotateLeftIcon from '@mui/icons-material/RotateLeft';
 import './ManageOrder.css';
+
+const getTodayInputValue = () => {
+  const now = new Date();
+  const year = now.getFullYear();
+  const month = String(now.getMonth() + 1).padStart(2, '0');
+  const day = String(now.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+};
 
 export default function ManageOrder() {
   const navigate = useNavigate();
+  const todayInputValue = getTodayInputValue();
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showNoOrdersModal, setShowNoOrdersModal] = useState(false);
+  const [showFilterPanel, setShowFilterPanel] = useState(false);
+  const [orderPage, setOrderPage] = useState(1);
+  const [orderLimit, setOrderLimit] = useState(10);
   const [filters, setFilters] = useState({
     status: 'All Statuses',
     startDate: '',
@@ -36,6 +56,10 @@ export default function ManageOrder() {
   }, []);
 
   const handleFilterChange = (field, value) => {
+    if ((field === 'startDate' || field === 'endDate') && value && value > todayInputValue) {
+      value = todayInputValue;
+    }
+
     setFilters(prev => ({ ...prev, [field]: value }));
   };
 
@@ -170,8 +194,36 @@ export default function ManageOrder() {
   const stats = useMemo(() => ({
     total: filteredOrders.length,
     pending: filteredOrders.filter(o => o.status?.toLowerCase() === 'pending').length,
-    delivered: filteredOrders.filter(o => o.status?.toLowerCase() === 'delivered').length
+    delivered: filteredOrders.filter(o => o.status?.toLowerCase() === 'delivered').length,
+    cancelled: filteredOrders.filter(o => o.status?.toLowerCase() === 'cancelled').length
   }), [filteredOrders]);
+
+  const activeFilterCount = useMemo(() => {
+    return [
+      filters.status !== 'All Statuses',
+      Boolean(filters.startDate),
+      Boolean(filters.endDate),
+      Boolean(filters.startTime),
+      Boolean(filters.endTime)
+    ].filter(Boolean).length;
+  }, [filters]);
+
+  const totalOrderPages = Math.max(1, Math.ceil(filteredOrders.length / orderLimit));
+  const safeOrderPage = Math.min(Math.max(1, orderPage), totalOrderPages);
+  const pagedOrders = useMemo(() => {
+    const start = (safeOrderPage - 1) * orderLimit;
+    return filteredOrders.slice(start, start + orderLimit);
+  }, [filteredOrders, safeOrderPage, orderLimit]);
+
+  useEffect(() => {
+    setOrderPage(1);
+  }, [filters.status, filters.startDate, filters.endDate, filters.startTime, filters.endTime, orderLimit]);
+
+  useEffect(() => {
+    if (orderPage > totalOrderPages) {
+      setOrderPage(totalOrderPages);
+    }
+  }, [orderPage, totalOrderPages]);
 
   const formatDate = (dateStr) => {
     const date = new Date(dateStr);
@@ -187,92 +239,153 @@ export default function ManageOrder() {
 
   return (
     <section className="manage-orders-container">
-      <div className="filter-container">
-        <h2 className="section-title">Filter Orders</h2>
-        
-        <div className="filter-inputs">
-          {/* Status Select */}
-          <div className="input-group">
-            <label htmlFor="status-filter">STATUS</label>
-            <select 
-              id="status-filter"
-              className="form-input"
-              value={filters.status}
-              onChange={(e) => handleFilterChange('status', e.target.value)}
-            >
-              <option>All Statuses</option>
-              <option>Pending</option>
-              <option>Confirmed</option>
-              <option>Shipped</option>
-              <option>Delivered</option>
-              <option>Cancelled</option>
-            </select>
+      <div className="inv-stats-grid mo-stats-grid">
+        <div className="inv-stat-card mo-stat-card">
+          <div className="inv-stat-header">
+            <div className="inv-stat-label-wrap">
+              <span className="mo-stat-icon mo-stat-icon-blue"><ShoppingCartIcon fontSize="inherit" /></span>
+              <div className="inv-stat-label">TOTAL ORDERS</div>
+            </div>
           </div>
-
-          {/* Start Date & Time */}
-          <div className="input-group">
-            <label htmlFor="start-date">START DATE</label>
-            <input 
-              id="start-date"
-              type="date" 
-              className="form-input"
-              value={filters.startDate}
-              onChange={(e) => handleFilterChange('startDate', e.target.value)}
-            />
-            <input 
-              type="time" 
-              className="form-input time-input"
-              value={filters.startTime}
-              onChange={(e) => handleFilterChange('startTime', e.target.value)}
-              aria-label="Start time"
-            />
-          </div>
-
-          {/* End Date & Time */}
-          <div className="input-group">
-            <label htmlFor="end-date">END DATE</label>
-            <input 
-              id="end-date"
-              type="date" 
-              className="form-input"
-              value={filters.endDate}
-              onChange={(e) => handleFilterChange('endDate', e.target.value)}
-            />
-            <input 
-              type="time" 
-              className="form-input time-input"
-              value={filters.endTime}
-              onChange={(e) => handleFilterChange('endTime', e.target.value)}
-              aria-label="End time"
-            />
-          </div>
+          <div className="inv-stat-value mo-stat-value-blue">{stats.total}</div>
+          <div className="mo-stat-note">{stats.total === 0 ? 'No orders in view' : 'Orders currently listed'}</div>
         </div>
-
-        <div className="filter-actions">
-          <div className="filter-actions-left">
-            <button className="btn btn-apply">APPLY FILTERS</button>
-            <button className="btn btn-clear" onClick={handleClearFilters}>CLEAR FILTERS</button>
+        <div className="inv-stat-card mo-stat-card">
+          <div className="inv-stat-header">
+            <div className="inv-stat-label-wrap">
+              <span className="mo-stat-icon mo-stat-icon-orange"><HourglassBottomIcon fontSize="inherit" /></span>
+              <div className="inv-stat-label">PENDING</div>
+            </div>
           </div>
-          <div className="filter-actions-right">
-            <button className="btn btn-download" onClick={downloadStatement}>DOWNLOAD STATEMENT</button>
+          <div className="inv-stat-value mo-stat-value-orange">{stats.pending}</div>
+          <div className="mo-stat-note">Orders waiting for action</div>
+        </div>
+        <div className="inv-stat-card mo-stat-card">
+          <div className="inv-stat-header">
+            <div className="inv-stat-label-wrap">
+              <span className="mo-stat-icon mo-stat-icon-green"><LocalShippingIcon fontSize="inherit" /></span>
+              <div className="inv-stat-label">DELIVERED</div>
+            </div>
           </div>
+          <div className="inv-stat-value mo-stat-value-green">{stats.delivered}</div>
+          <div className="mo-stat-note">Completed and fulfilled orders</div>
+        </div>
+        <div className="inv-stat-card mo-stat-card">
+          <div className="inv-stat-header">
+            <div className="inv-stat-label-wrap">
+              <span className="mo-stat-icon mo-stat-icon-red"><CancelIcon fontSize="inherit" /></span>
+              <div className="inv-stat-label">CANCELLED</div>
+            </div>
+          </div>
+          <div className="inv-stat-value mo-stat-value-red">{stats.cancelled}</div>
+          <div className="mo-stat-note">Orders removed from the active flow</div>
         </div>
       </div>
 
-      {/* Stats Cards */}
-      <div className="stats-container">
-        <div className="stat-card">
-          <h3>TOTAL ORDERS</h3>
-          <span className="stat-number blue">{stats.total}</span>
-        </div>
-        <div className="stat-card">
-          <h3>PENDING</h3>
-          <span className="stat-number orange">{stats.pending}</span>
-        </div>
-        <div className="stat-card">
-          <h3>DELIVERED</h3>
-          <span className="stat-number green">{stats.delivered}</span>
-        </div>
+      <div className="filter-prototype-card">
+        <button
+          type="button"
+          className="filter-prototype-bar"
+          onClick={() => setShowFilterPanel((open) => !open)}
+        >
+          <div className="filter-prototype-left">
+            <span className="filter-title-icon"><FilterAltIcon fontSize="inherit" /></span>
+            <div>
+              <div className="section-title">Filter Orders</div>
+              <div className="filter-prototype-subtitle">
+                {activeFilterCount > 0 ? `${activeFilterCount} active filters` : 'Click to open the filter panel'}
+              </div>
+            </div>
+          </div>
+          <div className="filter-meta">
+            <SearchIcon fontSize="inherit" />
+            <span>{filteredOrders.length} matched / {orders.length} total</span>
+          </div>
+        </button>
+
+        {showFilterPanel && (
+          <div className="filter-panel">
+            <div className="filter-panel-row">
+              <div className="input-group">
+                <label htmlFor="status-filter">STATUS</label>
+                <select
+                  id="status-filter"
+                  className="form-input"
+                  value={filters.status}
+                  onChange={(e) => handleFilterChange('status', e.target.value)}
+                >
+                  <option>All Statuses</option>
+                  <option>Pending</option>
+                  <option>Confirmed</option>
+                  <option>Shipped</option>
+                  <option>Delivered</option>
+                  <option>Cancelled</option>
+                </select>
+              </div>
+
+              <div className="input-group">
+                <label htmlFor="start-date">START DATE</label>
+                <input
+                  id="start-date"
+                  type="date"
+                  className="form-input"
+                  max={todayInputValue}
+                  value={filters.startDate}
+                  onChange={(e) => handleFilterChange('startDate', e.target.value)}
+                />
+                <input
+                  type="time"
+                  className="form-input time-input"
+                  value={filters.startTime}
+                  onChange={(e) => handleFilterChange('startTime', e.target.value)}
+                  aria-label="Start time"
+                />
+              </div>
+
+              <div className="input-group">
+                <label htmlFor="end-date">END DATE</label>
+                <input
+                  id="end-date"
+                  type="date"
+                  className="form-input"
+                  max={todayInputValue}
+                  value={filters.endDate}
+                  onChange={(e) => handleFilterChange('endDate', e.target.value)}
+                />
+                <input
+                  type="time"
+                  className="form-input time-input"
+                  value={filters.endTime}
+                  onChange={(e) => handleFilterChange('endTime', e.target.value)}
+                  aria-label="End time"
+                />
+              </div>
+            </div>
+
+            <div className="filter-actions">
+              <div className="filter-actions-left">
+                <button
+                  type="button"
+                  className="btn btn-apply"
+                  onClick={() => setShowFilterPanel(false)}
+                >
+                  <SearchIcon fontSize="inherit" />
+                  APPLY FILTERS
+                </button>
+                <button className="btn btn-clear" onClick={handleClearFilters}>
+                  <RotateLeftIcon fontSize="inherit" />
+                  CLEAR FILTERS
+                </button>
+              </div>
+              <div className="filter-actions-right">
+                <button className="btn btn-download" onClick={downloadStatement}>
+                  <DownloadIcon fontSize="inherit" />
+                  DOWNLOAD STATEMENT
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Table */}
@@ -280,56 +393,94 @@ export default function ManageOrder() {
         {filteredOrders.length === 0 ? (
           <div className="no-orders">No orders found matching your filters.</div>
         ) : (
-          <table className="orders-table">
-            <thead>
-              <tr>
-                <th>ORDER #</th>
-                <th>CUSTOMER</th>
-                <th>DATE</th>
-                <th>ITEMS</th>
-                <th>TOTAL</th>
-                <th>STATUS</th>
-                <th>PAYMENT</th>
-                <th>ACTION</th>
-              </tr>
-            </thead>
-            <tbody>
-              {filteredOrders.map((order) => (
-                <tr key={order.id}>
-                  <td className="order-id">{order.order_number}</td>
-                  <td className="customer-info">
-                    <div className="cust-name">{order.customer_name}</div>
-                    <div className="cust-email">{order.customer_email}</div>
-                  </td>
-                  <td className="date-info">
-                    <div className="date-main">{formatDate(order.created_at)}</div>
-                    <div className="date-time">{formatTime(order.created_at)}</div>
-                  </td>
-                  <td className="items-info">
-                    {order.unique_items_count} items
-                  </td>
-                  <td className="total-price">₹{parseFloat(order.total_amount).toFixed(2)}</td>
-                  <td>
-                    <span className={`status-badge ${order.status?.toLowerCase()}`}>
-                      {order.status}
-                    </span>
-                  </td>
-                  <td className="payment-info">
-                    <span className="payment-badge">{order.payment_id ? 'PAID' : 'UNPAID'}</span>
-                  </td>
-                  <td className="action-info">
-                    <button 
-                      className="view-order-btn"
-                      onClick={() => navigate(`/admin/order/${order.id}`)}
-                      title="View Order Details"
-                    >
-                      <VisibilityIcon /> View
-                    </button>
-                  </td>
+          <>
+            <table className="orders-table">
+              <thead>
+                <tr>
+                  <th>ORDER #</th>
+                  <th>CUSTOMER</th>
+                  <th>DATE</th>
+                  <th>ITEMS</th>
+                  <th>TOTAL</th>
+                  <th>STATUS</th>
+                  <th>PAYMENT</th>
+                  <th>ACTION</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {pagedOrders.map((order) => (
+                  <tr key={order.id}>
+                    <td className="order-id">{order.order_number}</td>
+                    <td className="customer-info">
+                      <div className="cust-name">{order.customer_name}</div>
+                      <div className="cust-email">{order.customer_email}</div>
+                    </td>
+                    <td className="date-info">
+                      <div className="date-main">{formatDate(order.created_at)}</div>
+                      <div className="date-time">{formatTime(order.created_at)}</div>
+                    </td>
+                    <td className="items-info">
+                      {order.unique_items_count} items
+                    </td>
+                    <td className="total-price">₹{parseFloat(order.total_amount).toFixed(2)}</td>
+                    <td>
+                      <span className={`status-badge ${order.status?.toLowerCase()}`}>
+                        {order.status}
+                      </span>
+                    </td>
+                    <td className="payment-info">
+                      <span className="payment-badge">{order.payment_id ? 'PAID' : 'UNPAID'}</span>
+                    </td>
+                    <td className="action-info">
+                      <button 
+                        className="view-order-btn"
+                        onClick={() => navigate(`/admin/order/${order.id}`)}
+                        title="View Order Details"
+                      >
+                        <VisibilityIcon /> View
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+
+            <div className="table-footer">
+              <div className="footer-text">
+                Showing {filteredOrders.length === 0 ? 0 : (safeOrderPage - 1) * orderLimit + 1}–{Math.min(safeOrderPage * orderLimit, filteredOrders.length)} of {filteredOrders.length} orders
+              </div>
+
+              <div className="pagination-group">
+                <label className="limit-label" htmlFor="order-limit-select">Rows</label>
+                <select
+                  id="order-limit-select"
+                  className="limit-select"
+                  value={orderLimit}
+                  onChange={(e) => setOrderLimit(Number(e.target.value))}
+                >
+                  <option value={10}>10</option>
+                  <option value={25}>25</option>
+                  <option value={50}>50</option>
+                </select>
+
+                <button
+                  className="page-btn"
+                  onClick={() => setOrderPage((p) => Math.max(1, p - 1))}
+                  disabled={safeOrderPage === 1}
+                >
+                  Previous
+                </button>
+                <span className="page-indicator">Page {safeOrderPage} / {totalOrderPages}</span>
+                <button
+                  className="page-btn"
+                  onClick={() => setOrderPage((p) => Math.min(totalOrderPages, p + 1))}
+                  disabled={safeOrderPage === totalOrderPages}
+                >
+                  Next
+                </button>
+              </div>
+            </div>
+          </>
         )}
       </div>
 

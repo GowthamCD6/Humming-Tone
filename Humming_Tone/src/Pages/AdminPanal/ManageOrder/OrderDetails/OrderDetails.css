@@ -30,6 +30,15 @@
   gap: 15px;
 }
 
+.od-header-top {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-wrap: nowrap;
+  min-width: 0;
+  padding-top: 8px;
+}
+
 .od-back-btn {
   display: inline-flex;
   align-items: center;
@@ -43,6 +52,8 @@
   color: #555;
   transition: all 0.2s;
   width: fit-content;
+  flex: 0 0 auto;
+  white-space: nowrap;
 }
 
 .od-back-btn:hover {
@@ -53,21 +64,30 @@
 .od-header-info {
   display: flex;
   align-items: center;
-  gap: 15px;
-  flex-wrap: wrap;
+  gap: 12px;
+  flex-wrap: nowrap;
+  white-space: nowrap;
+  overflow: hidden;
+  min-width: 0;
 }
 
 .od-title {
   font-size: 1.8rem;
-  font-weight: 400;
+  font-weight: 600;
   color: #1a1a1a;
   margin: 0;
-  font-family: 'Georgia', serif;
+  font-family: inherit;
+  line-height: 1.1;
+  white-space: nowrap;
+  flex: 0 0 auto;
+  text-overflow: ellipsis;
 }
 
 .od-date {
   color: #888;
   font-size: 14px;
+  white-space: nowrap;
+  flex: 0 0 auto;
 }
 
 /* ===== STATUS BAR ===== */
