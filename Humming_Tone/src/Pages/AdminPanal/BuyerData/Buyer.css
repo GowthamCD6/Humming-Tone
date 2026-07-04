@@ -15,8 +15,10 @@
   animation: fadeIn 0.3s ease-in;
   display: flex;
   flex-direction: column;
+  width: 100%;
+  box-sizing: border-box;
   height: 100%;
-  margin-top: -20px;
+  margin-top: 0;
 }
 
 /* ===== PAGE HEADING ===== */
@@ -334,7 +336,7 @@
 
 @media (max-width: 480px) {
   .buyer-page-container {
-    margin-top: -10px;
+    margin-top: 0;
   }
 
   .buyer-stat-card {

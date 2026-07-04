@@ -148,7 +148,6 @@ const AllProducts = () => {
       if (response.data.success) {
         alert(response.data.message);
         setProducts([]);
-        setFilteredProducts([]);
         setSelectedProducts([]);
         fetchProducts();
       }
@@ -246,6 +245,7 @@ const AllProducts = () => {
     <div className="all-products-container">
       {/* Page Header */}
       <div className="page-header">
+        <div className="page-header-copy" />
         <div className="header-actions">
           {selectedProducts.length > 0 && (
             <button className="btn-delete-selected" onClick={deleteSelectedProducts}>
@@ -368,6 +368,12 @@ const AllProducts = () => {
 
       {/* Products Table */}
       <div className="products-table-container">
+        <div className="products-table-header">
+          <h2 className="products-table-title">Archived Products</h2>
+          <div className="products-table-header-actions">
+            <span className="products-table-count">{filteredProducts.length} records</span>
+          </div>
+        </div>
         <table className="products-table">
           <thead>
             <tr>
@@ -378,14 +384,14 @@ const AllProducts = () => {
                   onChange={toggleSelectAll}
                 />
               </th>
-              <th>IMAGE</th>
-              <th>NAME</th>
-              <th>SKU</th>
-              <th>PRICE</th>
-              <th>CATEGORY</th>
-              <th>GENDER</th>
-              <th>STATUS</th>
-              <th>ACTIONS</th>
+              <th style={{ width: '8%' }}>IMAGE</th>
+              <th style={{ width: '16%' }}>NAME</th>
+              <th style={{ width: '11%' }}>SKU</th>
+              <th style={{ width: '9%' }}>PRICE</th>
+              <th style={{ width: '12%' }}>CATEGORY</th>
+              <th style={{ width: '10%' }}>GENDER</th>
+              <th style={{ width: '9%' }}>STATUS</th>
+              <th className="archive-actions-head" style={{ width: '12%' }}>ACTIONS</th>
             </tr>
           </thead>
           <tbody>
