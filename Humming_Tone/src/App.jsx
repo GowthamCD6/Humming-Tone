@@ -1,32 +1,54 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, lazy, Suspense } from "react";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { useLocation } from "react-router-dom";
 import Login from "./Pages/LoginPage/Login.jsx";
 import AdminTab from "./components/AdminTab/AdminTab.jsx";
 import UserTab from "./components/UserTab/UserTab.jsx";
 
-// User pages
-import Home from "./Pages/UserPanal/HomePage/Home.jsx";
-import AllProductPage from "./Pages/UserPanal/All-Product/AllProduct.jsx";
-import Men from "./Pages/UserPanal/Men's-Page/Men's.jsx";
-import Women from "./Pages/UserPanal/Women-Page/Women's.jsx";
-import Children from "./Pages/UserPanal/Children's-Page/Children's.jsx";
-import Baby from "./Pages/UserPanal/Baby-Page/Baby.jsx";
-import Sports from "./Pages/UserPanal/Sports-Page/Sports.jsx";
-import CustomizePage from "./Pages/UserPanal/Customize-Product/Customize.jsx";
-import CartPage from "./Pages/UserPanal/Cart-Page/CartPage.jsx";
-import ProductDetail from "./Pages/UserPanal/Prodect-Details/Details.jsx";
-import CheckOut from "./Pages/UserPanal/CheckOut/CheckOut.jsx";
-import AboutUs from "./Pages/UserPanal/About-Us/AboutUs.jsx";
+// User pages (lazy-loaded to avoid loading all tab pages on first paint)
+const Home = lazy(() => import("./Pages/UserPanal/HomePage/Home.jsx"));
+const AllProductPage = lazy(() =>
+  import("./Pages/UserPanal/All-Product/AllProduct.jsx")
+);
+const Men = lazy(() => import("./Pages/UserPanal/Men's-Page/Men's.jsx"));
+const Women = lazy(() => import("./Pages/UserPanal/Women-Page/Women's.jsx"));
+const Children = lazy(() =>
+  import("./Pages/UserPanal/Children's-Page/Children's.jsx")
+);
+const Baby = lazy(() => import("./Pages/UserPanal/Baby-Page/Baby.jsx"));
+const Sports = lazy(() => import("./Pages/UserPanal/Sports-Page/Sports.jsx"));
+const CustomizePage = lazy(() =>
+  import("./Pages/UserPanal/Customize-Product/Customize.jsx")
+);
+const CartPage = lazy(() => import("./Pages/UserPanal/Cart-Page/CartPage.jsx"));
+const ProductDetail = lazy(() =>
+  import("./Pages/UserPanal/Prodect-Details/Details.jsx")
+);
+const CheckOut = lazy(() => import("./Pages/UserPanal/CheckOut/CheckOut.jsx"));
+const AboutUs = lazy(() => import("./Pages/UserPanal/About-Us/AboutUs.jsx"));
+const PaymentSuccess = lazy(() =>
+  import("./Pages/UserPanal/PaymentSuccess/PaymentSuccess.jsx")
+);
+const PaymentFailure = lazy(() =>
+  import("./Pages/UserPanal/PayementFailure/PaymentFailure.jsx")
+);
 
-// Supports page
-import PrivacyPolicy from "./Pages/SupportsPage/Privacy&Policy/Privacy&Policy.jsx";
-import TermsOfService from "./Pages/SupportsPage/TermsOfService/TermsOfService.jsx";
-import ContactUs from "./Pages/SupportsPage/ContactUs/ContactUs.jsx";
-import ShoppingInfo from "./pages/SupportsPage/ShippingInfo/ShippingInfo.jsx";
-import ReturnAndExchange from "./Pages/SupportsPage/Return&Exchange/Return&Exchange.jsx";
-import PaymentSuccess from "./Pages/UserPanal/PaymentSuccess/PaymentSuccess.jsx";
-import PaymentFailure from "./Pages/UserPanal/PayementFailure/PaymentFailure.jsx";
+// Support pages
+const PrivacyPolicy = lazy(() =>
+  import("./Pages/SupportsPage/Privacy&Policy/Privacy&Policy.jsx")
+);
+const TermsOfService = lazy(() =>
+  import("./Pages/SupportsPage/TermsOfService/TermsOfService.jsx")
+);
+const ContactUs = lazy(() =>
+  import("./Pages/SupportsPage/ContactUs/ContactUs.jsx")
+);
+const ShoppingInfo = lazy(() =>
+  import("./pages/SupportsPage/ShippingInfo/ShippingInfo.jsx")
+);
+const ReturnAndExchange = lazy(() =>
+  import("./Pages/SupportsPage/Return&Exchange/Return&Exchange.jsx")
+);
 
 // Admin pages
 import Dashboard from './Pages/AdminPanal/Dashboard/Dashboard.jsx';
@@ -72,6 +94,12 @@ window.fetch = async function () {
   return originalFetch(resource, config);
 };
 // -------------------------------
+
+const UserPageLoader = () => (
+  <div style={{ minHeight: "40vh", display: "grid", placeItems: "center" }}>
+    Loading page...
+  </div>
+);
 
 export default function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(!!localStorage.getItem('adminToken'));
@@ -169,28 +197,168 @@ export default function App() {
         {/* USER NESTED ROUTES (PUBLIC) */}
         <Route path="/usertab" element={<UserTab />}>
           <Route index element={<Navigate to="home" />} />
-          <Route path="home" element={<Home />} />
-          <Route path="all-products" element={<AllProductPage />} />
-          <Route path="men" element={<Men />} />
-          <Route path="women" element={<Women />} />
-          <Route path="children" element={<Children />} />
-          <Route path="baby" element={<Baby />} />
-          <Route path="sports" element={<Sports />} />
-          <Route path="customize" element={<CustomizePage />} />
-          <Route path="cart" element={<CartPage />} />
-          <Route path="product/:id" element={<ProductDetail />} />
-          <Route path="checkout" element={<CheckOut />} />
-          <Route path="payment-success" element={<PaymentSuccess />} />
-          <Route path="payment-failure" element={<PaymentFailure />} />
-          <Route path="details/:id" element={<ProductDetail />}></Route>
+          <Route
+            path="home"
+            element={
+              <Suspense fallback={<UserPageLoader />}>
+                <Home />
+              </Suspense>
+            }
+          />
+          <Route
+            path="all-products"
+            element={
+              <Suspense fallback={<UserPageLoader />}>
+                <AllProductPage />
+              </Suspense>
+            }
+          />
+          <Route
+            path="men"
+            element={
+              <Suspense fallback={<UserPageLoader />}>
+                <Men />
+              </Suspense>
+            }
+          />
+          <Route
+            path="women"
+            element={
+              <Suspense fallback={<UserPageLoader />}>
+                <Women />
+              </Suspense>
+            }
+          />
+          <Route
+            path="children"
+            element={
+              <Suspense fallback={<UserPageLoader />}>
+                <Children />
+              </Suspense>
+            }
+          />
+          <Route
+            path="baby"
+            element={
+              <Suspense fallback={<UserPageLoader />}>
+                <Baby />
+              </Suspense>
+            }
+          />
+          <Route
+            path="sports"
+            element={
+              <Suspense fallback={<UserPageLoader />}>
+                <Sports />
+              </Suspense>
+            }
+          />
+          <Route
+            path="customize"
+            element={
+              <Suspense fallback={<UserPageLoader />}>
+                <CustomizePage />
+              </Suspense>
+            }
+          />
+          <Route
+            path="cart"
+            element={
+              <Suspense fallback={<UserPageLoader />}>
+                <CartPage />
+              </Suspense>
+            }
+          />
+          <Route
+            path="product/:id"
+            element={
+              <Suspense fallback={<UserPageLoader />}>
+                <ProductDetail />
+              </Suspense>
+            }
+          />
+          <Route
+            path="checkout"
+            element={
+              <Suspense fallback={<UserPageLoader />}>
+                <CheckOut />
+              </Suspense>
+            }
+          />
+          <Route
+            path="payment-success"
+            element={
+              <Suspense fallback={<UserPageLoader />}>
+                <PaymentSuccess />
+              </Suspense>
+            }
+          />
+          <Route
+            path="payment-failure"
+            element={
+              <Suspense fallback={<UserPageLoader />}>
+                <PaymentFailure />
+              </Suspense>
+            }
+          />
+          <Route
+            path="details/:id"
+            element={
+              <Suspense fallback={<UserPageLoader />}>
+                <ProductDetail />
+              </Suspense>
+            }
+          ></Route>
 
           {/* Supports page */}
-          <Route path="privacy_policy" element={<PrivacyPolicy />} />
-          <Route path="terms_of_service" element={<TermsOfService/>} />
-          <Route path="contact_us" element={<ContactUs/>} />
-          <Route path="shipping_info" element={<ShoppingInfo/>} />
-          <Route path="return_&_exchange" element={<ReturnAndExchange/>} />
-          <Route path="about-us" element={<AboutUs/>} />
+          <Route
+            path="privacy_policy"
+            element={
+              <Suspense fallback={<UserPageLoader />}>
+                <PrivacyPolicy />
+              </Suspense>
+            }
+          />
+          <Route
+            path="terms_of_service"
+            element={
+              <Suspense fallback={<UserPageLoader />}>
+                <TermsOfService />
+              </Suspense>
+            }
+          />
+          <Route
+            path="contact_us"
+            element={
+              <Suspense fallback={<UserPageLoader />}>
+                <ContactUs />
+              </Suspense>
+            }
+          />
+          <Route
+            path="shipping_info"
+            element={
+              <Suspense fallback={<UserPageLoader />}>
+                <ShoppingInfo />
+              </Suspense>
+            }
+          />
+          <Route
+            path="return_&_exchange"
+            element={
+              <Suspense fallback={<UserPageLoader />}>
+                <ReturnAndExchange />
+              </Suspense>
+            }
+          />
+          <Route
+            path="about-us"
+            element={
+              <Suspense fallback={<UserPageLoader />}>
+                <AboutUs />
+              </Suspense>
+            }
+          />
         </Route>
 
         <Route path="*" element={<Navigate to="/" replace />} />

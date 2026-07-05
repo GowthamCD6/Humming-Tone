@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { Package, AlertTriangle, XCircle, DollarSign, Search, Plus, ChevronLeft, ChevronRight, Edit, X } from 'lucide-react';
+import { Package, AlertTriangle, XCircle, DollarSign, Search, Plus, ChevronLeft, ChevronRight, Edit, X, Trash2 } from 'lucide-react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import './Inventory.css';
 import axios from 'axios';
@@ -96,6 +96,27 @@ const InventoryDashboard = () => {
     } catch (err) {
       console.error(err);
       alert('Failed to update stock');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleDeleteProduct = async (materialId) => {
+    if (!window.confirm('Are you sure you want to delete this size/variant from the inventory? This action cannot be undone.')) {
+      return;
+    }
+    try {
+      setLoading(true);
+      const res = await axios.delete(`${API_BASE_URL}/delete_inventory_variant`, {
+        data: { id: materialId }
+      });
+      if (res.data.success) {
+        setDetailsPanelItem(null);
+        fetchInventory();
+      }
+    } catch (err) {
+      console.error(err);
+      alert('Failed to delete product');
     } finally {
       setLoading(false);
     }
@@ -612,11 +633,16 @@ const InventoryDashboard = () => {
               </div>
             </div>
             
-            <div className="inv-details-footer">
-              <button type="button" className="btn-page" onClick={handleCloseDetails}>Cancel</button>
-              <button type="submit" className="inv-btn-primary" disabled={loading}>
-                {loading ? 'Saving...' : 'Save Changes'}
+            <div className="inv-details-footer" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <button type="button" className="btn-page" style={{ color: '#ef4444', borderColor: '#fecaca', backgroundColor: '#fef2f2', display: 'flex', alignItems: 'center' }} onClick={() => handleDeleteProduct(detailsPanelItem.materialId)}>
+                <Trash2 size={16} style={{ marginRight: '6px' }}/> Delete Size
               </button>
+              <div style={{ display: 'flex', gap: '10px' }}>
+                <button type="button" className="btn-page" onClick={handleCloseDetails}>Cancel</button>
+                <button type="submit" className="inv-btn-primary" disabled={loading}>
+                  {loading ? 'Saving...' : 'Save Changes'}
+                </button>
+              </div>
             </div>
           </form>
         )}

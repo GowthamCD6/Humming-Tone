@@ -117,6 +117,25 @@ exports.update_inventory_full = (req, res) => {
   });
 };
 
+exports.delete_inventory_variant = (req, res) => {
+  const { id } = req.body;
+  if (!id) {
+    return res.status(400).json({ success: false, message: "Variant ID is required" });
+  }
+
+  const deleteSql = "DELETE FROM product_variants WHERE id = ?";
+  db.query(deleteSql, [id], (error, result) => {
+    if (error) {
+      console.error("Delete Variant Error:", error);
+      return res.status(500).json({ success: false, message: "Failed to delete size" });
+    }
+    if (result.affectedRows === 0) {
+      return res.status(404).json({ success: false, message: "Size not found" });
+    }
+    res.json({ success: true, message: "Size deleted successfully" });
+  });
+};
+
 exports.update_inventory = (req, res) => {
   const { id } = req.params; // mapped to variant_id
   const { current_stock, standard_cost } = req.body;

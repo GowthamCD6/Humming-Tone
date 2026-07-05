@@ -1,6 +1,7 @@
 import { useState, useEffect, useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Plus, Search, Edit, Trash2, X } from 'lucide-react'
+import axios from 'axios'
 import './ManageProduct.css'
 
 const BASE_URL = 'http://localhost:5000';
@@ -161,7 +162,23 @@ export default function ManageProducts() {
   }, [productPage, totalProductPages]);
 
   // --- PRODUCT HANDLERS ---
-  const handleEditProduct = (p) => { setEditingProduct({ ...p }); setEditImageFile(null); setShowEditModal(true); }
+  const [productSizes, setProductSizes] = useState([]);
+
+  const handleEditProduct = async (p) => { 
+    setEditingProduct({ ...p }); 
+    setEditImageFile(null); 
+    setProductSizes([]);
+    setShowEditModal(true); 
+    try {
+      const token = localStorage.getItem('adminToken');
+      const res = await axios.get(`${BASE_URL}/admin/fetch_variants/${p.id}`, { headers: { Authorization: `Bearer ${token}` } });
+      if (res.data.success) {
+        setProductSizes(res.data.data.map(v => v.size).filter(Boolean));
+      }
+    } catch (err) {
+      console.error("Failed to fetch sizes", err);
+    }
+  }
   
   const handleSaveProduct = async () => {
     const formData = new FormData();
@@ -550,6 +567,16 @@ export default function ManageProducts() {
               <div className="mp-form-group">
                 <label className="mp-form-label">Description</label>
                 <textarea className="mp-form-input" rows="3" value={editingProduct.about} onChange={(e) => setEditingProduct({...editingProduct, about: e.target.value})} />
+              </div>
+              <div className="mp-form-group">
+                <label className="mp-form-label">Sizes Present</label>
+                <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                  {productSizes.length > 0 ? productSizes.map(s => (
+                    <span key={s} style={{ padding: '5px 12px', background: '#f1f5f9', border: '1px solid #e2e8f0', borderRadius: '6px', fontSize: '13px', fontWeight: '600', color: '#475569' }}>{s}</span>
+                  )) : (
+                    <span style={{ fontSize: '13px', color: '#94a3b8' }}>No sizes added</span>
+                  )}
+                </div>
               </div>
             </div>
             <div className="mp-panel-footer">

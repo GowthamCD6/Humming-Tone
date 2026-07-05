@@ -143,7 +143,7 @@ const AllProducts = () => {
     }
 
     try {
-      const response = await axios.delete(`${API_BASE_URL}/products`, getAxiosConfig());
+      const response = await axios.delete(`${API_BASE_URL}/api/products`, getAxiosConfig());
       
       if (response.data.success) {
         alert(response.data.message);
@@ -169,7 +169,7 @@ const AllProducts = () => {
     }
 
     try {
-      const response = await axios.post(`${API_BASE_URL}/products/delete-multiple`, {
+      const response = await axios.post(`${API_BASE_URL}/api/products/delete-multiple`, {
         productIds: selectedProducts
       });
       
@@ -191,7 +191,7 @@ const AllProducts = () => {
     }
 
     try {
-      const response = await axios.delete(`${API_BASE_URL}/products/${productId}`, getAxiosConfig());
+      const response = await axios.delete(`${API_BASE_URL}/api/products/${productId}`, getAxiosConfig());
       
       if (response.data.success) {
         alert(response.data.message);
@@ -233,6 +233,11 @@ const AllProducts = () => {
 
   const hasActiveFilters = filters.category || filters.gender || filters.status;
 
+  const formatCurrency = (value) => {
+    const num = Number(value || 0);
+    return `₹${num.toLocaleString('en-IN', { minimumFractionDigits: 0, maximumFractionDigits: 2 })}`;
+  };
+
   if (loading) {
     return (
       <div className="all-products-container">
@@ -243,17 +248,6 @@ const AllProducts = () => {
 
   return (
     <div className="all-products-container">
-      {/* Page Header */}
-      <div className="page-header">
-        <div className="page-header-copy" />
-        <div className="header-actions">
-          {selectedProducts.length > 0 && (
-            <button className="btn-delete-selected" onClick={deleteSelectedProducts}>
-              DELETE SELECTED ({selectedProducts.length})
-            </button>
-          )}
-        </div>
-      </div>
 
       <div className="inv-stats-grid pd-stats-grid">
         <div className="inv-stat-card pd-stat-card">
@@ -301,104 +295,91 @@ const AllProducts = () => {
         </div>
       </div>
 
-      {/* Filters Section */}
-      <div className="products-filters pd-filters-card">
-        <div className="filters-left">
-          <div className="filter-item">
-            <label className="filter-label">CATEGORY</label>
-            <select
-              className="filter-select"
-              value={filters.category}
-              onChange={(e) => handleFilterChange('category', e.target.value)}
-            >
-              <option value="">All Categories</option>
-              {categories.map(cat => (
-                <option key={cat} value={cat}>{cat}</option>
-              ))}
-            </select>
-          </div>
+      {/* Products Table Card */}
+      <div className="pd-card">
+        {/* Inline Filters Row - matching ManageProduct style */}
+        <div className="pd-filters-bar">
+          <h3 className="pd-table-title">Archived Products</h3>
 
-          <div className="filter-item">
-            <label className="filter-label">GENDER</label>
-            <select
-              className="filter-select"
-              value={filters.gender}
-              onChange={(e) => handleFilterChange('gender', e.target.value)}
-            >
-              <option value="">All Genders</option>
-              {genders.map(gender => (
-                <option key={gender} value={gender}>{gender}</option>
-              ))}
-            </select>
-          </div>
+          <select
+            className="pd-filter-select"
+            value={filters.category}
+            onChange={(e) => handleFilterChange('category', e.target.value)}
+          >
+            <option value="">All Categories</option>
+            {categories.map(cat => (
+              <option key={cat} value={cat}>{cat}</option>
+            ))}
+          </select>
 
-          <div className="filter-item">
-            <label className="filter-label">STATUS</label>
-            <select
-              className="filter-select"
-              value={filters.status}
-              onChange={(e) => handleFilterChange('status', e.target.value)}
-            >
-              <option value="">All Status</option>
-              {statuses.map(status => (
-                <option key={status} value={status}>{status}</option>
-              ))}
-            </select>
-          </div>
-        </div>
+          <select
+            className="pd-filter-select"
+            value={filters.gender}
+            onChange={(e) => handleFilterChange('gender', e.target.value)}
+          >
+            <option value="">All Genders</option>
+            {genders.map(gender => (
+              <option key={gender} value={gender}>{gender}</option>
+            ))}
+          </select>
 
-        <div className="filters-right">
-          <span className="filters-count">
-            Showing {filteredProducts.length} of {products.length} products
-          </span>
-          {products.length > 0 && (
-            <button className="btn-delete-all" onClick={deleteAllProducts}>
-              DELETE ALL
+          <select
+            className="pd-filter-select"
+            value={filters.status}
+            onChange={(e) => handleFilterChange('status', e.target.value)}
+          >
+            <option value="">All Status</option>
+            {statuses.map(status => (
+              <option key={status} value={status}>{status}</option>
+            ))}
+          </select>
+
+          {hasActiveFilters && (
+            <button className="pd-btn-clear" onClick={clearFilters}>
+              Clear
             </button>
           )}
-          <button
-            className="btn-clear-filters"
-            onClick={clearFilters}
-            disabled={!hasActiveFilters}
-          >
-            CLEAR FILTERS
-          </button>
-        </div>
-      </div>
 
-      {/* Products Table */}
-      <div className="products-table-container">
-        <div className="products-table-header">
-          <h2 className="products-table-title">Archived Products</h2>
-          <div className="products-table-header-actions">
-            <span className="products-table-count">{filteredProducts.length} records</span>
+          <div className="pd-filters-right-group">
+            <span className="pd-products-count">{filteredProducts.length} of {products.length}</span>
+            {selectedProducts.length > 0 && (
+              <button className="pd-btn-action pd-btn-delete-selected" onClick={deleteSelectedProducts}>
+                Delete Selected ({selectedProducts.length})
+              </button>
+            )}
+            {products.length > 0 && (
+              <button className="pd-btn-action pd-btn-delete-all" onClick={deleteAllProducts}>
+                Delete All
+              </button>
+            )}
           </div>
         </div>
-        <table className="products-table">
+
+        {/* Table */}
+        <table className="pd-table">
           <thead>
             <tr>
-              <th>
+              <th style={{ width: '40px' }}>
                 <input
                   type="checkbox"
                   checked={selectedProducts.length === filteredProducts.length && filteredProducts.length > 0}
                   onChange={toggleSelectAll}
                 />
               </th>
-              <th style={{ width: '8%' }}>IMAGE</th>
-              <th style={{ width: '16%' }}>NAME</th>
-              <th style={{ width: '11%' }}>SKU</th>
-              <th style={{ width: '9%' }}>PRICE</th>
-              <th style={{ width: '12%' }}>CATEGORY</th>
-              <th style={{ width: '10%' }}>GENDER</th>
-              <th style={{ width: '9%' }}>STATUS</th>
-              <th className="archive-actions-head" style={{ width: '12%' }}>ACTIONS</th>
+              <th style={{ width: '25%' }}>Product</th>
+              <th style={{ width: '14%' }}>SKU</th>
+              <th style={{ width: '11%' }}>Price</th>
+              <th style={{ width: '13%' }}>Category</th>
+              <th style={{ width: '10%' }}>Gender</th>
+              <th style={{ width: '10%' }}>Status</th>
+              <th className="pd-text-center" style={{ width: '14%' }}>Actions</th>
             </tr>
           </thead>
           <tbody>
             {pagedProducts.length === 0 ? (
               <tr>
-                <td colSpan="9" style={{ textAlign: 'center', padding: '3rem' }}>
-                  No products found
+                <td colSpan="8" className="pd-empty">
+                  No archived products found
                 </td>
               </tr>
             ) : (
@@ -412,36 +393,42 @@ const AllProducts = () => {
                     />
                   </td>
                   <td>
-                    <img
-                      src={product.image || demoImage}
-                      alt={product.name}
-                      className="product-image"
-                      onError={(e) => { e.target.src = demoImage; }}
-                    />
+                    <div className="pd-product-cell">
+                      <img
+                        src={product.image || demoImage}
+                        alt={product.name}
+                        className="pd-product-img"
+                        onError={(e) => { e.target.src = demoImage; }}
+                      />
+                      <span className="pd-product-name">{product.name}</span>
+                    </div>
                   </td>
-                  <td className="product-name">{product.name}</td>
-                  <td className="product-sku">{product.sku}</td>
-                  <td className="product-price">₹{Number(product.price || 0).toFixed(2)}</td>
-                  <td className="product-category">{product.category}</td>
-                  <td className="product-gender">{product.gender}</td>
+                  <td>{product.sku}</td>
+                  <td><span className="pd-amount">{formatCurrency(product.price)}</span></td>
+                  <td><span className="pd-badge pd-badge-gray">{product.category}</span></td>
                   <td>
-                    <span className={`status-badge ${product.status === 'Active' ? 'status-active' : 'status-inactive'}`}>
-                      {product.status || 'Active'}
+                    <span className="pd-badge pd-badge-blue">
+                      {product.gender ? product.gender.charAt(0).toUpperCase() + product.gender.slice(1).toLowerCase() : ''}
                     </span>
                   </td>
                   <td>
-                    <div className="action-btns">
+                    <span className={`pd-badge ${product.status === 'Active' ? 'pd-badge-green' : 'pd-badge-red'}`}>
+                      {product.status || 'Active'}
+                    </span>
+                  </td>
+                  <td className="pd-text-center">
+                    <div className="pd-actions">
                       <button
-                        className="btn-toggle-status"
+                        className="pd-btn-restore"
                         onClick={() => openRestoreModal(product)}
                       >
-                        RESTORE
+                        Restore
                       </button>
                       <button
-                        className="btn-delete"
+                        className="pd-btn-delete"
                         onClick={() => deleteProduct(product._id)}
                       >
-                        DELETE
+                        Delete
                       </button>
                     </div>
                   </td>
@@ -451,16 +438,16 @@ const AllProducts = () => {
           </tbody>
         </table>
 
-        <div className="table-footer">
-          <div className="footer-text">
+        <div className="pd-table-footer">
+          <span className="pd-footer-text">
             Showing {filteredProducts.length === 0 ? 0 : (safeProductPage - 1) * productLimit + 1}–{Math.min(safeProductPage * productLimit, filteredProducts.length)} of {filteredProducts.length} products
-          </div>
+          </span>
 
-          <div className="pagination-group">
-            <label className="limit-label" htmlFor="product-limit-select">Rows</label>
+          <div className="pd-pagination-group">
+            <label className="pd-limit-label" htmlFor="product-limit-select">Rows</label>
             <select
               id="product-limit-select"
-              className="limit-select"
+              className="pd-limit-select"
               value={productLimit}
               onChange={(e) => setProductLimit(Number(e.target.value))}
             >
@@ -470,15 +457,15 @@ const AllProducts = () => {
             </select>
 
             <button
-              className="page-btn"
+              className="pd-page-btn"
               onClick={() => setProductPage((page) => Math.max(1, page - 1))}
               disabled={safeProductPage === 1}
             >
               Previous
             </button>
-            <span className="page-indicator">Page {safeProductPage} / {totalProductPages}</span>
+            <span className="pd-page-indicator">Page {safeProductPage} / {totalProductPages}</span>
             <button
-              className="page-btn"
+              className="pd-page-btn"
               onClick={() => setProductPage((page) => Math.min(totalProductPages, page + 1))}
               disabled={safeProductPage === totalProductPages}
             >
