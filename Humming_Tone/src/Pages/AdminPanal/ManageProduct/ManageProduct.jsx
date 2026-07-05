@@ -16,6 +16,7 @@ const getAuthHeaders = (contentType) => {
 
 export default function ManageProducts() {
   const navigate = useNavigate();
+  const [isLoading, setIsLoading] = useState(true);
   const [products, setProducts] = useState([])
   const [promoCodes, setPromoCodes] = useState([])
   const [editingProduct, setEditingProduct] = useState(null)
@@ -103,6 +104,7 @@ export default function ManageProducts() {
   }, [editingProduct?.gender, genderCategoryMap]);
 
   const loadData = async () => {
+    setIsLoading(true);
     try {
       const prodRes = await fetch(`${BASE_URL}/admin/fetch_products`, {
         headers: getAuthHeaders()
@@ -124,6 +126,7 @@ export default function ManageProducts() {
       const promoData = await promoRes.json();
       if (Array.isArray(promoData)) setPromoCodes(promoData);
     } catch (err) { console.error(err); }
+    finally { setIsLoading(false); }
   };
 
   useEffect(() => { loadData(); }, []);
@@ -172,8 +175,12 @@ export default function ManageProducts() {
     try {
       const token = localStorage.getItem('adminToken');
       const res = await axios.get(`${BASE_URL}/admin/fetch_variants/${p.id}`, { headers: { Authorization: `Bearer ${token}` } });
-      if (res.data.success) {
-        setProductSizes(res.data.data.map(v => v.size).filter(Boolean));
+      if (res.data && res.data.variants) {
+        let variants = res.data.variants;
+        if (typeof variants === 'string') {
+          try { variants = JSON.parse(variants); } catch (e) { variants = []; }
+        }
+        setProductSizes((variants || []).map(v => v.size).filter(Boolean));
       }
     } catch (err) {
       console.error("Failed to fetch sizes", err);
@@ -403,7 +410,29 @@ export default function ManageProducts() {
             </tr>
           </thead>
           <tbody>
-            {pagedProducts.length > 0 ? (
+            {isLoading ? (
+              Array.from({ length: productLimit }).map((_, index) => (
+                <tr key={`skeleton-${index}`}>
+                  <td>
+                    <div className="mp-product-cell">
+                      <div className="mp-skeleton mp-skeleton-img"></div>
+                      <div className="mp-skeleton mp-skeleton-text" style={{ width: '120px' }}></div>
+                    </div>
+                  </td>
+                  <td><div className="mp-skeleton mp-skeleton-text" style={{ width: '80px' }}></div></td>
+                  <td><div className="mp-skeleton mp-skeleton-text" style={{ width: '60px' }}></div></td>
+                  <td><div className="mp-skeleton mp-skeleton-text" style={{ width: '70px', borderRadius: '12px' }}></div></td>
+                  <td><div className="mp-skeleton mp-skeleton-text" style={{ width: '90px', borderRadius: '12px' }}></div></td>
+                  <td><div className="mp-skeleton mp-skeleton-text" style={{ width: '60px', borderRadius: '12px' }}></div></td>
+                  <td>
+                    <div className="mp-actions" style={{ justifyContent: 'center' }}>
+                      <div className="mp-skeleton mp-skeleton-text" style={{ width: '28px', height: '28px', borderRadius: '6px' }}></div>
+                      <div className="mp-skeleton mp-skeleton-text" style={{ width: '28px', height: '28px', borderRadius: '6px' }}></div>
+                    </div>
+                  </td>
+                </tr>
+              ))
+            ) : pagedProducts.length > 0 ? (
               pagedProducts.map((p) => (
                 <tr key={p.id}>
                   <td>

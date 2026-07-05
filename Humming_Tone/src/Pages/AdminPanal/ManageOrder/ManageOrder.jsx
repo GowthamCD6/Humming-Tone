@@ -235,7 +235,7 @@ export default function ManageOrder() {
     return date.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true });
   };
 
-  if (loading) return <div className="loading-container">Loading Orders...</div>;
+  // Skeleton loader is now handled in the render instead of early return
 
   return (
     <section className="manage-orders-container">
@@ -247,7 +247,7 @@ export default function ManageOrder() {
               <div className="inv-stat-label">TOTAL ORDERS</div>
             </div>
           </div>
-          <div className="inv-stat-value mo-stat-value-blue">{stats.total}</div>
+          {loading ? <div className="mo-skeleton-val" /> : <div className="inv-stat-value mo-stat-value-blue">{stats.total}</div>}
           <div className="mo-stat-note">{stats.total === 0 ? 'No orders in view' : 'Orders currently listed'}</div>
         </div>
         <div className="inv-stat-card mo-stat-card">
@@ -257,7 +257,7 @@ export default function ManageOrder() {
               <div className="inv-stat-label">PENDING</div>
             </div>
           </div>
-          <div className="inv-stat-value mo-stat-value-orange">{stats.pending}</div>
+          {loading ? <div className="mo-skeleton-val" /> : <div className="inv-stat-value mo-stat-value-orange">{stats.pending}</div>}
           <div className="mo-stat-note">Orders waiting for action</div>
         </div>
         <div className="inv-stat-card mo-stat-card">
@@ -267,7 +267,7 @@ export default function ManageOrder() {
               <div className="inv-stat-label">DELIVERED</div>
             </div>
           </div>
-          <div className="inv-stat-value mo-stat-value-green">{stats.delivered}</div>
+          {loading ? <div className="mo-skeleton-val" /> : <div className="inv-stat-value mo-stat-value-green">{stats.delivered}</div>}
           <div className="mo-stat-note">Completed and fulfilled orders</div>
         </div>
         <div className="inv-stat-card mo-stat-card">
@@ -277,7 +277,7 @@ export default function ManageOrder() {
               <div className="inv-stat-label">CANCELLED</div>
             </div>
           </div>
-          <div className="inv-stat-value mo-stat-value-red">{stats.cancelled}</div>
+          {loading ? <div className="mo-skeleton-val" /> : <div className="inv-stat-value mo-stat-value-red">{stats.cancelled}</div>}
           <div className="mo-stat-note">Orders removed from the active flow</div>
         </div>
       </div>
@@ -390,58 +390,81 @@ export default function ManageOrder() {
 
       {/* Table */}
       <div className="table-container">
-        {filteredOrders.length === 0 ? (
-          <div className="no-orders">No orders found matching your filters.</div>
-        ) : (
-          <>
-            <table className="orders-table">
-              <thead>
-                <tr>
-                  <th>ORDER #</th>
-                  <th>CUSTOMER</th>
-                  <th>DATE</th>
-                  <th>ITEMS</th>
-                  <th>TOTAL</th>
-                  <th>STATUS</th>
-                  <th>PAYMENT</th>
-                  <th>ACTION</th>
-                </tr>
-              </thead>
-              <tbody>
-                {pagedOrders.map((order) => (
-                  <tr key={order.id}>
-                    <td className="order-id">{order.order_number}</td>
-                    <td className="customer-info">
-                      <div className="cust-name">{order.customer_name}</div>
-                      <div className="cust-email">{order.customer_email}</div>
-                    </td>
-                    <td className="date-info">
-                      <div className="date-main">{formatDate(order.created_at)}</div>
-                      <div className="date-time">{formatTime(order.created_at)}</div>
-                    </td>
-                    <td className="items-info">
-                      {order.unique_items_count} items
-                    </td>
-                    <td className="total-price">₹{parseFloat(order.total_amount).toFixed(2)}</td>
-                    <td>
-                      <span className={`status-badge ${order.status?.toLowerCase()}`}>
-                        {order.status}
-                      </span>
-                    </td>
-                    <td className="payment-info">
-                      <span className="payment-badge">{order.payment_id ? 'PAID' : 'UNPAID'}</span>
-                    </td>
-                    <td className="action-info">
-                      <button 
-                        className="view-order-btn"
-                        onClick={() => navigate(`/admin/order/${order.id}`)}
-                        title="View Order Details"
-                      >
-                        <VisibilityIcon /> View
-                      </button>
+        <table className="orders-table">
+          <thead>
+            <tr>
+              <th>ORDER #</th>
+              <th>CUSTOMER</th>
+              <th>DATE</th>
+              <th>ITEMS</th>
+              <th>TOTAL</th>
+              <th>STATUS</th>
+              <th>PAYMENT</th>
+              <th>ACTION</th>
+            </tr>
+          </thead>
+          <tbody>
+                {loading ? (
+                  Array.from({ length: orderLimit }).map((_, index) => (
+                    <tr key={`skel-${index}`} className="mo-skeleton-row">
+                      <td><div className="mo-skeleton-cell" style={{ width: '80px' }}></div></td>
+                      <td>
+                        <div className="mo-skeleton-cell" style={{ width: '120px', height: '14px', marginBottom: '6px' }}></div>
+                        <div className="mo-skeleton-cell" style={{ width: '90px', height: '10px' }}></div>
+                      </td>
+                      <td>
+                        <div className="mo-skeleton-cell" style={{ width: '80px', height: '14px', marginBottom: '6px' }}></div>
+                        <div className="mo-skeleton-cell" style={{ width: '60px', height: '10px' }}></div>
+                      </td>
+                      <td><div className="mo-skeleton-cell" style={{ width: '50px' }}></div></td>
+                      <td><div className="mo-skeleton-cell" style={{ width: '70px' }}></div></td>
+                      <td><div className="mo-skeleton-cell" style={{ width: '80px', height: '24px', borderRadius: '12px' }}></div></td>
+                      <td><div className="mo-skeleton-cell" style={{ width: '60px', height: '22px', borderRadius: '4px' }}></div></td>
+                      <td><div className="mo-skeleton-cell" style={{ width: '80px', height: '32px', borderRadius: '4px' }}></div></td>
+                    </tr>
+                  ))
+                ) : filteredOrders.length === 0 ? (
+                  <tr>
+                    <td colSpan="8">
+                      <div className="no-orders">No orders found matching your filters.</div>
                     </td>
                   </tr>
-                ))}
+                ) : (
+                  pagedOrders.map((order) => (
+                    <tr key={order.id}>
+                      <td className="order-id">{order.order_number}</td>
+                      <td className="customer-info">
+                        <div className="cust-name">{order.customer_name}</div>
+                        <div className="cust-email">{order.customer_email}</div>
+                      </td>
+                      <td className="date-info">
+                        <div className="date-main">{formatDate(order.created_at)}</div>
+                        <div className="date-time">{formatTime(order.created_at)}</div>
+                      </td>
+                      <td className="items-info">
+                        {order.unique_items_count} items
+                      </td>
+                      <td className="total-price">₹{parseFloat(order.total_amount).toFixed(2)}</td>
+                      <td>
+                        <span className={`status-badge ${order.status?.toLowerCase()}`}>
+                          {order.status}
+                        </span>
+                      </td>
+                      <td className="payment-info">
+                        <span className="payment-badge">{order.payment_id ? 'PAID' : 'UNPAID'}</span>
+                      </td>
+                      <td className="action-info">
+                        <button 
+                          className="view-order-btn"
+                          onClick={() => navigate(`/admin/order/${order.id}`)}
+                          title="View Order Details"
+                        >
+                          <VisibilityIcon /> View
+                        </button>
+                      </td>
+                    </tr>
+                  ))
+                )}
               </tbody>
             </table>
 
@@ -480,8 +503,6 @@ export default function ManageOrder() {
                 </button>
               </div>
             </div>
-          </>
-        )}
       </div>
 
       {/* No Orders Modal */}

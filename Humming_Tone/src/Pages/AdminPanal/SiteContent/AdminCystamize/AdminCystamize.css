@@ -59,7 +59,6 @@
   display: flex;
   align-items: center;
   gap: 10px;
-  animation: slideIn 0.3s ease;
 }
 
 @keyframes slideIn {
@@ -193,7 +192,6 @@
 /* Section Content (shown when expanded) */
 .admin-customize-section-content {
   padding: 0 24px 24px;
-  animation: slideDown 0.3s ease;
 }
 
 @keyframes slideDown {
@@ -1045,7 +1043,6 @@
   justify-content: center;
   z-index: 10000;
   backdrop-filter: blur(3px);
-  animation: fadeIn 0.2s ease;
 }
 
 @keyframes fadeIn {
@@ -1061,7 +1058,6 @@
   max-height: 90vh;
   overflow-y: auto;
   box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.2);
-  animation: modalSlideIn 0.3s ease;
 }
 
 @keyframes modalSlideIn {

@@ -666,7 +666,6 @@
   border-radius: 16px;
   box-shadow: var(--inv-shadow-md);
   overflow: hidden;
-  animation: modalIn 0.2s ease-out;
 }
 
 @keyframes modalIn {

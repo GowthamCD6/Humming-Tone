@@ -858,4 +858,7 @@
     width: 100vw;
     right: -100vw;
   }
+}@keyframes inv-shimmer {
+  0% { background-position: -600px 0; }
+  100% { background-position: 600px 0; }
 }

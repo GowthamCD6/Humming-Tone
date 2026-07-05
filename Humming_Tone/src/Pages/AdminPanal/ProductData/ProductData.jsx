@@ -238,13 +238,7 @@ const AllProducts = () => {
     return `₹${num.toLocaleString('en-IN', { minimumFractionDigits: 0, maximumFractionDigits: 2 })}`;
   };
 
-  if (loading) {
-    return (
-      <div className="all-products-container">
-        <div className="loading-state">Loading products...</div>
-      </div>
-    );
-  }
+  // Skeleton loader is now handled in the render instead of early return
 
   return (
     <div className="all-products-container">
@@ -257,7 +251,7 @@ const AllProducts = () => {
               <div className="inv-stat-label">TOTAL RECORDS</div>
             </div>
           </div>
-          <div className="inv-stat-value pd-stat-value-blue">{stats.total}</div>
+          {loading ? <div className="pd-skeleton-val" /> : <div className="inv-stat-value pd-stat-value-blue">{stats.total}</div>}
           <div className="pd-stat-note">All deleted product entries</div>
         </div>
 
@@ -268,7 +262,7 @@ const AllProducts = () => {
               <div className="inv-stat-label">ACTIVE</div>
             </div>
           </div>
-          <div className="inv-stat-value pd-stat-value-green">{stats.active}</div>
+          {loading ? <div className="pd-skeleton-val" /> : <div className="inv-stat-value pd-stat-value-green">{stats.active}</div>}
           <div className="pd-stat-note">Currently restorable records</div>
         </div>
 
@@ -279,7 +273,7 @@ const AllProducts = () => {
               <div className="inv-stat-label">INACTIVE</div>
             </div>
           </div>
-          <div className="inv-stat-value pd-stat-value-red">{stats.inactive}</div>
+          {loading ? <div className="pd-skeleton-val" /> : <div className="inv-stat-value pd-stat-value-red">{stats.inactive}</div>}
           <div className="pd-stat-note">Records currently disabled</div>
         </div>
 
@@ -290,7 +284,7 @@ const AllProducts = () => {
               <div className="inv-stat-label">SELECTED</div>
             </div>
           </div>
-          <div className="inv-stat-value pd-stat-value-orange">{stats.selected}</div>
+          {loading ? <div className="pd-skeleton-val" /> : <div className="inv-stat-value pd-stat-value-orange">{stats.selected}</div>}
           <div className="pd-stat-note">Ready for bulk delete</div>
         </div>
       </div>
@@ -376,7 +370,30 @@ const AllProducts = () => {
             </tr>
           </thead>
           <tbody>
-            {pagedProducts.length === 0 ? (
+            {loading ? (
+              Array.from({ length: productLimit }).map((_, index) => (
+                <tr key={`skel-${index}`}>
+                  <td><div className="pd-skeleton pd-skeleton-text" style={{ width: '16px', height: '16px', borderRadius: '4px' }}></div></td>
+                  <td>
+                    <div className="pd-product-cell">
+                      <div className="pd-skeleton pd-skeleton-img"></div>
+                      <div className="pd-skeleton pd-skeleton-text" style={{ width: '120px' }}></div>
+                    </div>
+                  </td>
+                  <td><div className="pd-skeleton pd-skeleton-text" style={{ width: '80px' }}></div></td>
+                  <td><div className="pd-skeleton pd-skeleton-text" style={{ width: '60px' }}></div></td>
+                  <td><div className="pd-skeleton pd-skeleton-text" style={{ width: '90px', borderRadius: '12px' }}></div></td>
+                  <td><div className="pd-skeleton pd-skeleton-text" style={{ width: '60px', borderRadius: '12px' }}></div></td>
+                  <td><div className="pd-skeleton pd-skeleton-text" style={{ width: '70px', borderRadius: '12px' }}></div></td>
+                  <td className="pd-text-center">
+                    <div className="pd-actions">
+                      <div className="pd-skeleton pd-skeleton-text" style={{ width: '60px', height: '28px', borderRadius: '4px' }}></div>
+                      <div className="pd-skeleton pd-skeleton-text" style={{ width: '60px', height: '28px', borderRadius: '4px' }}></div>
+                    </div>
+                  </td>
+                </tr>
+              ))
+            ) : pagedProducts.length === 0 ? (
               <tr>
                 <td colSpan="8" className="pd-empty">
                   No archived products found

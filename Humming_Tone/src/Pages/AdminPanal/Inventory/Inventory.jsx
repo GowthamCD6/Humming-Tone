@@ -478,9 +478,20 @@ const InventoryDashboard = () => {
             <tbody>
               {loading && Array.from({ length: PAGE_SIZE }).map((_, i) => (
                 <tr key={`skel-${i}`} className="inv-skeleton-row">
-                  {Array.from({ length: 6 }).map((__, j) => (
-                    <td key={j}><div className="inv-skeleton-cell" /></td>
-                  ))}
+                  <td>
+                    <div className="inv-skeleton-cell" style={{ width: '120px', height: '16px', marginBottom: '6px' }} />
+                    <div className="inv-skeleton-cell" style={{ width: '80px', height: '12px' }} />
+                  </td>
+                  <td><div className="inv-skeleton-cell" style={{ width: '90px' }} /></td>
+                  <td><div className="inv-skeleton-cell" style={{ width: '40px' }} /></td>
+                  <td><div className="inv-skeleton-cell" style={{ width: '50px' }} /></td>
+                  <td><div className="inv-skeleton-cell" style={{ width: '80px', height: '24px', borderRadius: '12px' }} /></td>
+                  <td>
+                    <div className="action-cell">
+                      <div className="inv-skeleton-cell" style={{ width: '85px', height: '30px', borderRadius: '6px' }} />
+                      <div className="inv-skeleton-cell" style={{ width: '30px', height: '30px', borderRadius: '6px' }} />
+                    </div>
+                  </td>
                 </tr>
               ))}
               {!loading && pagedMaterials.map((item, index) => (

@@ -6,7 +6,6 @@
 
 /* ===== CONTAINER ===== */
 .order-details-container {
-  animation: fadeIn 0.3s ease-in;
   display: flex;
   flex-direction: column;
   gap: 20px;
