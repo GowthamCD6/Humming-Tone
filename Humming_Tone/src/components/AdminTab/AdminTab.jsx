@@ -9,6 +9,7 @@ import InventoryIcon from '@mui/icons-material/Inventory'
 import AccountCircleIcon from '@mui/icons-material/AccountCircle'
 import PeopleIcon from '@mui/icons-material/People'
 import { Outlet, useLocation, useNavigate } from 'react-router-dom'
+import logo from '../../assets/logo.png'
 import './AdminTab.css'
 
 export default function AdminTab({ onLogout = () => {} }) {
@@ -69,8 +70,7 @@ export default function AdminTab({ onLogout = () => {} }) {
       <aside className="admin-sidebar">
         {/* Sidebar Header */}
         <div className="sidebar-header">
-          <h1 className="sidebar-brand">Humming Tone</h1>
-          <p className="sidebar-subtitle">ADMIN PANEL</p>
+          <img src={logo} alt="Humming Tone" className="sidebar-brand-logo" />
         </div>
 
         {/* Divider */}

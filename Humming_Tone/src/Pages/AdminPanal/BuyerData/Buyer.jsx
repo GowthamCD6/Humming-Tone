@@ -2,6 +2,7 @@ import React, { useState, useEffect, useMemo } from 'react';
 import SearchIcon from '@mui/icons-material/Search';
 import FilterListIcon from '@mui/icons-material/FilterList';
 import PeopleIcon from '@mui/icons-material/People';
+import CloseIcon from '@mui/icons-material/Close';
 import './Buyer.css';
 
 export default function Buyer() {
@@ -9,6 +10,7 @@ export default function Buyer() {
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [orderFilter, setOrderFilter] = useState('');
+  const [selectedBuyer, setSelectedBuyer] = useState(null);
 
   useEffect(() => {
     const fetchBuyers = async () => {
@@ -156,9 +158,11 @@ export default function Buyer() {
             <div
               key={buyer.customer_email || index}
               className="buyer-card"
+              onClick={() => setSelectedBuyer(buyer)}
+              style={{ cursor: 'pointer' }}
             >
               <div className="buyer-card-header">
-                <h3 className="buyer-card-name">
+                <h3 className="buyer-card-name" title={buyer.customer_name || 'N/A'}>
                   {buyer.customer_name || 'N/A'}
                 </h3>
                 <span className="buyer-order-badge">
@@ -172,6 +176,8 @@ export default function Buyer() {
                   <a
                     href={`mailto:${buyer.customer_email}`}
                     className="buyer-card-value buyer-card-link"
+                    onClick={(e) => e.stopPropagation()}
+                    title={buyer.customer_email || 'N/A'}
                   >
                     {buyer.customer_email || 'N/A'}
                   </a>
@@ -182,6 +188,8 @@ export default function Buyer() {
                   <a
                     href={`tel:${buyer.customer_phone}`}
                     className="buyer-card-value buyer-card-link"
+                    onClick={(e) => e.stopPropagation()}
+                    title={buyer.customer_phone || 'N/A'}
                   >
                     {buyer.customer_phone || 'N/A'}
                   </a>
@@ -189,7 +197,7 @@ export default function Buyer() {
 
                 <div className="buyer-card-row">
                   <span className="buyer-card-label">Address</span>
-                  <span className="buyer-card-value">
+                  <span className="buyer-card-value" title={buyer.customer_address || 'N/A'}>
                     {buyer.customer_address || 'N/A'}
                   </span>
                 </div>
@@ -197,17 +205,17 @@ export default function Buyer() {
                 <div className="buyer-card-row-inline">
                   <div className="buyer-card-item">
                     <span className="buyer-card-label">City</span>
-                    <span className="buyer-card-value">{buyer.city || 'N/A'}</span>
+                    <span className="buyer-card-value" title={buyer.city || 'N/A'}>{buyer.city || 'N/A'}</span>
                   </div>
 
                   <div className="buyer-card-item">
                     <span className="buyer-card-label">State</span>
-                    <span className="buyer-card-value">{buyer.state || 'N/A'}</span>
+                    <span className="buyer-card-value" title={buyer.state || 'N/A'}>{buyer.state || 'N/A'}</span>
                   </div>
 
                   <div className="buyer-card-item">
                     <span className="buyer-card-label">PIN</span>
-                    <span className="buyer-card-value buyer-card-pin">
+                    <span className="buyer-card-value buyer-card-pin" title={buyer.pincode || 'N/A'}>
                       {buyer.pincode || 'N/A'}
                     </span>
                   </div>
@@ -216,6 +224,80 @@ export default function Buyer() {
 
             </div>
           ))}
+        </div>
+      )}
+
+      {/* 🔹 Buyer Details Modal */}
+      {selectedBuyer && (
+        <div className="buyer-modal-overlay" onClick={() => setSelectedBuyer(null)}>
+          <div className="buyer-modal-content" onClick={(e) => e.stopPropagation()}>
+            <div className="buyer-modal-header">
+              <div className="buyer-modal-title-group">
+                <h2>Buyer Details</h2>
+                <span className="buyer-modal-orders">
+                  {selectedBuyer.orderCount} {selectedBuyer.orderCount === 1 ? 'Order' : 'Orders'}
+                </span>
+              </div>
+              <button className="buyer-modal-close" onClick={() => setSelectedBuyer(null)}>
+                <CloseIcon />
+              </button>
+            </div>
+            
+            <div className="buyer-modal-body">
+              <div className="buyer-modal-section">
+                <div className="buyer-modal-field">
+                  <span className="buyer-modal-label">Name</span>
+                  <span className="buyer-modal-val name-val">{selectedBuyer.customer_name || 'N/A'}</span>
+                </div>
+              </div>
+
+              <div className="buyer-modal-grid">
+                <div className="buyer-modal-field">
+                  <span className="buyer-modal-label">Email</span>
+                  <a href={`mailto:${selectedBuyer.customer_email}`} className="buyer-modal-val link-val">
+                    {selectedBuyer.customer_email || 'N/A'}
+                  </a>
+                </div>
+                
+                <div className="buyer-modal-field">
+                  <span className="buyer-modal-label">Phone</span>
+                  <a href={`tel:${selectedBuyer.customer_phone}`} className="buyer-modal-val link-val">
+                    {selectedBuyer.customer_phone || 'N/A'}
+                  </a>
+                </div>
+              </div>
+
+              <div className="buyer-modal-section">
+                <div className="buyer-modal-field">
+                  <span className="buyer-modal-label">Full Address</span>
+                  <span className="buyer-modal-val address-val">{selectedBuyer.customer_address || 'N/A'}</span>
+                </div>
+              </div>
+
+              <div className="buyer-modal-grid-three">
+                <div className="buyer-modal-field">
+                  <span className="buyer-modal-label">City</span>
+                  <span className="buyer-modal-val">{selectedBuyer.city || 'N/A'}</span>
+                </div>
+                
+                <div className="buyer-modal-field">
+                  <span className="buyer-modal-label">State</span>
+                  <span className="buyer-modal-val">{selectedBuyer.state || 'N/A'}</span>
+                </div>
+                
+                <div className="buyer-modal-field">
+                  <span className="buyer-modal-label">PIN Code</span>
+                  <span className="buyer-modal-val pin-val">{selectedBuyer.pincode || 'N/A'}</span>
+                </div>
+              </div>
+            </div>
+
+            <div className="buyer-modal-footer">
+              <button className="buyer-modal-btn" onClick={() => setSelectedBuyer(null)}>
+                Close
+              </button>
+            </div>
+          </div>
         </div>
       )}
     </section>
