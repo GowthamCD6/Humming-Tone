@@ -193,6 +193,15 @@ CREATE TABLE footer_links (
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 );
 
+INSERT INTO footer_links (type, label, href, active, display_order) VALUES
+('shop', 'New Arrival', '/usertab/home#new-arrivals', 1, 0),
+('shop', 'Featured Products', '/usertab/home#featured-products', 1, 1),
+('shop', 'Mens Collection', '/usertab/men', 1, 2),
+('shop', 'Women Collection', '/usertab/women', 1, 3),
+('shop', 'Children Collection', '/usertab/children', 1, 4),
+('shop', 'Kids Collection', '/usertab/baby', 1, 5),
+('shop', 'Sports Collection', '/usertab/sports', 1, 6);
+
 
 CREATE TABLE genders (
   id INT AUTO_INCREMENT PRIMARY KEY,

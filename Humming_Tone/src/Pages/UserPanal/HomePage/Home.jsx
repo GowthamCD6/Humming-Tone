@@ -92,7 +92,7 @@ const Home = ({ onViewDetails = () => {} }) => {
       </section>
 
       {/* Featured Products Section */}
-      <section className="product-section alt-bg">
+      <section className="product-section alt-bg" id="featured-products">
         <div className="section-intro">
           <h2 className="section-heading">Featured Products</h2>
           <div className="heading-accent"></div>
@@ -113,7 +113,7 @@ const Home = ({ onViewDetails = () => {} }) => {
       </section>
 
       {/* New Arrivals Section */}
-      <section className="product-section">
+      <section className="product-section" id="new-arrivals">
         <div className="section-intro">
           <h2 className="section-heading">New Arrivals</h2>
           <div className="heading-accent"></div>

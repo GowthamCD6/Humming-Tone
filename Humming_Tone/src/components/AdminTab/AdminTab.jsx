@@ -8,6 +8,7 @@ import LogoutIcon from '@mui/icons-material/Logout'
 import InventoryIcon from '@mui/icons-material/Inventory'
 import AccountCircleIcon from '@mui/icons-material/AccountCircle'
 import PeopleIcon from '@mui/icons-material/People'
+import AdminPanelSettingsIcon from '@mui/icons-material/AdminPanelSettings'
 import { Outlet, useLocation, useNavigate } from 'react-router-dom'
 import logo from '../../assets/logo.png'
 import './AdminTab.css'
@@ -44,6 +45,7 @@ export default function AdminTab({ onLogout = () => {} }) {
       title: 'SETTINGS',
       items: [
         { id: 'site-content', path: 'site-content', label: 'Site Content', Icon: AccountCircleIcon },
+        { id: 'manage-admin', path: 'manage-admin', label: 'Admin Users', Icon: AdminPanelSettingsIcon },
         { id: 'view-store', path: '/usertab/home', label: 'View Store', Icon: OpenInNewIcon },
       ]
     },

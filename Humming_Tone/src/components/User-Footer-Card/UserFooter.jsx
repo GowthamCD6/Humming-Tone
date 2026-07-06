@@ -91,6 +91,11 @@ const Footer = () => {
       "customize": "customize",
       "all-products": "all-products",
       "all_products": "all-products",
+
+      "featured": "home#featured-products",
+      "featured-products": "home#featured-products",
+      "new-arrival": "home#new-arrivals",
+      "new-arrivals": "home#new-arrivals",
     };
 
     const mapped = routeMap[normalizedKey] || routeMap[normalizedKey.replace(/^\//, "")];
@@ -132,7 +137,15 @@ const Footer = () => {
             termsLabel: "Terms of Service",
             termsHref: "/usertab/terms_of_service",
           },
-          shopLinks: [],
+          shopLinks: [
+            { label: "New Arrival", href: "/usertab/home#new-arrivals", active: true },
+            { label: "Featured Products", href: "/usertab/home#featured-products", active: true },
+            { label: "Mens Collection", href: "/usertab/men", active: true },
+            { label: "Women Collection", href: "/usertab/women", active: true },
+            { label: "Children Collection", href: "/usertab/children", active: true },
+            { label: "Kids Collection", href: "/usertab/baby", active: true },
+            { label: "Sports Collection", href: "/usertab/sports", active: true },
+          ],
           supportLinks: [],
         });
       } finally {
