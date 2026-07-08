@@ -75,6 +75,21 @@ axios.interceptors.request.use(config => {
   return config;
 });
 
+// Auto-logout on expired / invalid token (401 response)
+axios.interceptors.response.use(
+  response => response,
+  error => {
+    if (error.response && error.response.status === 401) {
+      localStorage.removeItem('adminToken');
+      // Redirect to login if not already there
+      if (window.location.pathname !== '/login') {
+        window.location.href = '/login';
+      }
+    }
+    return Promise.reject(error);
+  }
+);
+
 // Automatically inject the JWT token into all outgoing fetch requests
 const originalFetch = window.fetch;
 window.fetch = async function () {
@@ -92,7 +107,15 @@ window.fetch = async function () {
     }
   }
   
-  return originalFetch(resource, config);
+  const response = await originalFetch(resource, config);
+  
+  // Auto-logout on 401 for fetch requests too
+  if (response.status === 401 && window.location.pathname !== '/login') {
+    localStorage.removeItem('adminToken');
+    window.location.href = '/login';
+  }
+  
+  return response;
 };
 // -------------------------------
 

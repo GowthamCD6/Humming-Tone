@@ -3,8 +3,10 @@ const createError = require("http-errors");
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 
-// Secret for JWT - in production, this should be in .env
-const JWT_SECRET = process.env.JWT_SECRET || 'hummingtone_admin_secret_key_2026';
+const JWT_SECRET = process.env.JWT_SECRET;
+if (!JWT_SECRET) {
+  throw new Error('FATAL: JWT_SECRET environment variable is not set.');
+}
 
 exports.adminLogin = (req, res, next) => {
   const { username, password } = req.body;

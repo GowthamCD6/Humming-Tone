@@ -4,10 +4,10 @@ import Visibility from '@mui/icons-material/Visibility';
 import VisibilityOff from '@mui/icons-material/VisibilityOff';
 
 export default function Login({ onSuccess }) {
-  // State for input fields
+  // State for input fields — empty by default, user must type credentials
   const [formData, setFormData] = useState({
-    username: 'admin',
-    password: 'admin123'
+    username: '',
+    password: ''
   });
 
   // State for error handling
@@ -16,11 +16,8 @@ export default function Login({ onSuccess }) {
   // State for password visibility
   const [showPassword, setShowPassword] = useState(false);
 
-  // Hardcoded credentials as requested
-  const VALID_USERNAME = 'admin';
-  const VALID_PASSWORD = 'admin123';
-  const USER_USERNAME = 'user';
-  const USER_PASSWORD = 'user123';
+  // Loading state to prevent double-submit and show feedback
+  const [isLoading, setIsLoading] = useState(false);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -41,32 +38,39 @@ export default function Login({ onSuccess }) {
       return;
     }
 
+    // Prevent double-submit while a request is in-flight
+    if (isLoading) return;
+    setIsLoading(true);
+    setError('');
+
     try {
       const response = await fetch('http://localhost:5000/admin/auth/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          username: formData.username,
+          username: formData.username.trim(),
           password: formData.password
         })
       });
 
       const data = await response.json();
 
-      if (response.ok) {
-        setError('');
-        console.log('Admin Login Successful');
-        // Save the JWT token
+      if (response.ok && data.token) {
+        // Save the JWT token securely
         localStorage.setItem('adminToken', data.token);
         
         // Trigger parent function to navigate to admin panel
         if (onSuccess) onSuccess('admin'); 
       } else {
         setError(data.error?.message || data.message || 'Invalid username or password.');
+        // Clear password field on failed attempt for security
+        setFormData(prev => ({ ...prev, password: '' }));
       }
     } catch (err) {
       setError('Failed to connect to the server. Please try again.');
       console.error('Login error:', err);
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -105,6 +109,7 @@ export default function Login({ onSuccess }) {
               value={formData.username}
               onChange={handleChange}
               autoComplete="off"
+              disabled={isLoading}
             />
           </div>
 
@@ -119,12 +124,15 @@ export default function Login({ onSuccess }) {
                 placeholder="Enter your password"
                 value={formData.password}
                 onChange={handleChange}
+                autoComplete="off"
+                disabled={isLoading}
               />
               <button
                 type="button"
                 className="admin-login-password-toggle"
                 onClick={togglePasswordVisibility}
                 aria-label={showPassword ? "Hide password" : "Show password"}
+                disabled={isLoading}
               >
                 {showPassword ? (
                   <VisibilityOff className="admin-login-password-icon" />
@@ -135,8 +143,19 @@ export default function Login({ onSuccess }) {
             </div>
           </div>
 
-          <button type="submit" className="admin-login-btn">
-            Log In
+          <button 
+            type="submit" 
+            className={`admin-login-btn ${isLoading ? 'admin-login-btn-loading' : ''}`}
+            disabled={isLoading}
+          >
+            {isLoading ? (
+              <span className="admin-login-spinner-wrapper">
+                <span className="admin-login-spinner"></span>
+                Authenticating...
+              </span>
+            ) : (
+              'Log In'
+            )}
           </button>
         </form>
       </div>
