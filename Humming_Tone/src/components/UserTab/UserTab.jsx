@@ -73,7 +73,8 @@ const UserTab = () => {
   useEffect(() => {
     const loadGenders = async () => {
       try {
-        const data = await fetchSiteContent();
+        // Force refresh to always get latest visibility from the server
+        const data = await fetchSiteContent(true);
         const genderStatus = data.genderStatus || {};
 
         // Get only active genders
@@ -99,7 +100,7 @@ const UserTab = () => {
     };
 
     loadGenders();
-  }, []);
+  }, [location.pathname]);
 
   // Icon mapping for genders
   const getGenderIcon = (gender) => {

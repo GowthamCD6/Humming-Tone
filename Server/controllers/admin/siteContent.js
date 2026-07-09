@@ -170,10 +170,13 @@ exports.updateGenderStatus = (req, res) => {
         return res.json({ message: "Gender visibility saved successfully" });
     }
     
-    entries.forEach(([name, status]) => {
+    entries.forEach(([name, status], index) => {
+        // Use UPSERT so genders that don't have a DB row yet (e.g. Customize) get created
         db.query(
-            "UPDATE genders SET is_active = ? WHERE name = ?", 
-            [status, name],
+            `INSERT INTO genders (name, is_active, display_order) 
+             VALUES (?, ?, ?) 
+             ON DUPLICATE KEY UPDATE is_active = VALUES(is_active)`,
+            [name, status ? 1 : 0, index + 100],
             (err) => {
                 if (err && !hasError) {
                     hasError = true;

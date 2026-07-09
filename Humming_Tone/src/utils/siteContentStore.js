@@ -122,12 +122,31 @@ export const defaultSiteContent = {
   },
 };
 
-// In-memory cache
+// In-memory cache with TTL
 let cachedContent = null;
 let isInitialized = false;
+let cacheTimestamp = 0;
+const CACHE_TTL_MS = 2 * 60 * 1000; // 2 minutes — ensures user panel picks up admin changes quickly
+
+// Invalidate cache (call after admin saves changes)
+export function invalidateCache() {
+  cachedContent = null;
+  isInitialized = false;
+  cacheTimestamp = 0;
+}
+
+// Check if cache is still valid
+function isCacheValid() {
+  return cachedContent && isInitialized && (Date.now() - cacheTimestamp < CACHE_TTL_MS);
+}
 
 // Fetch content from API
-export async function fetchSiteContent() {
+export async function fetchSiteContent(forceRefresh = false) {
+  // Return cached content if valid and not forced
+  if (!forceRefresh && isCacheValid()) {
+    return cachedContent;
+  }
+
   try {
     const response = await fetch(API_URL);
     if (!response.ok) {
@@ -145,12 +164,14 @@ export async function fetchSiteContent() {
     };
     
     isInitialized = true;
+    cacheTimestamp = Date.now();
     return cachedContent;
   } catch (error) {
     console.error('Error fetching site content:', error);
     // Return default content on error
     cachedContent = defaultSiteContent;
     isInitialized = true;
+    cacheTimestamp = Date.now();
     return defaultSiteContent;
   }
 }

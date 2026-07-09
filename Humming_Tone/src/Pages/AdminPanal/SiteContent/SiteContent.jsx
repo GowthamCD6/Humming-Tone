@@ -8,6 +8,7 @@ import {
   updateGenderCategory,
   updateGenderStatus,
   resetSiteContent,
+  invalidateCache,
 } from "../../../utils/siteContentStore";
 import SettingsIcon from "@mui/icons-material/Settings";
 import BusinessIcon from "@mui/icons-material/Business";
@@ -240,6 +241,8 @@ export default function SiteContent() {
     try {
       setError("");
       await updateGenderStatus(genderStatusDraft);
+      // Invalidate cache so user panel picks up new visibility immediately
+      invalidateCache();
       setModalMessage("Gender visibility saved successfully!");
       setModalOpen(true);
     } catch (e) {

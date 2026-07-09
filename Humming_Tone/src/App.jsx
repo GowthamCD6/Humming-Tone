@@ -1,9 +1,10 @@
 import { useState, useEffect, lazy, Suspense } from "react";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
-import { useLocation } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import Login from "./Pages/LoginPage/Login.jsx";
 import AdminTab from "./components/AdminTab/AdminTab.jsx";
 import UserTab from "./components/UserTab/UserTab.jsx";
+import { fetchSiteContent } from "./utils/siteContentStore";
 
 // User pages (lazy-loaded to avoid loading all tab pages on first paint)
 const Home = lazy(() => import("./Pages/UserPanal/HomePage/Home.jsx"));
@@ -241,49 +242,61 @@ export default function App() {
           <Route
             path="men"
             element={
-              <Suspense fallback={<UserPageLoader />}>
-                <Men />
-              </Suspense>
+              <GenderGuard genderName="Men">
+                <Suspense fallback={<UserPageLoader />}>
+                  <Men />
+                </Suspense>
+              </GenderGuard>
             }
           />
           <Route
             path="women"
             element={
-              <Suspense fallback={<UserPageLoader />}>
-                <Women />
-              </Suspense>
+              <GenderGuard genderName="Women">
+                <Suspense fallback={<UserPageLoader />}>
+                  <Women />
+                </Suspense>
+              </GenderGuard>
             }
           />
           <Route
             path="children"
             element={
-              <Suspense fallback={<UserPageLoader />}>
-                <Children />
-              </Suspense>
+              <GenderGuard genderName="Children">
+                <Suspense fallback={<UserPageLoader />}>
+                  <Children />
+                </Suspense>
+              </GenderGuard>
             }
           />
           <Route
             path="baby"
             element={
-              <Suspense fallback={<UserPageLoader />}>
-                <Baby />
-              </Suspense>
+              <GenderGuard genderName="Baby">
+                <Suspense fallback={<UserPageLoader />}>
+                  <Baby />
+                </Suspense>
+              </GenderGuard>
             }
           />
           <Route
             path="sports"
             element={
-              <Suspense fallback={<UserPageLoader />}>
-                <Sports />
-              </Suspense>
+              <GenderGuard genderName="Sports">
+                <Suspense fallback={<UserPageLoader />}>
+                  <Sports />
+                </Suspense>
+              </GenderGuard>
             }
           />
           <Route
             path="customize"
             element={
-              <Suspense fallback={<UserPageLoader />}>
-                <CustomizePage />
-              </Suspense>
+              <GenderGuard genderName="Customize">
+                <Suspense fallback={<UserPageLoader />}>
+                  <CustomizePage />
+                </Suspense>
+              </GenderGuard>
             }
           />
           <Route
@@ -398,16 +411,71 @@ function ProtectedRoute({ isAuthenticated, userType, requiredType, children }) {
   return children;
 }
 
-const ScrollToTop = () => {
-  const { pathname } = useLocation();
+// Guard component: blocks access to gender pages that the admin has set to inactive
+function GenderGuard({ genderName, children }) {
+  const [status, setStatus] = useState('loading'); // 'loading' | 'active' | 'inactive'
+  const navigate = useNavigate();
 
   useEffect(() => {
-    window.scrollTo({
-      top: 0,
-      left: 0,
-      behavior: "instant", // or "smooth"
+    let cancelled = false;
+    fetchSiteContent(true).then(data => {
+      if (cancelled) return;
+      const genderStatus = data?.genderStatus || {};
+      // If the gender key doesn't exist, default to active
+      const isActive = genderStatus[genderName] !== false;
+      setStatus(isActive ? 'active' : 'inactive');
+    }).catch(() => {
+      if (!cancelled) setStatus('active'); // On error, allow access
     });
-  }, [pathname]);
+    return () => { cancelled = true; };
+  }, [genderName]);
+
+  if (status === 'loading') return <UserPageLoader />;
+
+  if (status === 'inactive') {
+    return (
+      <div className="page-disabled-overlay">
+        <div className="page-disabled-modal">
+          <div className="page-disabled-icon">
+            <svg width="56" height="56" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+              <circle cx="12" cy="12" r="10" />
+              <line x1="4.93" y1="4.93" x2="19.07" y2="19.07" />
+            </svg>
+          </div>
+          <h2 className="page-disabled-title">Page Currently Unavailable</h2>
+          <p className="page-disabled-message">
+            The <strong>{genderName}</strong> section has been temporarily disabled by the administrator. 
+            This page may be undergoing maintenance or updates.
+          </p>
+          <p className="page-disabled-sub">
+            Please check back later or explore our other collections.
+          </p>
+          <button
+            className="page-disabled-btn"
+            onClick={() => navigate('/usertab/home')}
+          >
+            Go Back Home
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  return children;
+}
+
+const ScrollToTop = () => {
+  const { pathname, hash } = useLocation();
+
+  useEffect(() => {
+    if (!hash) {
+      window.scrollTo({
+        top: 0,
+        left: 0,
+        behavior: "instant", // or "smooth"
+      });
+    }
+  }, [pathname, hash]);
 
   return null;
 };

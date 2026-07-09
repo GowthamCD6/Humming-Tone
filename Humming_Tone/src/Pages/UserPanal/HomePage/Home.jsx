@@ -5,13 +5,26 @@ import demoImage from '../../../assets/demo.jpeg';
 import UserFooter from '../../../components/User-Footer-Card/UserFooter';
 import './Home.css';
 import axios from 'axios';  // Import axios
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 
 const Home = ({ onViewDetails = () => {} }) => {
   const [featuredProducts, setFeaturedProducts] = useState([]); // State for featured products
   const [newArrivals, setNewArrivals] = useState([]); // State for new arrivals
   const [loadingFeatured, setLoadingFeatured] = useState(true);
   const [loadingNewArrivals, setLoadingNewArrivals] = useState(true);
+  const location = useLocation();
+
+  useEffect(() => {
+    if (!loadingFeatured && !loadingNewArrivals && location.hash) {
+      const id = location.hash.replace('#', '');
+      const element = document.getElementById(id);
+      if (element) {
+        setTimeout(() => {
+          element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }, 150);
+      }
+    }
+  }, [location, loadingFeatured, loadingNewArrivals]);
 
   // Fetch featured products and new arrivals from the backend
   useEffect(() => {
