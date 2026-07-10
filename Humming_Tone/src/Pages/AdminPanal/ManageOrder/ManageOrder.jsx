@@ -235,6 +235,13 @@ export default function ManageOrder() {
     return date.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true });
   };
 
+  const formatShortDate = (dateStr) => {
+    if (!dateStr) return '—';
+    const d = new Date(dateStr);
+    if (isNaN(d.getTime())) return '—';
+    return d.toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' });
+  };
+
   // Skeleton loader is now handled in the render instead of early return
 
   return (
@@ -317,7 +324,9 @@ export default function ManageOrder() {
                   <option>All Statuses</option>
                   <option>Pending</option>
                   <option>Confirmed</option>
+                  <option>Packed</option>
                   <option>Shipped</option>
+                  <option value="Out_for_delivery">Out for Delivery</option>
                   <option>Delivered</option>
                   <option>Cancelled</option>
                 </select>
@@ -398,6 +407,7 @@ export default function ManageOrder() {
               <th>DATE</th>
               <th>ITEMS</th>
               <th>TOTAL</th>
+              <th>DELIVERY DATE</th>
               <th>STATUS</th>
               <th>PAYMENT</th>
               <th>ACTION</th>
@@ -418,6 +428,7 @@ export default function ManageOrder() {
                       </td>
                       <td><div className="mo-skeleton-cell" style={{ width: '50px' }}></div></td>
                       <td><div className="mo-skeleton-cell" style={{ width: '70px' }}></div></td>
+                      <td><div className="mo-skeleton-cell" style={{ width: '80px', height: '14px' }}></div></td>
                       <td><div className="mo-skeleton-cell" style={{ width: '80px', height: '24px', borderRadius: '12px' }}></div></td>
                       <td><div className="mo-skeleton-cell" style={{ width: '60px', height: '22px', borderRadius: '4px' }}></div></td>
                       <td><div className="mo-skeleton-cell" style={{ width: '80px', height: '32px', borderRadius: '4px' }}></div></td>
@@ -425,7 +436,7 @@ export default function ManageOrder() {
                   ))
                 ) : filteredOrders.length === 0 ? (
                   <tr>
-                    <td colSpan="8">
+                    <td colSpan="9">
                       <div className="no-orders">No orders found matching your filters.</div>
                     </td>
                   </tr>
@@ -445,9 +456,12 @@ export default function ManageOrder() {
                         {order.unique_items_count} items
                       </td>
                       <td className="total-price">₹{parseFloat(order.total_amount).toFixed(2)}</td>
+                      <td className="delivery-date-col">
+                        {formatShortDate(order.delivery_date)}
+                      </td>
                       <td>
-                        <span className={`status-badge ${order.status?.toLowerCase()}`}>
-                          {order.status}
+                        <span className={`status-badge ${order.status?.toLowerCase().replace(/ /g, '_')}`}>
+                          {order.status?.replace(/_/g, ' ')}
                         </span>
                       </td>
                       <td className="payment-info">

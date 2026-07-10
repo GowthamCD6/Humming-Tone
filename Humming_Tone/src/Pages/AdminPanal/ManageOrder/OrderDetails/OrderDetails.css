@@ -580,6 +580,10 @@
   .od-summary-card {
     max-width: 100%;
   }
+
+  .od-dates-grid {
+    grid-template-columns: 1fr;
+  }
 }
 
 @media (max-width: 480px) {
@@ -596,4 +600,91 @@
   .od-item-details {
     justify-content: center;
   }
+}
+
+/* ===== DATES SECTION ===== */
+.od-dates-section {
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  border: 1px solid #e0e0e0;
+  padding: 20px;
+}
+
+.od-dates-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr auto;
+  gap: 16px;
+  align-items: end;
+}
+
+.od-date-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.od-date-label {
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: #666;
+}
+
+.od-date-input {
+  padding: 10px 14px;
+  border: 2px solid #e0e0e0;
+  border-radius: 6px;
+  font-size: 14px;
+  font-family: inherit;
+  transition: border-color 0.2s, box-shadow 0.2s;
+  outline: none;
+  background: #fafafa;
+}
+
+.od-date-input:focus {
+  border-color: #667eea;
+  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.12);
+  background: #fff;
+}
+
+.od-date-action {
+  display: flex;
+  align-items: flex-end;
+}
+
+.od-save-dates-btn {
+  padding: 10px 24px;
+  border: none;
+  border-radius: 6px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: #fff;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: transform 0.2s, box-shadow 0.2s;
+  white-space: nowrap;
+  font-family: inherit;
+}
+
+.od-save-dates-btn:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 14px rgba(102, 126, 234, 0.35);
+}
+
+.od-save-dates-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* ===== NEW STATUS BADGES ===== */
+.od-status-badge.status-packed {
+  background: #e8f5e9;
+  color: #2e7d32;
+}
+
+.od-status-badge.status-out_for_delivery {
+  background: #fff8e1;
+  color: #f57f17;
 }

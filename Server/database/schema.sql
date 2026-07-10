@@ -254,3 +254,13 @@ CREATE TABLE IF NOT EXISTS inventory_materials (
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+
+-- ===== Order Tracking Columns =====
+ALTER TABLE orders
+  ADD COLUMN shipping_date DATE DEFAULT NULL,
+  ADD COLUMN delivery_date DATE DEFAULT NULL,
+  ADD COLUMN packed_at TIMESTAMP NULL DEFAULT NULL;
+
+ALTER TABLE orders MODIFY COLUMN order_status
+  ENUM('pending','confirmed','packed','shipped','out_for_delivery','delivered','cancelled') DEFAULT 'pending';

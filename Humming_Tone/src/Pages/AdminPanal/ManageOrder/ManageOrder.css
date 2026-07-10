@@ -681,6 +681,22 @@
   color: #991b1b;
 }
 
+.status-badge.packed {
+  background: #e8f5e9;
+  color: #2e7d32;
+}
+
+.status-badge.out_for_delivery {
+  background: #fff8e1;
+  color: #f57f17;
+}
+
+.delivery-date-col {
+  font-size: 13px;
+  color: #334155;
+  white-space: nowrap;
+}
+
 .payment-info {
   min-width: 110px;
 }

@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import LocalShippingIcon from '@mui/icons-material/LocalShipping';
+import CalendarMonthIcon from '@mui/icons-material/CalendarMonth';
 import demoImage from '../../../../assets/demo.jpeg';
 import './OrderDetails.css';
 
@@ -13,6 +14,9 @@ export default function OrderDetails() {
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
   const [updating, setUpdating] = useState(false);
+  const [shippingDate, setShippingDate] = useState('');
+  const [deliveryDate, setDeliveryDate] = useState('');
+  const [dateSaving, setDateSaving] = useState(false);
 
   /* ================= FETCH ORDER DATA ================= */
   useEffect(() => {
@@ -59,6 +63,14 @@ export default function OrderDetails() {
           total_amount: calculatedTotal
         });
 
+        // Set date picker initial values
+        if (foundOrder.shipping_date) {
+          setShippingDate(foundOrder.shipping_date.split('T')[0]);
+        }
+        if (foundOrder.delivery_date) {
+          setDeliveryDate(foundOrder.delivery_date.split('T')[0]);
+        }
+
       } catch (error) {
         console.error('Error fetching order data:', error);
       } finally {
@@ -82,7 +94,11 @@ export default function OrderDetails() {
             'Content-Type': 'application/json',
             ...(token ? { 'Authorization': `Bearer ${token}` } : {})
           },
-          body: JSON.stringify({ status: newStatus })
+          body: JSON.stringify({ 
+            status: newStatus,
+            shipping_date: shippingDate || undefined,
+            delivery_date: deliveryDate || undefined
+          })
         }
       );
 
@@ -93,6 +109,41 @@ export default function OrderDetails() {
       console.error('Error updating status:', error);
     } finally {
       setUpdating(false);
+    }
+  };
+
+  /* ================= SAVE DATES ================= */
+  const handleSaveDates = async () => {
+    setDateSaving(true);
+    try {
+      const token = localStorage.getItem('adminToken');
+      const res = await fetch(
+        `http://localhost:5000/api/orders/${orderId}/status`,
+        {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+            ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+          },
+          body: JSON.stringify({
+            status: order.status,
+            shipping_date: shippingDate || null,
+            delivery_date: deliveryDate || null
+          })
+        }
+      );
+
+      if (res.ok) {
+        setOrder(prev => ({
+          ...prev,
+          shipping_date: shippingDate || null,
+          delivery_date: deliveryDate || null
+        }));
+      }
+    } catch (error) {
+      console.error('Error saving dates:', error);
+    } finally {
+      setDateSaving(false);
     }
   };
 
@@ -148,19 +199,56 @@ export default function OrderDetails() {
       {/* Status Bar */}
       <div className="od-status-bar">
         <span className={`od-status-badge ${getStatusClass(order.status)}`}>
-          {order.status.toUpperCase()}
+          {order.status.replace(/_/g, ' ').toUpperCase()}
         </span>
 
         <div className="od-status-buttons">
-          {['pending', 'confirmed', 'shipped', 'delivered', 'cancelled'].map(s => (
+          {['pending', 'confirmed', 'packed', 'shipped', 'out_for_delivery', 'delivered', 'cancelled'].map(s => (
             <button
               key={s}
               disabled={updating || order.status === s}
               onClick={() => handleStatusUpdate(s)}
             >
-              {s}
+              {s.replace(/_/g, ' ')}
             </button>
           ))}
+        </div>
+      </div>
+
+      {/* Shipping & Delivery Dates */}
+      <div className="od-dates-section">
+        <h3 className="od-section-title">
+          <CalendarMonthIcon style={{ fontSize: '20px', verticalAlign: 'middle', marginRight: '6px' }} />
+          Shipping & Delivery Dates
+        </h3>
+        <div className="od-dates-grid">
+          <div className="od-date-group">
+            <label className="od-date-label">Shipping Date</label>
+            <input
+              type="date"
+              className="od-date-input"
+              value={shippingDate}
+              onChange={(e) => setShippingDate(e.target.value)}
+            />
+          </div>
+          <div className="od-date-group">
+            <label className="od-date-label">Expected Delivery Date</label>
+            <input
+              type="date"
+              className="od-date-input"
+              value={deliveryDate}
+              onChange={(e) => setDeliveryDate(e.target.value)}
+            />
+          </div>
+          <div className="od-date-group od-date-action">
+            <button
+              className="od-save-dates-btn"
+              onClick={handleSaveDates}
+              disabled={dateSaving}
+            >
+              {dateSaving ? 'Saving...' : 'Save Dates'}
+            </button>
+          </div>
         </div>
       </div>
 

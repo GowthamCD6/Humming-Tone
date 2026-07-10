@@ -33,6 +33,9 @@ const PaymentSuccess = lazy(() =>
 const PaymentFailure = lazy(() =>
   import("./Pages/UserPanal/PayementFailure/PaymentFailure.jsx")
 );
+const OrderTracking = lazy(() =>
+  import("./Pages/UserPanal/OrderTracking/OrderTracking.jsx")
+);
 
 // Support pages
 const PrivacyPolicy = lazy(() =>
@@ -336,6 +339,14 @@ export default function App() {
             element={
               <Suspense fallback={<UserPageLoader />}>
                 <PaymentFailure />
+              </Suspense>
+            }
+          />
+          <Route
+            path="track-order"
+            element={
+              <Suspense fallback={<UserPageLoader />}>
+                <OrderTracking />
               </Suspense>
             }
           />

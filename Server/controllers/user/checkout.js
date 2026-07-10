@@ -286,12 +286,28 @@ exports.verify_payment = (req,res,next) => {
     if(!order_number || order_number.trim() == ""){
       return next(createError.BadRequest('Invalid order_id!'));
     }
-    let fetchSql = "select payment_verified, payment_status from orders where order_number = ?";
+    let fetchSql = `SELECT payment_verified, payment_status, order_status, 
+                     shipping_date, delivery_date, created_at, 
+                     customer_name, customer_email, customer_phone
+                     FROM orders WHERE order_number = ?`;
     db.query(fetchSql,[order_number],(error,result) => {
       if(error)return next(error);
+      if(!result || result.length === 0){
+        return res.status(404).json({ msg: "Order not found" });
+      }
       if(result[0].payment_verified && result[0].payment_status == "captured"){
         return res.status(200).json({
-          "msg":"payment verified"
+          "msg":"payment verified",
+          order: {
+            order_number,
+            order_status: result[0].order_status,
+            shipping_date: result[0].shipping_date,
+            delivery_date: result[0].delivery_date,
+            created_at: result[0].created_at,
+            customer_name: result[0].customer_name,
+            customer_email: result[0].customer_email,
+            customer_phone: result[0].customer_phone
+          }
         })
       }
       else if(!result[0].payment_verified || result[0].payment_status == "failed"){
@@ -302,6 +318,76 @@ exports.verify_payment = (req,res,next) => {
     })
   }
   catch(error){
+    next(error);
+  }
+}
+
+exports.track_order = async (req, res, next) => {
+  try {
+    const { order_number, email, phone } = req.body;
+
+    if (!order_number || order_number.trim() === "") {
+      return next(createError.BadRequest("Order number is required"));
+    }
+
+    if ((!email || email.trim() === "") && (!phone || phone.trim() === "")) {
+      return next(createError.BadRequest("Email or phone is required"));
+    }
+
+    // Build query based on whether email or phone is provided
+    let sql = `SELECT id, order_number, customer_name, customer_email, customer_phone,
+               order_status, shipping_date, delivery_date, packed_at, created_at,
+               total_amount, payment_status, payment_verified
+               FROM orders WHERE order_number = ?`;
+    const params = [order_number];
+
+    if (email && email.trim() !== "") {
+      sql += " AND customer_email = ?";
+      params.push(email.trim());
+    } else if (phone && phone.trim() !== "") {
+      sql += " AND customer_phone = ?";
+      params.push(phone.trim());
+    }
+
+    sql += " LIMIT 1";
+
+    const [orderRows] = await db.promise().query(sql, params);
+
+    if (!orderRows || orderRows.length === 0) {
+      return res.status(404).json({
+        success: false,
+        message: "No order found. Please check your Order ID and Email/Phone."
+      });
+    }
+
+    const order = orderRows[0];
+
+    // Fetch order items
+    const [items] = await db.promise().query(
+      `SELECT oi.product_name, oi.product_price, oi.quantity, oi.size, oi.color
+       FROM order_items oi WHERE oi.order_id = ?`,
+      [order.id]
+    );
+
+    res.status(200).json({
+      success: true,
+      order: {
+        order_number: order.order_number,
+        customer_name: order.customer_name,
+        order_status: order.order_status,
+        shipping_date: order.shipping_date,
+        delivery_date: order.delivery_date,
+        packed_at: order.packed_at,
+        created_at: order.created_at,
+        total_amount: order.total_amount,
+        payment_status: order.payment_status,
+        payment_verified: order.payment_verified,
+        items
+      }
+    });
+
+  } catch (error) {
+    console.error("Track order error:", error);
     next(error);
   }
 }

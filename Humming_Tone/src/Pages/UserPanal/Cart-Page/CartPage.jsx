@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import './CartPage.css';
 import UserFooter from '../../../components/User-Footer-Card/UserFooter';
+import LocalShippingIcon from '@mui/icons-material/LocalShipping';
 import { useLocation } from "react-router-dom";
 
 
@@ -114,6 +115,13 @@ const PremiumCart = ({ onCheckout }) => {
               onClick={() => navigate('/usertab/all-products')}
             >
               Continue Shopping
+            </button>
+            <button
+              className="userpanal-cart-btn userpanal-cart-btn-track"
+              onClick={() => navigate('/usertab/track-order')}
+            >
+              <LocalShippingIcon style={{ fontSize: '1.1rem' }} />
+              Track My Order
             </button>
           </div>
         </div>
@@ -260,6 +268,13 @@ const PremiumCart = ({ onCheckout }) => {
                   onClick={handleCheckout}
                 >
                   Proceed to Checkout
+                </button>
+                <button
+                  className="userpanal-cart-track-btn"
+                  onClick={() => navigate('/usertab/track-order')}
+                >
+                  <LocalShippingIcon style={{ fontSize: '1rem' }} />
+                  Track My Order
                 </button>
               </div>
             </div>

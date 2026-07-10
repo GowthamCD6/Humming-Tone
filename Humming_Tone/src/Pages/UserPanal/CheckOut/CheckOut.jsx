@@ -126,16 +126,50 @@ const handleCheckout = async (e) => {
       handler: function (response) {
         console.log("Payment success:", response);
 
+        // Save order to localStorage for tracking
+        const orderInfo = {
+          order_number: result.data.order_number,
+          customer_email: formData.customer_email,
+          customer_phone: formData.customer_phone,
+          created_at: new Date().toISOString(),
+        };
+        const existingOrders = JSON.parse(localStorage.getItem("my_orders")) || [];
+        const alreadyExists = existingOrders.some(o => o.order_number === result.data.order_number);
+        if (!alreadyExists) {
+          existingOrders.unshift(orderInfo);
+          if (existingOrders.length > 20) existingOrders.pop();
+          localStorage.setItem("my_orders", JSON.stringify(existingOrders));
+        }
+
         // clear cart ONLY after payment
         localStorage.removeItem("cart");
+        window.dispatchEvent(new Event('cart:updated'));
 
-        alert("Payment successful");
-        navigate("/usertab/home");
+        navigate("/usertab/payment-success", {
+          state: {
+            order_number: result.data.order_number,
+            customer_email: formData.customer_email,
+            customer_phone: formData.customer_phone,
+          },
+        });
       },
 
       modal: {
         ondismiss: function () {
           console.log("Payment popup closed");
+          navigate("/usertab/payment-failure", {
+            state: {
+              failureData: {
+                errorCode: "PAYMENT_CANCELLED",
+                errorMessage: "You closed the payment window before completing the transaction.",
+                timestamp: new Date().toISOString(),
+                transactionId: result.data.order_number,
+                amount: Number(amount) / 100,
+                reason: "Payment was cancelled by the user",
+                attemptedPaymentMethod: "Razorpay"
+              }
+            }
+          });
         },
       },
     };

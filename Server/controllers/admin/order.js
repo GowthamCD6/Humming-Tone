@@ -14,6 +14,8 @@ exports.getManageOrders = async (req, res) => {
                 o.total_amount,
                 o.payment_id,
                 o.order_status AS status,
+                o.shipping_date,
+                o.delivery_date,
                 COUNT(oi.id) AS unique_items_count,
                 IFNULL(SUM(oi.quantity), 0) AS total_qty
             FROM orders o
@@ -57,20 +59,43 @@ exports.getOrderItems = (req,res,next) => {
 exports.updateOrderStatus = async (req, res, next) => {
     try {
         const { orderId } = req.params;
-        const { status } = req.body;
+        const { status, shipping_date, delivery_date } = req.body;
 
         if (!orderId || !status) {
             return next(createError.BadRequest('Order ID and status are required'));
         }
 
         // Validate status
-        const validStatuses = ['pending', 'confirmed', 'shipped', 'delivered', 'cancelled'];
+        const validStatuses = ['pending', 'confirmed', 'packed', 'shipped', 'out_for_delivery', 'delivered', 'cancelled'];
         if (!validStatuses.includes(status.toLowerCase())) {
             return next(createError.BadRequest('Invalid status value'));
         }
 
-        const sql = "UPDATE orders SET order_status = ? WHERE id = ?";
-        const [result] = await db.promise().query(sql, [status, orderId]);
+        // Build dynamic update
+        let sql = "UPDATE orders SET order_status = ?";
+        const params = [status];
+
+        // Auto-set packed_at when status moves to packed
+        if (status.toLowerCase() === 'packed') {
+            sql += ", packed_at = NOW()";
+        }
+
+        // Update shipping_date if provided
+        if (shipping_date !== undefined) {
+            sql += ", shipping_date = ?";
+            params.push(shipping_date || null);
+        }
+
+        // Update delivery_date if provided
+        if (delivery_date !== undefined) {
+            sql += ", delivery_date = ?";
+            params.push(delivery_date || null);
+        }
+
+        sql += " WHERE id = ?";
+        params.push(orderId);
+
+        const [result] = await db.promise().query(sql, params);
 
         if (result.affectedRows === 0) {
             return next(createError.NotFound('Order not found'));
@@ -87,3 +112,4 @@ exports.updateOrderStatus = async (req, res, next) => {
         next(error);
     }
 }
+

@@ -512,6 +512,8 @@
     margin-top: 3rem;
     display: flex;
     justify-content: flex-start;
+    gap: 1.5rem;
+    flex-wrap: wrap;
 }
 
 .userpanal-cart-checkout-btn {
@@ -536,6 +538,57 @@
     position: relative;
     overflow: hidden;
 }
+
+.userpanal-cart-track-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    padding: 1.25rem 3rem;
+    background: transparent;
+    color: #1a1a1a;
+    border: 2px solid #1a1a1a;
+    border-radius: 0;
+    text-decoration: none;
+    font-weight: 600;
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    cursor: pointer;
+    font-family: 'Poppins', sans-serif;
+    font-size: 13px;
+    width: fit-content;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    position: relative;
+    overflow: hidden;
+}
+
+.userpanal-cart-track-btn:hover {
+    background: #1a1a1a;
+    color: white;
+    transform: translateY(-4px);
+    box-shadow: 0 16px 48px rgba(0, 0, 0, 0.15);
+}
+
+.userpanal-cart-track-btn:active {
+    transform: translateY(-2px);
+}
+
+.userpanal-cart-btn-track {
+    background: transparent;
+    color: #1a1a1a;
+    border: 2px solid #1a1a1a;
+    margin-left: 1.5rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.userpanal-cart-btn-track:hover {
+    background: #1a1a1a;
+    color: white;
+    transform: translateY(-4px);
+}
+
 
 .userpanal-cart-checkout-btn::before {
     content: '';

@@ -148,6 +148,177 @@
   font-size: 0.9rem;
 }
 
+/* Order Number highlight */
+.ps-order-number {
+  font-family: "Roboto Mono", monospace, "Consolas", monospace;
+  font-size: 0.95rem;
+  letter-spacing: 0.02em;
+}
+
+/* Date items */
+.ps-date-item {
+  border-left: 3px solid #667eea;
+}
+
+.ps-delivery {
+  border-left-color: #16a34a;
+}
+
+.ps-delivery-value {
+  color: #16a34a;
+  font-weight: 700;
+}
+
+/* Track Order Button */
+.btn-track {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: #ffffff;
+}
+
+.btn-track:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(102, 126, 234, 0.35);
+}
+
+/* Copy Order ID Modal Styles */
+.ps-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.4);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  animation: psFadeIn 0.3s ease-out;
+}
+
+@keyframes psFadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.ps-modal {
+  background: white;
+  width: 90%;
+  max-width: 500px;
+  border-radius: 0;
+  border: 1px solid #e8e8e8;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
+  overflow: hidden;
+  position: relative;
+  animation: psScaleUp 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.ps-modal::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, #1a1a1a 0%, #666 50%, #1a1a1a 100%);
+}
+
+@keyframes psScaleUp {
+  from { transform: scale(0.95); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
+}
+
+.ps-modal-header {
+  padding: 2rem 2rem 1rem;
+}
+
+.ps-modal-header h2 {
+  font-family: 'Playfair Display', serif;
+  font-size: 1.8rem;
+  font-weight: 300;
+  margin: 0;
+  color: #1a1a1a;
+  letter-spacing: -0.01em;
+}
+
+.ps-modal-body {
+  padding: 1rem 2rem 2rem;
+}
+
+.ps-modal-msg {
+  font-size: 0.95rem;
+  color: #555;
+  line-height: 1.6;
+  margin-bottom: 1.5rem;
+}
+
+.ps-copy-box {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border: 2px solid #e8e8e8;
+  padding: 0.75rem 1rem;
+  background: #fafafa;
+  gap: 1rem;
+}
+
+.ps-modal-order-number {
+  font-family: "Roboto Mono", monospace, "Consolas", monospace;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #1a1a1a;
+  word-break: break-all;
+}
+
+.ps-copy-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  background: #1a1a1a;
+  color: white;
+  border: none;
+  padding: 0.6rem 1.2rem;
+  font-size: 0.8rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-family: 'Poppins', sans-serif;
+  flex-shrink: 0;
+}
+
+.ps-copy-btn:hover {
+  background: #000;
+}
+
+.ps-modal-footer {
+  padding: 1.5rem 2rem;
+  border-top: 1px solid #f5f5f5;
+  display: flex;
+  justify-content: flex-end;
+  background: #fafafa;
+}
+
+.ps-modal-close-btn {
+  background: transparent;
+  border: 2px solid #1a1a1a;
+  color: #1a1a1a;
+  padding: 0.75rem 1.5rem;
+  font-size: 0.8rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-family: 'Poppins', sans-serif;
+}
+
+.ps-modal-close-btn:hover {
+  background: #1a1a1a;
+  color: white;
+}
+
 /* Responsive */
 @media (max-width: 768px) {
   .payment-result {
