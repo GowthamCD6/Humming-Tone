@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import LocalShippingIcon from "@mui/icons-material/LocalShipping";
 import SearchIcon from "@mui/icons-material/Search";
@@ -60,32 +60,7 @@ const OrderTracking = () => {
     setMyOrders(saved);
   }, []);
 
-  // Auto-track on mount if navigated with state OR if saved tracking credentials exist
-  useEffect(() => {
-    if (location.state?.order_number) {
-      const { order_number, customer_email, customer_phone } = location.state;
-      setOrderNumber(order_number);
-      const contactVal = customer_email || customer_phone || "";
-      const contactTyp = customer_email ? "email" : "phone";
-      setContactType(contactTyp);
-      setContactValue(contactVal);
-      handleTrackOrder(order_number, customer_email, customer_phone);
-    } else {
-      const savedOrderNo = localStorage.getItem("ot_order_number");
-      const savedContactVal = localStorage.getItem("ot_contact_value");
-      const savedContactType = localStorage.getItem("ot_contact_type") || "email";
-
-      if (savedOrderNo && savedContactVal) {
-        handleTrackOrder(
-          savedOrderNo,
-          savedContactType === "email" ? savedContactVal : "",
-          savedContactType === "phone" ? savedContactVal : ""
-        );
-      }
-    }
-  }, []);
-
-  const handleTrackOrder = async (orderNum, email, phone) => {
+  const handleTrackOrder = useCallback(async (orderNum, email, phone) => {
     const oNum = orderNum || orderNumber;
     const eml = email || (contactType === "email" ? contactValue : "");
     const phn = phone || (contactType === "phone" ? contactValue : "");
@@ -135,7 +110,32 @@ const OrderTracking = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [orderNumber, contactType, contactValue]);
+
+  // Auto-track on mount if navigated with state OR if saved tracking credentials exist
+  useEffect(() => {
+    if (location.state?.order_number) {
+      const { order_number, customer_email, customer_phone } = location.state;
+      setOrderNumber(order_number);
+      const contactVal = customer_email || customer_phone || "";
+      const contactTyp = customer_email ? "email" : "phone";
+      setContactType(contactTyp);
+      setContactValue(contactVal);
+      handleTrackOrder(order_number, customer_email, customer_phone);
+    } else {
+      const savedOrderNo = localStorage.getItem("ot_order_number");
+      const savedContactVal = localStorage.getItem("ot_contact_value");
+      const savedContactType = localStorage.getItem("ot_contact_type") || "email";
+
+      if (savedOrderNo && savedContactVal) {
+        handleTrackOrder(
+          savedOrderNo,
+          savedContactType === "email" ? savedContactVal : "",
+          savedContactType === "phone" ? savedContactVal : ""
+        );
+      }
+    }
+  }, [location.state, handleTrackOrder]);
 
   const handleQuickTrack = (savedOrder) => {
     setOrderNumber(savedOrder.order_number);

@@ -21,6 +21,7 @@ const adminCustomizeRoutes = require('./routes/admin/customize')
 const adminInventoryRoutes = require('./routes/admin/inventory')
 const adminAuth = require('./middlewares/adminAuth');
 const adminUsersRoute = require("./routes/admin/adminUsers");
+const adminWhatsAppRoute = require("./routes/admin/whatsapp");
 const app = express();
 const PORT = process.env.PORT || 5000;
 const path = require('path');
@@ -68,6 +69,7 @@ app.use('/api', adminCustomizeRoutes);
 app.use("/", adminPromoRoute);
 app.use('/api', productRoutes);
 app.use("/", adminUsersRoute);
+app.use("/api", adminWhatsAppRoute);
 // User routes
 app.use("/", userProductRoute);
 app.use("/", userPromoRoutes);

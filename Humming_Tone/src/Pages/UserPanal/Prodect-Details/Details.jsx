@@ -27,7 +27,7 @@ const ProductDetailPage = () => {
     return JSON.parse(localStorage.getItem("cart")) || [];
   };
 
-  const checkIfInCart = (size) => {
+  const _checkIfInCart = (size) => {
     const cart = getCart();
     return cart.some((item) => item.id === product.id && item.size === size);
   };
@@ -77,46 +77,6 @@ const ProductDetailPage = () => {
     setIsInCart(false);
   };
 
-  /* ================= PRODUCT DETAILS ================= */
-  useEffect(() => {
-    const fetchProduct = async () => {
-      try {
-        const res = await fetch(
-          `http://localhost:5000/user/fetch_variants/${id}`
-        );
-        const data = await res.json();
-
-        setProduct(data);
-
-        if (data.images?.length) {
-          const sortedImages = [...data.images].sort(
-            (a, b) => b.is_primary - a.is_primary
-          );
-          setProductImages(
-            sortedImages.map((img) => `http://localhost:5000/${img.image_path}`)
-          );
-        }
-
-        if (data.variants) {
-          setSizes(data.variants);
-        }
-
-        fetchRecommendations(data.category_id);
-      } catch (err) {
-        console.error(err);
-      }
-    };
-
-    fetchProduct();
-  }, [id]);
-
-  /* ================= CHECK CART ON SIZE CHANGE ================= */
-  useEffect(() => {
-    if (product && selectedSize) {
-      setIsInCart(checkIfInCart(selectedSize));
-    }
-  }, [selectedSize, product]);
-
   /* ================= RECOMMENDATIONS ================= */
   const fetchRecommendations = async (categoryId) => {
     try {
@@ -137,6 +97,51 @@ const ProductDetailPage = () => {
       console.error(err);
     }
   };
+
+  /* ================= FETCH PRODUCT DETAILS ================= */
+  useEffect(() => {
+    const fetchProduct = async () => {
+      try {
+        const res = await fetch(
+          `http://localhost:5000/user/fetch_products_details/${id}`
+        );
+        const data = await res.json();
+
+        setProduct(data);
+
+        // Sorting images by display_order
+        if (data.images && data.images.length > 0) {
+          const sortedImages = data.images.sort(
+            (a, b) => a.display_order - b.display_order
+          );
+          setProductImages(
+            sortedImages.map((img) => `http://localhost:5000/${img.image_path}`)
+          );
+        }
+
+        if (data.variants) {
+          setSizes(data.variants);
+        }
+
+        if (data.category_id) {
+          fetchRecommendations(data.category_id);
+        }
+      } catch (err) {
+        console.error(err);
+      }
+    };
+
+    fetchProduct();
+  }, [id]);
+
+  /* ================= CHECK CART ON SIZE CHANGE ================= */
+  useEffect(() => {
+    if (product && selectedSize) {
+      const cart = JSON.parse(localStorage.getItem("cart")) || [];
+      const inCart = cart.some((item) => item.id === product.id && item.size === selectedSize);
+      requestAnimationFrame(() => setIsInCart(inCart));
+    }
+  }, [selectedSize, product]);
 
   if (!product) return null;
 

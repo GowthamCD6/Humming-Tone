@@ -153,13 +153,19 @@ exports.fetch_featured_products = (req, res, next) => {
 
 exports.fetch_recommendations = (req, res, next) => {
   try {
-    const category_id = req.body.category_id;
+    const category_id = req.body?.category_id || req.query?.category_id;
     const page = parseInt(req.query.page) || 1;
     const limit = parseInt(req.query.limit) || 3;
     const offset = (page - 1) * limit;
 
     if (!category_id) {
-      return next(createError.BadRequest('invalid category id!'));
+      // Return empty recommendations gracefully rather than failing with 400
+      return res.status(200).json({
+        page,
+        limit,
+        count: 0,
+        data: []
+      });
     }
 
     const sql = `

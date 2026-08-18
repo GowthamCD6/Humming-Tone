@@ -1,5 +1,6 @@
 const db = require("../../config/db");
 const createError = require("http-errors");
+const { sendOrderStatusUpdateWhatsApp } = require("../../utils/whatsapp");
 
 exports.getManageOrders = async (req, res) => {
     try {
@@ -11,6 +12,10 @@ exports.getManageOrders = async (req, res) => {
                 o.customer_email,
                 o.customer_phone,
                 o.created_at,
+                o.subtotal,
+                o.discount_amount,
+                o.shipping,
+                o.gst_amount,
                 o.total_amount,
                 o.payment_id,
                 o.order_status AS status,
@@ -101,10 +106,29 @@ exports.updateOrderStatus = async (req, res, next) => {
             return next(createError.NotFound('Order not found'));
         }
 
+        // Fetch updated order record to send WhatsApp delivery/status update
+        let whatsappResult = null;
+        try {
+            const [orderRows] = await db.promise().query(
+                "SELECT * FROM orders WHERE id = ? LIMIT 1",
+                [orderId]
+            );
+            if (orderRows.length > 0 && orderRows[0].customer_phone) {
+                whatsappResult = await sendOrderStatusUpdateWhatsApp(orderRows[0], {
+                    status,
+                    shipping_date: shipping_date !== undefined ? shipping_date : orderRows[0].shipping_date,
+                    delivery_date: delivery_date !== undefined ? delivery_date : orderRows[0].delivery_date
+                });
+            }
+        } catch (waErr) {
+            console.error("WhatsApp status notification error:", waErr.message);
+        }
+
         res.status(200).json({ 
             success: true, 
             message: 'Order status updated successfully',
-            status: status
+            status: status,
+            whatsapp: whatsappResult
         });
 
     } catch (error) {

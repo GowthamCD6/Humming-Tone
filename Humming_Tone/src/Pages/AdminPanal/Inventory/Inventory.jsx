@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState, useCallback } from 'react';
 import { Package, AlertTriangle, XCircle, DollarSign, Search, Plus, ChevronLeft, ChevronRight, Edit, X, Trash2 } from 'lucide-react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import './Inventory.css';
@@ -82,7 +82,7 @@ const InventoryDashboard = () => {
     }
   };
 
-  const handleSaveStock = async () => {
+  const _handleSaveStock = async () => {
     try {
       setLoading(true);
       const res = await axios.patch(`${API_BASE_URL}/update_inventory/${editingItem.materialId}`, {
@@ -122,55 +122,55 @@ const InventoryDashboard = () => {
     }
   };
 
-  const fetchInventory = async () => {
-      try {
-        setLoading(true);
-        setError(null);
-        const response = await axios.get(`${API_BASE_URL}/fetch_inventory`);
-        const data = response.data?.data || [];
-        const mapped = data.map((item) => {
-          const stock = Number(item.current_stock || 0);
-          const reorder = Number(item.reorder_level || item.reorder_point || 0);
-          const cost = Number(item.standard_cost || 0);
-          const statusMeta = mapStatus(stock, reorder);
-          return {
-            code: item.material_code,
-            name: item.material_name,
-            supplierName: item.preferred_supplier || '-',
-            supplier: item.preferred_supplier ? `Supplier: ${item.preferred_supplier}` : 'Supplier: -',
-            category: item.category || '-',
-            gender: item.gender || '-',
-            productId: item.product_id,
-            color: item.color || '',
-            material: item.material || '',
-            careInstructions: item.care_instructions || '',
-            ageRange: item.age_range || '',
-            weight: item.weight || '',
-            dimensions: item.dimensions || '',
-            about: item.about || '',
-            rawStock: stock,
-            standardCost: cost,
-            stock: stock.toLocaleString(),
-            stockColor: statusMeta.stockColor,
-            unit: item.unit_of_measurement || '-',
-            reorder: reorder.toLocaleString(),
-            status: statusMeta.status,
-            statusClass: statusMeta.statusClass,
-            materialId: item.material_id,
-          };
-        });
-        setAllMaterials(mapped);
-      } catch (err) {
-        console.error('Failed to fetch inventory:', err);
-        setError('Failed to load inventory');
-      } finally {
-        setLoading(false);
-      }
-    };
+  const fetchInventory = useCallback(async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      const response = await axios.get(`${API_BASE_URL}/fetch_inventory`);
+      const data = response.data?.data || [];
+      const mapped = data.map((item) => {
+        const stock = Number(item.current_stock || 0);
+        const reorder = Number(item.reorder_level || item.reorder_point || 0);
+        const cost = Number(item.standard_cost || 0);
+        const statusMeta = mapStatus(stock, reorder);
+        return {
+          code: item.material_code,
+          name: item.material_name,
+          supplierName: item.preferred_supplier || '-',
+          supplier: item.preferred_supplier ? `Supplier: ${item.preferred_supplier}` : 'Supplier: -',
+          category: item.category || '-',
+          gender: item.gender || '-',
+          productId: item.product_id,
+          color: item.color || '',
+          material: item.material || '',
+          careInstructions: item.care_instructions || '',
+          ageRange: item.age_range || '',
+          weight: item.weight || '',
+          dimensions: item.dimensions || '',
+          about: item.about || '',
+          rawStock: stock,
+          standardCost: cost,
+          stock: stock.toLocaleString(),
+          stockColor: statusMeta.stockColor,
+          unit: item.unit_of_measurement || '-',
+          reorder: reorder.toLocaleString(),
+          status: statusMeta.status,
+          statusClass: statusMeta.statusClass,
+          materialId: item.material_id,
+        };
+      });
+      setAllMaterials(mapped);
+    } catch (err) {
+      console.error('Failed to fetch inventory:', err);
+      setError('Failed to load inventory');
+    } finally {
+      setLoading(false);
+    }
+  }, []);
 
   useEffect(() => {
     fetchInventory();
-  }, []);
+  }, [fetchInventory]);
 
   // Re-fetch when returning from GoodsInventory after adding a material
   useEffect(() => {
@@ -179,7 +179,7 @@ const InventoryDashboard = () => {
       // Clear the state so it doesn't fire again
       navigate(location.pathname, { replace: true, state: {} });
     }
-  }, [location.state]);
+  }, [location.state, fetchInventory, location.pathname, navigate]);
 
   const categoryTabs = useMemo(() => {
     let filtered = allMaterials;
@@ -696,7 +696,7 @@ const InventoryDashboard = () => {
             
             <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '12px' }}>
               <button className="btn-page" onClick={() => setShowEditModal(false)}>Cancel</button>
-              <button className="inv-btn-primary" onClick={handleSaveStock} disabled={loading}>
+              <button className="inv-btn-primary" onClick={submitUpdate} disabled={loading}>
                 {loading ? 'Saving...' : 'Save Changes'}
               </button>
             </div>

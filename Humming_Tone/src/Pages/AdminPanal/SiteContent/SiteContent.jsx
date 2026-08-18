@@ -134,7 +134,7 @@ export default function SiteContent() {
     });
   };
 
-  const removeGender = (gender) => {
+  const _removeGender = (gender) => {
     if (!confirm(`Remove gender "${gender}"?`)) return;
     setGenderCategoryDraft((prev) => {
       const next = { ...(prev || {}) };
@@ -167,7 +167,7 @@ export default function SiteContent() {
     });
   };
 
-  const addShopLink = () => {
+  const _addShopLink = () => {
     const label = prompt('Enter link label (e.g., "New Collection")');
     if (!label) return;
     const href = prompt('Enter link URL (e.g., "/new-collection")');
@@ -179,14 +179,14 @@ export default function SiteContent() {
     }));
   };
 
-  const removeShopLink = (index) => {
+  const _removeShopLink = (index) => {
     setFooterDraft((prev) => ({
       ...prev,
       shopLinks: prev?.shopLinks?.filter((_, i) => i !== index) || [],
     }));
   };
 
-  const addSupportLink = () => {
+  const _addSupportLink = () => {
     const label = prompt('Enter support link label (e.g., "Contact Us")');
     if (!label) return;
     const href = prompt('Enter link URL (e.g., "/contact")');
@@ -223,7 +223,7 @@ export default function SiteContent() {
     });
   };
 
-  const removeSupportLink = (index) => {
+  const _removeSupportLink = (index) => {
     setFooterDraft((prev) => ({
       ...prev,
       supportLinks: prev?.supportLinks?.filter((_, i) => i !== index) || [],
@@ -250,7 +250,7 @@ export default function SiteContent() {
     }
   };
 
-  const resetAll = async () => {
+  const _resetAll = async () => {
     if (!confirm("Reset all content to defaults? This action cannot be undone."))
       return;
     const defaults = resetSiteContent();

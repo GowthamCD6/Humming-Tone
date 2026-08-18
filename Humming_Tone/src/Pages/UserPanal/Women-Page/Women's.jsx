@@ -2,11 +2,11 @@ import React, { useState, useEffect } from 'react';
 import demoImage from '../../../assets/demo.jpeg';
 import UserFooter from '../../../components/User-Footer-Card/UserFooter';
 import './Women.css';
-import { getGenderOptions, getCategoryOptionsForGender } from '../../../utils/siteContentStore';
+import { getGenderOptions } from '../../../utils/siteContentStore';
 import axios from 'axios';
 import { Link } from 'react-router-dom';
 
-const Women = ({ onViewDetails = () => {} }) => {
+const Women = ({ onViewDetails: _onViewDetails = () => {} }) => {
   const [selectedGender, setSelectedGender] = useState('Women');
   const [selectedCategory, setSelectedCategory] = useState('All Categories');
   const [products, setProducts] = useState([]);

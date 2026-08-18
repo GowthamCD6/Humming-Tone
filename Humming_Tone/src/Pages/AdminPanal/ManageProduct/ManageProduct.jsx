@@ -178,7 +178,7 @@ export default function ManageProducts() {
       if (res.data && res.data.variants) {
         let variants = res.data.variants;
         if (typeof variants === 'string') {
-          try { variants = JSON.parse(variants); } catch (e) { variants = []; }
+          try { variants = JSON.parse(variants); } catch { variants = []; }
         }
         setProductSizes((variants || []).map(v => v.size).filter(Boolean));
       }

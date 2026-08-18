@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import UserFooter from '../../../components/User-Footer-Card/UserFooter';
 import './Baby.css';
-import { getGenderOptions, getCategoryOptionsForGender } from '../../../utils/siteContentStore';
+import { getGenderOptions } from '../../../utils/siteContentStore';
 import axios from 'axios';  // Import axios
 import { Link } from 'react-router-dom';
 
-const Baby = ({ onViewDetails = () => {} }) => {
+const Baby = ({ onViewDetails: _onViewDetails = () => {} }) => {
   const [selectedGender, setSelectedGender] = useState('Baby');  // Default to 'Baby'
   const [selectedCategory, setSelectedCategory] = useState('All Categories');
   const [products, setProducts] = useState([]);  // Empty array for "No Products Found" state
@@ -63,7 +63,7 @@ const Baby = ({ onViewDetails = () => {} }) => {
     setProducts(allProducts); // Reset products when filters are cleared
   };
 
-  const handleViewAll = () => {
+  const _handleViewAll = () => {
     console.log('View all products');
     setProducts([]);  // Clear current product list if needed
   };

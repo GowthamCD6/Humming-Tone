@@ -172,7 +172,7 @@ const UserTab = () => {
               <div className="nav-loading">Loading...</div>
             ) : (
               <ul className="user-nav-menu">
-                {navItems.map(({ path, label, Icon }) => (
+                {navItems.map(({ path, label, Icon: _Icon }) => (
                   <li key={path} className="user-nav-item">
                     <NavLink
                       to={path}
@@ -181,7 +181,7 @@ const UserTab = () => {
                       }
                       end
                     >
-                      <Icon className="user-nav-icon" />
+                      <_Icon className="user-nav-icon" />
                       <span>{label}</span>
                     </NavLink>
                   </li>
@@ -230,7 +230,7 @@ const UserTab = () => {
             <div className="nav-loading">Loading...</div>
           ) : (
             <ul className="mobile-nav-menu">
-              {navItems.map(({ path, label, Icon }) => (
+              {navItems.map(({ path, label, Icon: _Icon }) => (
                 <li key={path} className="mobile-nav-item">
                   <NavLink
                     to={path}
@@ -240,7 +240,7 @@ const UserTab = () => {
                     onClick={() => setMobileMenuOpen(false)}
                     end
                   >
-                    <Icon className="mobile-nav-icon" />
+                    <_Icon className="mobile-nav-icon" />
                     <span>{label}</span>
                   </NavLink>
                 </li>

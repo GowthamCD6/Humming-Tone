@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import LocalShippingIcon from '@mui/icons-material/LocalShipping';
 import CalendarMonthIcon from '@mui/icons-material/CalendarMonth';
+import WhatsAppIcon from '@mui/icons-material/WhatsApp';
 import demoImage from '../../../../assets/demo.jpeg';
 import './OrderDetails.css';
 
@@ -17,6 +18,9 @@ export default function OrderDetails() {
   const [shippingDate, setShippingDate] = useState('');
   const [deliveryDate, setDeliveryDate] = useState('');
   const [dateSaving, setDateSaving] = useState(false);
+  const [waSending, setWaSending] = useState(false);
+  const [waStatus, setWaStatus] = useState(null);
+  const [directWaLink, setDirectWaLink] = useState(null);
 
   /* ================= FETCH ORDER DATA ================= */
   useEffect(() => {
@@ -139,11 +143,62 @@ export default function OrderDetails() {
           shipping_date: shippingDate || null,
           delivery_date: deliveryDate || null
         }));
+        setWaStatus({ type: 'success', text: 'Dates updated & WhatsApp notification dispatched!' });
+        setTimeout(() => setWaStatus(null), 5000);
       }
     } catch (error) {
       console.error('Error saving dates:', error);
+      setWaStatus({ type: 'error', text: 'Failed to update dates' });
     } finally {
       setDateSaving(false);
+    }
+  };
+
+  /* ================= SEND WHATSAPP ================= */
+  const handleSendWhatsApp = async (type = 'update') => {
+    setWaSending(true);
+    setWaStatus(null);
+    try {
+      const token = localStorage.getItem('adminToken');
+      const res = await fetch('http://localhost:5000/api/whatsapp/send-order-notification', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+        },
+        body: JSON.stringify({
+          orderId: order.id,
+          type
+        })
+      });
+
+      const data = await res.json();
+      if (res.ok && data.success) {
+        if (data.result?.directWhatsAppLink) {
+          setDirectWaLink(data.result.directWhatsAppLink);
+        }
+        if (data.result?.mock) {
+          setWaStatus({
+            type: 'info',
+            text: 'Preview link ready (Add META_ACCESS_TOKEN in .env for live API delivery)'
+          });
+        } else {
+          setWaStatus({
+            type: 'success',
+            text: `WhatsApp ${type === 'confirmation' ? 'Confirmation' : 'Delivery Update'} sent successfully!`
+          });
+        }
+      } else {
+        setWaStatus({
+          type: 'error',
+          text: data.message || 'Failed to dispatch WhatsApp message'
+        });
+      }
+    } catch (error) {
+      console.error('WhatsApp trigger error:', error);
+      setWaStatus({ type: 'error', text: 'Error connecting to WhatsApp service' });
+    } finally {
+      setWaSending(false);
     }
   };
 
@@ -252,6 +307,57 @@ export default function OrderDetails() {
         </div>
       </div>
 
+      {/* WhatsApp Notification Management Card */}
+      <div className="od-whatsapp-card">
+        <div className="od-wa-header">
+          <div className="od-wa-title-wrap">
+            <WhatsAppIcon className="od-wa-icon" />
+            <div>
+              <h3 className="od-wa-title">WhatsApp Automated Sender</h3>
+              <p className="od-wa-subtitle">
+                Recipient: <strong>{order.customer_phone || "No phone number attached"}</strong> ({order.customer_name})
+              </p>
+            </div>
+          </div>
+          {waStatus && (
+            <span className={`od-wa-badge ${waStatus.type}`}>
+              {waStatus.text}
+            </span>
+          )}
+        </div>
+
+        <div className="od-wa-actions">
+          <button
+            className="od-wa-btn od-wa-btn-confirm"
+            onClick={() => handleSendWhatsApp('confirmation')}
+            disabled={waSending || !order.customer_phone}
+          >
+            <WhatsAppIcon fontSize="small" />
+            {waSending ? 'Sending...' : 'Send Order Confirmation'}
+          </button>
+
+          <button
+            className="od-wa-btn od-wa-btn-update"
+            onClick={() => handleSendWhatsApp('update')}
+            disabled={waSending || !order.customer_phone}
+          >
+            <WhatsAppIcon fontSize="small" />
+            {waSending ? 'Sending...' : 'Send Status & Delivery Update'}
+          </button>
+
+          {directWaLink && (
+            <a
+              href={directWaLink}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="od-wa-direct-link"
+            >
+              Open Direct Chat Preview ↗
+            </a>
+          )}
+        </div>
+      </div>
+
       {/* Order Items */}
       <div className="od-items-section">
         <h3 className="od-section-title">Order Items ({items.length})</h3>
@@ -288,7 +394,7 @@ export default function OrderDetails() {
         <div className="od-summary-content">
           {/* Items Breakdown */}
           <div className="od-summary-items">
-            {items.map((item, index) => {
+            {items.map((item) => {
               const itemTotal = Number(item.product_price) * Number(item.quantity);
               return (
                 <div key={item.id} className="od-summary-item-row">
@@ -324,10 +430,16 @@ export default function OrderDetails() {
             </div>
           )}
 
+          {/* GST */}
+          <div className="od-summary-row">
+            <span>GST (5%)</span>
+            <span>₹{(order.gst_amount !== undefined && order.gst_amount !== null ? Number(order.gst_amount) : (Number(order.total_amount) - (Number(order.shipping) || 0) + (Number(order.discount_amount) || 0)) * 0.05 / 1.05).toFixed(2)}</span>
+          </div>
+
           {/* Total */}
           <div className="od-summary-row od-total">
             <span>Total Amount</span>
-            <span>₹{order.total_amount.toFixed(2)}</span>
+            <span>₹{Number(order.total_amount).toFixed(2)}</span>
           </div>
         </div>
       </div>

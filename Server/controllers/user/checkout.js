@@ -2,6 +2,7 @@ const db = require("../../config/db.js");
 const createError = require("http-errors");
 const crypto = require("crypto");
 const razorpayInstance = require("../../utils/rajorpay.js");
+const { sendOrderConfirmationWhatsApp } = require("../../utils/whatsapp.js");
 
 exports.create_order = (req, res, next) => {
   db.getConnection((err, connection) => {
@@ -82,7 +83,9 @@ exports.create_order = (req, res, next) => {
         }
 
         const safeDiscount = Math.min(discount_amount, subtotal);
-        const total_amount = subtotal - safeDiscount + shipping;
+        const taxableAmount = Math.max(subtotal - safeDiscount, 0);
+        const gst_amount = Math.round(taxableAmount * 0.05 * 100) / 100; // 5% GST
+        const total_amount = taxableAmount + gst_amount + shipping;
 
         if (total_amount <= 0) {
           throw createError.BadRequest("Invalid total amount");
@@ -120,11 +123,12 @@ exports.create_order = (req, res, next) => {
             discount_amount,
             subtotal,
             shipping,
+            gst_amount,
             total_amount,
             razorpay_order_id,
             order_status
           )
-          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'pending')
+          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'pending')
           `,
           [
             order_number,
@@ -140,6 +144,7 @@ exports.create_order = (req, res, next) => {
             safeDiscount,
             subtotal,
             shipping,
+            gst_amount,
             total_amount,
             razorpayOrder.id
           ],
@@ -262,6 +267,14 @@ exports.web_hook = (req,res,next) => {
         let updatesql = "update orders set payment_verified = ?, payment_status = ?, razorpay_signature = ? where razorpay_order_id = ?";
         db.query(updatesql,[1, paymentDetails.status, webhookSignature, paymentDetails.order_id],(error1,result1) => {
           if(error1)return next(error1);
+
+          // Trigger automated WhatsApp confirmation
+          try {
+            sendOrderConfirmationWhatsApp(result[0]).catch(e => console.error("Webhook WA confirmation error:", e));
+          } catch(e) {
+            console.error("Webhook WA trigger error:", e);
+          }
+
           res.status(200).json({msg:"Webhook received successfully!"});
         })
       }
@@ -286,9 +299,9 @@ exports.verify_payment = (req,res,next) => {
     if(!order_number || order_number.trim() == ""){
       return next(createError.BadRequest('Invalid order_id!'));
     }
-    let fetchSql = `SELECT payment_verified, payment_status, order_status, 
+    let fetchSql = `SELECT id, order_number, payment_verified, payment_status, order_status, 
                      shipping_date, delivery_date, created_at, 
-                     customer_name, customer_email, customer_phone
+                     customer_name, customer_email, customer_phone, total_amount
                      FROM orders WHERE order_number = ?`;
     db.query(fetchSql,[order_number],(error,result) => {
       if(error)return next(error);
@@ -296,6 +309,9 @@ exports.verify_payment = (req,res,next) => {
         return res.status(404).json({ msg: "Order not found" });
       }
       if(result[0].payment_verified && result[0].payment_status == "captured"){
+        // Trigger automated WhatsApp confirmation if not already sent
+        sendOrderConfirmationWhatsApp(result[0]).catch(e => console.error("Verify WA confirmation error:", e));
+
         return res.status(200).json({
           "msg":"payment verified",
           order: {

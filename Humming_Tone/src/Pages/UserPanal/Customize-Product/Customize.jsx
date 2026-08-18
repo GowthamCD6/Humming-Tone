@@ -553,12 +553,50 @@
 
 // export default CustomizePage;
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useMemo, useRef } from 'react';
 import TShirtSVG from './../../../components/CustomizeT-shirt/TShirtSVG';
 import HoodieSVG from './../../../components/CustomizeT-shirt/HoodieSVG';
 import LongSleeveSVG from './../../../components/CustomizeT-shirt/LongSleeveSVG';
 import PoloShirtSVG from './../../../components/CustomizeT-shirt/PoloSVG';
 import './Customize.css';
+
+// Color options with color codes
+const colorOptions = [
+  { name: 'White', value: '#FFFFFF', textColor: '#333333' },
+  { name: 'Black', value: '#333333', textColor: '#FFFFFF' },
+  { name: 'Red', value: '#FF3B30', textColor: '#FFFFFF' },
+  { name: 'Royal Blue', value: '#007AFF', textColor: '#FFFFFF' },
+  { name: 'Forest Green', value: '#34C759', textColor: '#FFFFFF' },
+  { name: 'Heather Gray', value: '#8E8E93', textColor: '#333333' },
+  { name: 'Navy Blue', value: '#0A2472', textColor: '#FFFFFF' },
+  { name: 'Burgundy', value: '#800020', textColor: '#FFFFFF' },
+  { name: 'Mustard Yellow', value: '#FFCC00', textColor: '#333333' },
+  { name: 'Light Pink', value: '#FFAFCC', textColor: '#333333' }
+];
+
+// Size options with measurements
+const sizeOptions = [
+  { label: 'XS', chest: '34-36"' },
+  { label: 'S', chest: '36-38"' },
+  { label: 'M', chest: '40-42"' },
+  { label: 'L', chest: '42-44"' },
+  { label: 'XL', chest: '46-48"' },
+  { label: 'XXL', chest: '50-52"' }
+];
+
+// Font options
+const fontOptions = [
+  { name: 'Inter', value: 'Inter, sans-serif' },
+  { name: 'Roboto', value: 'Roboto, sans-serif' },
+  { name: 'Open Sans', value: 'Open Sans, sans-serif' },
+  { name: 'Montserrat', value: 'Montserrat, sans-serif' },
+  { name: 'Poppins', value: 'Poppins, sans-serif' },
+  { name: 'Lato', value: 'Lato, sans-serif' },
+  { name: 'Arial', value: 'Arial, sans-serif' },
+  { name: 'Helvetica', value: 'Helvetica, sans-serif' },
+  { name: 'Georgia', value: 'Georgia, serif' },
+  { name: 'Courier New', value: 'Courier New, monospace' }
+];
 
 const TshirtCustomizer = () => {
   // Product types with detailed specifications
@@ -609,7 +647,6 @@ const TshirtCustomizer = () => {
   const [selectedProduct, setSelectedProduct] = useState(1);
   const [selectedColor, setSelectedColor] = useState('#FFFFFF');
   const [selectedSize, setSelectedSize] = useState('M');
-  const [totalPrice, setTotalPrice] = useState(25.00);
   const [designSide, setDesignSide] = useState('front');
   
   // Design states
@@ -629,46 +666,8 @@ const TshirtCustomizer = () => {
   // Refs
   const fileInputRef = useRef(null);
 
-  // Color options with color codes
-  const colorOptions = [
-    { name: 'White', value: '#FFFFFF', textColor: '#333333' },
-    { name: 'Black', value: '#333333', textColor: '#FFFFFF' },
-    { name: 'Red', value: '#FF3B30', textColor: '#FFFFFF' },
-    { name: 'Royal Blue', value: '#007AFF', textColor: '#FFFFFF' },
-    { name: 'Forest Green', value: '#34C759', textColor: '#FFFFFF' },
-    { name: 'Heather Gray', value: '#8E8E93', textColor: '#333333' },
-    { name: 'Navy Blue', value: '#0A2472', textColor: '#FFFFFF' },
-    { name: 'Burgundy', value: '#800020', textColor: '#FFFFFF' },
-    { name: 'Mustard Yellow', value: '#FFCC00', textColor: '#333333' },
-    { name: 'Light Pink', value: '#FFAFCC', textColor: '#333333' }
-  ];
-
-  // Size options with measurements
-  const sizeOptions = [
-    { label: 'XS', chest: '34-36"' },
-    { label: 'S', chest: '36-38"' },
-    { label: 'M', chest: '40-42"' },
-    { label: 'L', chest: '42-44"' },
-    { label: 'XL', chest: '46-48"' },
-    { label: 'XXL', chest: '50-52"' }
-  ];
-
-  // Font options
-  const fontOptions = [
-    { name: 'Inter', value: 'Inter, sans-serif' },
-    { name: 'Roboto', value: 'Roboto, sans-serif' },
-    { name: 'Open Sans', value: 'Open Sans, sans-serif' },
-    { name: 'Montserrat', value: 'Montserrat, sans-serif' },
-    { name: 'Poppins', value: 'Poppins, sans-serif' },
-    { name: 'Lato', value: 'Lato, sans-serif' },
-    { name: 'Arial', value: 'Arial, sans-serif' },
-    { name: 'Helvetica', value: 'Helvetica, sans-serif' },
-    { name: 'Georgia', value: 'Georgia, serif' },
-    { name: 'Courier New', value: 'Courier New, monospace' }
-  ];
-
   // Calculate price
-  useEffect(() => {
+  const totalPrice = useMemo(() => {
     const baseProduct = productTypes.find(p => p.id === selectedProduct);
     let price = baseProduct?.basePrice || 25;
     
@@ -685,8 +684,8 @@ const TshirtCustomizer = () => {
       price += 3; // Small premium for custom text
     }
     
-    setTotalPrice(price.toFixed(2));
-  }, [selectedProduct, selectedSize, designType, frontDesign, backDesign]);
+    return price.toFixed(2);
+  }, [productTypes, selectedProduct, selectedSize, frontDesign, backDesign, designType]);
 
   // Get current product
   const getCurrentProduct = () => {
@@ -829,7 +828,7 @@ const TshirtCustomizer = () => {
   };
 
   // Save design
-  const saveDesign = () => {
+  const _saveDesign = () => {
     const design = {
       id: Date.now(),
       product: selectedProduct,

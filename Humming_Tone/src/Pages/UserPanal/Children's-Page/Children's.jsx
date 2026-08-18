@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import UserFooter from '../../../components/User-Footer-Card/UserFooter';
 import './Children\'s.css';
-import { getGenderOptions, getCategoryOptionsForGender } from '../../../utils/siteContentStore';
+import { getGenderOptions } from '../../../utils/siteContentStore';
 import axios from 'axios';  // Import axios
 import { Link } from 'react-router-dom';
 
-const Children = ({ onViewDetails = () => {} }) => {
+const Children = ({ onViewDetails: _onViewDetails = () => {} }) => {
   const [selectedGender, setSelectedGender] = useState('Children');  // Default to 'Children'
   const [selectedCategory, setSelectedCategory] = useState('All Categories');
   const [products, setProducts] = useState([]);  // Set products to empty initially
@@ -63,7 +63,7 @@ const Children = ({ onViewDetails = () => {} }) => {
     setProducts(allProducts);
   };
 
-  const handleViewAll = () => {
+  const _handleViewAll = () => {
     console.log('View all products');
     setProducts([]);  // Reset products if needed
   };

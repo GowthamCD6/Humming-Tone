@@ -7,7 +7,7 @@ import './Home.css';
 import axios from 'axios';  // Import axios
 import { Link, useLocation } from 'react-router-dom';
 
-const Home = ({ onViewDetails = () => {} }) => {
+const Home = ({ onViewDetails: _onViewDetails = () => {} }) => {
   const [featuredProducts, setFeaturedProducts] = useState([]); // State for featured products
   const [newArrivals, setNewArrivals] = useState([]); // State for new arrivals
   const [loadingFeatured, setLoadingFeatured] = useState(true);

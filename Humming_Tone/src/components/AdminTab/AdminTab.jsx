@@ -1,4 +1,3 @@
-import { useState, useEffect } from 'react'
 import DashboardIcon from '@mui/icons-material/Dashboard'
 import ShoppingBagIcon from '@mui/icons-material/ShoppingBag'
 import AddCircleIcon from '@mui/icons-material/AddCircle'
@@ -13,58 +12,52 @@ import { Outlet, useLocation, useNavigate } from 'react-router-dom'
 import logo from '../../assets/logo.png'
 import './AdminTab.css'
 
+const menuSections = [
+  {
+    title: null,
+    items: [
+      { id: 'dashboard', path: 'dashboard', label: 'Dashboard', Icon: DashboardIcon },
+    ]
+  },
+  {
+    title: 'MANAGEMENT',
+    items: [
+      { id: 'manage-products', path: 'manage-products', label: 'Manage Products', Icon: ShoppingBagIcon },
+      { id: 'add-product', path: 'add-product', label: 'Add Product', Icon: AddCircleIcon },
+      { id: 'inventory', path: 'inventory', label: 'Inventory', Icon: InventoryIcon },
+      { id: 'manage-orders', path: 'manage-orders', label: 'Manage Orders', Icon: ShoppingCartIcon },
+    ]
+  },
+  {
+    title: 'ANALYTICS',
+    items: [
+      { id: 'all-products', path: 'all-products', label: 'Product Data', Icon: ShoppingBagIcon },
+      { id: 'product-buyers', path: 'product-buyers', label: 'Buyer Data', Icon: PeopleIcon },
+    ]
+  },
+  {
+    title: 'SETTINGS',
+    items: [
+      { id: 'site-content', path: 'site-content', label: 'Site Content', Icon: AccountCircleIcon },
+      { id: 'manage-admin', path: 'manage-admin', label: 'Admin Users', Icon: AdminPanelSettingsIcon },
+      { id: 'view-store', path: '/usertab/home', label: 'View Store', Icon: OpenInNewIcon },
+    ]
+  },
+]
+
+const menuItems = menuSections.flatMap(section => section.items)
+
 export default function AdminTab({ onLogout = () => {} }) {
-  const [activeTab, setActiveTab] = useState('dashboard')
   const location = useLocation()
   const navigate = useNavigate()
 
-  const menuSections = [
-    {
-      title: null,
-      items: [
-        { id: 'dashboard', path: 'dashboard', label: 'Dashboard', Icon: DashboardIcon },
-      ]
-    },
-    {
-      title: 'MANAGEMENT',
-      items: [
-        { id: 'manage-products', path: 'manage-products', label: 'Manage Products', Icon: ShoppingBagIcon },
-        { id: 'add-product', path: 'add-product', label: 'Add Product', Icon: AddCircleIcon },
-        { id: 'inventory', path: 'inventory', label: 'Inventory', Icon: InventoryIcon },
-        { id: 'manage-orders', path: 'manage-orders', label: 'Manage Orders', Icon: ShoppingCartIcon },
-      ]
-    },
-    {
-      title: 'ANALYTICS',
-      items: [
-        { id: 'all-products', path: 'all-products', label: 'Product Data', Icon: ShoppingBagIcon },
-        { id: 'product-buyers', path: 'product-buyers', label: 'Buyer Data', Icon: PeopleIcon },
-      ]
-    },
-    {
-      title: 'SETTINGS',
-      items: [
-        { id: 'site-content', path: 'site-content', label: 'Site Content', Icon: AccountCircleIcon },
-        { id: 'manage-admin', path: 'manage-admin', label: 'Admin Users', Icon: AdminPanelSettingsIcon },
-        { id: 'view-store', path: '/usertab/home', label: 'View Store', Icon: OpenInNewIcon },
-      ]
-    },
-  ]
-
-  const menuItems = menuSections.flatMap(section => section.items)
+  const currentItem = menuItems.find(item =>
+    item.path && location.pathname.startsWith(`/admin/${item.path}`)
+  )
+  const activeTab = currentItem ? currentItem.id : 'dashboard'
 
   const activeTabLabel =
     menuItems.find(item => item.id === activeTab)?.label || 'Dashboard'
-
-  // Sync active tab with URL
-  useEffect(() => {
-    const current = menuItems.find(item =>
-      item.path && location.pathname.startsWith(`/admin/${item.path}`)
-    )
-    if (current && current.id !== activeTab) {
-      setActiveTab(current.id)
-    }
-  }, [location.pathname])
 
   return (
     <div className="admin-tab-layout">
@@ -92,12 +85,7 @@ export default function AdminTab({ onLogout = () => {} }) {
                   <button
                     key={item.id}
                     onClick={() => {
-                      if (item.id === 'view-store') {
-                        navigate(item.path)
-                      } else {
-                        setActiveTab(item.id)
-                        navigate(item.path)
-                      }
+                      navigate(item.path)
                     }}
                     className={`admin-nav-item ${
                       activeTab === item.id ? 'active' : ''

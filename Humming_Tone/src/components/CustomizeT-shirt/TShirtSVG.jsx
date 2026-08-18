@@ -33,7 +33,7 @@ const TShirtMockup = ({ color = '#ffffff', side = 'front', design }) => {
   // Animate when side prop changes
   useEffect(() => {
     if (side !== currentSide) {
-      setIsAnimating(true);
+      requestAnimationFrame(() => setIsAnimating(true));
       let progress = 0;
       const duration = 600; // milliseconds
       const startTime = Date.now();

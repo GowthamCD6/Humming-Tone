@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import './CartPage.css';
 import UserFooter from '../../../components/User-Footer-Card/UserFooter';
@@ -11,17 +11,17 @@ const PremiumCart = ({ onCheckout }) => {
   const location = useLocation();
 
 
-  const [cartItems, setCartItems] = useState([]);
+  const [cartItems, setCartItems] = useState(() => {
+    try {
+      return JSON.parse(localStorage.getItem('cart')) || [];
+    } catch {
+      return [];
+    }
+  });
   const [instructions, setInstructions] = useState('');
   const [alert, setAlert] = useState(null);
   const [removeModal, setRemoveModal] = useState({ show: false, itemId: null, itemName: '' });
   const [clearCartModal, setClearCartModal] = useState(false);
-
-  /* ================= LOAD CART FROM LOCALSTORAGE ================= */
-  useEffect(() => {
-    const cart = JSON.parse(localStorage.getItem('cart')) || [];
-    setCartItems(cart);
-  }, []);
 
   /* ================= SYNC CART TO LOCALSTORAGE ================= */
   const syncCart = (updatedCart) => {
@@ -84,8 +84,12 @@ const PremiumCart = ({ onCheckout }) => {
     return cartItems.reduce((sum, item) => sum + (item.price * item.quantity), 0);
   };
 
+  const calculateGST = () => {
+    return calculateSubtotal() * 0.05;
+  };
+
   const calculateTotal = () => {
-    return calculateSubtotal();
+    return calculateSubtotal() + calculateGST();
   };
   // simple
 
@@ -239,6 +243,11 @@ const PremiumCart = ({ onCheckout }) => {
               <div className="userpanal-cart-summary-row">
                 <span className="userpanal-cart-summary-label">Subtotal</span>
                 <span className="userpanal-cart-summary-value">₹ {calculateSubtotal().toFixed(2)}</span>
+              </div>
+
+              <div className="userpanal-cart-summary-row">
+                <span className="userpanal-cart-summary-label">Estimated GST (5%)</span>
+                <span className="userpanal-cart-summary-value">₹ {calculateGST().toFixed(2)}</span>
               </div>
 
               <div className="userpanal-cart-summary-divider"></div>

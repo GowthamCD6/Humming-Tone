@@ -5,6 +5,7 @@ import HomeIcon from "@mui/icons-material/Home";
 import ShoppingBagIcon from "@mui/icons-material/ShoppingBag";
 import LocalShippingIcon from "@mui/icons-material/LocalShipping";
 import ContentCopyIcon from "@mui/icons-material/ContentCopy";
+import WhatsAppIcon from "@mui/icons-material/WhatsApp";
 import "./PaymentSuccess.css";
 
 function formatDate(dateStr) {
@@ -96,7 +97,7 @@ const PaymentSuccess = () => {
     };
 
     verifyPayment();
-  }, [order_number, navigate]);
+  }, [order_number, navigate, location.state]);
 
   if (loading) {
     return (
@@ -148,6 +149,20 @@ const PaymentSuccess = () => {
               {formatDate(orderData.delivery_date) || "Will be updated soon"}
             </span>
           </div>
+        </div>
+      </div>
+
+      {/* WhatsApp Confirmation Notification Banner */}
+      <div className="ps-whatsapp-banner">
+        <div className="ps-wa-icon-wrap">
+          <WhatsAppIcon className="ps-wa-icon" />
+        </div>
+        <div className="ps-wa-content">
+          <h4>WhatsApp Notification Sent</h4>
+          <p>
+            An automated order confirmation and live tracking updates will be delivered to{" "}
+            <strong>{orderData.customer_phone || "your WhatsApp number"}</strong>.
+          </p>
         </div>
       </div>
 

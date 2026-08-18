@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import "./AdminCystamize.css";
 import SuccessModal from "../../../../components/SuccessModal/SuccessModal";
 import {
@@ -37,7 +37,12 @@ const InputModal = ({
     return data;
   });
 
-  useEffect(() => {
+  const [prevIsOpen, setPrevIsOpen] = useState(isOpen);
+  const [prevInitialData, setPrevInitialData] = useState(initialData);
+
+  if (isOpen !== prevIsOpen || initialData !== prevInitialData) {
+    setPrevIsOpen(isOpen);
+    setPrevInitialData(initialData);
     if (isOpen) {
       const data = {};
       fields.forEach((field) => {
@@ -45,7 +50,7 @@ const InputModal = ({
       });
       setFormData(data);
     }
-  }, [isOpen, initialData, fields]);
+  }
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -172,7 +177,7 @@ secondary"
   );
 };
 
-const AdminCystamize = ({ onBack }) => {
+const AdminCystamize = ({ onBack: _onBack }) => {
   const initial = getSiteContent();
   const [modalOpen, setModalOpen] = useState(false);
   const [modalMessage, setModalMessage] = useState("");
@@ -232,19 +237,7 @@ const AdminCystamize = ({ onBack }) => {
     }
   );
 
-  // Load data on component mount
-  useEffect(() => {
-    const content = getSiteContent();
-    setCustomizeDraft(
-      content.customize || {
-        productCategories: [],
-        colors: [],
-        materials: [],
-        sizes: [],
-        galleryDesigns: [],
-      }
-    );
-  }, []);
+
 
   const saveCustomize = async () => {
     try {

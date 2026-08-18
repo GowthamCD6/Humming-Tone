@@ -8,7 +8,13 @@ const CheckOut = ({ onBack }) => {
   const RAZORPAY_KEY = import.meta.env.VITE_RAZORPAY_KEY_ID;
 
   const [promoCode, setPromoCode] = useState("");
-  const [cartItems, setCartItems] = useState([]);
+  const [cartItems] = useState(() => {
+    try {
+      return JSON.parse(localStorage.getItem("cart")) || [];
+    } catch {
+      return [];
+    }
+  });
 
   const [formData, setFormData] = useState({
     customer_name: "",
@@ -23,16 +29,11 @@ const CheckOut = ({ onBack }) => {
 
   /* ---------------- LOAD CART FROM LOCALSTORAGE ---------------- */
   useEffect(() => {
-    const storedCart = JSON.parse(localStorage.getItem("cart")) || [];
-
-    if (!Array.isArray(storedCart) || storedCart.length === 0) {
+    if (!Array.isArray(cartItems) || cartItems.length === 0) {
       alert("Your cart is empty");
       navigate("/usertab/cart");
-      return;
     }
-
-    setCartItems(storedCart);
-  }, [navigate]);
+  }, [cartItems, navigate]);
 
   /* ---------------- HELPERS ---------------- */
   const toNumber = (v) => Number(v) || 0;
@@ -47,8 +48,11 @@ const CheckOut = ({ onBack }) => {
   }, [cartItems]);
 
   const discountAmount = promoCode ? 100 : 0;
+  const taxableAmount = Math.max(subtotal - discountAmount, 0);
+  const gstRate = 0.05; // 5% GST
+  const gstAmount = taxableAmount * gstRate;
   const shipping = 50;
-  const total = Math.max(subtotal - discountAmount + shipping, 0);
+  const total = Math.max(taxableAmount + gstAmount + shipping, 0);
 
   /* ---------------- HANDLERS ---------------- */
   const handleChange = (e) => {
@@ -77,6 +81,7 @@ const handleCheckout = async (e) => {
 
       promo_code: promoCode || null,
       discount_amount: discountAmount,
+      gst_amount: gstAmount,
       shipping,
 
       items: cartItems.map((item) => ({
@@ -338,6 +343,10 @@ const handleCheckout = async (e) => {
                 <div className="userpanal-checkout-summary-row">
                   <span className="userpanal-checkout-summary-label">Discount</span>
                   <span className="userpanal-checkout-summary-value">-₹{formatMoney(discountAmount)}</span>
+                </div>
+                <div className="userpanal-checkout-summary-row">
+                  <span className="userpanal-checkout-summary-label">GST (5%)</span>
+                  <span className="userpanal-checkout-summary-value">₹{formatMoney(gstAmount)}</span>
                 </div>
                 <div className="userpanal-checkout-summary-row">
                   <span className="userpanal-checkout-summary-label">Shipping</span>
