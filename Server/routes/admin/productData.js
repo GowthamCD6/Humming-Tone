@@ -4,18 +4,18 @@ const productController = require('../../controllers/admin/productData');
 
 
 // Get all products with filters
-router.get('/products', productController.getAllProducts);
+router.get('/', productController.getAllProducts);
 
 // Delete single product
-router.delete('/products/:id', productController.deleteProduct);
+router.delete('/:id', productController.deleteProduct);
 
 // Delete multiple products
-router.post('/products/delete-multiple', productController.deleteMultipleProducts);
+router.post('/delete-multiple', productController.deleteMultipleProducts);
 
 // Delete all products
-router.delete('/products', productController.deleteAllProducts);
+router.delete('/', productController.deleteAllProducts);
 
 // Restore product status (set is_active = 1)
-router.patch('/products/:id/restore', productController.restoreProduct);
+router.patch('/:id/restore', productController.restoreProduct);
 
 module.exports = router;

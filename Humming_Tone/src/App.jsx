@@ -70,37 +70,46 @@ import axios from 'axios';
 import "./App.css";
 
 // --- GLOBAL API INTERCEPTORS ---
-// Automatically inject the JWT token into all outgoing axios requests
+// Automatically inject the JWT token into outgoing admin axios requests
 axios.interceptors.request.use(config => {
   const token = localStorage.getItem('adminToken');
-  if (token) {
+  const url = String(config.url || '');
+  const isAdminApi = url.includes('/admin') || url.includes('/api/orders') || url.includes('/api/whatsapp') || url.includes('/api/products');
+  if (token && isAdminApi) {
     config.headers.Authorization = `Bearer ${token}`;
   }
   return config;
 });
 
-// Auto-logout on expired / invalid token (401 response)
+// Auto-logout on expired / invalid token (401 response) ONLY when accessing admin APIs or when on admin paths
 axios.interceptors.response.use(
   response => response,
   error => {
     if (error.response && error.response.status === 401) {
-      localStorage.removeItem('adminToken');
-      // Redirect to login if not already there
-      if (window.location.pathname !== '/login') {
-        window.location.href = '/login';
+      const url = String(error.config?.url || '');
+      const isAdminRoute = window.location.pathname.startsWith('/admin');
+      const isAdminApi = url.includes('/admin') || url.includes('/api/orders') || url.includes('/api/whatsapp') || url.includes('/api/products');
+
+      if (isAdminRoute || isAdminApi) {
+        localStorage.removeItem('adminToken');
+        if (window.location.pathname !== '/login') {
+          window.location.href = '/login';
+        }
       }
     }
     return Promise.reject(error);
   }
 );
 
-// Automatically inject the JWT token into all outgoing fetch requests
+// Automatically inject the JWT token into outgoing admin fetch requests
 const originalFetch = window.fetch;
 window.fetch = async function () {
   let [resource, config] = arguments;
+  const urlStr = typeof resource === 'string' ? resource : (resource?.url || '');
+  const isAdminApi = urlStr.includes('/admin') || urlStr.includes('/api/orders') || urlStr.includes('/api/whatsapp') || urlStr.includes('/api/products');
   
   const token = localStorage.getItem('adminToken');
-  if (token) {
+  if (token && isAdminApi) {
     if (!config) config = {};
     if (!config.headers) config.headers = {};
     
@@ -113,10 +122,16 @@ window.fetch = async function () {
   
   const response = await originalFetch(resource, config);
   
-  // Auto-logout on 401 for fetch requests too
-  if (response.status === 401 && window.location.pathname !== '/login') {
-    localStorage.removeItem('adminToken');
-    window.location.href = '/login';
+  // Auto-logout on 401 ONLY for admin endpoints or admin routes
+  if (response.status === 401) {
+    const isAdminRoute = window.location.pathname.startsWith('/admin');
+
+    if (isAdminRoute || isAdminApi) {
+      localStorage.removeItem('adminToken');
+      if (window.location.pathname !== '/login') {
+        window.location.href = '/login';
+      }
+    }
   }
   
   return response;

@@ -196,7 +196,7 @@ const handleCheckout = async (e) => {
 
   const handleBack = () => {
     if (onBack) return onBack();
-    navigate(-1);
+    navigate("/usertab/cart");
   };
 
   return (

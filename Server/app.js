@@ -22,6 +22,7 @@ const adminInventoryRoutes = require('./routes/admin/inventory')
 const adminAuth = require('./middlewares/adminAuth');
 const adminUsersRoute = require("./routes/admin/adminUsers");
 const adminWhatsAppRoute = require("./routes/admin/whatsapp");
+const adminReturnRoute = require("./routes/admin/return");
 const app = express();
 const PORT = process.env.PORT || 5000;
 const path = require('path');
@@ -44,7 +45,7 @@ app.use(
 );
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
-// Admin Auth Middleware Protection
+// Admin Auth Middleware Protection for /admin routes
 app.use('/admin', (req, res, next) => {
   if (req.path === '/auth/login') {
     return next(); // Skip auth for login
@@ -61,24 +62,24 @@ app.use("/", adminProductRoute);
 app.use("/", adminOrderRoute);
 app.use("/", adminDashboardRoute);
 app.use("/", adminAuthRoute);
+app.use("/", adminReturnRoute);
 app.use("/api/orders", adminOrderRoute);
-app.use('/api', adminOrderRoute);
-app.use('/api', siteRoutes);
 app.use('/', adminInventoryRoutes);
 app.use('/api', adminCustomizeRoutes);
 app.use("/", adminPromoRoute);
-app.use('/api', productRoutes);
+app.use('/api/products', adminAuth, productRoutes);
 app.use("/", adminUsersRoute);
 app.use("/api", adminWhatsAppRoute);
+
+// Site content routes (Public GET for storefront, admin updates)
+app.use('/api/site-content', siteRoutes);
+
 // User routes
 app.use("/", userProductRoute);
 app.use("/", userPromoRoutes);
-app.use("/",userReturnRoutes);
+app.use("/", userReturnRoutes);
 app.use("/", customizeRoutes);
 app.use("/", userCheckoutRoutes);
-
-// Site content routes
-app.use('/api/site-content', siteRoutes);
 
 // 404 handler
 app.use((req, res, next) => {

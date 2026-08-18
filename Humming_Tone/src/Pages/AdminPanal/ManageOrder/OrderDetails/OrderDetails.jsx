@@ -413,33 +413,33 @@ export default function OrderDetails() {
           {/* Subtotal */}
           <div className="od-summary-row">
             <span>Subtotal</span>
-            <span>₹{items.reduce((sum, item) => sum + (Number(item.product_price) * Number(item.quantity)), 0).toFixed(2)}</span>
+            <span>₹{(order.subtotal !== undefined && order.subtotal !== null ? Number(order.subtotal) : items.reduce((sum, item) => sum + (Number(item.product_price || 0) * Number(item.quantity || 0)), 0)).toFixed(2)}</span>
           </div>
 
           {/* Shipping */}
           <div className="od-summary-row">
             <span>Shipping</span>
-            <span>₹{(order.shipping || 0).toFixed(2)}</span>
+            <span>₹{Number(order.shipping || 0).toFixed(2)}</span>
           </div>
 
           {/* Discount */}
-          {order.discount_amount > 0 && (
+          {Number(order.discount_amount || 0) > 0 && (
             <div className="od-summary-row od-discount">
               <span>Discount</span>
-              <span>-₹{order.discount_amount.toFixed(2)}</span>
+              <span>-₹{Number(order.discount_amount).toFixed(2)}</span>
             </div>
           )}
 
           {/* GST */}
           <div className="od-summary-row">
             <span>GST (5%)</span>
-            <span>₹{(order.gst_amount !== undefined && order.gst_amount !== null ? Number(order.gst_amount) : (Number(order.total_amount) - (Number(order.shipping) || 0) + (Number(order.discount_amount) || 0)) * 0.05 / 1.05).toFixed(2)}</span>
+            <span>₹{(order.gst_amount !== undefined && order.gst_amount !== null ? Number(order.gst_amount) : (Number(order.total_amount || 0) - Number(order.shipping || 0) + Number(order.discount_amount || 0)) * 0.05 / 1.05).toFixed(2)}</span>
           </div>
 
           {/* Total */}
           <div className="od-summary-row od-total">
             <span>Total Amount</span>
-            <span>₹{Number(order.total_amount).toFixed(2)}</span>
+            <span>₹{Number(order.total_amount || 0).toFixed(2)}</span>
           </div>
         </div>
       </div>
