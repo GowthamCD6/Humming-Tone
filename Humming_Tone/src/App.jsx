@@ -48,7 +48,7 @@ const ContactUs = lazy(() =>
   import("./Pages/SupportsPage/ContactUs/ContactUs.jsx")
 );
 const ShoppingInfo = lazy(() =>
-  import("./pages/SupportsPage/ShippingInfo/ShippingInfo.jsx")
+  import("./Pages/SupportsPage/ShippingInfo/ShippingInfo.jsx")
 );
 const ReturnAndExchange = lazy(() =>
   import("./Pages/SupportsPage/Return&Exchange/Return&Exchange.jsx")
