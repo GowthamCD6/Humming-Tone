@@ -3,6 +3,7 @@ import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 import homeImage from '../../../assets/home1.png';
 import demoImage from '../../../assets/demo.jpeg';
 import UserFooter from '../../../components/User-Footer-Card/UserFooter';
+import ProductGridSkeleton from '../../../components/ProductSkeleton/ProductSkeleton';
 import './Home.css';
 import axios from 'axios';  // Import axios
 import { Link, useLocation } from 'react-router-dom';
@@ -59,24 +60,22 @@ const Home = ({ onViewDetails: _onViewDetails = () => {} }) => {
       }
     };
 
-    fetchNewArrivals();
     fetchFeaturedProducts();
+    fetchNewArrivals();
   }, []);  // Empty dependency array means this will run once when the component mounts
 
   // Reusable Product Card Component for cleaner code
   const ProductCard = ({ product }) => (
     <div className="all-products-product-card">
-      <div className="all-products-product-image-container">
-        <img src={product.image} alt={product.name} className="all-products-product-img"
-             onError={(e) => {
-               e.target.onerror = null;
-               e.target.style.opacity = '0.5';
-             }} />
-        
-        <div className="all-products-product-hover-overlay">
-          <Link  className="all-products-view-details-btn no-underline" to={`/usertab/details/${product.id}`}>VIEW DETAILS</Link>
+      <Link to={`/usertab/details/${product.id}`} className="all-products-product-link">
+        <div className="all-products-product-image-container">
+          <img
+            src={product.image}
+            alt={product.name}
+            className="all-products-product-image"
+          />
         </div>
-      </div>
+      </Link>
       <div className="all-products-product-details">
         <h3 className="all-products-product-title">{product.name}</h3>
         <p className="all-products-product-brand">{product.brand}</p>
@@ -115,17 +114,17 @@ const Home = ({ onViewDetails: _onViewDetails = () => {} }) => {
           <p className="section-description">Handpicked items from our collection</p>
         </div>
 
-        <div className="product-layout-grid">
-          {loadingFeatured ? (
-            <p className="loading-message">Loading featured products...</p>
-          ) : featuredProducts.length > 0 ? (
-            featuredProducts.map(item => (
+        {loadingFeatured ? (
+          <ProductGridSkeleton count={3} />
+        ) : featuredProducts.length > 0 ? (
+          <div className="product-layout-grid">
+            {featuredProducts.map(item => (
               <ProductCard key={item.id} product={item} />
-            ))
-          ) : (
-            <p className="no-products-message" style={{ gridColumn: '1 / -1', textAlign: 'center', width: '100%', color: '#666', padding: '2rem 0' }}>No featured products available at the moment.</p>
-          )}
-        </div>
+            ))}
+          </div>
+        ) : (
+          <p className="no-products-message" style={{ textAlign: 'center', width: '100%', color: '#666', padding: '2rem 0' }}>No featured products available at the moment.</p>
+        )}
       </section>
 
       {/* New Arrivals Section */}
@@ -136,17 +135,17 @@ const Home = ({ onViewDetails: _onViewDetails = () => {} }) => {
           <p className="section-description">Fresh styles just for you</p>
         </div>
 
-        <div className="product-layout-grid">
-          {loadingNewArrivals ? (
-            <p className="loading-message">Loading new arrivals...</p>
-          ) : newArrivals.length > 0 ? (
-            newArrivals.map(item => (
+        {loadingNewArrivals ? (
+          <ProductGridSkeleton count={3} />
+        ) : newArrivals.length > 0 ? (
+          <div className="product-layout-grid">
+            {newArrivals.map(item => (
               <ProductCard key={item.id} product={item} />
-            ))
-          ) : (
-            <p className="no-products-message" style={{ gridColumn: '1 / -1', textAlign: 'center', width: '100%', color: '#666', padding: '2rem 0' }}>No new arrivals available at the moment.</p>
-          )}
-        </div>
+            ))}
+          </div>
+        ) : (
+          <p className="no-products-message" style={{ textAlign: 'center', width: '100%', color: '#666', padding: '2rem 0' }}>No new arrivals available at the moment.</p>
+        )}
       </section>
 
       {/* Footer */}

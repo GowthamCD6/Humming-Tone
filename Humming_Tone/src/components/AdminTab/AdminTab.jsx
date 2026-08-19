@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import DashboardIcon from '@mui/icons-material/Dashboard'
 import ShoppingBagIcon from '@mui/icons-material/ShoppingBag'
 import AddCircleIcon from '@mui/icons-material/AddCircle'
@@ -8,6 +9,7 @@ import InventoryIcon from '@mui/icons-material/Inventory'
 import AccountCircleIcon from '@mui/icons-material/AccountCircle'
 import PeopleIcon from '@mui/icons-material/People'
 import AdminPanelSettingsIcon from '@mui/icons-material/AdminPanelSettings'
+import MenuIcon from '@mui/icons-material/Menu'
 import { Outlet, useLocation, useNavigate } from 'react-router-dom'
 import logo from '../../assets/logo.png'
 import './AdminTab.css'
@@ -50,6 +52,7 @@ const menuItems = menuSections.flatMap(section => section.items)
 export default function AdminTab({ onLogout = () => {} }) {
   const location = useLocation()
   const navigate = useNavigate()
+  const [sidebarOpen, setSidebarOpen] = useState(true)
 
   const currentItem = menuItems.find(item =>
     item.path && location.pathname.startsWith(`/admin/${item.path}`)
@@ -62,7 +65,7 @@ export default function AdminTab({ onLogout = () => {} }) {
   return (
     <div className="admin-tab-layout">
       {/* Sidebar */}
-      <aside className="admin-sidebar">
+      <aside className={`admin-sidebar ${sidebarOpen ? 'open' : 'collapsed'}`}>
         {/* Sidebar Header */}
         <div className="sidebar-header">
           <img src={logo} alt="Humming Tone" className="sidebar-brand-logo" />
@@ -109,11 +112,27 @@ export default function AdminTab({ onLogout = () => {} }) {
         </div>
       </aside>
 
+      <div
+        className={`admin-mobile-overlay ${sidebarOpen ? 'active' : ''}`}
+        onClick={() => setSidebarOpen(false)}
+        aria-label="Close sidebar"
+      />
+
       {/* Main Content */}
       <main className="admin-main">
         {/* Header */}
         <header className="admin-header">
-          <h1 className="page-title">{activeTabLabel}</h1>
+          <div className="admin-header-left">
+            <button
+              type="button"
+              className="admin-header-menu-btn"
+              onClick={() => setSidebarOpen((prev) => !prev)}
+              aria-label="Toggle sidebar"
+            >
+              <MenuIcon fontSize="small" />
+            </button>
+            <h1 className="page-title">{activeTabLabel}</h1>
+          </div>
           <div className="admin-user">
             <AccountCircleIcon className="user-avatar" />
             <span className="user-label">Administrator</span>

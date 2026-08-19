@@ -1605,8 +1605,4 @@
 .userpanal-cart-modal-btn:active {
     transform: translateY(-1px);
 }
-
-/* Dark Mode Support */
-@media (prefers-color-scheme: dark) {
-    /* Note: Add dark mode styles if needed */
-}
+

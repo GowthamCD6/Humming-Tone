@@ -21,10 +21,19 @@ import logo from "../../assets/logo.png";
 import "./UserTab.css";
 import { fetchSiteContent } from "../../utils/siteContentStore";
 
+const DEFAULT_GENDERS = [
+  "Men",
+  "Women",
+  "Children",
+  "Baby",
+  "Sports",
+  "Customize",
+];
+
 const UserTab = () => {
   const [isScrolled, setIsScrolled] = useState(false);
-  const [activeGenders, setActiveGenders] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [activeGenders, setActiveGenders] = useState(DEFAULT_GENDERS);
+  const [loading, setLoading] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [cartCount, setCartCount] = useState(0);
   const navigate = useNavigate();
@@ -168,26 +177,22 @@ const UserTab = () => {
 
           {/* Desktop Navigation */}
           <nav className="user-nav desktop-nav">
-            {loading ? (
-              <div className="nav-loading">Loading...</div>
-            ) : (
-              <ul className="user-nav-menu">
-                {navItems.map(({ path, label, Icon: _Icon }) => (
-                  <li key={path} className="user-nav-item">
-                    <NavLink
-                      to={path}
-                      className={({ isActive }) =>
-                        `user-nav-link${isActive ? " active" : ""}`
-                      }
-                      end
-                    >
-                      <_Icon className="user-nav-icon" />
-                      <span>{label}</span>
-                    </NavLink>
-                  </li>
-                ))}
-              </ul>
-            )}
+            <ul className="user-nav-menu">
+              {navItems.map(({ path, label, Icon: _Icon }) => (
+                <li key={path} className="user-nav-item">
+                  <NavLink
+                    to={path}
+                    className={({ isActive }) =>
+                      `user-nav-link${isActive ? " active" : ""}`
+                    }
+                    end
+                  >
+                    <_Icon className="user-nav-icon" />
+                    <span>{label}</span>
+                  </NavLink>
+                </li>
+              ))}
+            </ul>
           </nav>
 
           {/* Right Section - Cart & Hamburger */}
@@ -226,27 +231,23 @@ const UserTab = () => {
 
         {/* Mobile Navigation Links */}
         <nav className="mobile-nav">
-          {loading ? (
-            <div className="nav-loading">Loading...</div>
-          ) : (
-            <ul className="mobile-nav-menu">
-              {navItems.map(({ path, label, Icon: _Icon }) => (
-                <li key={path} className="mobile-nav-item">
-                  <NavLink
-                    to={path}
-                    className={({ isActive }) =>
-                      `mobile-nav-link${isActive ? " active" : ""}`
-                    }
-                    onClick={() => setMobileMenuOpen(false)}
-                    end
-                  >
-                    <_Icon className="mobile-nav-icon" />
-                    <span>{label}</span>
-                  </NavLink>
-                </li>
-              ))}
-            </ul>
-          )}
+          <ul className="mobile-nav-menu">
+            {navItems.map(({ path, label, Icon: _Icon }) => (
+              <li key={path} className="mobile-nav-item">
+                <NavLink
+                  to={path}
+                  className={({ isActive }) =>
+                    `mobile-nav-link${isActive ? " active" : ""}`
+                  }
+                  onClick={() => setMobileMenuOpen(false)}
+                  end
+                >
+                  <_Icon className="mobile-nav-icon" />
+                  <span>{label}</span>
+                </NavLink>
+              </li>
+            ))}
+          </ul>
         </nav>
       </div>
 

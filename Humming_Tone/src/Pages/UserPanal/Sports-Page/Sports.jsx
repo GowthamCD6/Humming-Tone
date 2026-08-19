@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import UserFooter from '../../../components/User-Footer-Card/UserFooter';
+import ProductGridSkeleton from '../../../components/ProductSkeleton/ProductSkeleton';
 import './Sports.css';
 import { getGenderOptions } from '../../../utils/siteContentStore';
 import axios from 'axios';  // Import axios
@@ -11,6 +12,7 @@ const Sports = ({ onViewDetails: _onViewDetails = () => {} }) => {
   const [selectedCategory, setSelectedCategory] = useState('All Categories');
   const [products, setProducts] = useState([]);  // Empty array for "No Products Found" state
   const [allProducts, setAllProducts] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [categoryOptions, setCategoryOptions] = useState(['All Categories']);
 
   const genderOptions = getGenderOptions();
@@ -33,6 +35,7 @@ const Sports = ({ onViewDetails: _onViewDetails = () => {} }) => {
   useEffect(() => {
     const fetchProducts = async () => {
       try {
+        setLoading(true);
         const response = await axios.get(`${API_BASE_URL}/user/fetch_products?gender=sports`);
         const fetchedProducts = response.data.map(product => ({
           ...product,
@@ -43,6 +46,8 @@ const Sports = ({ onViewDetails: _onViewDetails = () => {} }) => {
         setAllProducts(fetchedProducts);
       } catch (error) {
         console.error('Error fetching products:', error);
+      } finally {
+        setLoading(false);
       }
     };
 
@@ -94,12 +99,13 @@ const Sports = ({ onViewDetails: _onViewDetails = () => {} }) => {
   );
 
   return (
-    <div className="sports-collection-page">
-      {/* Header Section */}
-      <div className="sports-header">
-        <h1 className="sports-title">Our Collection</h1>
-        <p className="sports-item-count">{products.length} ITEMS FOUND</p>
-      </div>
+    <>
+      <div className="sports-collection-page">
+        {/* Header Section */}
+        <div className="sports-header">
+          <h1 className="sports-title">Our Collection</h1>
+          <p className="sports-item-count">{products.length} ITEMS FOUND</p>
+        </div>
 
       <div className="sports-divider"></div>
 
@@ -161,12 +167,21 @@ const Sports = ({ onViewDetails: _onViewDetails = () => {} }) => {
       </div>
 
       {/* Products Section - Conditional Rendering */}
-      {products.length > 0 ? (
+      {loading ? (
         <div className="sports-products-section">
           <div className="sports-section-intro">
             <h2 className="sports-section-heading">Sports Collection</h2>
             <div className="sports-heading-accent"></div>
-            <p className="sports-section-description">Explore our curated collection of premium sports wear</p>
+            <p className="sports-section-description">Explore our curated collection of premium products</p>
+          </div>
+          <ProductGridSkeleton count={6} />
+        </div>
+      ) : products.length > 0 ? (
+        <div className="sports-products-section">
+          <div className="sports-section-intro">
+            <h2 className="sports-section-heading">Sports Collection</h2>
+            <div className="sports-heading-accent"></div>
+            <p className="sports-section-description">Explore our curated collection of premium products</p>
           </div>
           
           <div className="sports-product-grid">
@@ -184,10 +199,11 @@ const Sports = ({ onViewDetails: _onViewDetails = () => {} }) => {
           <Link className="sports-view-all-button" to="/usertab/all-products">VIEW ALL PRODUCTS</Link>
         </div>
       )}
+      </div>
       
       {/* Footer */}
       <UserFooter />
-    </div>
+    </>
   );
 };
 

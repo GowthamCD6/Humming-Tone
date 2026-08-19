@@ -101,6 +101,27 @@
   height: 100%;
   display: flex;
   align-items: center;
+  animation: navItemFadeIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.user-nav-item:nth-child(1) { animation-delay: 0.02s; }
+.user-nav-item:nth-child(2) { animation-delay: 0.05s; }
+.user-nav-item:nth-child(3) { animation-delay: 0.08s; }
+.user-nav-item:nth-child(4) { animation-delay: 0.11s; }
+.user-nav-item:nth-child(5) { animation-delay: 0.14s; }
+.user-nav-item:nth-child(6) { animation-delay: 0.17s; }
+.user-nav-item:nth-child(7) { animation-delay: 0.20s; }
+.user-nav-item:nth-child(8) { animation-delay: 0.23s; }
+
+@keyframes navItemFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .user-nav-link {
@@ -967,106 +988,6 @@
   }
 }
 
-/* Dark Mode Support (if user prefers) */
-@media (prefers-color-scheme: dark) {
-  .user-header {
-    background-color: #1a1a1a;
-    border-bottom-color: #333;
-  }
-
-  .user-header.scrolled {
-    background-color: rgba(26, 26, 26, 0.98);
-  }
-
-  .user-nav-link {
-    color: #cccccc;
-  }
-
-  .user-nav-link:hover {
-    color: #ffffff;
-  }
-
-  .user-nav-link.active {
-    color: #ffffff;
-    background-color: #ffffff;
-    color: #1a1a1a;
-  }
-
-  .user-nav-link.active .user-nav-icon {
-    color: #1a1a1a;
-  }
-
-  .user-cart-icon {
-    background: #2a2a2a;
-  }
-
-  .user-cart-icon:hover {
-    background: #ffffff;
-  }
-
-  .user-cart-bag {
-    color: #ffffff;
-  }
-
-  .user-cart-icon:hover .user-cart-bag {
-    color: #1a1a1a;
-  }
-
-  .user-cart-badge {
-    background: #ffffff;
-    color: #1a1a1a;
-  }
-
-  .hamburger-icon {
-    color: #ffffff;
-  }
-
-  .hamburger-menu:hover {
-    opacity: 0.8;
-  }
-
-  /* Mobile Sidebar Dark Mode */
-  .mobile-sidebar {
-    background-color: #1a1a1a;
-  }
-
-  .sidebar-close-btn {
-    color: #ffffff;
-  }
-
-  .sidebar-close-btn:hover {
-    background-color: #2a2a2a;
-  }
-
-  .mobile-nav-item {
-    border-bottom-color: #333;
-  }
-
-  .mobile-nav-link {
-    color: #e0e0e0;
-  }
-
-  .mobile-nav-link:hover {
-    background-color: #2a2a2a;
-  }
-
-  .mobile-nav-link.active {
-    background-color: #ffffff;
-    color: #1a1a1a;
-  }
-
-  .mobile-nav-link.active .mobile-nav-icon {
-    color: #1a1a1a;
-  }
-
-  .mobile-menu-overlay {
-    background-color: rgba(0, 0, 0, 0.7);
-  }
-
-  .user-app-container {
-    background-color: #121212;
-  }
-}
 
 /* Print Styles */
 @media print {

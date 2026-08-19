@@ -44,10 +44,10 @@
 
 .admin-customize-title {
   font-size: 24px;
-  font-weight: 600;
+  font-weight: 700;
   color: #1a1a1a;
   margin: 0;
-  font-family: 'Georgia', 'Times New Roman', serif;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 }
 
 /* ===== ALERTS ===== */
@@ -146,7 +146,7 @@
   font-weight: 700;
   color: #111827;
   margin: 0 0 4px 0;
-  font-family: 'Georgia', 'Times New Roman', serif;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 }
 
 .admin-customize-section-desc {

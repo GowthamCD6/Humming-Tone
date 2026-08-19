@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import demoImage from '../../../assets/demo.jpeg';
 import UserFooter from '../../../components/User-Footer-Card/UserFooter';
+import ProductGridSkeleton from '../../../components/ProductSkeleton/ProductSkeleton';
 import './Mens.css';
 import { getGenderOptions } from '../../../utils/siteContentStore';
 import axios from 'axios';  // Import axios
@@ -12,6 +13,7 @@ const Men = ({ onViewDetails: _onViewDetails = () => {} }) => {
   const [selectedCategory, setSelectedCategory] = useState('All Categories');
   const [products, setProducts] = useState([]);
   const [allProducts, setAllProducts] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [categoryOptions, setCategoryOptions] = useState(['All Categories']);
 
   const genderOptions = getGenderOptions();
@@ -37,6 +39,7 @@ const Men = ({ onViewDetails: _onViewDetails = () => {} }) => {
   useEffect(() => {
     const fetchProducts = async () => {
       try {
+        setLoading(true);
         const response = await axios.get(`${API_BASE_URL}/user/fetch_products?gender=${selectedGender.toLowerCase()}`);
         const fetchedProducts = response.data.map(product => ({
           ...product,
@@ -47,6 +50,8 @@ const Men = ({ onViewDetails: _onViewDetails = () => {} }) => {
         setAllProducts(fetchedProducts);
       } catch (error) {
         console.error('Error fetching products:', error);
+      } finally {
+        setLoading(false);
       }
     };
 
@@ -160,12 +165,21 @@ const Men = ({ onViewDetails: _onViewDetails = () => {} }) => {
       </div>
 
       {/* Products Section - Conditional Rendering */}
-      {products.length > 0 ? (
+      {loading ? (
         <div className="mens-products-section">
           <div className="mens-section-intro">
             <h2 className="mens-section-heading">Men's Collection</h2>
             <div className="mens-heading-accent"></div>
-            <p className="mens-section-description">Explore our curated collection of premium men's wear</p>
+            <p className="mens-section-description">Explore our curated collection of premium products</p>
+          </div>
+          <ProductGridSkeleton count={6} />
+        </div>
+      ) : products.length > 0 ? (
+        <div className="mens-products-section">
+          <div className="mens-section-intro">
+            <h2 className="mens-section-heading">Men's Collection</h2>
+            <div className="mens-heading-accent"></div>
+            <p className="mens-section-description">Explore our curated collection of premium products</p>
           </div>
           
           <div className="mens-product-grid">

@@ -24,11 +24,11 @@
 /* ===== PAGE HEADING ===== */
 .buyer-page-heading {
   font-size: 2rem;
-  font-weight: 400;
+  font-weight: 700;
   color: #1a1a1a;
   margin: 0 0 1.5rem;
   letter-spacing: -0.5px;
-  font-family: 'Georgia', 'Times New Roman', serif;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   margin-bottom: 35px;
 }
 
@@ -304,7 +304,7 @@
 
 .buyer-card-pin {
   font-weight: 600;
-  font-family: 'Georgia', serif;
+  font-family: inherit;
 }
 
 /* Responsive Design */
@@ -361,22 +361,6 @@
   .buyer-stat-number {
     font-size: 24px;
   }
-
-  .buyer-card-header {
-    padding: 15px;
-  }
-
-  .buyer-card-body {
-    padding: 15px;
-  }
-}
-
-.buyer-card-header {
-  padding: 15px;
-}
-
-.buyer-card-body {
-  padding: 15px;
 }
 
 /* ===== BUYER DETAILS MODAL ===== */

@@ -7,36 +7,22 @@ import UserTab from "./components/UserTab/UserTab.jsx";
 import { fetchSiteContent } from "./utils/siteContentStore";
 import { API_BASE_URL } from "./utils/apiConfig";
 
-// User pages (lazy-loaded to avoid loading all tab pages on first paint)
-const Home = lazy(() => import("./Pages/UserPanal/HomePage/Home.jsx"));
-const AllProductPage = lazy(() =>
-  import("./Pages/UserPanal/All-Product/AllProduct.jsx")
-);
-const Men = lazy(() => import("./Pages/UserPanal/Men's-Page/Men's.jsx"));
-const Women = lazy(() => import("./Pages/UserPanal/Women-Page/Women's.jsx"));
-const Children = lazy(() =>
-  import("./Pages/UserPanal/Children's-Page/Children's.jsx")
-);
-const Baby = lazy(() => import("./Pages/UserPanal/Baby-Page/Baby.jsx"));
-const Sports = lazy(() => import("./Pages/UserPanal/Sports-Page/Sports.jsx"));
-const CustomizePage = lazy(() =>
-  import("./Pages/UserPanal/Customize-Product/Customize.jsx")
-);
-const CartPage = lazy(() => import("./Pages/UserPanal/Cart-Page/CartPage.jsx"));
-const ProductDetail = lazy(() =>
-  import("./Pages/UserPanal/Prodect-Details/Details.jsx")
-);
-const CheckOut = lazy(() => import("./Pages/UserPanal/CheckOut/CheckOut.jsx"));
-const AboutUs = lazy(() => import("./Pages/UserPanal/About-Us/AboutUs.jsx"));
-const PaymentSuccess = lazy(() =>
-  import("./Pages/UserPanal/PaymentSuccess/PaymentSuccess.jsx")
-);
-const PaymentFailure = lazy(() =>
-  import("./Pages/UserPanal/PayementFailure/PaymentFailure.jsx")
-);
-const OrderTracking = lazy(() =>
-  import("./Pages/UserPanal/OrderTracking/OrderTracking.jsx")
-);
+// User pages (Direct imports for instant static filter & layout render)
+import Home from "./Pages/UserPanal/HomePage/Home.jsx";
+import AllProductPage from "./Pages/UserPanal/All-Product/AllProduct.jsx";
+import Men from "./Pages/UserPanal/Men's-Page/Men's.jsx";
+import Women from "./Pages/UserPanal/Women-Page/Women's.jsx";
+import Children from "./Pages/UserPanal/Children's-Page/Children's.jsx";
+import Baby from "./Pages/UserPanal/Baby-Page/Baby.jsx";
+import Sports from "./Pages/UserPanal/Sports-Page/Sports.jsx";
+import CustomizePage from "./Pages/UserPanal/Customize-Product/Customize.jsx";
+import CartPage from "./Pages/UserPanal/Cart-Page/CartPage.jsx";
+import ProductDetail from "./Pages/UserPanal/Prodect-Details/Details.jsx";
+import CheckOut from "./Pages/UserPanal/CheckOut/CheckOut.jsx";
+import AboutUs from "./Pages/UserPanal/About-Us/AboutUs.jsx";
+import PaymentSuccess from "./Pages/UserPanal/PaymentSuccess/PaymentSuccess.jsx";
+import PaymentFailure from "./Pages/UserPanal/PayementFailure/PaymentFailure.jsx";
+import OrderTracking from "./Pages/UserPanal/OrderTracking/OrderTracking.jsx";
 
 // Support pages
 const PrivacyPolicy = lazy(() =>
@@ -242,29 +228,13 @@ export default function App() {
         {/* USER NESTED ROUTES (PUBLIC) */}
         <Route path="/usertab" element={<UserTab />}>
           <Route index element={<Navigate to="home" />} />
-          <Route
-            path="home"
-            element={
-              <Suspense fallback={<UserPageLoader />}>
-                <Home />
-              </Suspense>
-            }
-          />
-          <Route
-            path="all-products"
-            element={
-              <Suspense fallback={<UserPageLoader />}>
-                <AllProductPage />
-              </Suspense>
-            }
-          />
+          <Route path="home" element={<Home />} />
+          <Route path="all-products" element={<AllProductPage />} />
           <Route
             path="men"
             element={
               <GenderGuard genderName="Men">
-                <Suspense fallback={<UserPageLoader />}>
-                  <Men />
-                </Suspense>
+                <Men />
               </GenderGuard>
             }
           />
@@ -272,9 +242,7 @@ export default function App() {
             path="women"
             element={
               <GenderGuard genderName="Women">
-                <Suspense fallback={<UserPageLoader />}>
-                  <Women />
-                </Suspense>
+                <Women />
               </GenderGuard>
             }
           />
@@ -282,9 +250,7 @@ export default function App() {
             path="children"
             element={
               <GenderGuard genderName="Children">
-                <Suspense fallback={<UserPageLoader />}>
-                  <Children />
-                </Suspense>
+                <Children />
               </GenderGuard>
             }
           />
@@ -292,9 +258,7 @@ export default function App() {
             path="baby"
             element={
               <GenderGuard genderName="Baby">
-                <Suspense fallback={<UserPageLoader />}>
-                  <Baby />
-                </Suspense>
+                <Baby />
               </GenderGuard>
             }
           />
@@ -302,9 +266,7 @@ export default function App() {
             path="sports"
             element={
               <GenderGuard genderName="Sports">
-                <Suspense fallback={<UserPageLoader />}>
-                  <Sports />
-                </Suspense>
+                <Sports />
               </GenderGuard>
             }
           />
@@ -312,68 +274,17 @@ export default function App() {
             path="customize"
             element={
               <GenderGuard genderName="Customize">
-                <Suspense fallback={<UserPageLoader />}>
-                  <CustomizePage />
-                </Suspense>
+                <CustomizePage />
               </GenderGuard>
             }
           />
-          <Route
-            path="cart"
-            element={
-              <Suspense fallback={<UserPageLoader />}>
-                <CartPage />
-              </Suspense>
-            }
-          />
-          <Route
-            path="product/:id"
-            element={
-              <Suspense fallback={<UserPageLoader />}>
-                <ProductDetail />
-              </Suspense>
-            }
-          />
-          <Route
-            path="checkout"
-            element={
-              <Suspense fallback={<UserPageLoader />}>
-                <CheckOut />
-              </Suspense>
-            }
-          />
-          <Route
-            path="payment-success"
-            element={
-              <Suspense fallback={<UserPageLoader />}>
-                <PaymentSuccess />
-              </Suspense>
-            }
-          />
-          <Route
-            path="payment-failure"
-            element={
-              <Suspense fallback={<UserPageLoader />}>
-                <PaymentFailure />
-              </Suspense>
-            }
-          />
-          <Route
-            path="track-order"
-            element={
-              <Suspense fallback={<UserPageLoader />}>
-                <OrderTracking />
-              </Suspense>
-            }
-          />
-          <Route
-            path="details/:id"
-            element={
-              <Suspense fallback={<UserPageLoader />}>
-                <ProductDetail />
-              </Suspense>
-            }
-          ></Route>
+          <Route path="cart" element={<CartPage />} />
+          <Route path="product/:id" element={<ProductDetail />} />
+          <Route path="checkout" element={<CheckOut />} />
+          <Route path="payment-success" element={<PaymentSuccess />} />
+          <Route path="payment-failure" element={<PaymentFailure />} />
+          <Route path="track-order" element={<OrderTracking />} />
+          <Route path="details/:id" element={<ProductDetail />} />
 
           {/* Supports page */}
           <Route

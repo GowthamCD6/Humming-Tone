@@ -321,46 +321,48 @@ export default function ManageProducts() {
             </button>
           </div>
         </div>
-        <table className="mp-table">
-          <thead>
-            <tr>
-              <th style={{ width: '20%' }}>Code</th>
-              <th style={{ width: '15%' }}>Type</th>
-              <th style={{ width: '15%' }}>Discount</th>
-              <th style={{ width: '15%' }}>Min Order</th>
-              <th style={{ width: '10%' }}>Usage</th>
-              <th style={{ width: '12%' }}>Status</th>
-              <th className="mp-text-center" style={{ width: '13%' }}>Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {promoCodes.length > 0 ? promoCodes.map((p) => (
-              <tr key={p.id}>
-                <td><span className="mp-text-bold">{p.code}</span></td>
-                <td>{p.discount_type}</td>
-                <td><span className="mp-amount">{formatCurrency(p.discount_value)}</span></td>
-                <td><span className="mp-amount">{formatCurrency(p.min_order_amount)}</span></td>
-                <td>{p.used_count || 0} / {p.usage_limit || '∞'}</td>
-                <td>
-                  <span className={`mp-badge ${p.is_active ? 'mp-badge-green' : 'mp-badge-red'}`}>
-                    {p.is_active ? 'Active' : 'Inactive'}
-                  </span>
-                </td>
-                <td className="mp-text-center">
-                  <div className="mp-actions">
-                    <button className="mp-icon-btn" onClick={() => handleEditPromo(p)} title="Edit">
-                      <Edit size={15} />
-                    </button>
-                  </div>
-                </td>
-              </tr>
-            )) : (
+        <div className="mp-table-wrap">
+          <table className="mp-table">
+            <thead>
               <tr>
-                <td colSpan="7" className="mp-empty">No promo codes found.</td>
+                <th style={{ width: '20%' }}>Code</th>
+                <th style={{ width: '15%' }}>Type</th>
+                <th style={{ width: '15%' }}>Discount</th>
+                <th style={{ width: '15%' }}>Min Order</th>
+                <th style={{ width: '10%' }}>Usage</th>
+                <th style={{ width: '12%' }}>Status</th>
+                <th className="mp-text-center" style={{ width: '13%' }}>Actions</th>
               </tr>
-            )}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {promoCodes.length > 0 ? promoCodes.map((p) => (
+                <tr key={p.id}>
+                  <td><span className="mp-text-bold">{p.code}</span></td>
+                  <td>{p.discount_type}</td>
+                  <td><span className="mp-amount">{formatCurrency(p.discount_value)}</span></td>
+                  <td><span className="mp-amount">{formatCurrency(p.min_order_amount)}</span></td>
+                  <td>{p.used_count || 0} / {p.usage_limit || '∞'}</td>
+                  <td>
+                    <span className={`mp-badge ${p.is_active ? 'mp-badge-green' : 'mp-badge-red'}`}>
+                      {p.is_active ? 'Active' : 'Inactive'}
+                    </span>
+                  </td>
+                  <td className="mp-text-center">
+                    <div className="mp-actions">
+                      <button className="mp-icon-btn" onClick={() => handleEditPromo(p)} title="Edit">
+                        <Edit size={15} />
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              )) : (
+                <tr>
+                  <td colSpan="7" className="mp-empty">No promo codes found.</td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </div>
       </div>
 
       {/* --- Products Table --- */}
@@ -396,87 +398,89 @@ export default function ManageProducts() {
           <span className="mp-products-count">{filteredProducts.length} matched / {products.length} total</span>
         </div>
 
-        <table className="mp-table">
-          <thead>
-            <tr>
-              <th style={{ width: '25%' }}>Product</th>
-              <th style={{ width: '15%' }}>SKU</th>
-              <th style={{ width: '12%' }}>Price</th>
-              <th style={{ width: '12%' }}>Stock</th>
-              <th style={{ width: '13%' }}>Category</th>
-              <th style={{ width: '10%' }}>Gender</th>
-              <th className="mp-text-center" style={{ width: '13%' }}>Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {isLoading ? (
-              Array.from({ length: productLimit }).map((_, index) => (
-                <tr key={`skeleton-${index}`}>
-                  <td>
-                    <div className="mp-product-cell">
-                      <div className="mp-skeleton mp-skeleton-img"></div>
-                      <div className="mp-skeleton mp-skeleton-text" style={{ width: '120px' }}></div>
-                    </div>
-                  </td>
-                  <td><div className="mp-skeleton mp-skeleton-text" style={{ width: '80px' }}></div></td>
-                  <td><div className="mp-skeleton mp-skeleton-text" style={{ width: '60px' }}></div></td>
-                  <td><div className="mp-skeleton mp-skeleton-text" style={{ width: '70px', borderRadius: '12px' }}></div></td>
-                  <td><div className="mp-skeleton mp-skeleton-text" style={{ width: '90px', borderRadius: '12px' }}></div></td>
-                  <td><div className="mp-skeleton mp-skeleton-text" style={{ width: '60px', borderRadius: '12px' }}></div></td>
-                  <td>
-                    <div className="mp-actions" style={{ justifyContent: 'center' }}>
-                      <div className="mp-skeleton mp-skeleton-text" style={{ width: '28px', height: '28px', borderRadius: '6px' }}></div>
-                      <div className="mp-skeleton mp-skeleton-text" style={{ width: '28px', height: '28px', borderRadius: '6px' }}></div>
-                    </div>
-                  </td>
-                </tr>
-              ))
-            ) : pagedProducts.length > 0 ? (
-              pagedProducts.map((p) => (
-                <tr key={p.id}>
-                  <td>
-                    <div className="mp-product-cell">
-                      <img
-                        src={p.image}
-                        className="mp-product-img"
-                        alt={p.name}
-                        onError={(e) => { e.target.onerror = null; e.target.style.opacity = '0.3'; }}
-                      />
-                      <span className="mp-product-name">{p.name}</span>
-                    </div>
-                  </td>
-                  <td>{p.sku}</td>
-                  <td><span className="mp-text-bold mp-amount">{formatCurrency(p.price)}</span></td>
-                  <td>
-                    <span className={`mp-badge ${p.stock > 0 ? 'mp-badge-green' : 'mp-badge-red'}`}>
-                      {p.stock > 0 ? `${p.stock} in stock` : 'Out of stock'}
-                    </span>
-                  </td>
-                  <td><span className="mp-badge mp-badge-gray">{p.category}</span></td>
-                  <td>
-                    <span className="mp-badge mp-badge-blue">
-                      {p.gender ? p.gender.charAt(0).toUpperCase() + p.gender.slice(1).toLowerCase() : ''}
-                    </span>
-                  </td>
-                  <td className="mp-text-center">
-                    <div className="mp-actions">
-                      <button className="mp-icon-btn" onClick={() => handleEditProduct(p)} title="Edit">
-                        <Edit size={15} />
-                      </button>
-                      <button className="mp-icon-btn mp-icon-btn-danger" onClick={() => openDeleteModal(p)} title="Delete">
-                        <Trash2 size={15} />
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              ))
-            ) : (
+        <div className="mp-table-wrap">
+          <table className="mp-table">
+            <thead>
               <tr>
-                <td colSpan="7" className="mp-empty">No products found matching your filters.</td>
+                <th style={{ width: '25%' }}>Product</th>
+                <th style={{ width: '15%' }}>SKU</th>
+                <th style={{ width: '12%' }}>Price</th>
+                <th style={{ width: '12%' }}>Stock</th>
+                <th style={{ width: '13%' }}>Category</th>
+                <th style={{ width: '10%' }}>Gender</th>
+                <th className="mp-text-center" style={{ width: '13%' }}>Actions</th>
               </tr>
-            )}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {isLoading ? (
+                Array.from({ length: productLimit }).map((_, index) => (
+                  <tr key={`skeleton-${index}`}>
+                    <td>
+                      <div className="mp-product-cell">
+                        <div className="mp-skeleton mp-skeleton-img"></div>
+                        <div className="mp-skeleton mp-skeleton-text" style={{ width: '120px' }}></div>
+                      </div>
+                    </td>
+                    <td><div className="mp-skeleton mp-skeleton-text" style={{ width: '80px' }}></div></td>
+                    <td><div className="mp-skeleton mp-skeleton-text" style={{ width: '60px' }}></div></td>
+                    <td><div className="mp-skeleton mp-skeleton-text" style={{ width: '70px', borderRadius: '12px' }}></div></td>
+                    <td><div className="mp-skeleton mp-skeleton-text" style={{ width: '90px', borderRadius: '12px' }}></div></td>
+                    <td><div className="mp-skeleton mp-skeleton-text" style={{ width: '60px', borderRadius: '12px' }}></div></td>
+                    <td>
+                      <div className="mp-actions" style={{ justifyContent: 'center' }}>
+                        <div className="mp-skeleton mp-skeleton-text" style={{ width: '28px', height: '28px', borderRadius: '6px' }}></div>
+                        <div className="mp-skeleton mp-skeleton-text" style={{ width: '28px', height: '28px', borderRadius: '6px' }}></div>
+                      </div>
+                    </td>
+                  </tr>
+                ))
+              ) : pagedProducts.length > 0 ? (
+                pagedProducts.map((p) => (
+                  <tr key={p.id}>
+                    <td>
+                      <div className="mp-product-cell">
+                        <img
+                          src={p.image}
+                          className="mp-product-img"
+                          alt={p.name}
+                          onError={(e) => { e.target.onerror = null; e.target.style.opacity = '0.3'; }}
+                        />
+                        <span className="mp-product-name">{p.name}</span>
+                      </div>
+                    </td>
+                    <td>{p.sku}</td>
+                    <td><span className="mp-text-bold mp-amount">{formatCurrency(p.price)}</span></td>
+                    <td>
+                      <span className={`mp-badge ${p.stock > 0 ? 'mp-badge-green' : 'mp-badge-red'}`}>
+                        {p.stock > 0 ? `${p.stock} in stock` : 'Out of stock'}
+                      </span>
+                    </td>
+                    <td><span className="mp-badge mp-badge-gray">{p.category}</span></td>
+                    <td>
+                      <span className="mp-badge mp-badge-blue">
+                        {p.gender ? p.gender.charAt(0).toUpperCase() + p.gender.slice(1).toLowerCase() : ''}
+                      </span>
+                    </td>
+                    <td className="mp-text-center">
+                      <div className="mp-actions">
+                        <button className="mp-icon-btn" onClick={() => handleEditProduct(p)} title="Edit">
+                          <Edit size={15} />
+                        </button>
+                        <button className="mp-icon-btn mp-icon-btn-danger" onClick={() => openDeleteModal(p)} title="Delete">
+                          <Trash2 size={15} />
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))
+              ) : (
+                <tr>
+                  <td colSpan="7" className="mp-empty">No products found matching your filters.</td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </div>
 
         <div className="mp-table-footer">
           <span className="mp-footer-text">

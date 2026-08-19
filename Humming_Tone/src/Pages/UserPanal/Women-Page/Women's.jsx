@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import demoImage from '../../../assets/demo.jpeg';
 import UserFooter from '../../../components/User-Footer-Card/UserFooter';
+import ProductGridSkeleton from '../../../components/ProductSkeleton/ProductSkeleton';
 import './Women.css';
 import { getGenderOptions } from '../../../utils/siteContentStore';
 import axios from 'axios';
@@ -12,6 +13,7 @@ const Women = ({ onViewDetails: _onViewDetails = () => {} }) => {
   const [selectedCategory, setSelectedCategory] = useState('All Categories');
   const [products, setProducts] = useState([]);
   const [allProducts, setAllProducts] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [categoryOptions, setCategoryOptions] = useState(['All Categories']);
 
   const genderOptions = getGenderOptions();
@@ -37,6 +39,7 @@ const Women = ({ onViewDetails: _onViewDetails = () => {} }) => {
   useEffect(() => {
     const fetchProducts = async () => {
       try {
+        setLoading(true);
         const response = await axios.get(
           `${API_BASE_URL}/user/fetch_products?gender=${selectedGender.toLowerCase()}`
         );
@@ -51,6 +54,8 @@ const Women = ({ onViewDetails: _onViewDetails = () => {} }) => {
         setAllProducts(fetchedProducts);
       } catch (error) {
         console.error('Error fetching products:', error);
+      } finally {
+        setLoading(false);
       }
     };
 
@@ -158,8 +163,19 @@ const Women = ({ onViewDetails: _onViewDetails = () => {} }) => {
         </div>
       </div>
 
-      {/* Products */}
-      {products.length > 0 ? (
+      {/* Products Section - Conditional Rendering */}
+      {loading ? (
+        <div className="women-products-section">
+          <div className="women-section-intro">
+            <h2 className="women-section-heading">Women's Collection</h2>
+            <div className="women-heading-accent"></div>
+            <p className="women-section-description">
+              Explore our curated collection of premium women's wear
+            </p>
+          </div>
+          <ProductGridSkeleton count={6} />
+        </div>
+      ) : products.length > 0 ? (
         <div className="women-products-section">
           <div className="women-section-intro">
             <h2 className="women-section-heading">Women's Collection</h2>

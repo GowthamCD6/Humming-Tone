@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import UserFooter from '../../../components/User-Footer-Card/UserFooter';
+import ProductGridSkeleton from '../../../components/ProductSkeleton/ProductSkeleton';
 import './Children\'s.css';
 import { getGenderOptions } from '../../../utils/siteContentStore';
 import axios from 'axios';  // Import axios
@@ -11,6 +12,7 @@ const Children = ({ onViewDetails: _onViewDetails = () => {} }) => {
   const [selectedCategory, setSelectedCategory] = useState('All Categories');
   const [products, setProducts] = useState([]);  // Set products to empty initially
   const [allProducts, setAllProducts] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [categoryOptions, setCategoryOptions] = useState(['All Categories']);
 
   const genderOptions = getGenderOptions();
@@ -33,6 +35,7 @@ const Children = ({ onViewDetails: _onViewDetails = () => {} }) => {
   useEffect(() => {
     const fetchProducts = async () => {
       try {
+        setLoading(true);
         const response = await axios.get(`${API_BASE_URL}/user/fetch_products?gender=children`);
         const fetchedProducts = response.data.map(product => ({
           ...product,
@@ -43,6 +46,8 @@ const Children = ({ onViewDetails: _onViewDetails = () => {} }) => {
         setAllProducts(fetchedProducts);
       } catch (error) {
         console.error('Error fetching products:', error);
+      } finally {
+        setLoading(false);
       }
     };
 
@@ -161,12 +166,21 @@ const Children = ({ onViewDetails: _onViewDetails = () => {} }) => {
       </div>
 
       {/* Products Section - Conditional Rendering */}
-      {products.length > 0 ? (
+      {loading ? (
         <div className="childrens-products-section">
           <div className="childrens-section-intro">
             <h2 className="childrens-section-heading">Children's Collection</h2>
             <div className="childrens-heading-accent"></div>
-            <p className="childrens-section-description">Explore our curated collection of premium children's wear</p>
+            <p className="childrens-section-description">Explore our curated collection of premium products</p>
+          </div>
+          <ProductGridSkeleton count={6} />
+        </div>
+      ) : products.length > 0 ? (
+        <div className="childrens-products-section">
+          <div className="childrens-section-intro">
+            <h2 className="childrens-section-heading">Children's Collection</h2>
+            <div className="childrens-heading-accent"></div>
+            <p className="childrens-section-description">Explore our curated collection of premium products</p>
           </div>
           
           <div className="childrens-product-grid">

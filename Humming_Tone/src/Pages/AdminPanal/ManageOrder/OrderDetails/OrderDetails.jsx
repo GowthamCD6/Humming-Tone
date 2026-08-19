@@ -4,8 +4,7 @@ import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import LocalShippingIcon from '@mui/icons-material/LocalShipping';
 import CalendarMonthIcon from '@mui/icons-material/CalendarMonth';
 import WhatsAppIcon from '@mui/icons-material/WhatsApp';
-import demoImage from '../../../../assets/demo.jpeg';
-import { API_BASE_URL } from '../../../../utils/apiConfig';
+import { API_BASE_URL, getImageUrl } from '../../../../utils/apiConfig';
 import './OrderDetails.css';
 
 export default function OrderDetails() {

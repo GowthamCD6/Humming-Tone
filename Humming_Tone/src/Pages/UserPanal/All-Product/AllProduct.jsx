@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import demoImage from '../../../assets/demo.jpeg';
 import UserFooter from '../../../components/User-Footer-Card/UserFooter';
+import ProductGridSkeleton from '../../../components/ProductSkeleton/ProductSkeleton';
 import './AllProduct.css';
 import { getGenderOptions } from '../../../utils/siteContentStore';
 import { Link } from 'react-router-dom';
@@ -12,6 +13,7 @@ const Men = ({ onViewDetails: _onViewDetails = () => {} }) => {
   
   const [allProducts, setAllProducts] = useState([]);
   const [products, setProducts] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [categoryOptions, setCategoryOptions] = useState(['All Categories']);
 
   const genderOptions = ['All Gender', ...getGenderOptions()];
@@ -20,6 +22,7 @@ const Men = ({ onViewDetails: _onViewDetails = () => {} }) => {
   useEffect(() => {
     const fetchProducts = async () => {
       try {
+        setLoading(true);
         const response = await fetch(`${API_BASE_URL}/user/fetch_products`);
         const data = await response.json();
         const formattedProducts = data.map(product => ({
@@ -31,6 +34,8 @@ const Men = ({ onViewDetails: _onViewDetails = () => {} }) => {
         setProducts(formattedProducts);
       } catch (error) {
         console.error('Error fetching products:', error);
+      } finally {
+        setLoading(false);
       }
     };
     fetchProducts();
@@ -170,7 +175,16 @@ const Men = ({ onViewDetails: _onViewDetails = () => {} }) => {
       </div>
 
       {/* Products Section - Conditional Rendering */}
-      {products.length > 0 ? (
+      {loading ? (
+        <div className="all-products-products-section">
+          <div className="all-products-section-intro">
+            <h2 className="all-products-section-heading">All Products</h2>
+            <div className="all-products-heading-accent"></div>
+            <p className="all-products-section-description">Explore our curated collection of premium products</p>
+          </div>
+          <ProductGridSkeleton count={6} />
+        </div>
+      ) : products.length > 0 ? (
         <div className="all-products-products-section">
           <div className="all-products-section-intro">
             <h2 className="all-products-section-heading">All Products</h2>

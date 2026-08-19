@@ -144,7 +144,27 @@ const ProductDetailPage = () => {
     }
   }, [selectedSize, product]);
 
-  if (!product) return null;
+  if (!product) {
+    return (
+      <div className="userpanal-product-details-page">
+        <div className="container">
+          <div className="product-detail-layout">
+            <div className="product-gallery-container">
+              <div className="skeleton-box skeleton-shimmer" style={{ width: '100%', aspectRatio: '0.85', borderRadius: '4px' }} />
+            </div>
+            <div className="product-info-container" style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+              <div className="skeleton-box skeleton-shimmer" style={{ width: '30%', height: '14px' }} />
+              <div className="skeleton-box skeleton-shimmer" style={{ width: '80%', height: '32px' }} />
+              <div className="skeleton-box skeleton-shimmer" style={{ width: '25%', height: '24px' }} />
+              <div className="skeleton-box skeleton-shimmer" style={{ width: '100%', height: '100px', marginTop: '16px' }} />
+              <div className="skeleton-box skeleton-shimmer" style={{ width: '100%', height: '50px', marginTop: '24px' }} />
+            </div>
+          </div>
+        </div>
+        <UserFooter />
+      </div>
+    );
+  }
 
   return (
     <div className="userpanal-product-details-page">

@@ -22,15 +22,15 @@
   color: #1a1a1a;
   margin: 0 0 2.5rem;
   letter-spacing: -0.5px;
-  font-family: 'Georgia', 'Times New Roman', serif;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 }
 
 .content-subtitle {
   font-size: 1.75rem;
-  font-weight: 400;
+  font-weight: 600;
   color: #1a1a1a;
   margin: 0 0 1.5rem;
-  font-family: 'Georgia', 'Times New Roman', serif;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 }
 
 /* ===== STATS GRID ===== */
@@ -74,7 +74,7 @@
   font-size: 2rem;
   font-weight: 700;
   color: #1a1a1a;
-  font-family: 'Georgia', 'Times New Roman', serif;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   margin: 0;
   line-height: 1;
 }
@@ -184,7 +184,7 @@
   font-size: 1.25rem;
   font-weight: 700;
   color: #111827;
-  font-family: 'Georgia', 'Times New Roman', serif;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 }
 
 .sitecontent-card-desc {
@@ -263,7 +263,7 @@
   font-size: 1.125rem;
   font-weight: 600;
   color: #374151;
-  font-family: 'Georgia', 'Times New Roman', serif;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   margin-top: 25px;
 }
 
@@ -541,7 +541,7 @@
   margin: 0 0 0.5rem 0;
   color: #374151;
   font-weight: 600;
-  font-family: 'Georgia', 'Times New Roman', serif;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 }
 
 .sitecontent-empty-state p {
@@ -717,9 +717,9 @@
 .sitecontent-modal-header h3 {
   margin: 0;
   font-size: 1.5rem;
-  font-weight: 600;
+  font-weight: 700;
   color: #1a1a1a;
-  font-family: 'Georgia', 'Times New Roman', serif;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 }
 
 .sitecontent-modal-close {

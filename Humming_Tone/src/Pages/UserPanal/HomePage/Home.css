@@ -4,9 +4,10 @@
 
 
 /* Basic reset for the home container */
-.userpanal-homepage .home-static-page {
-    width: 89%;
-    max-width: 100%;
+.userpanal-homepage .home-static-page,
+.userpanal-homepage.home-static-page {
+    width: 95%;
+    max-width: 1440px;
     margin: 0 auto;
     background-color: #f4f6f9;
     font-family: 'Poppins', -apple-system, BlinkMacSystemFont, sans-serif;
@@ -17,7 +18,7 @@
 /* HERO SECTION IMPROVEMENTS */
 .userpanal-homepage .hero-banner {
     position: relative;
-    width: 87%;
+    width: 94%;
     margin: 0 auto;
     min-height: 600px;
     height: 85vh;
@@ -25,7 +26,7 @@
     align-items: center;
     justify-content: center;
     overflow: hidden;
-    background: #1a1a1a;
+    background: #111827;
     margin-bottom: 0;
     box-sizing: border-box;
 }
@@ -36,8 +37,21 @@
     background-position: center;
     background-repeat: no-repeat;
     background-attachment: fixed;
-    opacity: 0.6;
-    filter: grayscale(20%) brightness(0.85) contrast(1.15);
+    opacity: 0.65;
+    filter: grayscale(15%) brightness(0.85) contrast(1.15);
+    animation: heroFadeIn 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    transition: opacity 0.5s ease-out;
+}
+
+@keyframes heroFadeIn {
+    from {
+        opacity: 0;
+        transform: scale(1.03);
+    }
+    to {
+        opacity: 0.65;
+        transform: scale(1);
+    }
 }
 .userpanal-homepage .hero-tint {
     position: absolute;
