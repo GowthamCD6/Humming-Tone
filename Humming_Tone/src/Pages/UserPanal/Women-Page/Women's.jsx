@@ -77,11 +77,12 @@ const Women = ({ onViewDetails: _onViewDetails = () => {} }) => {
     <div className="women-product-card">
       <div className="women-product-image-container">
         <img
-          src={product.image === "demo" ? demoImage : product.image}
+          src={product.image || demoImage}
           alt={product.name}
           className="women-product-img"
           onError={(e) => {
-            e.target.src = 'https://via.placeholder.com/400x500?text=Product+Image';
+            e.target.onerror = null;
+            e.target.src = demoImage;
           }}
         />
         <div className="women-product-hover-overlay">

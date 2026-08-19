@@ -74,10 +74,10 @@ const Children = ({ onViewDetails: _onViewDetails = () => {} }) => {
       <div className="childrens-product-image-container">
         {/* Render the exact image from the backend */}
         <img 
-          src={product.image || 'https://via.placeholder.com/400x500?text=Product+Image'} 
+          src={product.image || demoImage} 
           alt={product.name} 
           className="childrens-product-img"
-          onError={(e) => { e.target.src = 'https://via.placeholder.com/400x500?text=Product+Image' }}  // Fallback for missing images
+          onError={(e) => { e.target.onerror = null; e.target.src = demoImage; }}  // Fallback for missing images
         />
         <div className="childrens-product-hover-overlay">
           <Link  className="all-products-view-details-btn" to={`/usertab/details/${product.id}`}>VIEW DETAILS</Link>

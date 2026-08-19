@@ -67,9 +67,8 @@ const Home = ({ onViewDetails: _onViewDetails = () => {} }) => {
   const ProductCard = ({ product }) => (
     <div className="all-products-product-card">
       <div className="all-products-product-image-container">
-        {/* Placeholder for actual product image */}
-        <img src={product.image} alt={product.name} className="all-products-product-img"
-             onError={(e) => { e.target.src = 'https://via.placeholder.com/400x500?text=Product+Image' }} />
+        <img src={product.image || demoImage} alt={product.name} className="all-products-product-img"
+             onError={(e) => { e.target.onerror = null; e.target.src = demoImage; }} />
         
         <div className="all-products-product-hover-overlay">
           <Link  className="all-products-view-details-btn no-underline" to={`/usertab/details/${product.id}`}>VIEW DETAILS</Link>

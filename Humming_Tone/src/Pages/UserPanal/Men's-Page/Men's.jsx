@@ -72,10 +72,10 @@ const Men = ({ onViewDetails: _onViewDetails = () => {} }) => {
     <div className="mens-product-card">
       <div className="mens-product-image-container">
         <img 
-          src={product.image === "demo" ? demoImage : product.image} 
+          src={product.image || demoImage} 
           alt={product.name} 
           className="mens-product-img"
-          onError={(e) => { e.target.src = 'https://via.placeholder.com/400x500?text=Product+Image' }}  // Fallback for missing images
+          onError={(e) => { e.target.onerror = null; e.target.src = demoImage; }}  // Fallback for missing images
         />
         <div className="mens-product-hover-overlay">
           <Link  className="all-products-view-details-btn" to={`/usertab/details/${product.id}`}>VIEW DETAILS</Link>
