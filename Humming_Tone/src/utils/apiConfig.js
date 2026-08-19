@@ -27,7 +27,13 @@ export const getImageUrl = (imagePath) => {
   }
   const baseUrl = getApiBaseUrl();
   const cleanBase = baseUrl.replace(/\/+$/, '');
-  const cleanPath = imagePath.replace(/\\/g, '/').replace(/^\/+/, '');
+  let cleanPath = imagePath.replace(/\\/g, '/').replace(/^\/+/, '');
+  
+  // If the path doesn't start with uploads/ but is just a products/ or filename
+  if (!cleanPath.startsWith('uploads/')) {
+    cleanPath = `uploads/${cleanPath}`;
+  }
+
   return `${cleanBase}/${cleanPath}`;
 };
 

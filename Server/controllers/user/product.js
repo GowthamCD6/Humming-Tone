@@ -75,7 +75,16 @@ exports.fetch_new_arrivals = (req, res, next) => {
         SUM(pv.stock_quantity) AS stock_quantity,
         p.is_featured,
         p.is_active,
-        p.image_path,
+        COALESCE(
+          p.image_path,
+          (
+            SELECT pi.image_path
+            FROM product_images pi
+            WHERE pi.product_id = p.id
+            ORDER BY pi.is_primary DESC, pi.display_order ASC
+            LIMIT 1
+          )
+        ) AS image_path,
         p.created_at,
         p.updated_at,
 
@@ -125,7 +134,16 @@ exports.fetch_featured_products = (req, res, next) => {
         SUM(pv.stock_quantity) AS stock_quantity,
         p.is_featured,
         p.is_active,
-        p.image_path,
+        COALESCE(
+          p.image_path,
+          (
+            SELECT pi.image_path
+            FROM product_images pi
+            WHERE pi.product_id = p.id
+            ORDER BY pi.is_primary DESC, pi.display_order ASC
+            LIMIT 1
+          )
+        ) AS image_path,
         p.created_at,
         p.updated_at,
 
