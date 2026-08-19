@@ -27,15 +27,37 @@ const app = express();
 const PORT = process.env.PORT || 5000;
 const path = require('path');
 
-const rawOrigins = process.env.CORS_ORIGINS 
+const allowedStaticOrigins = process.env.CORS_ORIGINS 
   ? process.env.CORS_ORIGINS.split(",").map(s => s.trim()) 
-  : ["http://localhost:5173", "http://localhost:5174", "http://localhost:5175"];
-if (process.env.CLIENT_URL && !rawOrigins.includes(process.env.CLIENT_URL)) {
-  rawOrigins.push(process.env.CLIENT_URL);
+  : [
+      "https://hummingtone.com",
+      "https://www.hummingtone.com",
+      "http://localhost:5173",
+      "http://localhost:5174",
+      "http://localhost:5175"
+    ];
+
+if (process.env.CLIENT_URL && !allowedStaticOrigins.includes(process.env.CLIENT_URL)) {
+  allowedStaticOrigins.push(process.env.CLIENT_URL);
 }
 
 app.use(cors({
-    origin: rawOrigins,
+    origin: function (origin, callback) {
+      // Allow requests with no origin (like mobile apps, curl, server-to-server)
+      if (!origin) return callback(null, true);
+      
+      // Check static list
+      if (allowedStaticOrigins.includes(origin)) {
+        return callback(null, true);
+      }
+      
+      // Allow all Vercel preview/production deployments for hummingtone
+      if (origin.endsWith('.vercel.app') || origin.includes('hummingtone.com')) {
+        return callback(null, true);
+      }
+      
+      return callback(null, true); // Permissive CORS for cross-origin storefront
+    },
     credentials: true,
     methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"],
     allowedHeaders: ["Content-Type", "Authorization"]
