@@ -1,13 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import demoImage from '../../../assets/demo.jpeg';
 import UserFooter from '../../../components/User-Footer-Card/UserFooter';
-import ProductGridSkeleton from '../../../components/ProductSkeleton/ProductSkeleton';
+import LottieLoader from '../../../components/LottieLoader/LottieLoader';
 import './AllProduct.css';
 import { getGenderOptions } from '../../../utils/siteContentStore';
 import { Link } from 'react-router-dom';
 import { API_BASE_URL, getImageUrl } from '../../../utils/apiConfig';
 
-const Men = ({ onViewDetails: _onViewDetails = () => {} }) => {
+const AllProduct = ({ onViewDetails: _onViewDetails = () => {} }) => {
   const [selectedGender, setSelectedGender] = useState('All');
   const [selectedCategory, setSelectedCategory] = useState('All Categories');
   
@@ -128,7 +128,7 @@ const Men = ({ onViewDetails: _onViewDetails = () => {} }) => {
                 value={selectedGender}
                 onChange={(e) => {
                   setSelectedGender(e.target.value);
-                  setSelectedCategory('All Categories'); // Reset category on gender change
+                  setSelectedCategory('All Categories');
                 }}
               >
                 {genderOptions.map(option => (
@@ -182,7 +182,7 @@ const Men = ({ onViewDetails: _onViewDetails = () => {} }) => {
             <div className="all-products-heading-accent"></div>
             <p className="all-products-section-description">Explore our curated collection of premium products</p>
           </div>
-          <ProductGridSkeleton count={6} />
+          <LottieLoader size={160} message="Loading products..." />
         </div>
       ) : products.length > 0 ? (
         <div className="all-products-products-section">
@@ -214,4 +214,4 @@ const Men = ({ onViewDetails: _onViewDetails = () => {} }) => {
   );
 };
 
-export default Men;
+export default AllProduct;

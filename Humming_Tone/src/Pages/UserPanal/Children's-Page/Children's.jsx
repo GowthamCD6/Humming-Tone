@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import UserFooter from '../../../components/User-Footer-Card/UserFooter';
-import ProductGridSkeleton from '../../../components/ProductSkeleton/ProductSkeleton';
+import LottieLoader from '../../../components/LottieLoader/LottieLoader';
 import './Children\'s.css';
 import { getGenderOptions } from '../../../utils/siteContentStore';
 import axios from 'axios';  // Import axios
@@ -68,11 +68,6 @@ const Children = ({ onViewDetails: _onViewDetails = () => {} }) => {
     setProducts(allProducts);
   };
 
-  const _handleViewAll = () => {
-    console.log('View all products');
-    setProducts([]);  // Reset products if needed
-  };
-
   // Product Card Component
   const ProductCard = ({ product }) => (
     <div className="childrens-product-card">
@@ -87,12 +82,12 @@ const Children = ({ onViewDetails: _onViewDetails = () => {} }) => {
           }}
         />
         <div className="childrens-product-hover-overlay">
-          <Link  className="all-products-view-details-btn" to={`/usertab/details/${product.id}`}>VIEW DETAILS</Link>
+          <Link  className="childrens-view-details-btn" to={`/usertab/details/${product.id}`}>VIEW DETAILS</Link>
         </div>
       </div>
       <div className="childrens-product-details">
         <h3 className="childrens-product-title">{product.name}</h3>
-        <p className="childrens-product-brand">{product.brand}</p>
+        <p className="childrens-product-brand">{product.brand || 'HummingTone'}</p>
         <p className="childrens-product-price">₹{product.price.toFixed(2)}</p>
       </div>
     </div>
@@ -173,7 +168,7 @@ const Children = ({ onViewDetails: _onViewDetails = () => {} }) => {
             <div className="childrens-heading-accent"></div>
             <p className="childrens-section-description">Explore our curated collection of premium products</p>
           </div>
-          <ProductGridSkeleton count={6} />
+          <LottieLoader size={160} message="Loading children's collection..." />
         </div>
       ) : products.length > 0 ? (
         <div className="childrens-products-section">

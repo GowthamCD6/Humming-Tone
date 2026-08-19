@@ -4,8 +4,9 @@ import { useLocation, useNavigate } from "react-router-dom";
 import Login from "./Pages/LoginPage/Login.jsx";
 import AdminTab from "./components/AdminTab/AdminTab.jsx";
 import UserTab from "./components/UserTab/UserTab.jsx";
-import { fetchSiteContent } from "./utils/siteContentStore";
+import { fetchSiteContent, getSiteContent } from "./utils/siteContentStore";
 import { API_BASE_URL } from "./utils/apiConfig";
+import LottieLoader from "./components/LottieLoader/LottieLoader.jsx";
 
 // User pages (Direct imports for instant static filter & layout render)
 import Home from "./Pages/UserPanal/HomePage/Home.jsx";
@@ -123,11 +124,9 @@ window.fetch = async function () {
   
   return response;
 };
-// -------------------------------
-
 const UserPageLoader = () => (
-  <div style={{ minHeight: "40vh", display: "grid", placeItems: "center" }}>
-    Loading page...
+  <div style={{ minHeight: "50vh", display: "flex", alignItems: "center", justifyContent: "center", width: "100%" }}>
+    <LottieLoader size={180} message="Loading..." />
   </div>
 );
 
@@ -351,26 +350,23 @@ function ProtectedRoute({ isAuthenticated, userType, requiredType, children }) {
 
 // Guard component: blocks access to gender pages that the admin has set to inactive
 function GenderGuard({ genderName, children }) {
-  const [status, setStatus] = useState('loading'); // 'loading' | 'active' | 'inactive'
+  const initialContent = getSiteContent();
+  const initialActive = initialContent?.genderStatus?.[genderName] !== false;
+  const [isActive, setIsActive] = useState(initialActive);
   const navigate = useNavigate();
 
   useEffect(() => {
     let cancelled = false;
-    fetchSiteContent(true).then(data => {
+    fetchSiteContent().then(data => {
       if (cancelled) return;
       const genderStatus = data?.genderStatus || {};
-      // If the gender key doesn't exist, default to active
-      const isActive = genderStatus[genderName] !== false;
-      setStatus(isActive ? 'active' : 'inactive');
-    }).catch(() => {
-      if (!cancelled) setStatus('active'); // On error, allow access
-    });
+      const active = genderStatus[genderName] !== false;
+      setIsActive(active);
+    }).catch(() => {});
     return () => { cancelled = true; };
   }, [genderName]);
 
-  if (status === 'loading') return <UserPageLoader />;
-
-  if (status === 'inactive') {
+  if (!isActive) {
     return (
       <div className="page-disabled-overlay">
         <div className="page-disabled-modal">
@@ -380,20 +376,18 @@ function GenderGuard({ genderName, children }) {
               <line x1="4.93" y1="4.93" x2="19.07" y2="19.07" />
             </svg>
           </div>
-          <h2 className="page-disabled-title">Page Currently Unavailable</h2>
-          <p className="page-disabled-message">
-            The <strong>{genderName}</strong> section has been temporarily disabled by the administrator. 
-            This page may be undergoing maintenance or updates.
+          <h2 className="page-disabled-title">{genderName} Section is Currently Unavailable</h2>
+          <p className="page-disabled-msg">
+            This collection is temporarily hidden by the store administrator. Please check back later or explore our other collections.
           </p>
-          <p className="page-disabled-sub">
-            Please check back later or explore our other collections.
-          </p>
-          <button
-            className="page-disabled-btn"
-            onClick={() => navigate('/usertab/home')}
-          >
-            Go Back Home
-          </button>
+          <div className="page-disabled-actions">
+            <button className="page-disabled-btn page-disabled-btn-primary" onClick={() => navigate('/usertab/all-products')}>
+              Browse All Products
+            </button>
+            <button className="page-disabled-btn page-disabled-btn-secondary" onClick={() => navigate('/usertab/home')}>
+              Go to Home
+            </button>
+          </div>
         </div>
       </div>
     );

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import demoImage from '../../../assets/demo.jpeg';
 import UserFooter from '../../../components/User-Footer-Card/UserFooter';
-import ProductGridSkeleton from '../../../components/ProductSkeleton/ProductSkeleton';
+import LottieLoader from '../../../components/LottieLoader/LottieLoader';
 import './Women.css';
 import { getGenderOptions } from '../../../utils/siteContentStore';
 import axios from 'axios';
@@ -99,7 +99,7 @@ const Women = ({ onViewDetails: _onViewDetails = () => {} }) => {
       </div>
       <div className="women-product-details">
         <h3 className="women-product-title">{product.name}</h3>
-        <p className="women-product-brand">{product.brand}</p>
+        <p className="women-product-brand">{product.brand || 'HummingTone'}</p>
         <p className="women-product-price">₹{product.price.toFixed(2)}</p>
       </div>
     </div>
@@ -173,7 +173,7 @@ const Women = ({ onViewDetails: _onViewDetails = () => {} }) => {
               Explore our curated collection of premium women's wear
             </p>
           </div>
-          <ProductGridSkeleton count={6} />
+          <LottieLoader size={160} message="Loading women's collection..." />
         </div>
       ) : products.length > 0 ? (
         <div className="women-products-section">

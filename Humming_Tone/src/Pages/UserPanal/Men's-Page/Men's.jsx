@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import demoImage from '../../../assets/demo.jpeg';
 import UserFooter from '../../../components/User-Footer-Card/UserFooter';
-import ProductGridSkeleton from '../../../components/ProductSkeleton/ProductSkeleton';
+import LottieLoader from '../../../components/LottieLoader/LottieLoader';
 import './Mens.css';
 import { getGenderOptions } from '../../../utils/siteContentStore';
 import axios from 'axios';  // Import axios
@@ -86,12 +86,12 @@ const Men = ({ onViewDetails: _onViewDetails = () => {} }) => {
           }}
         />
         <div className="mens-product-hover-overlay">
-          <Link  className="all-products-view-details-btn" to={`/usertab/details/${product.id}`}>VIEW DETAILS</Link>
+          <Link  className="mens-view-details-btn" to={`/usertab/details/${product.id}`}>VIEW DETAILS</Link>
         </div>
       </div>
       <div className="mens-product-details">
         <h3 className="mens-product-title">{product.name}</h3>
-        <p className="mens-product-brand">{product.brand}</p>
+        <p className="mens-product-brand">{product.brand || 'HummingTone'}</p>
         <p className="mens-product-price">₹{product.price.toFixed(2)}</p>
       </div>
     </div>
@@ -172,7 +172,7 @@ const Men = ({ onViewDetails: _onViewDetails = () => {} }) => {
             <div className="mens-heading-accent"></div>
             <p className="mens-section-description">Explore our curated collection of premium products</p>
           </div>
-          <ProductGridSkeleton count={6} />
+          <LottieLoader size={160} message="Loading men's collection..." />
         </div>
       ) : products.length > 0 ? (
         <div className="mens-products-section">

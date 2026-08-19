@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import UserFooter from '../../../components/User-Footer-Card/UserFooter';
-import ProductGridSkeleton from '../../../components/ProductSkeleton/ProductSkeleton';
+import LottieLoader from '../../../components/LottieLoader/LottieLoader';
 import './Sports.css';
 import { getGenderOptions } from '../../../utils/siteContentStore';
 import axios from 'axios';  // Import axios
@@ -65,12 +65,7 @@ const Sports = ({ onViewDetails: _onViewDetails = () => {} }) => {
   const handleClearAll = () => {
     setSelectedGender('Sports');
     setSelectedCategory('All Categories');
-    setProducts(allProducts); // Reset products when filters are cleared
-  };
-
-  const _handleViewAll = () => {
-    console.log('View all products');
-    setProducts([]);  // Clear current product list if needed
+    setProducts(allProducts);
   };
 
   // Product Card Component
@@ -87,25 +82,24 @@ const Sports = ({ onViewDetails: _onViewDetails = () => {} }) => {
           }}
         />
         <div className="sports-product-hover-overlay">
-          <Link  className="all-products-view-details-btn" to={`/usertab/details/${product.id}`}>VIEW DETAILS</Link>
+          <Link  className="sports-view-details-btn" to={`/usertab/details/${product.id}`}>VIEW DETAILS</Link>
         </div>
       </div>
       <div className="sports-product-details">
         <h3 className="sports-product-title">{product.name}</h3>
-        <p className="sports-product-brand">{product.brand}</p>
+        <p className="sports-product-brand">{product.brand || 'HummingTone'}</p>
         <p className="sports-product-price">₹{product.price.toFixed(2)}</p>
       </div>
     </div>
   );
 
   return (
-    <>
-      <div className="sports-collection-page">
-        {/* Header Section */}
-        <div className="sports-header">
-          <h1 className="sports-title">Our Collection</h1>
-          <p className="sports-item-count">{products.length} ITEMS FOUND</p>
-        </div>
+    <div className="sports-collection-page">
+      {/* Header Section */}
+      <div className="sports-header">
+        <h1 className="sports-title">Our Collection</h1>
+        <p className="sports-item-count">{products.length} ITEMS FOUND</p>
+      </div>
 
       <div className="sports-divider"></div>
 
@@ -174,7 +168,7 @@ const Sports = ({ onViewDetails: _onViewDetails = () => {} }) => {
             <div className="sports-heading-accent"></div>
             <p className="sports-section-description">Explore our curated collection of premium products</p>
           </div>
-          <ProductGridSkeleton count={6} />
+          <LottieLoader size={160} message="Loading sports collection..." />
         </div>
       ) : products.length > 0 ? (
         <div className="sports-products-section">
@@ -199,11 +193,10 @@ const Sports = ({ onViewDetails: _onViewDetails = () => {} }) => {
           <Link className="sports-view-all-button" to="/usertab/all-products">VIEW ALL PRODUCTS</Link>
         </div>
       )}
-      </div>
       
       {/* Footer */}
       <UserFooter />
-    </>
+    </div>
   );
 };
 

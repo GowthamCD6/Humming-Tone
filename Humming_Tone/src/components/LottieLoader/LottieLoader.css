@@ -1,0 +1,25 @@
+.lottie-loader-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 60px 20px;
+  width: 100%;
+  min-height: 280px;
+  grid-column: 1 / -1;
+}
+
+.lottie-animation-wrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.lottie-loader-message {
+  margin-top: 15px;
+  font-family: 'Poppins', -apple-system, BlinkMacSystemFont, sans-serif;
+  font-size: 14px;
+  color: #64748b;
+  font-weight: 500;
+  letter-spacing: 0.5px;
+}

@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import DashboardIcon from '@mui/icons-material/Dashboard'
 import ShoppingBagIcon from '@mui/icons-material/ShoppingBag'
 import AddCircleIcon from '@mui/icons-material/AddCircle'
@@ -10,6 +10,7 @@ import AccountCircleIcon from '@mui/icons-material/AccountCircle'
 import PeopleIcon from '@mui/icons-material/People'
 import AdminPanelSettingsIcon from '@mui/icons-material/AdminPanelSettings'
 import MenuIcon from '@mui/icons-material/Menu'
+import CloseIcon from '@mui/icons-material/Close'
 import { Outlet, useLocation, useNavigate } from 'react-router-dom'
 import logo from '../../assets/logo.png'
 import './AdminTab.css'
@@ -52,7 +53,12 @@ const menuItems = menuSections.flatMap(section => section.items)
 export default function AdminTab({ onLogout = () => {} }) {
   const location = useLocation()
   const navigate = useNavigate()
-  const [sidebarOpen, setSidebarOpen] = useState(true)
+  const [sidebarOpen, setSidebarOpen] = useState(false)
+
+  // Auto close sidebar drawer when navigating on mobile
+  useEffect(() => {
+    setSidebarOpen(false)
+  }, [location.pathname])
 
   const currentItem = menuItems.find(item =>
     item.path && location.pathname.startsWith(`/admin/${item.path}`)
@@ -65,7 +71,16 @@ export default function AdminTab({ onLogout = () => {} }) {
   return (
     <div className="admin-tab-layout">
       {/* Sidebar */}
-      <aside className={`admin-sidebar ${sidebarOpen ? 'open' : 'collapsed'}`}>
+      <aside className={`admin-sidebar ${sidebarOpen ? 'open' : ''}`}>
+        {/* Close Button on Mobile Drawer */}
+        <button
+          className="admin-sidebar-close-btn"
+          onClick={() => setSidebarOpen(false)}
+          aria-label="Close menu"
+        >
+          <CloseIcon />
+        </button>
+
         {/* Sidebar Header */}
         <div className="sidebar-header">
           <img src={logo} alt="Humming Tone" className="sidebar-brand-logo" />
