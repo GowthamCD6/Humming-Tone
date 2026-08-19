@@ -1,6 +1,6 @@
-import { API_BASE_URL } from './apiConfig';
+import { getApiBaseUrl } from './apiConfig';
 
-const API_URL = `${API_BASE_URL}/api/site-content`;
+const getSiteContentUrl = () => `${getApiBaseUrl()}/api/site-content`;
 
 export const defaultSiteContent = {
   footer: {
@@ -150,7 +150,7 @@ export async function fetchSiteContent(forceRefresh = false) {
   }
 
   try {
-    const response = await fetch(API_URL);
+    const response = await fetch(getSiteContentUrl());
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`);
     }

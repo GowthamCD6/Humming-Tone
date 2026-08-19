@@ -1,15 +1,18 @@
 // Central API Base URL helper
-const getEnvApiUrl = () => {
-  if (import.meta.env.VITE_API_URL) {
-    return import.meta.env.VITE_API_URL;
-  }
-  if (typeof window !== 'undefined' && window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1') {
+export const getApiBaseUrl = () => {
+  // If running in browser and domain is hummingtone.com or any non-localhost domain (like Vercel)
+  if (typeof window !== 'undefined' && window.location.hostname && !window.location.hostname.includes('localhost') && window.location.hostname !== '127.0.0.1') {
     return 'https://api.hummingtone.com';
   }
+  
+  if (import.meta.env && import.meta.env.VITE_API_URL) {
+    return import.meta.env.VITE_API_URL;
+  }
+
   return 'http://localhost:5000';
 };
 
-export const API_BASE_URL = getEnvApiUrl();
+export const API_BASE_URL = getApiBaseUrl();
 
 export const getApiUrl = (path = '') => {
   const cleanBase = API_BASE_URL.replace(/\/+$/, '');
