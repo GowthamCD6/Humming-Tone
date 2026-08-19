@@ -57,10 +57,9 @@ exports.fetch_new_arrivals = (req, res, next) => {
   try {
     const sql = `
       SELECT
-        p.id AS id,                     
+        p.id,
         p.name,
         p.about,
-        MIN(pv.original_price) AS original_price,
         p.sku,
         p.category_id,
         p.subcategory,
@@ -72,35 +71,25 @@ exports.fetch_new_arrivals = (req, res, next) => {
         p.age_range,
         p.weight,
         p.dimensions,
-        SUM(pv.stock_quantity) AS stock_quantity,
         p.is_featured,
         p.is_active,
-        COALESCE(
-          p.image_path,
-          (
-            SELECT pi.image_path
-            FROM product_images pi
-            WHERE pi.product_id = p.id
-            ORDER BY pi.is_primary DESC, pi.display_order ASC
-            LIMIT 1
-          )
-        ) AS image_path,
+        p.image_path,
         p.created_at,
         p.updated_at,
-
-        MIN(pv.id) AS variant_id,            
-        MIN(pv.size) AS size,
-        MIN(pv.price) AS price
+        MIN(pv.price) AS price,
+        MIN(pv.original_price) AS original_price,
+        SUM(pv.stock_quantity) AS stock_quantity
       FROM products p
-      JOIN product_variants pv ON p.id = pv.product_id
+      LEFT JOIN product_variants pv ON p.id = pv.product_id
       WHERE p.is_active = 1
-      GROUP BY p.id
+      GROUP BY p.id, p.name, p.about, p.sku, p.category_id, p.subcategory, p.brand, p.color, p.material, p.care_instructions, p.gender, p.age_range, p.weight, p.dimensions, p.is_featured, p.is_active, p.image_path, p.created_at, p.updated_at
       ORDER BY p.created_at DESC
       LIMIT 9
     `;
 
     db.query(sql, [], (error, result) => {
       if (error) {
+        console.error("fetch_new_arrivals error:", error);
         return next(error);
       }
       res.send(result || []);
@@ -110,16 +99,13 @@ exports.fetch_new_arrivals = (req, res, next) => {
   }
 };
 
-
-
 exports.fetch_featured_products = (req, res, next) => {
   try {
     const sql = `
       SELECT
-        p.id AS id,                   
+        p.id,
         p.name,
         p.about,
-        MIN(pv.original_price) AS original_price,
         p.sku,
         p.category_id,
         p.subcategory,
@@ -131,35 +117,25 @@ exports.fetch_featured_products = (req, res, next) => {
         p.age_range,
         p.weight,
         p.dimensions,
-        SUM(pv.stock_quantity) AS stock_quantity,
         p.is_featured,
         p.is_active,
-        COALESCE(
-          p.image_path,
-          (
-            SELECT pi.image_path
-            FROM product_images pi
-            WHERE pi.product_id = p.id
-            ORDER BY pi.is_primary DESC, pi.display_order ASC
-            LIMIT 1
-          )
-        ) AS image_path,
+        p.image_path,
         p.created_at,
         p.updated_at,
-
-        MIN(pv.id) AS variant_id,
-        MIN(pv.size) AS size,
-        MIN(pv.price) AS price
+        MIN(pv.price) AS price,
+        MIN(pv.original_price) AS original_price,
+        SUM(pv.stock_quantity) AS stock_quantity
       FROM products p
-      JOIN product_variants pv ON p.id = pv.product_id
+      LEFT JOIN product_variants pv ON p.id = pv.product_id
       WHERE p.is_featured = 1
         AND p.is_active = 1
-      GROUP BY p.id
+      GROUP BY p.id, p.name, p.about, p.sku, p.category_id, p.subcategory, p.brand, p.color, p.material, p.care_instructions, p.gender, p.age_range, p.weight, p.dimensions, p.is_featured, p.is_active, p.image_path, p.created_at, p.updated_at
       ORDER BY p.created_at DESC
     `;
 
     db.query(sql, [], (error, result) => {
       if (error) {
+        console.error("fetch_featured_products error:", error);
         return next(error);
       }
       res.send(result || []);
