@@ -39,7 +39,15 @@ export default function Buyer() {
     buyers.forEach((buyer) => {
       const email = buyer.customer_email?.toLowerCase() || 'unknown';
       if (map.has(email)) {
-        map.get(email).orderCount += 1;
+        const existing = map.get(email);
+        existing.orderCount += 1;
+        // Keep freshest non-empty address fields
+        if (!existing.customer_address && buyer.customer_address) existing.customer_address = buyer.customer_address;
+        if (!existing.city && buyer.city) existing.city = buyer.city;
+        if (!existing.state && buyer.state) existing.state = buyer.state;
+        if (!existing.pincode && buyer.pincode) existing.pincode = buyer.pincode;
+        if (!existing.customer_phone && buyer.customer_phone) existing.customer_phone = buyer.customer_phone;
+        if (!existing.customer_name && buyer.customer_name) existing.customer_name = buyer.customer_name;
       } else {
         map.set(email, {
           ...buyer,
@@ -103,14 +111,6 @@ export default function Buyer() {
     return result;
   }, [groupedBuyers, searchTerm, orderFilter]);
 
-  if (loading) {
-    return (
-      <section className="buyer-page-container">
-        <div className="buyer-loading">Loading buyer information...</div>
-      </section>
-    );
-  }
-
   return (
     <section className="buyer-page-container">
 
@@ -135,7 +135,7 @@ export default function Buyer() {
           <input
             type="text"
             className="buyer-order-filter"
-            placeholder=" Search by Order count"
+            placeholder="Filter by count (e.g. 2, >1)"
             value={orderFilter}
             onChange={(e) => setOrderFilter(e.target.value)}
           />
@@ -144,12 +144,42 @@ export default function Buyer() {
         {/* Total Buyers */}
         <div className="buyer-total-badge">
           <PeopleIcon className="buyer-total-icon" />
-          <span>{filteredBuyers.length} Buyers</span>
+          <span>{loading ? "..." : `${filteredBuyers.length} Buyers`}</span>
         </div>
       </div>
 
-      {/* 🔹 Buyers Cards */}
-      {filteredBuyers.length === 0 ? (
+      {/* 🔹 Skeleton Loading Grid */}
+      {loading ? (
+        <div className="buyer-cards-grid">
+          {[1, 2, 3, 4, 5, 6].map((item) => (
+            <div key={`buyer-skeleton-${item}`} className="buyer-card buyer-card-skeleton">
+              <div className="buyer-card-header">
+                <div className="buyer-skeleton-box buyer-skeleton-name" />
+                <div className="buyer-skeleton-box buyer-skeleton-badge" />
+              </div>
+              <div className="buyer-card-body">
+                <div className="buyer-card-row">
+                  <div className="buyer-skeleton-box buyer-skeleton-label" />
+                  <div className="buyer-skeleton-box buyer-skeleton-line-md" />
+                </div>
+                <div className="buyer-card-row">
+                  <div className="buyer-skeleton-box buyer-skeleton-label" />
+                  <div className="buyer-skeleton-box buyer-skeleton-line-sm" />
+                </div>
+                <div className="buyer-card-row">
+                  <div className="buyer-skeleton-box buyer-skeleton-label" />
+                  <div className="buyer-skeleton-box buyer-skeleton-line-lg" />
+                </div>
+                <div className="buyer-card-row-inline" style={{ marginTop: '12px' }}>
+                  <div className="buyer-skeleton-box buyer-skeleton-inline-item" />
+                  <div className="buyer-skeleton-box buyer-skeleton-inline-item" />
+                  <div className="buyer-skeleton-box buyer-skeleton-inline-item" />
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      ) : filteredBuyers.length === 0 ? (
         <div className="no-buyers">
           No buyers found.
         </div>
