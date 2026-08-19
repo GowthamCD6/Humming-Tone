@@ -368,7 +368,7 @@ export default function OrderDetails() {
             <div key={item.id} className="od-item-card">
               <div className="od-item-image">
                 <img
-                  src={demoImage}
+                  src={getImageUrl(item.image_path) || getImageUrl(item.product_image)}
                   alt={item.product_name}
                 />
               </div>

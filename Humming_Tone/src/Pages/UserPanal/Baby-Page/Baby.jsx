@@ -72,12 +72,14 @@ const Baby = ({ onViewDetails: _onViewDetails = () => {} }) => {
   const ProductCard = ({ product }) => (
     <div className="baby-product-card">
       <div className="baby-product-image-container">
-        {/* Render the exact image from the backend */}
         <img 
-          src={product.image || demoImage} 
+          src={product.image} 
           alt={product.name} 
           className="baby-product-img"
-          onError={(e) => { e.target.onerror = null; e.target.src = demoImage; }}  // Fallback for missing images
+          onError={(e) => {
+            e.target.onerror = null;
+            e.target.style.opacity = '0.5';
+          }}
         />
         <div className="baby-product-hover-overlay">
           <Link  className="all-products-view-details-btn" to={`/usertab/details/${product.id}`}>VIEW DETAILS</Link>

@@ -25,7 +25,8 @@ export const getImageUrl = (imagePath) => {
   if (imagePath.startsWith('http://') || imagePath.startsWith('https://') || imagePath.startsWith('data:')) {
     return imagePath;
   }
-  const cleanBase = API_BASE_URL.replace(/\/+$/, '');
+  const baseUrl = getApiBaseUrl();
+  const cleanBase = baseUrl.replace(/\/+$/, '');
   const cleanPath = imagePath.replace(/\\/g, '/').replace(/^\/+/, '');
   return `${cleanBase}/${cleanPath}`;
 };

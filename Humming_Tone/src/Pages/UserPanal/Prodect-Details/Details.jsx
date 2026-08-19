@@ -47,7 +47,7 @@ const ProductDetailPage = () => {
       size: selectedSize,
       color: product.color || "Default",
       stock: variant.stock_quantity,
-      image: productImages[0] || demoImage,
+      image: productImages[0] || getImageUrl(product.image_path),
     };
 
     const cart = getCart();
@@ -63,7 +63,7 @@ const ProductDetailPage = () => {
       size: selectedSize,
       quantity: quantity,
       price: variant.price,
-      image: productImages[0] || demoImage,
+      image: productImages[0] || getImageUrl(product.image_path),
     });
     setShowCartModal(true);
   };

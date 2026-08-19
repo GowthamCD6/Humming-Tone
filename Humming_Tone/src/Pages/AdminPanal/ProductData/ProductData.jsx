@@ -38,7 +38,7 @@ const AllProducts = () => {
         const formattedProducts = response.data.map(p => ({
           ...p,
           _id: p.id,
-          image: p.image_path ? `${API_BASE_URL}/${p.image_path.replace(/\\/g, '/')}` : demoImage,
+          image: getImageUrl(p.image_path),
           category: p.subcategory || 'General',
           price: p.price || 0,
           stock: p.stock_quantity || 0,

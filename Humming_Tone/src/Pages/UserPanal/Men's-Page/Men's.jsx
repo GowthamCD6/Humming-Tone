@@ -41,7 +41,7 @@ const Men = ({ onViewDetails: _onViewDetails = () => {} }) => {
         const fetchedProducts = response.data.map(product => ({
           ...product,
           price: parseFloat(product.price),  // Ensure price is a float
-          image: product.image_path ? getImageUrl(product.image_path) : demoImage,
+          image: getImageUrl(product.image_path),
         }));
         setProducts(fetchedProducts);
         setAllProducts(fetchedProducts);
@@ -72,10 +72,13 @@ const Men = ({ onViewDetails: _onViewDetails = () => {} }) => {
     <div className="mens-product-card">
       <div className="mens-product-image-container">
         <img 
-          src={product.image || demoImage} 
+          src={product.image} 
           alt={product.name} 
           className="mens-product-img"
-          onError={(e) => { e.target.onerror = null; e.target.src = demoImage; }}  // Fallback for missing images
+          onError={(e) => {
+            e.target.onerror = null;
+            e.target.style.opacity = '0.5';
+          }}
         />
         <div className="mens-product-hover-overlay">
           <Link  className="all-products-view-details-btn" to={`/usertab/details/${product.id}`}>VIEW DETAILS</Link>

@@ -35,7 +35,7 @@ const Home = ({ onViewDetails: _onViewDetails = () => {} }) => {
         setNewArrivals(response.data.map(product => ({
           ...product,
           price: parseFloat(product.price),
-          image: product.image_path ? getImageUrl(product.image_path) : demoImage,
+          image: getImageUrl(product.image_path),
         })));
       } catch (error) {
         console.error('Error fetching new arrivals:', error);
@@ -50,7 +50,7 @@ const Home = ({ onViewDetails: _onViewDetails = () => {} }) => {
         setFeaturedProducts(response.data.map(product => ({
           ...product,
           price: parseFloat(product.price),
-          image: product.image_path ? getImageUrl(product.image_path) : demoImage,
+          image: getImageUrl(product.image_path),
         })));
       } catch (error) {
         console.error('Error fetching featured products:', error);
@@ -67,8 +67,11 @@ const Home = ({ onViewDetails: _onViewDetails = () => {} }) => {
   const ProductCard = ({ product }) => (
     <div className="all-products-product-card">
       <div className="all-products-product-image-container">
-        <img src={product.image || demoImage} alt={product.name} className="all-products-product-img"
-             onError={(e) => { e.target.onerror = null; e.target.src = demoImage; }} />
+        <img src={product.image} alt={product.name} className="all-products-product-img"
+             onError={(e) => {
+               e.target.onerror = null;
+               e.target.style.opacity = '0.5';
+             }} />
         
         <div className="all-products-product-hover-overlay">
           <Link  className="all-products-view-details-btn no-underline" to={`/usertab/details/${product.id}`}>VIEW DETAILS</Link>

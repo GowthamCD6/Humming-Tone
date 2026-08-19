@@ -44,9 +44,7 @@ const Women = ({ onViewDetails: _onViewDetails = () => {} }) => {
         const fetchedProducts = response.data.map(product => ({
           ...product,
           price: parseFloat(product.price),
-          image: product.image_path
-            ? getImageUrl(product.image_path)
-            : demoImage
+          image: getImageUrl(product.image_path)
         }));
 
         setProducts(fetchedProducts);
@@ -77,12 +75,12 @@ const Women = ({ onViewDetails: _onViewDetails = () => {} }) => {
     <div className="women-product-card">
       <div className="women-product-image-container">
         <img
-          src={product.image || demoImage}
+          src={product.image}
           alt={product.name}
           className="women-product-img"
           onError={(e) => {
             e.target.onerror = null;
-            e.target.src = demoImage;
+            e.target.style.opacity = '0.5';
           }}
         />
         <div className="women-product-hover-overlay">
