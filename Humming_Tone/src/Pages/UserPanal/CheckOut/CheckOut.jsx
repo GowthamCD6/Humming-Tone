@@ -180,6 +180,9 @@ const handleCheckout = async (e) => {
             order_number: result.data.order_number,
             customer_email: formData.customer_email,
             customer_phone: formData.customer_phone,
+            razorpay_payment_id: response.razorpay_payment_id,
+            razorpay_order_id: response.razorpay_order_id,
+            razorpay_signature: response.razorpay_signature,
           },
         });
       },
@@ -187,6 +190,19 @@ const handleCheckout = async (e) => {
       modal: {
         ondismiss: function () {
           console.log("Payment popup closed");
+
+          // Notify backend that payment was aborted/closed
+          if (result?.data?.order_number) {
+            fetch(`${API_BASE_URL}/user/cancel_order`, {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                order_number: result.data.order_number,
+                reason: "Payment window closed by user"
+              })
+            }).catch(e => console.error("Error cancelling order:", e));
+          }
+
           navigate("/usertab/payment-failure", {
             state: {
               failureData: {

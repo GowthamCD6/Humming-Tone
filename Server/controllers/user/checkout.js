@@ -275,8 +275,8 @@ exports.web_hook = (req,res,next) => {
         return res.status(200).json({ msg: "Final state already set" });
       }
       if(paymentDetails.status == "captured"){
-        let updatesql = "update orders set payment_verified = ?, payment_status = ?, razorpay_signature = ? where razorpay_order_id = ?";
-        db.query(updatesql,[1, paymentDetails.status, webhookSignature, paymentDetails.order_id],(error1,result1) => {
+        let updatesql = "update orders set payment_verified = ?, payment_status = ?, order_status = 'confirmed', payment_id = ?, razorpay_signature = ? where razorpay_order_id = ?";
+        db.query(updatesql,[1, paymentDetails.status, paymentDetails.id, webhookSignature, paymentDetails.order_id],(error1,result1) => {
           if(error1)return next(error1);
 
           // Trigger automated WhatsApp confirmation
@@ -290,7 +290,7 @@ exports.web_hook = (req,res,next) => {
         })
       }
       else if(paymentDetails.status == "failed"){
-        let updatesql = "update orders set payment_status = ? where razorpay_order_id = ?";
+        let updatesql = "update orders set payment_status = ?, order_status = 'cancelled' where razorpay_order_id = ?";
         db.query(updatesql,[paymentDetails.status, paymentDetails.order_id],(error1,result1) => {
           if(error1)return next(error1);
           res.status(200).json({msg:"Webhook received successfully!"});
@@ -304,50 +304,184 @@ exports.web_hook = (req,res,next) => {
   }
 }
 
-exports.verify_payment = (req,res,next) => {
-  try{
-    const{order_number} = req.body;
-    if(!order_number || order_number.trim() == ""){
+exports.verify_payment = async (req, res, next) => {
+  try {
+    const { 
+      order_number, 
+      razorpay_payment_id, 
+      razorpay_order_id, 
+      razorpay_signature 
+    } = req.body;
+
+    if (!order_number || order_number.trim() === "") {
       return next(createError.BadRequest('Invalid order_id!'));
     }
-    let fetchSql = `SELECT id, order_number, payment_verified, payment_status, order_status, 
-                     shipping_date, delivery_date, created_at, 
-                     customer_name, customer_email, customer_phone, total_amount
-                     FROM orders WHERE order_number = ?`;
-    db.query(fetchSql,[order_number],(error,result) => {
-      if(error)return next(error);
-      if(!result || result.length === 0){
-        return res.status(404).json({ msg: "Order not found" });
+
+    // Fetch the order from DB
+    const [orderRows] = await db.promise().query(
+      `SELECT * FROM orders WHERE order_number = ? LIMIT 1`,
+      [order_number]
+    );
+
+    if (!orderRows || orderRows.length === 0) {
+      return res.status(404).json({ msg: "Order not found" });
+    }
+
+    const order = orderRows[0];
+
+    // If already verified and captured
+    if (order.payment_verified === 1 && order.payment_status === "captured") {
+      try {
+        sendOrderConfirmationWhatsApp(order).catch(e => console.error("Verify WA error:", e));
+      } catch (e) {
+        console.error("WA error:", e);
       }
-      if(result[0].payment_verified && result[0].payment_status == "captured"){
-        // Trigger automated WhatsApp confirmation if not already sent
-        sendOrderConfirmationWhatsApp(result[0]).catch(e => console.error("Verify WA confirmation error:", e));
+
+      return res.status(200).json({
+        msg: "payment verified",
+        order: {
+          order_number: order.order_number,
+          order_status: order.order_status,
+          shipping_date: order.shipping_date,
+          delivery_date: order.delivery_date,
+          created_at: order.created_at,
+          customer_name: order.customer_name,
+          customer_email: order.customer_email,
+          customer_phone: order.customer_phone
+        }
+      });
+    }
+
+    // Attempt Client Signature Verification if signature was passed from frontend
+    if (razorpay_payment_id && razorpay_order_id && razorpay_signature) {
+      const generatedSignature = crypto
+        .createHmac("sha256", process.env.RAZORPAY_KEY_SECRET)
+        .update(`${razorpay_order_id}|${razorpay_payment_id}`)
+        .digest("hex");
+
+      if (generatedSignature === razorpay_signature) {
+        await db.promise().query(
+          `UPDATE orders 
+           SET payment_verified = 1, 
+               payment_status = 'captured', 
+               order_status = 'confirmed',
+               payment_id = ?, 
+               razorpay_signature = ? 
+           WHERE order_number = ?`,
+          [razorpay_payment_id, razorpay_signature, order_number]
+        );
+
+        order.payment_verified = 1;
+        order.payment_status = 'captured';
+        order.order_status = 'confirmed';
+        order.payment_id = razorpay_payment_id;
+
+        try {
+          sendOrderConfirmationWhatsApp(order).catch(e => console.error("Verify WA error:", e));
+        } catch (e) {
+          console.error("WA error:", e);
+        }
 
         return res.status(200).json({
-          "msg":"payment verified",
+          msg: "payment verified",
           order: {
-            order_number,
-            order_status: result[0].order_status,
-            shipping_date: result[0].shipping_date,
-            delivery_date: result[0].delivery_date,
-            created_at: result[0].created_at,
-            customer_name: result[0].customer_name,
-            customer_email: result[0].customer_email,
-            customer_phone: result[0].customer_phone
+            order_number: order.order_number,
+            order_status: "confirmed",
+            payment_status: "captured",
+            shipping_date: order.shipping_date,
+            delivery_date: order.delivery_date,
+            created_at: order.created_at,
+            customer_name: order.customer_name,
+            customer_email: order.customer_email,
+            customer_phone: order.customer_phone
           }
-        })
+        });
       }
-      else if(!result[0].payment_verified || result[0].payment_status == "failed"){
-        return res.status(200).json({
-          "msg":"payment not verified"
-        })
+    }
+
+    // Fallback: Inquire Razorpay API directly using razorpay_order_id if available
+    if (order.razorpay_order_id && razorpayInstance) {
+      try {
+        const payments = await razorpayInstance.orders.fetchPayments(order.razorpay_order_id);
+        if (payments && payments.items && payments.items.length > 0) {
+          const successfulPayment = payments.items.find(p => p.status === 'captured' || p.status === 'authorized');
+          if (successfulPayment) {
+            await db.promise().query(
+              `UPDATE orders 
+               SET payment_verified = 1, 
+                   payment_status = 'captured', 
+                   order_status = 'confirmed',
+                   payment_id = ? 
+               WHERE order_number = ?`,
+              [successfulPayment.id, order_number]
+            );
+
+            order.payment_verified = 1;
+            order.payment_status = 'captured';
+            order.order_status = 'confirmed';
+            order.payment_id = successfulPayment.id;
+
+            try {
+              sendOrderConfirmationWhatsApp(order).catch(e => console.error("Verify WA error:", e));
+            } catch (e) {
+              console.error("WA error:", e);
+            }
+
+            return res.status(200).json({
+              msg: "payment verified",
+              order: {
+                order_number: order.order_number,
+                order_status: "confirmed",
+                payment_status: "captured",
+                shipping_date: order.shipping_date,
+                delivery_date: order.delivery_date,
+                created_at: order.created_at,
+                customer_name: order.customer_name,
+                customer_email: order.customer_email,
+                customer_phone: order.customer_phone
+              }
+            });
+          }
+        }
+      } catch (rpErr) {
+        console.error("Direct Razorpay payment check failed:", rpErr.message);
       }
-    })
-  }
-  catch(error){
+    }
+
+    // If payment could not be verified
+    return res.status(200).json({
+      msg: "payment not verified"
+    });
+  } catch (error) {
     next(error);
   }
-}
+};
+
+exports.cancel_order = async (req, res, next) => {
+  try {
+    const { order_number, reason = "Payment was cancelled/closed by user" } = req.body;
+
+    if (!order_number || order_number.trim() === "") {
+      return next(createError.BadRequest("Order number is required"));
+    }
+
+    // Only update if not already captured/confirmed
+    const [result] = await db.promise().query(
+      `UPDATE orders 
+       SET payment_status = 'failed', order_status = 'cancelled', payment_verified = 0 
+       WHERE order_number = ? AND payment_status != 'captured'`,
+      [order_number]
+    );
+
+    return res.status(200).json({
+      success: true,
+      message: "Order marked as cancelled/failed",
+      affectedRows: result.affectedRows
+    });
+  } catch (error) {
+    next(error);
+  }
+};
 
 exports.track_order = async (req, res, next) => {
   try {
