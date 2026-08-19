@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { Plus, Search, Edit, Trash2, X } from 'lucide-react'
 import axios from 'axios'
 import './ManageProduct.css'
-import { API_BASE_URL as BASE_URL } from '../../../utils/apiConfig'
+import { API_BASE_URL as BASE_URL, getImageUrl } from '../../../utils/apiConfig'
 
 const getAuthHeaders = (contentType) => {
   const token = localStorage.getItem('adminToken');
@@ -112,7 +112,7 @@ export default function ManageProducts() {
       if (Array.isArray(prodData)) {
         setProducts(prodData.map(p => ({
           ...p,
-          image: p.image_path ? `${BASE_URL}/${p.image_path.replace(/\\/g, '/')}` : '',
+          image: getImageUrl(p.image_path),
           category: p.subcategory || 'General',
           gender: p.gender,
           price: p.price || 0,
@@ -440,7 +440,7 @@ export default function ManageProducts() {
                         src={p.image}
                         className="mp-product-img"
                         alt={p.name}
-                        onError={(e) => e.target.src = 'https://via.placeholder.com/40'}
+                        onError={(e) => { e.target.onerror = null; e.target.style.opacity = '0.3'; }}
                       />
                       <span className="mp-product-name">{p.name}</span>
                     </div>
@@ -548,7 +548,7 @@ export default function ManageProducts() {
                     src={editImageFile ? URL.createObjectURL(editImageFile) : editingProduct.image}
                     alt={editingProduct.name}
                     className="mp-image-preview"
-                    onError={(e) => e.target.src = 'https://via.placeholder.com/120'}
+                    onError={(e) => { e.target.onerror = null; e.target.style.opacity = '0.3'; }}
                   />
                   <label className="mp-btn mp-btn-outline mp-image-btn">
                     <Edit size={14} />
