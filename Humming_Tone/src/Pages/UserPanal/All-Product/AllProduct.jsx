@@ -51,7 +51,8 @@ const AllProduct = ({ onViewDetails: _onViewDetails = () => {} }) => {
         }
         const response = await fetch(url);
         const data = await response.json();
-        setCategoryOptions(['All Categories', ...data]);
+        const uniqueCategories = Array.from(new Set(Array.isArray(data) ? data : []));
+        setCategoryOptions(['All Categories', ...uniqueCategories]);
       } catch (error) {
         console.error('Error fetching categories:', error);
       }

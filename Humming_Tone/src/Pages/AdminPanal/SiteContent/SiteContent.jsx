@@ -355,6 +355,33 @@ export default function SiteContent() {
                     />
                   </div>
                   <div className="sitecontent-row">
+                    <label>Standard Shipping Fee (₹)</label>
+                    <input
+                      type="number"
+                      min="0"
+                      step="1"
+                      value={footerDraft?.shippingFee !== undefined && footerDraft?.shippingFee !== null ? footerDraft.shippingFee : 0}
+                      onChange={(e) =>
+                        updateFooterField("shippingFee", Number(e.target.value) >= 0 ? Number(e.target.value) : 0)
+                      }
+                      placeholder="0 (Enter standard shipping cost in ₹)"
+                    />
+                  </div>
+                  <div className="sitecontent-row">
+                    <label>GST Rate (%)</label>
+                    <input
+                      type="number"
+                      min="0"
+                      max="100"
+                      step="0.1"
+                      value={footerDraft?.gstRate !== undefined && footerDraft?.gstRate !== null ? footerDraft.gstRate : 5}
+                      onChange={(e) =>
+                        updateFooterField("gstRate", Number(e.target.value) >= 0 ? Number(e.target.value) : 0)
+                      }
+                      placeholder="5 (Enter default GST percentage)"
+                    />
+                  </div>
+                  <div className="sitecontent-row">
                     <label>Description</label>
                     <textarea
                       value={footerDraft?.description || ""}

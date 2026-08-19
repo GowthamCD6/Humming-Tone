@@ -18,7 +18,7 @@ exports.fetch_products = (req,res,next) => { // api request should be /user/fetc
                                 SELECT pi.image_path
                                 FROM product_images pi
                                 WHERE pi.product_id = p.id
-                                ORDER BY pi.is_primary DESC, pi.display_order ASC
+                                ORDER BY pi.is_primary DESC, pi.id ASC
                                 LIMIT 1
                             )
                         ) AS image_path,

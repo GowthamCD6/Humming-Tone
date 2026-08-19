@@ -50,7 +50,16 @@ exports.getOrderItems = (req,res,next) => {
        if(!order_id || order_id.trim() == ""){
         return next(createError.BadRequest('Invalid order id!'));
        }
-       let sql = "select * from order_items where order_id = ?";
+       let sql = `
+         SELECT 
+           oi.*,
+           COALESCE(
+             (SELECT pi.image_path FROM product_images pi WHERE pi.product_id = oi.product_id AND pi.is_primary = 1 LIMIT 1),
+             (SELECT pi.image_path FROM product_images pi WHERE pi.product_id = oi.product_id LIMIT 1)
+           ) AS image_path
+         FROM order_items oi
+         WHERE oi.order_id = ?
+       `;
        db.query(sql,[order_id],(error,result) => {
         if(error)return next(error);
         res.send(result);

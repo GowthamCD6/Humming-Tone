@@ -56,11 +56,13 @@ exports.getSiteContent = (req, res) => {
                         genderStatus[g.name] = !!g.is_active; 
                     });
 
-                    // Base response (footer + gender data)
+                    // Base response (footer + gender data + settings)
                     const response = {
                         footer: {
                             brandName: brandData.brand_name || 'Humming & Tone',
                             description: brandData.description || 'Your premier destination for stylish and affordable fashion.',
+                            shippingFee: Number(brandData.shipping_fee != null ? brandData.shipping_fee : 0),
+                            gstRate: Number(brandData.gst_rate != null ? brandData.gst_rate : 5),
                             company: { 
                                 email: brandData.email || 'fashionandmore.md@gmail.com', 
                                 phone: brandData.phone || '+91 80729 77025', 
@@ -83,6 +85,8 @@ exports.getSiteContent = (req, res) => {
                                     active: !!l.active
                                 }))
                         },
+                        shippingFee: Number(brandData.shipping_fee != null ? brandData.shipping_fee : 0),
+                        gstRate: Number(brandData.gst_rate != null ? brandData.gst_rate : 5),
                         genderCategory,
                         genderStatus
                     };
@@ -97,15 +101,19 @@ exports.getSiteContent = (req, res) => {
 
 exports.updateFooter = (req, res) => {
     console.log('Updating footer...');
-    const { brandName, description, company, social, legal, shopLinks, supportLinks } = req.body;
+    const { brandName, description, shippingFee, gstRate, company, social, legal, shopLinks, supportLinks } = req.body;
+    const parsedShippingFee = Number(shippingFee) >= 0 ? Number(shippingFee) : 0;
+    const parsedGstRate = Number(gstRate) >= 0 ? Number(gstRate) : 5;
     
     // Update site settings
     db.query(`
-        INSERT INTO site_settings (id, brand_name, description, email, phone, address, social_links, legal_info)
-        VALUES (1, ?, ?, ?, ?, ?, ?, ?)
+        INSERT INTO site_settings (id, brand_name, description, shipping_fee, gst_rate, email, phone, address, social_links, legal_info)
+        VALUES (1, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         ON DUPLICATE KEY UPDATE 
         brand_name=VALUES(brand_name), 
         description=VALUES(description), 
+        shipping_fee=VALUES(shipping_fee),
+        gst_rate=VALUES(gst_rate),
         email=VALUES(email), 
         phone=VALUES(phone), 
         address=VALUES(address), 
@@ -114,6 +122,8 @@ exports.updateFooter = (req, res) => {
         [
             brandName, 
             description, 
+            parsedShippingFee,
+            parsedGstRate,
             company?.email, 
             company?.phone, 
             company?.address, 

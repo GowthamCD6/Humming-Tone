@@ -1,5 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
+import { useLottie } from "lottie-react";
+import truckAnimation from "../../../animation/Truck Animation.json";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import HomeIcon from "@mui/icons-material/Home";
 import ShoppingBagIcon from "@mui/icons-material/ShoppingBag";
@@ -8,6 +10,16 @@ import ContentCopyIcon from "@mui/icons-material/ContentCopy";
 import WhatsAppIcon from "@mui/icons-material/WhatsApp";
 import { API_BASE_URL } from "../../../utils/apiConfig";
 import "./PaymentSuccess.css";
+
+const TruckAnimationView = () => {
+  const options = {
+    animationData: truckAnimation,
+    loop: true,
+    autoplay: true,
+  };
+  const { View } = useLottie(options, { width: "100%", height: "100%" });
+  return View;
+};
 
 function formatDate(dateStr) {
   if (!dateStr) return null;
@@ -115,11 +127,16 @@ const PaymentSuccess = () => {
 
   return (
     <div className="payment-result">
-      {/* Success Header */}
+      {/* Success Header with Truck Animation */}
       <div className="result-header">
-        <CheckCircleIcon className="result-icon" style={{ color: "#27ae60" }} />
-        <h1>Order Successful!</h1>
-        <p>Your payment has been verified and your order is confirmed.</p>
+        <div className="ps-truck-animation-wrap">
+          <TruckAnimationView />
+        </div>
+        <div className="result-title-row">
+          <CheckCircleIcon className="result-icon-check" style={{ color: "#10b981", fontSize: "2rem" }} />
+          <h1>Order Placed Successfully!</h1>
+        </div>
+        <p>Your payment has been verified and your package is being prepared for dispatch.</p>
       </div>
 
       {/* Order Summary */}

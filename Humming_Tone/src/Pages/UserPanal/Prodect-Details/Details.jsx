@@ -6,6 +6,7 @@ import AddToCartModal from "./Product-Buying modal/AddToCartModal";
 import "./Details.css";
 import { useNavigate } from "react-router-dom";
 import { API_BASE_URL, getImageUrl } from "../../../utils/apiConfig";
+import { fetchSiteContent, getSiteContent } from "../../../utils/siteContentStore";
 const ProductDetailPage = () => {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -13,9 +14,22 @@ const ProductDetailPage = () => {
   const [quantity, setQuantity] = useState(1);
   const [activeImageIndex, setActiveImageIndex] = useState(0);
 
+  const [gstRate, setGstRate] = useState(() => {
+    const cached = getSiteContent();
+    return Number(cached?.gstRate != null ? cached.gstRate : (cached?.footer?.gstRate || 5));
+  });
+
   const [product, setProduct] = useState(null);
   const [productImages, setProductImages] = useState([]);
   const [sizes, setSizes] = useState([]);
+
+  useEffect(() => {
+    fetchSiteContent().then((data) => {
+      if (data) {
+        setGstRate(Number(data.gstRate != null ? data.gstRate : (data.footer?.gstRate || 5)));
+      }
+    }).catch(() => {});
+  }, []);
 
   const [recommendedProducts, setRecommendedProducts] = useState([]);
 
@@ -201,15 +215,20 @@ const ProductDetailPage = () => {
             <h1 className="product-title">{product.name}</h1>
 
             <div className="price-section">
-              <div className="dynamic-price">
-                ₹
-                {sizes.find((s) => s.size === selectedSize)?.price ||
-                  sizes[0]?.price}
+              <div className="dynamic-price-row" style={{ display: 'flex', alignItems: 'baseline', gap: '12px', flexWrap: 'wrap' }}>
+                <div className="dynamic-price">
+                  ₹
+                  {sizes.find((s) => s.size === selectedSize)?.price ||
+                    sizes[0]?.price}
+                </div>
+                <div className="original-price">
+                  Original: ₹
+                  {sizes.find((s) => s.size === selectedSize)?.original_price ||
+                    sizes[0]?.original_price}
+                </div>
               </div>
-              <div className="original-price">
-                Original: ₹
-                {sizes.find((s) => s.size === selectedSize)?.original_price ||
-                  sizes[0]?.original_price}
+              <div className="gst-inclusive-tag" style={{ marginTop: '6px', fontSize: '0.88rem', color: '#16a34a', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '6px' }}>
+                <span>✓ Inclusive of all taxes (includes {gstRate}% GST)</span>
               </div>
             </div>
 

@@ -82,10 +82,21 @@ exports.create_order = (req, res, next) => {
           item._product_name = product_name;
         }
 
-        const safeDiscount = Math.min(discount_amount, subtotal);
-        const taxableAmount = Math.max(subtotal - safeDiscount, 0);
-        const gst_amount = Math.round(taxableAmount * 0.05 * 100) / 100; // 5% GST
-        const total_amount = taxableAmount + gst_amount + shipping;
+        // Fetch dynamic site settings (gst_rate and shipping_fee)
+        const [settingsRows] = await connection.promise().query(
+          "SELECT shipping_fee, gst_rate FROM site_settings WHERE id = 1"
+        );
+        const settings = settingsRows[0] || {};
+        const configuredGstRate = Number(settings.gst_rate != null ? settings.gst_rate : 5);
+        const configuredShipping = Number(settings.shipping_fee != null ? settings.shipping_fee : 0);
+
+        const safeDiscount = Math.min(discount_amount || 0, subtotal);
+        const netAmount = Math.max(subtotal - safeDiscount, 0);
+        
+        // Price is inclusive of GST: Included GST = netAmount - (netAmount / (1 + rate/100))
+        const gst_amount = Math.round((netAmount - (netAmount / (1 + configuredGstRate / 100))) * 100) / 100;
+        const finalShipping = Number(shipping != null ? shipping : configuredShipping);
+        const total_amount = Math.round((netAmount + finalShipping) * 100) / 100;
 
         if (total_amount <= 0) {
           throw createError.BadRequest("Invalid total amount");

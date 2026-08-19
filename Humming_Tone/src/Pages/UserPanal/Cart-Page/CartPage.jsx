@@ -1,14 +1,35 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import './CartPage.css';
 import UserFooter from '../../../components/User-Footer-Card/UserFooter';
 import LocalShippingIcon from '@mui/icons-material/LocalShipping';
 import { useLocation } from "react-router-dom";
-
+import { fetchSiteContent, getSiteContent } from '../../../utils/siteContentStore';
 
 const PremiumCart = ({ onCheckout }) => {
   const navigate = useNavigate();
   const location = useLocation();
+
+  const [shippingFee, setShippingFee] = useState(() => {
+    const cached = getSiteContent();
+    return Number(cached?.shippingFee != null ? cached.shippingFee : (cached?.footer?.shippingFee || 0));
+  });
+
+  const [gstRate, setGstRate] = useState(() => {
+    const cached = getSiteContent();
+    return Number(cached?.gstRate != null ? cached.gstRate : (cached?.footer?.gstRate || 5));
+  });
+
+  useEffect(() => {
+    fetchSiteContent().then((data) => {
+      if (data) {
+        const fee = Number(data.shippingFee != null ? data.shippingFee : (data.footer?.shippingFee || 0));
+        const gst = Number(data.gstRate != null ? data.gstRate : (data.footer?.gstRate || 5));
+        setShippingFee(fee);
+        setGstRate(gst);
+      }
+    }).catch(() => {});
+  }, []);
 
 
   const [cartItems, setCartItems] = useState(() => {
@@ -85,11 +106,14 @@ const PremiumCart = ({ onCheckout }) => {
   };
 
   const calculateGST = () => {
-    return calculateSubtotal() * 0.05;
+    // Price is inclusive of GST: Included GST = Subtotal - (Subtotal / (1 + rate/100))
+    const sub = calculateSubtotal();
+    const rate = Number(gstRate) || 5;
+    return sub - (sub / (1 + rate / 100));
   };
 
   const calculateTotal = () => {
-    return calculateSubtotal() + calculateGST();
+    return calculateSubtotal() + (Number(shippingFee) || 0);
   };
   // simple
 
@@ -141,7 +165,7 @@ const PremiumCart = ({ onCheckout }) => {
         <header className="userpanal-cart-header">
           <h1 className="userpanal-cart-page-title">Shopping Cart</h1>
           <span className="userpanal-cart-count">
-            {cartItems.length} {cartItems.length === 1 ? 'Item' : 'Items'}
+            {cartItems.reduce((sum, item) => sum + item.quantity, 0)} Items
           </span>
         </header>
 
@@ -246,8 +270,10 @@ const PremiumCart = ({ onCheckout }) => {
               </div>
 
               <div className="userpanal-cart-summary-row">
-                <span className="userpanal-cart-summary-label">Estimated GST (5%)</span>
-                <span className="userpanal-cart-summary-value">₹ {calculateGST().toFixed(2)}</span>
+                <span className="userpanal-cart-summary-label">Shipping</span>
+                <span className="userpanal-cart-summary-value">
+                  {Number(shippingFee) > 0 ? `₹ ${Number(shippingFee).toFixed(2)}` : 'FREE'}
+                </span>
               </div>
 
               <div className="userpanal-cart-summary-divider"></div>

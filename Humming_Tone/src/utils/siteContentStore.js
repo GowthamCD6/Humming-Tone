@@ -9,6 +9,8 @@ export const defaultSiteContent = {
   footer: {
     brandName: '',
     description: '',
+    shippingFee: 0,
+    gstRate: 5,
     social: {},
     shopLinks: [
       { label: 'New Arrival', href: '/usertab/home#new-arrivals', active: true },
@@ -37,6 +39,8 @@ export const defaultSiteContent = {
       termsHref: '/usertab/terms_of_service',
     },
   },
+  shippingFee: 0,
+  gstRate: 5,
   genderCategory: {},
   genderStatus: {},
   customize: {
@@ -81,10 +85,14 @@ export async function fetchSiteContent(forceRefresh = false) {
     const data = await response.json();
     
     // Use API data as primary, only fall back to defaults for missing fields
+    const parsedFee = Number(data.shippingFee != null ? data.shippingFee : (data.footer?.shippingFee != null ? data.footer.shippingFee : 0));
+    const parsedGst = Number(data.gstRate != null ? data.gstRate : (data.footer?.gstRate != null ? data.footer.gstRate : 5));
     cachedContent = {
       footer: {
         brandName: data.footer?.brandName || defaultSiteContent.footer.brandName,
         description: data.footer?.description || defaultSiteContent.footer.description,
+        shippingFee: parsedFee,
+        gstRate: parsedGst,
         social: data.footer?.social || defaultSiteContent.footer.social,
         company: data.footer?.company || defaultSiteContent.footer.company,
         legal: data.footer?.legal || defaultSiteContent.footer.legal,
@@ -96,6 +104,8 @@ export async function fetchSiteContent(forceRefresh = false) {
           ? data.footer.supportLinks
           : defaultSiteContent.footer.supportLinks,
       },
+      shippingFee: parsedFee,
+      gstRate: parsedGst,
       genderCategory: data.genderCategory || defaultSiteContent.genderCategory,
       genderStatus: data.genderStatus || defaultSiteContent.genderStatus,
       customize: data.customize || defaultSiteContent.customize,

@@ -3,10 +3,21 @@ import { useNavigate } from "react-router-dom";
 import "./CheckOut.css";
 import UserFooter from "../../../components/User-Footer-Card/UserFooter";
 import { API_BASE_URL } from "../../../utils/apiConfig";
+import { fetchSiteContent, getSiteContent } from "../../../utils/siteContentStore";
 
 const CheckOut = ({ onBack }) => {
   const navigate = useNavigate();
   const RAZORPAY_KEY = import.meta.env.VITE_RAZORPAY_KEY_ID;
+
+  const [shippingFee, setShippingFee] = useState(() => {
+    const cached = getSiteContent();
+    return Number(cached?.shippingFee != null ? cached.shippingFee : (cached?.footer?.shippingFee || 0));
+  });
+
+  const [gstRate, setGstRate] = useState(() => {
+    const cached = getSiteContent();
+    return Number(cached?.gstRate != null ? cached.gstRate : (cached?.footer?.gstRate || 5));
+  });
 
   const [promoCode, setPromoCode] = useState("");
   const [cartItems] = useState(() => {
@@ -27,6 +38,18 @@ const CheckOut = ({ onBack }) => {
     pincode: "",
     order_instructions: "",
   });
+
+  /* ---------------- FETCH DYNAMIC SETTINGS ---------------- */
+  useEffect(() => {
+    fetchSiteContent().then((data) => {
+      if (data) {
+        const fee = Number(data.shippingFee != null ? data.shippingFee : (data.footer?.shippingFee || 0));
+        const gst = Number(data.gstRate != null ? data.gstRate : (data.footer?.gstRate || 5));
+        setShippingFee(fee);
+        setGstRate(gst);
+      }
+    }).catch(() => {});
+  }, []);
 
   /* ---------------- LOAD CART FROM LOCALSTORAGE ---------------- */
   useEffect(() => {
@@ -49,11 +72,12 @@ const CheckOut = ({ onBack }) => {
   }, [cartItems]);
 
   const discountAmount = promoCode ? 100 : 0;
-  const taxableAmount = Math.max(subtotal - discountAmount, 0);
-  const gstRate = 0.05; // 5% GST
-  const gstAmount = taxableAmount * gstRate;
-  const shipping = 50;
-  const total = Math.max(taxableAmount + gstAmount + shipping, 0);
+  const netAmount = Math.max(subtotal - discountAmount, 0);
+  const rate = Number(gstRate) || 5;
+  // Included GST calculation:
+  const gstAmount = netAmount - (netAmount / (1 + rate / 100));
+  const shipping = Number(shippingFee) || 0;
+  const total = Math.max(netAmount + shipping, 0);
 
   /* ---------------- HANDLERS ---------------- */
   const handleChange = (e) => {
@@ -344,10 +368,6 @@ const handleCheckout = async (e) => {
                 <div className="userpanal-checkout-summary-row">
                   <span className="userpanal-checkout-summary-label">Discount</span>
                   <span className="userpanal-checkout-summary-value">-₹{formatMoney(discountAmount)}</span>
-                </div>
-                <div className="userpanal-checkout-summary-row">
-                  <span className="userpanal-checkout-summary-label">GST (5%)</span>
-                  <span className="userpanal-checkout-summary-value">₹{formatMoney(gstAmount)}</span>
                 </div>
                 <div className="userpanal-checkout-summary-row">
                   <span className="userpanal-checkout-summary-label">Shipping</span>

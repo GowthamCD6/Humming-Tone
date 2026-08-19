@@ -49,22 +49,14 @@ export default function OrderDetails() {
           { headers: authHeaders }
         );
 
-        if (!itemsRes.ok) throw new Error('Failed to fetch order items');
-
         const itemsData = await itemsRes.json();
         setItems(itemsData);
 
-        // Calculate total from items
-        const calculatedTotal = itemsData.reduce(
-          (sum, item) => sum + (Number(item.product_price) || 0) * (Number(item.quantity) || 0),
-          0
-        );
-
-        // Set order with proper data
+        // Set order with actual database order values
         setOrder({
           ...foundOrder,
           status: foundOrder.status || 'pending',
-          total_amount: calculatedTotal
+          total_amount: Number(foundOrder.total_amount != null ? foundOrder.total_amount : 0)
         });
 
         // Set date picker initial values
@@ -369,6 +361,10 @@ export default function OrderDetails() {
                 <img
                   src={getImageUrl(item.image_path) || getImageUrl(item.product_image)}
                   alt={item.product_name}
+                  onError={(e) => {
+                    e.target.onerror = null;
+                    e.target.src = 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="80" height="80" viewBox="0 0 24 24" fill="none" stroke="%2394a3b8" stroke-width="1.5"><rect width="18" height="18" x="3" y="3" rx="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/></svg>';
+                  }}
                 />
               </div>
 
