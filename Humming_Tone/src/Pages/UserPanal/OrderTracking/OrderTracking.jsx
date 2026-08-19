@@ -11,6 +11,7 @@ import HistoryIcon from "@mui/icons-material/History";
 import ArrowForwardIcon from "@mui/icons-material/ArrowForward";
 import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
 import UserFooter from "../../../components/User-Footer-Card/UserFooter";
+import { API_BASE_URL } from "../../../utils/apiConfig";
 import "./OrderTracking.css";
 
 const TRACKING_STEPS = [
@@ -78,7 +79,7 @@ const OrderTracking = () => {
     setError("");
 
     try {
-      const res = await fetch("http://localhost:5000/user/track_order", {
+      const res = await fetch(`${API_BASE_URL}/user/track_order`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

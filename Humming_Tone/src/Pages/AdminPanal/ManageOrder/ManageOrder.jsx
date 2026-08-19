@@ -9,6 +9,7 @@ import FilterAltIcon from '@mui/icons-material/FilterAlt';
 import SearchIcon from '@mui/icons-material/Search';
 import DownloadIcon from '@mui/icons-material/Download';
 import RotateLeftIcon from '@mui/icons-material/RotateLeft';
+import { API_BASE_URL } from '../../../utils/apiConfig';
 import './ManageOrder.css';
 
 const getTodayInputValue = () => {
@@ -40,7 +41,7 @@ export default function ManageOrder() {
     const fetchOrders = async () => {
       try {
         const token = localStorage.getItem('adminToken');
-        const response = await fetch('http://localhost:5000/api/orders/manage', {
+        const response = await fetch(`${API_BASE_URL}/api/orders/manage`, {
           headers: token ? { 'Authorization': `Bearer ${token}` } : {}
         });        if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
         const data = await response.json();

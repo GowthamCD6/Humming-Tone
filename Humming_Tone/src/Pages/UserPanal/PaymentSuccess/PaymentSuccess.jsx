@@ -6,6 +6,7 @@ import ShoppingBagIcon from "@mui/icons-material/ShoppingBag";
 import LocalShippingIcon from "@mui/icons-material/LocalShipping";
 import ContentCopyIcon from "@mui/icons-material/ContentCopy";
 import WhatsAppIcon from "@mui/icons-material/WhatsApp";
+import { API_BASE_URL } from "../../../utils/apiConfig";
 import "./PaymentSuccess.css";
 
 function formatDate(dateStr) {
@@ -42,7 +43,7 @@ const PaymentSuccess = () => {
     const verifyPayment = async () => {
       try {
         const res = await fetch(
-          "http://localhost:5000/user/get_payment_status",
+          `${API_BASE_URL}/user/get_payment_status`,
           {
             method: "POST",
             headers: { "Content-Type": "application/json" },

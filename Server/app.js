@@ -27,8 +27,15 @@ const app = express();
 const PORT = process.env.PORT || 5000;
 const path = require('path');
 
+const rawOrigins = process.env.CORS_ORIGINS 
+  ? process.env.CORS_ORIGINS.split(",").map(s => s.trim()) 
+  : ["http://localhost:5173", "http://localhost:5174", "http://localhost:5175"];
+if (process.env.CLIENT_URL && !rawOrigins.includes(process.env.CLIENT_URL)) {
+  rawOrigins.push(process.env.CLIENT_URL);
+}
+
 app.use(cors({
-    origin: ["http://localhost:5173", "http://localhost:5174", "http://localhost:5175"],
+    origin: rawOrigins,
     credentials: true,
     methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"],
     allowedHeaders: ["Content-Type", "Authorization"]

@@ -5,6 +5,7 @@ import LocalShippingIcon from '@mui/icons-material/LocalShipping';
 import CalendarMonthIcon from '@mui/icons-material/CalendarMonth';
 import WhatsAppIcon from '@mui/icons-material/WhatsApp';
 import demoImage from '../../../../assets/demo.jpeg';
+import { API_BASE_URL } from '../../../../utils/apiConfig';
 import './OrderDetails.css';
 
 export default function OrderDetails() {
@@ -30,7 +31,7 @@ export default function OrderDetails() {
         const authHeaders = token ? { 'Authorization': `Bearer ${token}` } : {};
 
         // Fetch all orders and find the specific one
-        const ordersRes = await fetch('http://localhost:5000/api/orders/manage', {
+        const ordersRes = await fetch(`${API_BASE_URL}/api/orders/manage`, {
           headers: authHeaders
         });
         if (!ordersRes.ok) throw new Error('Failed to fetch orders');
@@ -45,7 +46,7 @@ export default function OrderDetails() {
 
         // Fetch order items
         const itemsRes = await fetch(
-          `http://localhost:5000/admin/get_order_items/${orderId}`,
+          `${API_BASE_URL}/admin/get_order_items/${orderId}`,
           { headers: authHeaders }
         );
 
@@ -91,7 +92,7 @@ export default function OrderDetails() {
     try {
       const token = localStorage.getItem('adminToken');
       const res = await fetch(
-        `http://localhost:5000/api/orders/${orderId}/status`,
+        `${API_BASE_URL}/api/orders/${orderId}/status`,
         {
           method: 'PUT',
           headers: {
@@ -122,7 +123,7 @@ export default function OrderDetails() {
     try {
       const token = localStorage.getItem('adminToken');
       const res = await fetch(
-        `http://localhost:5000/api/orders/${orderId}/status`,
+        `${API_BASE_URL}/api/orders/${orderId}/status`,
         {
           method: 'PUT',
           headers: {
@@ -160,7 +161,7 @@ export default function OrderDetails() {
     setWaStatus(null);
     try {
       const token = localStorage.getItem('adminToken');
-      const res = await fetch('http://localhost:5000/api/whatsapp/send-order-notification', {
+      const res = await fetch(`${API_BASE_URL}/api/whatsapp/send-order-notification`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

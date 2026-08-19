@@ -5,6 +5,7 @@ import Login from "./Pages/LoginPage/Login.jsx";
 import AdminTab from "./components/AdminTab/AdminTab.jsx";
 import UserTab from "./components/UserTab/UserTab.jsx";
 import { fetchSiteContent } from "./utils/siteContentStore";
+import { API_BASE_URL } from "./utils/apiConfig";
 
 // User pages (lazy-loaded to avoid loading all tab pages on first paint)
 const Home = lazy(() => import("./Pages/UserPanal/HomePage/Home.jsx"));
@@ -155,7 +156,7 @@ export default function App() {
       if (!token) return;
 
       try {
-        const response = await fetch('http://localhost:5000/admin/auth/verify', {
+        const response = await fetch(`${API_BASE_URL}/admin/auth/verify`, {
           headers: {
             'Authorization': `Bearer ${token}`
           }

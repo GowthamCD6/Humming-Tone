@@ -4,6 +4,7 @@ import UserFooter from '../../../components/User-Footer-Card/UserFooter';
 import './AllProduct.css';
 import { getGenderOptions } from '../../../utils/siteContentStore';
 import { Link } from 'react-router-dom';
+import { API_BASE_URL, getImageUrl } from '../../../utils/apiConfig';
 
 const Men = ({ onViewDetails: _onViewDetails = () => {} }) => {
   const [selectedGender, setSelectedGender] = useState('All');
@@ -19,12 +20,12 @@ const Men = ({ onViewDetails: _onViewDetails = () => {} }) => {
   useEffect(() => {
     const fetchProducts = async () => {
       try {
-        const response = await fetch('http://localhost:5000/user/fetch_products');
+        const response = await fetch(`${API_BASE_URL}/user/fetch_products`);
         const data = await response.json();
         const formattedProducts = data.map(product => ({
           ...product,
           price: parseFloat(product.price),
-          image: product.image_path ? `http://localhost:5000/${product.image_path.replace(/\\/g, '/')}` : demoImage,
+          image: product.image_path ? getImageUrl(product.image_path) : demoImage,
         }));
         setAllProducts(formattedProducts);
         setProducts(formattedProducts);
@@ -39,7 +40,7 @@ const Men = ({ onViewDetails: _onViewDetails = () => {} }) => {
   useEffect(() => {
     const fetchCategories = async () => {
       try {
-        let url = 'http://localhost:5000/user/fetch_categories';
+        let url = `${API_BASE_URL}/user/fetch_categories`;
         if (selectedGender !== 'All' && selectedGender !== 'All Gender') {
            url += `?gender=${selectedGender}`;
         }

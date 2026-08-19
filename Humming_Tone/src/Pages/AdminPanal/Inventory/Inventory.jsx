@@ -3,7 +3,8 @@ import { Package, AlertTriangle, XCircle, DollarSign, Search, Plus, ChevronLeft,
 import { useNavigate, useLocation } from 'react-router-dom';
 import './Inventory.css';
 import axios from 'axios';
-const API_BASE_URL = 'http://localhost:5000/admin';
+import { API_BASE_URL as BASE_URL } from '../../../utils/apiConfig';
+const API_BASE_URL = `${BASE_URL}/admin`;
 const PAGE_SIZE = 5;
 
 const InventoryDashboard = () => {

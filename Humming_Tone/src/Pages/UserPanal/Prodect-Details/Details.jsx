@@ -5,6 +5,7 @@ import UserFooter from "../../../components/User-Footer-Card/UserFooter";
 import AddToCartModal from "./Product-Buying modal/AddToCartModal";
 import "./Details.css";
 import { useNavigate } from "react-router-dom";
+import { API_BASE_URL, getImageUrl } from "../../../utils/apiConfig";
 const ProductDetailPage = () => {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -81,7 +82,7 @@ const ProductDetailPage = () => {
   const fetchRecommendations = async (categoryId) => {
     try {
       const res = await fetch(
-        "http://localhost:5000/user/fetch_recommendations?page=1&limit=3",
+        `${API_BASE_URL}/user/fetch_recommendations?page=1&limit=3`,
         {
           method: "POST",
           headers: {
@@ -103,7 +104,7 @@ const ProductDetailPage = () => {
     const fetchProduct = async () => {
       try {
         const res = await fetch(
-          `http://localhost:5000/user/fetch_products_details/${id}`
+          `${API_BASE_URL}/user/fetch_products_details/${id}`
         );
         const data = await res.json();
 
@@ -115,7 +116,7 @@ const ProductDetailPage = () => {
             (a, b) => a.display_order - b.display_order
           );
           setProductImages(
-            sortedImages.map((img) => `http://localhost:5000/${img.image_path}`)
+            sortedImages.map((img) => getImageUrl(img.image_path))
           );
         }
 
@@ -294,7 +295,7 @@ const ProductDetailPage = () => {
               >
                 <div className="related-product-image-container">
                   <img
-                    src={`http://localhost:5000/${item.image_path}`}
+                    src={getImageUrl(item.image_path)}
                     alt={item.name}
                   />
                   <div className="related-product-hover-overlay">

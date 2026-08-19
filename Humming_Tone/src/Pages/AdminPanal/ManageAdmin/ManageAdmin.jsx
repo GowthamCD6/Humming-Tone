@@ -9,8 +9,7 @@ import VisibilityOffIcon from '@mui/icons-material/VisibilityOff'
 import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline'
 import ErrorOutlineIcon from '@mui/icons-material/ErrorOutline'
 import './ManageAdmin.css'
-
-const API_BASE_URL = 'http://localhost:5000'
+import { API_BASE_URL } from '../../../utils/apiConfig'
 
 // Simple robust JWT decoder
 const decodeToken = (token) => {

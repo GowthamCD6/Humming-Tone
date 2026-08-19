@@ -20,8 +20,7 @@ import {
   RefreshCw
 } from 'lucide-react'
 import './Dashboard.css'
-
-const API_BASE_URL = 'http://localhost:5000'
+import { API_BASE_URL } from '../../../utils/apiConfig'
 
 const getAxiosConfig = () => {
   const token = localStorage.getItem('adminToken')

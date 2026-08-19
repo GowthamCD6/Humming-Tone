@@ -3,8 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { Plus, Search, Edit, Trash2, X } from 'lucide-react'
 import axios from 'axios'
 import './ManageProduct.css'
-
-const BASE_URL = 'http://localhost:5000';
+import { API_BASE_URL as BASE_URL } from '../../../utils/apiConfig'
 
 const getAuthHeaders = (contentType) => {
   const token = localStorage.getItem('adminToken');

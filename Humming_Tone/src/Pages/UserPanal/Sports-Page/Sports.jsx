@@ -4,6 +4,7 @@ import './Sports.css';
 import { getGenderOptions } from '../../../utils/siteContentStore';
 import axios from 'axios';  // Import axios
 import { Link } from 'react-router-dom';
+import { API_BASE_URL, getImageUrl } from '../../../utils/apiConfig';
 
 const Sports = ({ onViewDetails: _onViewDetails = () => {} }) => {
   const [selectedGender, setSelectedGender] = useState('Sports');  // Default to 'Sports'
@@ -18,7 +19,7 @@ const Sports = ({ onViewDetails: _onViewDetails = () => {} }) => {
   useEffect(() => {
     const fetchCategories = async () => {
       try {
-        let url = 'http://localhost:5000/user/fetch_categories?gender=sports';
+        let url = `${API_BASE_URL}/user/fetch_categories?gender=sports`;
         const response = await axios.get(url);
         setCategoryOptions(['All Categories', ...response.data]);
       } catch (error) {
@@ -32,12 +33,11 @@ const Sports = ({ onViewDetails: _onViewDetails = () => {} }) => {
   useEffect(() => {
     const fetchProducts = async () => {
       try {
-        const response = await axios.get(`http://localhost:5000/user/fetch_products?gender=sports`);
+        const response = await axios.get(`${API_BASE_URL}/user/fetch_products?gender=sports`);
         const fetchedProducts = response.data.map(product => ({
           ...product,
           price: parseFloat(product.price),  // Ensure price is a float
-          // Correct the image URL if image_path is not available
-          image: product.image_path ? `http://localhost:5000/${product.image_path}` : '',  // Use image path from backend
+          image: product.image_path ? getImageUrl(product.image_path) : '',
         }));
         setProducts(fetchedProducts);  // Update the state with fetched products
         setAllProducts(fetchedProducts);

@@ -5,6 +5,7 @@ import './Mens.css';
 import { getGenderOptions } from '../../../utils/siteContentStore';
 import axios from 'axios';  // Import axios
 import { Link } from 'react-router-dom';
+import { API_BASE_URL, getImageUrl } from '../../../utils/apiConfig';
 
 const Men = ({ onViewDetails: _onViewDetails = () => {} }) => {
   const [selectedGender, setSelectedGender] = useState('Men');
@@ -19,7 +20,7 @@ const Men = ({ onViewDetails: _onViewDetails = () => {} }) => {
   useEffect(() => {
     const fetchCategories = async () => {
       try {
-        let url = 'http://localhost:5000/user/fetch_categories';
+        let url = `${API_BASE_URL}/user/fetch_categories`;
         if (selectedGender !== 'All' && selectedGender !== 'All Gender') {
            url += `?gender=${selectedGender}`;
         }
@@ -36,12 +37,11 @@ const Men = ({ onViewDetails: _onViewDetails = () => {} }) => {
   useEffect(() => {
     const fetchProducts = async () => {
       try {
-        const response = await axios.get(`http://localhost:5000/user/fetch_products?gender=${selectedGender.toLowerCase()}`);
+        const response = await axios.get(`${API_BASE_URL}/user/fetch_products?gender=${selectedGender.toLowerCase()}`);
         const fetchedProducts = response.data.map(product => ({
           ...product,
           price: parseFloat(product.price),  // Ensure price is a float
-          // Concatenate image path with base URL for correct image URL
-          image: product.image_path ? `http://localhost:5000/${product.image_path}` : demoImage,  // Correct the image URL
+          image: product.image_path ? getImageUrl(product.image_path) : demoImage,
         }));
         setProducts(fetchedProducts);
         setAllProducts(fetchedProducts);

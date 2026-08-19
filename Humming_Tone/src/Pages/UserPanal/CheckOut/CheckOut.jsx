@@ -2,6 +2,7 @@ import React, { useState, useMemo, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import "./CheckOut.css";
 import UserFooter from "../../../components/User-Footer-Card/UserFooter";
+import { API_BASE_URL } from "../../../utils/apiConfig";
 
 const CheckOut = ({ onBack }) => {
   const navigate = useNavigate();
@@ -93,7 +94,7 @@ const handleCheckout = async (e) => {
     };
 
     const res = await fetch(
-      "http://localhost:5000/user/create_order",
+      `${API_BASE_URL}/user/create_order`,
       {
         method: "POST",
         headers: { "Content-Type": "application/json" },

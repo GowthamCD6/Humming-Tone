@@ -6,6 +6,7 @@ import UserFooter from '../../../components/User-Footer-Card/UserFooter';
 import './Home.css';
 import axios from 'axios';  // Import axios
 import { Link, useLocation } from 'react-router-dom';
+import { API_BASE_URL, getImageUrl } from '../../../utils/apiConfig';
 
 const Home = ({ onViewDetails: _onViewDetails = () => {} }) => {
   const [featuredProducts, setFeaturedProducts] = useState([]); // State for featured products
@@ -30,11 +31,11 @@ const Home = ({ onViewDetails: _onViewDetails = () => {} }) => {
   useEffect(() => {
     const fetchNewArrivals = async () => {
       try {
-        const response = await axios.get('http://localhost:5000/user/fetch_new_arrivals');
+        const response = await axios.get(`${API_BASE_URL}/user/fetch_new_arrivals`);
         setNewArrivals(response.data.map(product => ({
           ...product,
           price: parseFloat(product.price),
-          image: product.image_path ? `http://localhost:5000/${product.image_path}` : demoImage,
+          image: product.image_path ? getImageUrl(product.image_path) : demoImage,
         })));
       } catch (error) {
         console.error('Error fetching new arrivals:', error);
@@ -45,11 +46,11 @@ const Home = ({ onViewDetails: _onViewDetails = () => {} }) => {
 
     const fetchFeaturedProducts = async () => {
       try {
-        const response = await axios.get('http://localhost:5000/user/fetch_featured_products');
+        const response = await axios.get(`${API_BASE_URL}/user/fetch_featured_products`);
         setFeaturedProducts(response.data.map(product => ({
           ...product,
           price: parseFloat(product.price),
-          image: product.image_path ? `http://localhost:5000/${product.image_path}` : demoImage,
+          image: product.image_path ? getImageUrl(product.image_path) : demoImage,
         })));
       } catch (error) {
         console.error('Error fetching featured products:', error);

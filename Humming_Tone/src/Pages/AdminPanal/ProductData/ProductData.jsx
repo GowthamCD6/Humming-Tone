@@ -7,8 +7,7 @@ import Inventory2Icon from '@mui/icons-material/Inventory2';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import BlockIcon from '@mui/icons-material/Block';
 import DeleteSweepIcon from '@mui/icons-material/DeleteSweep';
-
-const API_BASE_URL = 'http://localhost:5000'; // Change to your API URL
+import { API_BASE_URL, getImageUrl } from '../../../utils/apiConfig';
 
 const getAxiosConfig = () => {
   const token = localStorage.getItem('adminToken');

@@ -1,4 +1,6 @@
-const API_URL = 'http://localhost:5000/api/site-content';
+import { API_BASE_URL } from './apiConfig';
+
+const API_URL = `${API_BASE_URL}/api/site-content`;
 
 export const defaultSiteContent = {
   footer: {

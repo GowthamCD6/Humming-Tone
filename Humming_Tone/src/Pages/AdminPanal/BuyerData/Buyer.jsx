@@ -3,6 +3,7 @@ import SearchIcon from '@mui/icons-material/Search';
 import FilterListIcon from '@mui/icons-material/FilterList';
 import PeopleIcon from '@mui/icons-material/People';
 import CloseIcon from '@mui/icons-material/Close';
+import { API_BASE_URL } from '../../../utils/apiConfig';
 import './Buyer.css';
 
 export default function Buyer() {
@@ -16,7 +17,7 @@ export default function Buyer() {
     const fetchBuyers = async () => {
       try {
         const token = localStorage.getItem('adminToken');
-        const response = await fetch('http://localhost:5000/api/orders/manage', {
+        const response = await fetch(`${API_BASE_URL}/api/orders/manage`, {
           headers: token ? { 'Authorization': `Bearer ${token}` } : {}
         });        if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
         const data = await response.json();

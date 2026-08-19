@@ -3,6 +3,7 @@ import './AddProduct.css';
 import AddPhotoAlternateIcon from '@mui/icons-material/AddPhotoAlternate';
 import CloseIcon from '@mui/icons-material/Close';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
+import { API_BASE_URL } from '../../../utils/apiConfig';
 
 const AddProductAdmin = () => {
   const [productName, setProductName] = useState('');
@@ -40,7 +41,7 @@ const AddProductAdmin = () => {
     const fetchGendersAndCategories = async () => {
       try {
         const token = localStorage.getItem('adminToken');
-        const response = await fetch('http://localhost:5000/api/site-content/genders-categories', {
+        const response = await fetch(`${API_BASE_URL}/api/site-content/genders-categories`, {
           headers: token ? { 'Authorization': `Bearer ${token}` } : {}
         });
         if (!response.ok) throw new Error('Failed to fetch genders/categories');
@@ -167,7 +168,7 @@ const AddProductAdmin = () => {
     images.forEach(img => { if (img?.file) formData.append("images", img.file); });
 
     const token = localStorage.getItem('adminToken');
-    fetch("http://localhost:5000/admin/add_product", {
+    fetch(`${API_BASE_URL}/admin/add_product`, {
       method: "POST",
       headers: token ? { 'Authorization': `Bearer ${token}` } : {},
       body: formData

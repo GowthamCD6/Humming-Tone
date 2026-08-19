@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import './Login.css';
 import Visibility from '@mui/icons-material/Visibility';
 import VisibilityOff from '@mui/icons-material/VisibilityOff';
+import { API_BASE_URL } from '../../utils/apiConfig';
 
 export default function Login({ onSuccess }) {
   // State for input fields — empty by default, user must type credentials
@@ -44,7 +45,7 @@ export default function Login({ onSuccess }) {
     setError('');
 
     try {
-      const response = await fetch('http://localhost:5000/admin/auth/login', {
+      const response = await fetch(`${API_BASE_URL}/admin/auth/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
