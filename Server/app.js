@@ -88,6 +88,11 @@ app.use("/", userReturnRoutes);
 app.use("/", customizeRoutes);
 app.use("/", userCheckoutRoutes);
 
+// Root health check endpoint (useful for Render health checks and browser verification)
+app.get("/", (req, res) => {
+  res.status(200).json({ status: "ok", message: "Humming Tone API Server is Running" });
+});
+
 // 404 handler
 app.use((req, res, next) => {
     next(createError.NotFound("api not found"));
