@@ -72,7 +72,14 @@ app.use(
     }
   })
 );
-app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+
+app.use('/uploads', express.static(path.join(__dirname, 'uploads'), {
+  setHeaders: (res, path) => {
+    res.set('Access-Control-Allow-Origin', '*');
+    res.set('Cross-Origin-Resource-Policy', 'cross-origin');
+    res.set('Cache-Control', 'public, max-age=86400');
+  }
+}));
 
 // Admin Auth Middleware Protection for /admin routes
 app.use('/admin', (req, res, next) => {

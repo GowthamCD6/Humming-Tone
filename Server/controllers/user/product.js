@@ -12,12 +12,15 @@ exports.fetch_products = (req,res,next) => { // api request should be /user/fetc
                         p.subcategory as category,
                         p.gender,
                         p.is_featured,
-                        (
-                            SELECT pi.image_path
-                            FROM product_images pi
-                            WHERE pi.product_id = p.id
-                            AND pi.is_primary = 1
-                            LIMIT 1
+                        COALESCE(
+                            p.image_path,
+                            (
+                                SELECT pi.image_path
+                                FROM product_images pi
+                                WHERE pi.product_id = p.id
+                                ORDER BY pi.is_primary DESC, pi.display_order ASC
+                                LIMIT 1
+                            )
                         ) AS image_path,
                         MIN(pv.price) AS price,
                         SUM(pv.stock_quantity) AS total_stock
