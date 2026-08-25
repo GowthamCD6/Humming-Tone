@@ -67,18 +67,25 @@ const Home = ({ onViewDetails: _onViewDetails = () => {} }) => {
   // Reusable Product Card Component for cleaner code
   const ProductCard = ({ product }) => (
     <div className="all-products-product-card">
-      <Link to={`/usertab/details/${product.id}`} className="all-products-product-link">
-        <div className="all-products-product-image-container">
-          <img
-            src={product.image}
-            alt={product.name}
-            className="all-products-product-image"
-          />
+      <div className="all-products-product-image-container">
+        <img
+          src={product.image}
+          alt={product.name}
+          className="all-products-product-img"
+          onError={(e) => {
+            e.target.onerror = null;
+            e.target.style.opacity = '0.5';
+          }}
+        />
+        <div className="all-products-product-hover-overlay">
+          <Link to={`/usertab/details/${product.id}`} className="all-products-view-details-btn">
+            VIEW DETAILS
+          </Link>
         </div>
-      </Link>
+      </div>
       <div className="all-products-product-details">
         <h3 className="all-products-product-title">{product.name}</h3>
-        <p className="all-products-product-brand">{product.brand}</p>
+        <p className="all-products-product-brand">{product.brand || 'HummingTone'}</p>
         <p className="all-products-product-price">₹{product.price.toFixed(2)}</p>
       </div>
     </div>
