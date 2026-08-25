@@ -117,9 +117,17 @@ app.use("/", userReturnRoutes);
 app.use("/", customizeRoutes);
 app.use("/", userCheckoutRoutes);
 
-// Root health check endpoint (useful for Render health checks and browser verification)
+// Safe Health Check & Keep-Alive endpoints (for UptimeRobot, cron jobs, and Render)
+app.get("/health", (req, res) => {
+  res.status(200).json({ status: "ok", uptime: process.uptime(), timestamp: Date.now() });
+});
+
+app.get("/ping", (req, res) => {
+  res.status(200).send("pong");
+});
+
 app.get("/", (req, res) => {
-  res.status(200).json({ status: "ok", message: "Humming Tone API Server is Running" });
+  res.status(200).json({ status: "ok", message: "Humming Tone API Server is Running", timestamp: Date.now() });
 });
 
 // 404 handler
