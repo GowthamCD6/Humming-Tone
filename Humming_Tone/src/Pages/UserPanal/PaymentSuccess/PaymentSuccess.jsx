@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
-import Lottie from "lottie-react";
+import { useLottie } from "lottie-react";
 import truckAnimationData from "../../../animation/Truck Animation.json";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import HomeIcon from "@mui/icons-material/Home";
@@ -13,15 +13,17 @@ import { API_BASE_URL } from "../../../utils/apiConfig";
 import "./PaymentSuccess.css";
 
 const TruckAnimation = () => {
+  const options = {
+    animationData: truckAnimationData,
+    loop: true,
+    autoplay: true,
+  };
+  const style = { width: "100%", height: "100%" };
+  const { View } = useLottie(options, style);
+
   return (
     <div className="ps-truck-lottie-inner">
-      <Lottie
-        animationData={truckAnimationData}
-        loop={true}
-        autoPlay={true}
-        renderer="svg"
-        style={{ width: "100%", height: "100%" }}
-      />
+      {View}
     </div>
   );
 };
