@@ -1,6 +1,7 @@
 const db = require("../../config/db");
 const createError = require("http-errors");
 const { sendCustomizeMail } = require("../../utils/sendMail");
+const { uploadStreamToCloudinary } = require("../../config/cloudinary");
 
 exports.customize_order = async (req, res, next) => {
   try {
@@ -24,7 +25,9 @@ exports.customize_order = async (req, res, next) => {
     if (!req.file)
       return next(createError.BadRequest("Design image is required"));
 
-    const design_img_path = req.file.path;
+    // Upload custom design image to Cloudinary
+    const uploadedResult = await uploadStreamToCloudinary(req.file.buffer, "hummingtone/custom-designs");
+    const design_img_path = uploadedResult.secure_url;
 
     const sql = `
       INSERT INTO customize 

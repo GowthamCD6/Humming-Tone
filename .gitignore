@@ -1,0 +1,26 @@
+# Dependencies
+node_modules/
+Server/node_modules/
+Humming_Tone/node_modules/
+
+# Environment variables
+.env
+Server/.env
+Humming_Tone/.env
+*.env.local
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+
+# Build outputs
+dist/
+build/
+Humming_Tone/dist/
+
+# System / IDE
+.DS_Store
+Thumbs.db
+.vscode/
+Docker/
