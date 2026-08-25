@@ -69,16 +69,13 @@ axios.interceptors.request.use(config => {
   return config;
 });
 
-// Auto-logout on expired / invalid token (401 response) ONLY when accessing admin APIs or when on admin paths
+// Auto-logout on expired / invalid token (401 response) ONLY when on admin paths (/admin/...)
 axios.interceptors.response.use(
   response => response,
   error => {
     if (error.response && error.response.status === 401) {
-      const url = String(error.config?.url || '');
       const isAdminRoute = window.location.pathname.startsWith('/admin');
-      const isAdminApi = url.includes('/admin') || url.includes('/api/orders') || url.includes('/api/whatsapp') || url.includes('/api/products');
-
-      if (isAdminRoute || isAdminApi) {
+      if (isAdminRoute) {
         localStorage.removeItem('adminToken');
         if (window.location.pathname !== '/login') {
           window.location.href = '/login';
@@ -110,11 +107,10 @@ window.fetch = async function () {
   
   const response = await originalFetch(resource, config);
   
-  // Auto-logout on 401 ONLY for admin endpoints or admin routes
+  // Auto-logout on 401 ONLY when user is actively inside an admin route (/admin/...)
   if (response.status === 401) {
     const isAdminRoute = window.location.pathname.startsWith('/admin');
-
-    if (isAdminRoute || isAdminApi) {
+    if (isAdminRoute) {
       localStorage.removeItem('adminToken');
       if (window.location.pathname !== '/login') {
         window.location.href = '/login';
