@@ -29,6 +29,7 @@ exports.create_order = (req, res, next) => {
           promo_code,
           discount_amount = 0,
           shipping = 0,
+          user_id = null,
           items
         } = req.body;
 
@@ -122,6 +123,7 @@ exports.create_order = (req, res, next) => {
           `
           INSERT INTO orders (
             order_number,
+            user_id,
             customer_name,
             customer_email,
             customer_phone,
@@ -139,10 +141,11 @@ exports.create_order = (req, res, next) => {
             razorpay_order_id,
             order_status
           )
-          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'pending')
+          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'pending')
           `,
           [
             order_number,
+            user_id ? Number(user_id) : null,
             customer_name,
             customer_email,
             customer_phone,
@@ -551,4 +554,60 @@ exports.track_order = async (req, res, next) => {
     console.error("Track order error:", error);
     next(error);
   }
-}
+};
+
+/**
+ * Fetch all orders for a logged-in customer by user_id or email
+ * POST /user/my_orders
+ */
+exports.fetch_my_orders = async (req, res, next) => {
+  try {
+    const { email, user_id } = req.body;
+
+    if (!email && !user_id) {
+      return next(createError.BadRequest("Email or User ID is required"));
+    }
+
+    let sql = `
+      SELECT o.id, o.order_number, o.customer_name, o.customer_email, o.customer_phone,
+             o.order_status, o.shipping_date, o.delivery_date, o.packed_at, o.created_at,
+             o.total_amount, o.payment_status, o.payment_verified,
+             (
+               SELECT JSON_ARRAYAGG(
+                 JSON_OBJECT(
+                   'product_name', oi.product_name,
+                   'product_price', oi.product_price,
+                   'quantity', oi.quantity,
+                   'size', oi.size,
+                   'color', oi.color
+                 )
+               )
+               FROM order_items oi
+               WHERE oi.order_id = o.id
+             ) AS items
+      FROM orders o
+      WHERE 1=1
+    `;
+
+    const params = [];
+    if (user_id) {
+      sql += ` AND (o.user_id = ? OR o.customer_email = ?)`;
+      params.push(user_id, email || "");
+    } else {
+      sql += ` AND o.customer_email = ?`;
+      params.push(email);
+    }
+
+    sql += ` ORDER BY o.created_at DESC LIMIT 50`;
+
+    const [rows] = await db.promise().query(sql, params);
+
+    return res.status(200).json({
+      success: true,
+      orders: rows || []
+    });
+  } catch (error) {
+    console.error("Fetch my orders error:", error);
+    next(error);
+  }
+};

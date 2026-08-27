@@ -53,6 +53,7 @@ import ProductBuyer from './Pages/AdminPanal/BuyerData/Buyer.jsx';
 import OrderDetails from "./Pages/AdminPanal/ManageOrder/OrderDetails/OrderDetails.jsx";
 import Inventory from "./Pages/AdminPanal/Inventory/Inventory.jsx";
 import ManageAdmin from './Pages/AdminPanal/ManageAdmin/ManageAdmin.jsx';
+import ManageReviews from './Pages/AdminPanal/ManageReviews/ManageReviews.jsx';
 import axios from 'axios';
 
 import "./App.css";
@@ -217,6 +218,7 @@ export default function App() {
           <Route path="all-products" element={<ProductData />} />
           <Route path="product-buyers" element={<ProductBuyer />} />
           <Route path="inventory" element={<Inventory />} />
+          <Route path="manage-reviews" element={<ManageReviews />} />
           <Route path="manage-admin" element={<ManageAdmin />} />
         </Route>
 

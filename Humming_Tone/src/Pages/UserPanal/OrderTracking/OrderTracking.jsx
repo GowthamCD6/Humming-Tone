@@ -54,6 +54,49 @@ const OrderTracking = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [myOrders, setMyOrders] = useState([]);
+  const [customerOrders, setCustomerOrders] = useState([]);
+  const [loadingHistory, setLoadingHistory] = useState(false);
+
+  const customerUser = (() => {
+    try {
+      return JSON.parse(localStorage.getItem("customerUser")) || null;
+    } catch {
+      return null;
+    }
+  })();
+
+  // Fetch full account order history directly from DB if customer is signed in
+  useEffect(() => {
+    const fetchAccountOrders = async () => {
+      if (!customerUser?.email && !customerUser?.id) return;
+      setLoadingHistory(true);
+      try {
+        const res = await fetch(`${API_BASE_URL}/user/my_orders`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            email: customerUser.email,
+            user_id: customerUser.id || undefined,
+          }),
+        });
+        const data = await res.json();
+        if (res.ok && data.success && Array.isArray(data.orders)) {
+          setCustomerOrders(data.orders);
+          // If user hasn't tracked an order yet and has history, auto-select the latest order
+          if (!order && data.orders.length > 0 && !location.state?.order_number && !localStorage.getItem("ot_order_number")) {
+            setOrder(data.orders[0]);
+            setOrderNumber(data.orders[0].order_number);
+          }
+        }
+      } catch (err) {
+        console.error("Failed to load customer order history:", err);
+      } finally {
+        setLoadingHistory(false);
+      }
+    };
+
+    fetchAccountOrders();
+  }, [customerUser?.email, customerUser?.id]);
 
   // Load saved orders from localStorage
   useEffect(() => {
@@ -176,6 +219,76 @@ const OrderTracking = () => {
 
         {/* Search Form */}
         <section className="ot-search-card">
+          {customerUser && (
+            <div className="ot-user-account-banner" style={{ background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: '8px', padding: '16px 20px', marginBottom: '24px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '12px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                <div style={{ width: '40px', height: '40px', borderRadius: '50%', background: '#0f172a', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold' }}>
+                  {(customerUser.name || 'U')[0].toUpperCase()}
+                </div>
+                <div>
+                  <strong style={{ display: 'block', color: '#0f172a', fontSize: '0.98rem' }}>{customerUser.name}</strong>
+                  <span style={{ color: '#64748b', fontSize: '0.84rem' }}>{customerUser.email} · {customerOrders.length} Order{customerOrders.length === 1 ? '' : 's'} placed</span>
+                </div>
+              </div>
+              <span style={{ background: '#ecfdf5', color: '#059669', border: '1px solid #a7f3d0', fontSize: '0.78rem', fontWeight: 600, padding: '4px 12px', borderRadius: '20px' }}>
+                ✓ Google Account Connected
+              </span>
+            </div>
+          )}
+
+          {/* Logged in orders history list */}
+          {customerOrders.length > 0 && (
+            <div className="ot-account-orders-section" style={{ marginBottom: '24px' }}>
+              <h3 style={{ fontSize: '1.05rem', fontWeight: 600, color: '#0f172a', marginBottom: '12px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <HistoryIcon style={{ fontSize: '1.2rem', color: '#475569' }} />
+                <span>Your Order History</span>
+              </h3>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '14px' }}>
+                {customerOrders.map((ord) => {
+                  const isSelected = order?.order_number === ord.order_number;
+                  return (
+                    <div
+                      key={ord.order_number}
+                      onClick={() => {
+                        setOrder(ord);
+                        setOrderNumber(ord.order_number);
+                        if (ord.customer_email) setContactValue(ord.customer_email);
+                        setError("");
+                      }}
+                      style={{
+                        padding: '14px 16px',
+                        borderRadius: '8px',
+                        border: isSelected ? '2px solid #0f172a' : '1px solid #e2e8f0',
+                        background: isSelected ? '#f8fafc' : '#ffffff',
+                        cursor: 'pointer',
+                        transition: 'all 0.2s ease',
+                      }}
+                    >
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
+                        <strong style={{ fontSize: '0.9rem', color: '#0f172a' }}>{ord.order_number}</strong>
+                        <span style={{
+                          fontSize: '0.74rem',
+                          textTransform: 'uppercase',
+                          fontWeight: 700,
+                          padding: '2px 8px',
+                          borderRadius: '4px',
+                          background: ord.order_status === 'delivered' ? '#ecfdf5' : ord.order_status === 'cancelled' ? '#fef2f2' : '#fef3c7',
+                          color: ord.order_status === 'delivered' ? '#059669' : ord.order_status === 'cancelled' ? '#dc2626' : '#d97706'
+                        }}>
+                          {ord.order_status?.replace(/_/g, ' ')}
+                        </span>
+                      </div>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', color: '#64748b', fontSize: '0.8rem' }}>
+                        <span>{formatDate(ord.created_at)}</span>
+                        <strong>₹{Number(ord.total_amount || 0).toFixed(2)}</strong>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+
           <div className="ot-search-form">
             <div className="ot-input-group">
               <label className="ot-label">Order ID</label>

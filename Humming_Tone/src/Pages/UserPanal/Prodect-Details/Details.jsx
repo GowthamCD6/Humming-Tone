@@ -3,6 +3,7 @@ import { useParams } from "react-router-dom";
 import demoImage from "../../../assets/demo.jpeg";
 import UserFooter from "../../../components/User-Footer-Card/UserFooter";
 import AddToCartModal from "./Product-Buying modal/AddToCartModal";
+import ProductReviews from "./ReviewsSection/ProductReviews";
 import "./Details.css";
 import { useNavigate } from "react-router-dom";
 import { API_BASE_URL, getImageUrl } from "../../../utils/apiConfig";
@@ -92,6 +93,39 @@ const ProductDetailPage = () => {
     setIsInCart(false);
   };
 
+  const handleBuyNow = () => {
+    if (!selectedSize) return;
+
+    const variant = sizes.find((v) => v.size === selectedSize);
+
+    const directItem = {
+      id: product.id,
+      name: product.name,
+      brand: product.brand,
+      price: variant.price,
+      quantity,
+      size: selectedSize,
+      color: product.color || "Default",
+      stock: variant.stock_quantity,
+      image: productImages[0] || getImageUrl(product.image_path),
+    };
+
+    // Ensure item is in the cart
+    const cart = getCart();
+    const existingIndex = cart.findIndex((item) => item.id === product.id && item.size === selectedSize);
+    if (existingIndex > -1) {
+      cart[existingIndex].quantity = quantity;
+    } else {
+      cart.push(directItem);
+    }
+
+    localStorage.setItem("cart", JSON.stringify(cart));
+    window.dispatchEvent(new Event("cart:updated"));
+
+    // Navigate straight to checkout
+    navigate("/usertab/checkout");
+  };
+
   /* ================= RECOMMENDATIONS ================= */
   const fetchRecommendations = async (categoryId) => {
     try {
@@ -134,8 +168,13 @@ const ProductDetailPage = () => {
           );
         }
 
-        if (data.variants) {
+        if (data.variants && data.variants.length > 0) {
           setSizes(data.variants);
+          // Default select the first in-stock variant, or first variant available
+          const inStockVariant = data.variants.find((v) => Number(v.stock_quantity) > 0) || data.variants[0];
+          if (inStockVariant) {
+            setSelectedSize(inStockVariant.size);
+          }
         }
 
         if (data.category_id) {
@@ -232,27 +271,37 @@ const ProductDetailPage = () => {
               </div>
             </div>
 
-            <div className="meta-grid">
-              <div className="meta-item">
-                <span className="label">SKU</span>
-                <span>{product.sku}</span>
-              </div>
-              <div className="meta-item">
-                <span className="label">BRAND</span>
-                <span>{product.brand}</span>
-              </div>
-              <div className="meta-item">
-                <span className="label">CATEGORY</span>
-                <span>{product.category_name}</span>
-              </div>
-              <div className="meta-item">
-                <span className="label">GENDER</span>
-                <span>{product.gender}</span>
-              </div>
-              <div className="meta-item full-width">
-                <span className="label">SUBCATEGORY</span>
-                <span>{product.subcategory}</span>
-              </div>
+            <div className="product-meta-strip">
+              {product.brand && (
+                <div className="meta-pill">
+                  <span className="meta-pill-label">Brand:</span>
+                  <span className="meta-pill-val">{product.brand}</span>
+                </div>
+              )}
+              {product.category_name && (
+                <div className="meta-pill">
+                  <span className="meta-pill-label">Category:</span>
+                  <span className="meta-pill-val">{product.category_name}</span>
+                </div>
+              )}
+              {product.subcategory && (
+                <div className="meta-pill">
+                  <span className="meta-pill-label">Style:</span>
+                  <span className="meta-pill-val">{product.subcategory}</span>
+                </div>
+              )}
+              {product.gender && (
+                <div className="meta-pill">
+                  <span className="meta-pill-label">Gender:</span>
+                  <span className="meta-pill-val">{product.gender}</span>
+                </div>
+              )}
+              {product.sku && (
+                <div className="meta-pill sku-pill">
+                  <span className="meta-pill-label">SKU:</span>
+                  <span className="meta-pill-val">{product.sku}</span>
+                </div>
+              )}
             </div>
 
             <div className="selection-section">
@@ -293,17 +342,27 @@ const ProductDetailPage = () => {
               </div>
             </div>
 
-            <button
-              className={`cart-submit-btn ${selectedSize ? "enabled" : ""}`}
-              onClick={isInCart ? removeFromCart : addToCart}
-              disabled={!selectedSize}
-            >
-              {!selectedSize
-                ? "SELECT SIZE TO ADD TO CART"
-                : isInCart
-                ? "REMOVE FROM CART"
-                : "ADD TO CART"}
-            </button>
+            <div className="product-action-buttons-group">
+              <button
+                className={`cart-submit-btn ${selectedSize ? "enabled" : ""}`}
+                onClick={isInCart ? removeFromCart : addToCart}
+                disabled={!selectedSize}
+              >
+                {!selectedSize
+                  ? "SELECT SIZE TO ADD TO CART"
+                  : isInCart
+                  ? "REMOVE FROM CART"
+                  : "ADD TO CART"}
+              </button>
+
+              <button
+                className={`buy-now-submit-btn ${selectedSize ? "enabled" : ""}`}
+                onClick={handleBuyNow}
+                disabled={!selectedSize}
+              >
+                BUY IT NOW
+              </button>
+            </div>
 
             <div className="description-box">
               <h3 className="sub-title">About this item</h3>
@@ -316,6 +375,9 @@ const ProductDetailPage = () => {
             </div>
           </div>
         </div>
+
+        {/* ================= CUSTOMER REVIEWS ================= */}
+        <ProductReviews productId={product.id} productName={product.name} />
 
         {/* ================= YOU MAY ALSO LIKE ================= */}
         <section className="related-section">

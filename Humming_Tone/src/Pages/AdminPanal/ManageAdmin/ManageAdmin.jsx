@@ -35,6 +35,7 @@ export default function ManageAdmin() {
 
   // Form states - Create Admin
   const [createUsername, setCreateUsername] = useState('')
+  const [createEmail, setCreateEmail] = useState('')
   const [createPassword, setCreatePassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
   const [showCreatePass, setShowCreatePass] = useState(false)
@@ -104,11 +105,13 @@ export default function ManageAdmin() {
       setSubmittingCreate(true)
       await axios.post(`${API_BASE_URL}/admin/users`, {
         username: createUsername.trim(),
+        email: createEmail.trim() || undefined,
         password: createPassword,
       })
 
       setCreateSuccess(`Admin "${createUsername}" created successfully!`)
       setCreateUsername('')
+      setCreateEmail('')
       setCreatePassword('')
       setConfirmPassword('')
       fetchAdmins()
@@ -226,6 +229,18 @@ export default function ManageAdmin() {
                 placeholder="e.g. admin_jane"
                 disabled={submittingCreate}
                 required
+              />
+            </div>
+
+            <div className="form-group">
+              <label htmlFor="createEmail">Google / Admin Email (Optional)</label>
+              <input
+                type="email"
+                id="createEmail"
+                value={createEmail}
+                onChange={(e) => setCreateEmail(e.target.value)}
+                placeholder="e.g. jane@gmail.com (for 1-click Google Login)"
+                disabled={submittingCreate}
               />
             </div>
 
@@ -404,11 +419,29 @@ export default function ManageAdmin() {
                         <td>
                           <div className="admin-user-cell">
                             <div className="user-avatar-circle">
-                              {adm.username.substring(0, 2).toUpperCase()}
+                              {adm.avatar_url ? (
+                                <img
+                                  src={adm.avatar_url}
+                                  alt={adm.username}
+                                  referrerPolicy="no-referrer"
+                                  crossOrigin="anonymous"
+                                  style={{ width: '100%', height: '100%', borderRadius: '50%', objectFit: 'cover' }}
+                                />
+                              ) : (
+                                adm.username.substring(0, 2).toUpperCase()
+                              )}
                             </div>
                             <div className="username-info">
                               <span className="name">{adm.username}</span>
-                              {isSelf && <span className="self-badge">You</span>}
+                              {adm.email && <span style={{ fontSize: '0.78rem', color: '#6b7280', display: 'block' }}>{adm.email}</span>}
+                              <div style={{ display: 'flex', gap: '6px', alignItems: 'center', marginTop: '2px' }}>
+                                {isSelf && <span className="self-badge">You</span>}
+                                {adm.google_id && (
+                                  <span style={{ background: '#ecfdf5', color: '#059669', border: '1px solid #a7f3d0', fontSize: '0.7rem', fontWeight: 600, padding: '1px 6px', borderRadius: '10px' }}>
+                                    ✓ Google Linked
+                                  </span>
+                                )}
+                              </div>
                             </div>
                           </div>
                         </td>

@@ -7,36 +7,45 @@
 }
 
 .userpanal-product-details-page .container {
-  max-width: 1300px;
+  max-width: 1180px;
   margin: 0 auto;
-  padding: 0 40px;
+  padding: 0 24px;
 }
 
-/* CRITICAL: Layout with proper sticky behavior */
+/* Layout with tight center spacing and balanced proportions */
 .userpanal-product-details-page .product-detail-layout {
   display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 80px;
-  padding: 60px 0;
+  grid-template-columns: 46% 54%;
+  gap: 36px;
+  padding: 20px 0 40px 0;
   align-items: flex-start;
+  justify-content: center;
 }
 
-/* Left Column: Sticky Gallery */
+/* Left Column: Compact Sticky Gallery */
 .userpanal-product-details-page .product-gallery-container {
   position: sticky;
-  top: calc(var(--user-header-height, 100px) + 1px);
+  top: calc(var(--user-header-height, 100px) + 20px);
   align-self: flex-start;
   height: fit-content;
+  width: 100%;
+  max-width: 460px;
+  z-index: 10;
 }
 
 .userpanal-product-details-page .product-main-image {
-  background: linear-gradient(135deg, #f5f5f5 0%, #e8e8e8 100%);
-  margin-bottom: 20px;
-  aspect-ratio: 0.85;
+  background: #f8fafc;
+  margin-bottom: 12px;
+  max-height: calc(100vh - var(--user-header-height, 100px) - 130px);
+  min-height: 420px;
+  width: 100%;
+  aspect-ratio: 0.82;
   display: flex;
   align-items: center;
   justify-content: center;
   overflow: hidden;
+  border-radius: 8px;
+  border: 1px solid #f1f5f9;
 }
 
 .userpanal-product-details-page .product-main-image img {
@@ -44,35 +53,28 @@
   height: 100%;
   display: block;
   object-fit: cover;
-}
-
-.userpanal-product-details-page .image-placeholder {
-  color: #999;
-  font-size: 1.2rem;
-  font-weight: 500;
+  object-position: center;
 }
 
 .userpanal-product-details-page .thumbnail-gallery {
   display: flex;
-  gap: 12px;
+  gap: 10px;
   flex-wrap: wrap;
+  align-items: center;
 }
 
 .userpanal-product-details-page .thumbnail {
-  width: 80px;
-  height: 80px;
-  border: 1px solid #eee;
+  width: 68px;
+  height: 68px;
+  border: 1.5px solid #e2e8f0;
   cursor: pointer;
-  background: #f9f9f9;
+  background: #f8fafc;
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 0;
-}
-
-.userpanal-product-details-page button.thumbnail {
-  appearance: none;
-  border-radius: 0;
+  padding: 2px;
+  border-radius: 6px;
+  transition: all 0.2s ease;
 }
 
 .userpanal-product-details-page .thumbnail img {
@@ -80,168 +82,191 @@
   height: 100%;
   display: block;
   object-fit: cover;
+  border-radius: 4px;
 }
 
 .userpanal-product-details-page .thumbnail.active { 
-  border: 2px solid #1a1a1a; 
+  border: 2px solid #0f172a;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
 }
 
-.userpanal-product-details-page .thumb-placeholder {
-  color: #999;
-  font-size: 0.9rem;
-}
-
-/* Right Column: Natural scrolling content - flows naturally with no special positioning */
+/* Right Column: Refined & Balanced Typography */
 
 .userpanal-product-details-page .product-title {
   font-family: 'Playfair Display', serif;
-  font-size: 3.2rem;
-  font-weight: 400;
-  margin-bottom: 20px;
-  line-height: 1.2;
+  font-size: 2rem;
+  font-weight: 600;
+  margin-bottom: 10px;
+  line-height: 1.25;
+  color: #0f172a;
+  letter-spacing: -0.01em;
 }
 
 .userpanal-product-details-page .price-section { 
-  margin-bottom: 40px; 
+  margin-bottom: 18px; 
 }
 
 .userpanal-product-details-page .dynamic-price { 
-  font-size: 2.8rem; 
-  font-weight: 550; 
+  font-size: 1.95rem; 
+  font-weight: 700;
+  color: #0f172a;
 }
 
 .userpanal-product-details-page .original-price { 
-  color: #999; 
+  color: #94a3b8; 
   text-decoration: line-through; 
-  font-size: 1.3rem; 
-  margin-top: 5px; 
+  font-size: 1rem; 
+  margin-top: 2px; 
 }
 
-.userpanal-product-details-page .meta-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  column-gap: 60px;
-  row-gap: 35px;
-  background: #ffffff;
-  padding: 45px 40px;
-  border: 1px solid #eee;
-  margin-bottom: 40px;
+/* Clean, Modern Spec Pills Strip (No Clunky Boxes) */
+.userpanal-product-details-page .product-meta-strip {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 22px;
 }
 
-.userpanal-product-details-page .meta-item.full-width {
-  grid-column: 1 / -1;
+.userpanal-product-details-page .meta-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  padding: 5px 12px;
+  border-radius: 20px;
+  font-size: 0.8rem;
 }
 
-.userpanal-product-details-page .meta-item .label { 
-  display: block; 
-  font-size: 0.8rem; 
-  color: #999; 
-  text-transform: uppercase; 
-  letter-spacing: 1px; 
-  margin-bottom: 5px;
+.userpanal-product-details-page .meta-pill-label {
+  color: #64748b;
+  font-weight: 500;
 }
 
-.userpanal-product-details-page .meta-item .value { 
-  font-size: 1.1rem; 
-  font-weight: 500; 
+.userpanal-product-details-page .meta-pill-val {
+  color: #0f172a;
+  font-weight: 600;
+}
+
+.userpanal-product-details-page .meta-pill.sku-pill {
+  background: #f1f5f9;
+  border-color: #cbd5e1;
 }
 
 .userpanal-product-details-page .selection-section {
-  margin-bottom: 40px;
+  margin-bottom: 24px;
 }
 
 .userpanal-product-details-page .sub-title {
-  font-family: 'Playfair Display', serif;
-  font-size: 1.8rem;
-  font-weight: 400;
-  margin-bottom: 20px;
-  border-bottom: 1px solid #eee;
-  padding-bottom: 10px;
+  font-family: 'Inter', sans-serif;
+  font-size: 1.05rem;
+  font-weight: 600;
+  margin-bottom: 12px;
+  color: #0f172a;
+  border-bottom: none;
+  padding-bottom: 0;
 }
 
+/* Refined & Compact Size Selection Pills */
 .userpanal-product-details-page .size-options { 
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 24px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
 }
 
 .userpanal-product-details-page .size-btn {
-  background: white;
-  border: 1px solid #e9e9e9;
-  padding: 26px 18px;
-  min-height: 92px;
+  background: #ffffff;
+  border: 1.5px solid #e2e8f0;
+  padding: 10px 18px;
+  min-width: 80px;
+  min-height: auto;
+  border-radius: 6px;
   cursor: pointer;
-  transition: all 0.3s ease;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
   text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
 }
 
 .userpanal-product-details-page .size-btn:hover { 
-  border-color: #cfcfcf;
+  border-color: #94a3b8;
+  background: #f8fafc;
 }
 
 .userpanal-product-details-page .size-btn.selected { 
-  border-color: #1a1a1a;
+  border-color: #0f172a;
+  background: #0f172a;
+  box-shadow: 0 4px 12px rgba(15, 23, 42, 0.15);
+}
+
+.userpanal-product-details-page .size-btn.selected .size-name {
+  color: #ffffff;
+}
+
+.userpanal-product-details-page .size-btn.selected .stock-tag {
+  color: #86efac;
 }
 
 .userpanal-product-details-page .size-name { 
   display: block; 
-  font-size: 18px;
-  font-weight: 600; 
-  margin-bottom: 5px;
+  font-size: 0.95rem;
+  font-weight: 700; 
+  color: #0f172a;
 }
 
 .userpanal-product-details-page .stock-tag { 
-  font-size: 12px;
-  color: #27ae60; 
-  letter-spacing: 0.06em;
+  font-size: 0.68rem;
+  color: #059669; 
+  letter-spacing: 0.04em;
+  font-weight: 600;
   text-transform: uppercase;
 }
 
 .userpanal-product-details-page .selected-size-info {
-  margin-top: 30px;
-  padding: 25px 30px;
-  background: #fafafa;
-  border: 1px solid #eee;
-  border-left: 4px solid #1a1a1a;
-  font-size: 1.3rem;
-  font-weight: 500;
-  color: #1a1a1a;
-  letter-spacing: 0.3px;
-  box-shadow: none;
-  transition: all 0.3s ease;
-}
-
-.userpanal-product-details-page .selected-size-info:hover {
-  background: #f5f5f5;
-  border-left-color: #000;
+  margin-top: 14px;
+  padding: 10px 16px;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 6px;
+  font-size: 0.92rem;
+  font-weight: 600;
+  color: #0f172a;
 }
 
 .userpanal-product-details-page .quantity-ctrl { 
   display: inline-flex; 
-  border: 2px solid #eee; 
-  margin-bottom: 15px; 
+  border: 1.5px solid #e2e8f0; 
+  border-radius: 6px;
+  overflow: hidden;
+  margin-bottom: 8px; 
 }
 
 .userpanal-product-details-page .quantity-ctrl button { 
-  width: 60px; 
-  height: 50px; 
-  background: none; 
+  width: 44px; 
+  height: 40px; 
+  background: #f8fafc; 
   border: none; 
-  font-size: 1.5rem; 
+  font-size: 1.2rem; 
   cursor: pointer;
   transition: background 0.2s;
+  color: #0f172a;
 }
 
 .userpanal-product-details-page .quantity-ctrl button:hover {
-  background: #f5f5f5;
+  background: #e2e8f0;
 }
 
 .userpanal-product-details-page .quantity-ctrl input { 
-  width: 80px; 
+  width: 54px; 
   text-align: center; 
   border: none; 
-  font-size: 1.2rem; 
+  font-size: 1rem; 
   font-weight: 600; 
+  color: #0f172a;
 }
 
 .userpanal-product-details-page .availability-msg { 
@@ -250,26 +275,121 @@
   text-transform: uppercase; 
 }
 
-.userpanal-product-details-page .cart-submit-btn {
-  width: 100%;
-  padding: 20px;
-  background: #ccc;
-  color: white;
-  border: none;
-  font-weight: 600;
-  letter-spacing: 2px;
-  cursor: not-allowed;
-  margin-bottom: 60px;
-  transition: all 0.3s ease;
+.userpanal-product-details-page .product-action-buttons-group {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+  margin-bottom: 36px;
 }
 
+.userpanal-product-details-page .cart-submit-btn,
+.userpanal-product-details-page .buy-now-submit-btn {
+  position: relative;
+  width: 100%;
+  padding: 16px 20px;
+  background: #f1f5f9;
+  color: #94a3b8;
+  border: 2px solid transparent;
+  font-family: 'Poppins', sans-serif;
+  font-weight: 600;
+  font-size: 13px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  cursor: not-allowed;
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  border-radius: 2px;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  box-sizing: border-box;
+}
+
+/* ADD TO CART: Styled with Hero Secondary Button Aesthetic (Outline -> Solid Fill) */
 .userpanal-product-details-page .cart-submit-btn.enabled { 
-  background: #1a1a1a; 
-  cursor: pointer; 
+  background: #ffffff; 
+  color: #000000;
+  border: 2px solid #000000;
+  cursor: pointer;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.06);
+}
+
+.userpanal-product-details-page .cart-submit-btn.enabled::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 0;
+  height: 0;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.08);
+  transform: translate(-50%, -50%);
+  transition: width 0.6s, height 0.6s;
+  z-index: 0;
+}
+
+.userpanal-product-details-page .cart-submit-btn.enabled:hover::before {
+  width: 320px;
+  height: 320px;
 }
 
 .userpanal-product-details-page .cart-submit-btn.enabled:hover {
-  background: #333;
+  background: #000000;
+  color: #ffffff;
+  border-color: #000000;
+  transform: translateY(-4px);
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.25);
+}
+
+.userpanal-product-details-page .cart-submit-btn.enabled:active {
+  transform: translateY(-2px);
+}
+
+/* BUY IT NOW: Styled with Hero Primary CTA Button Aesthetic (Solid Black -> White/Glow Invert) */
+.userpanal-product-details-page .buy-now-submit-btn.enabled {
+  background: #000000;
+  color: #ffffff;
+  border: 2px solid #000000;
+  cursor: pointer;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
+}
+
+.userpanal-product-details-page .buy-now-submit-btn.enabled::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 0;
+  height: 0;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.15);
+  transform: translate(-50%, -50%);
+  transition: width 0.6s, height 0.6s;
+  z-index: 0;
+}
+
+.userpanal-product-details-page .buy-now-submit-btn.enabled:hover::before {
+  width: 320px;
+  height: 320px;
+}
+
+.userpanal-product-details-page .buy-now-submit-btn.enabled:hover {
+  background: #ffffff;
+  color: #000000;
+  border-color: #000000;
+  transform: translateY(-4px);
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.35);
+}
+
+.userpanal-product-details-page .buy-now-submit-btn.enabled:active {
+  transform: translateY(-2px);
+}
+
+@media (max-width: 640px) {
+  .userpanal-product-details-page .product-action-buttons-group {
+    grid-template-columns: 1fr;
+  }
 }
 
 .userpanal-product-details-page .description-box {

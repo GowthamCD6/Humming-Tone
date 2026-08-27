@@ -3,14 +3,14 @@ const createError = require("http-errors");
 const bcrypt = require('bcrypt');
 
 exports.getAdminUsers = (req, res, next) => {
-  db.query('SELECT id, username, created_at FROM admin_users ORDER BY id DESC', (err, results) => {
+  db.query('SELECT id, username, email, google_id, avatar_url, created_at FROM admin_users ORDER BY id DESC', (err, results) => {
     if (err) return next(err);
     res.status(200).json(results);
   });
 };
 
 exports.createAdminUser = async (req, res, next) => {
-  const { username, password } = req.body;
+  const { username, password, email } = req.body;
   if (!username || !password) {
     return next(createError.BadRequest('Username and password are required'));
   }
@@ -25,17 +25,18 @@ exports.createAdminUser = async (req, res, next) => {
 
   try {
     // Check if user already exists
-    db.query('SELECT id FROM admin_users WHERE username = ?', [username], async (err, results) => {
+    const safeEmail = email && email.trim() ? email.trim().toLowerCase() : null;
+    db.query('SELECT id FROM admin_users WHERE username = ? OR (email IS NOT NULL AND email = ?)', [username.trim(), safeEmail], async (err, results) => {
       if (err) return next(err);
       if (results.length > 0) {
-        return next(createError.Conflict('Username is already taken'));
+        return next(createError.Conflict('Username or Email is already associated with an admin account'));
       }
 
       // Hash password
       const password_hash = await bcrypt.hash(password, 10);
 
       // Insert
-      db.query('INSERT INTO admin_users (username, password_hash) VALUES (?, ?)', [username, password_hash], (err, insertResult) => {
+      db.query('INSERT INTO admin_users (username, password_hash, email) VALUES (?, ?, ?)', [username.trim(), password_hash, safeEmail], (err, insertResult) => {
         if (err) return next(err);
         res.status(201).json({
           message: 'Admin user created successfully',

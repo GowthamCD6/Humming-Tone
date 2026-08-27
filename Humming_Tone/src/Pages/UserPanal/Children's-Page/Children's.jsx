@@ -2,36 +2,15 @@ import React, { useState, useEffect } from 'react';
 import UserFooter from '../../../components/User-Footer-Card/UserFooter';
 import LottieLoader from '../../../components/LottieLoader/LottieLoader';
 import './Children\'s.css';
-import { getGenderOptions } from '../../../utils/siteContentStore';
 import axios from 'axios';  // Import axios
 import { Link } from 'react-router-dom';
 import { API_BASE_URL, getImageUrl } from '../../../utils/apiConfig';
 
 const Children = ({ onViewDetails: _onViewDetails = () => {} }) => {
-  const [selectedGender, setSelectedGender] = useState('Children');  // Default to 'Children'
-  const [selectedCategory, setSelectedCategory] = useState('All Categories');
-  const [products, setProducts] = useState([]);  // Set products to empty initially
-  const [allProducts, setAllProducts] = useState([]);
+  const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [categoryOptions, setCategoryOptions] = useState(['All Categories']);
 
-  const genderOptions = getGenderOptions();
-
-  // Fetch categories dynamically
-  useEffect(() => {
-    const fetchCategories = async () => {
-      try {
-        let url = `${API_BASE_URL}/user/fetch_categories?gender=children`;
-        const response = await axios.get(url);
-        setCategoryOptions(['All Categories', ...response.data]);
-      } catch (error) {
-        console.error('Error fetching categories:', error);
-      }
-    };
-    fetchCategories();
-  }, [selectedGender]);
-
-  // Fetch products from the API when the gender or category changes
+  // Fetch products from the API for Children's category
   useEffect(() => {
     const fetchProducts = async () => {
       try {
@@ -39,11 +18,10 @@ const Children = ({ onViewDetails: _onViewDetails = () => {} }) => {
         const response = await axios.get(`${API_BASE_URL}/user/fetch_products?gender=children`);
         const fetchedProducts = response.data.map(product => ({
           ...product,
-          price: parseFloat(product.price),  // Ensure price is a float
-          image: product.image_path ? getImageUrl(product.image_path) : '',
+          price: parseFloat(product.price),
+          image: getImageUrl(product.image_path),
         }));
-        setProducts(fetchedProducts);  // Update the state with fetched products
-        setAllProducts(fetchedProducts);
+        setProducts(fetchedProducts);
       } catch (error) {
         console.error('Error fetching products:', error);
       } finally {
@@ -52,21 +30,7 @@ const Children = ({ onViewDetails: _onViewDetails = () => {} }) => {
     };
 
     fetchProducts();
-  }, [selectedGender]);  // Trigger API call when gender changes
-
-  const handleApplyFilters = () => {
-    let filtered = [...allProducts];
-    if (selectedCategory !== 'All Categories') {
-      filtered = filtered.filter(p => p.category === selectedCategory);
-    }
-    setProducts(filtered);
-  };
-
-  const handleClearAll = () => {
-    setSelectedGender('Children');
-    setSelectedCategory('All Categories');
-    setProducts(allProducts);
-  };
+  }, []);
 
   // Product Card Component
   const ProductCard = ({ product }) => (
@@ -95,78 +59,12 @@ const Children = ({ onViewDetails: _onViewDetails = () => {} }) => {
 
   return (
     <div className="childrens-collection-page">
-      {/* Header Section */}
-      <div className="childrens-header">
-        <h1 className="childrens-title">Our Collection</h1>
-        <p className="childrens-item-count">{products.length} ITEMS FOUND</p>
-      </div>
-
-      <div className="childrens-divider"></div>
-
-      {/* Filter Section */}
-      <div className="childrens-filter-container">
-        <h2 className="childrens-filter-title">Refine Your Selection</h2>
-        
-        <div className="childrens-filter-row">
-          {/* Gender Dropdown */}
-          <div className="childrens-filter-group">
-            <label className="childrens-filter-label">GENDER</label>
-            <div className="childrens-select-wrapper">
-              <select 
-                className="childrens-select"
-                value={selectedGender}
-                disabled
-              >
-                {genderOptions.map(option => (
-                  <option key={option} value={option}>{option}</option>
-                ))}
-              </select>
-              <span className="childrens-select-arrow">▼</span>
-            </div>
-          </div>
-
-          {/* Category Dropdown */}
-          <div className="childrens-filter-group">
-            <label className="childrens-filter-label">CATEGORY</label>
-            <div className="childrens-select-wrapper">
-              <select 
-                className="childrens-select"
-                value={selectedCategory}
-                onChange={(e) => setSelectedCategory(e.target.value)}
-              >
-                {categoryOptions.map(option => (
-                  <option key={option} value={option}>{option}</option>
-                ))}
-              </select>
-              <span className="childrens-select-arrow">▼</span>
-            </div>
-          </div>
-
-          {/* Action Buttons */}
-          <div className="childrens-button-group">
-            <button 
-              className="childrens-apply-button"
-              onClick={handleApplyFilters}
-            >
-              APPLY FILTERS
-            </button>
-            <button 
-              className="childrens-clear-button"
-              onClick={handleClearAll}
-            >
-              CLEAR ALL
-            </button>
-          </div>
-        </div>
-      </div>
-
       {/* Products Section - Conditional Rendering */}
       {loading ? (
         <div className="childrens-products-section">
           <div className="childrens-section-intro">
             <h2 className="childrens-section-heading">Children's Collection</h2>
             <div className="childrens-heading-accent"></div>
-            <p className="childrens-section-description">Explore our curated collection of premium products</p>
           </div>
           <LottieLoader size={160} message="Loading children's collection..." />
         </div>
@@ -175,7 +73,6 @@ const Children = ({ onViewDetails: _onViewDetails = () => {} }) => {
           <div className="childrens-section-intro">
             <h2 className="childrens-section-heading">Children's Collection</h2>
             <div className="childrens-heading-accent"></div>
-            <p className="childrens-section-description">Explore our curated collection of premium products</p>
           </div>
           
           <div className="childrens-product-grid">

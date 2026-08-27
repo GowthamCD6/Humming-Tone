@@ -23,6 +23,9 @@ const adminAuth = require('./middlewares/adminAuth');
 const adminUsersRoute = require("./routes/admin/adminUsers");
 const adminWhatsAppRoute = require("./routes/admin/whatsapp");
 const adminReturnRoute = require("./routes/admin/return");
+const adminReviewRoute = require("./routes/admin/review");
+const userReviewRoute = require("./routes/user/review");
+const googleAuthRoute = require("./routes/auth/googleAuth");
 const app = express();
 const PORT = process.env.PORT || 5000;
 const path = require('path');
@@ -99,6 +102,7 @@ app.use("/", adminOrderRoute);
 app.use("/", adminDashboardRoute);
 app.use("/", adminAuthRoute);
 app.use("/", adminReturnRoute);
+app.use("/", adminReviewRoute);
 app.use("/api/orders", adminOrderRoute);
 app.use('/', adminInventoryRoutes);
 app.use('/api', adminCustomizeRoutes);
@@ -116,6 +120,8 @@ app.use("/", userPromoRoutes);
 app.use("/", userReturnRoutes);
 app.use("/", customizeRoutes);
 app.use("/", userCheckoutRoutes);
+app.use("/", userReviewRoute);
+app.use("/", googleAuthRoute);
 
 // Safe Health Check & Keep-Alive endpoints (for UptimeRobot, cron jobs, and Render)
 app.get("/health", (req, res) => {

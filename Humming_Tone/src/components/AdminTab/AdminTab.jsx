@@ -9,6 +9,7 @@ import InventoryIcon from '@mui/icons-material/Inventory'
 import AccountCircleIcon from '@mui/icons-material/AccountCircle'
 import PeopleIcon from '@mui/icons-material/People'
 import AdminPanelSettingsIcon from '@mui/icons-material/AdminPanelSettings'
+import RateReviewIcon from '@mui/icons-material/RateReview'
 import MenuIcon from '@mui/icons-material/Menu'
 import CloseIcon from '@mui/icons-material/Close'
 import { Outlet, useLocation, useNavigate } from 'react-router-dom'
@@ -29,6 +30,7 @@ const menuSections = [
       { id: 'add-product', path: 'add-product', label: 'Add Product', Icon: AddCircleIcon },
       { id: 'inventory', path: 'inventory', label: 'Inventory', Icon: InventoryIcon },
       { id: 'manage-orders', path: 'manage-orders', label: 'Manage Orders', Icon: ShoppingCartIcon },
+      { id: 'manage-reviews', path: 'manage-reviews', label: 'Product Reviews', Icon: RateReviewIcon },
     ]
   },
   {

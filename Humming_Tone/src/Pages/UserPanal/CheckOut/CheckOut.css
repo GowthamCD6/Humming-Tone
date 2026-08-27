@@ -122,6 +122,77 @@
     letter-spacing: -0.02em;
 }
 
+/* Express Checkout Banner */
+.checkout-section-header-flex {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-bottom: 1rem;
+}
+
+.checkout-section-header-flex .userpanal-checkout-section-title {
+    margin-bottom: 0;
+    border-bottom: none;
+    padding-bottom: 0;
+}
+
+.checkout-logged-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: #ecfdf5;
+    color: #059669;
+    border: 1px solid #a7f3d0;
+    padding: 6px 14px;
+    border-radius: 20px;
+    font-size: 0.84rem;
+}
+
+.checkout-express-banner {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: linear-gradient(135deg, #f9fafb 0%, #f3f4f6 100%);
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    padding: 18px 22px;
+    margin: 1.5rem 0 2rem 0;
+    gap: 16px;
+    flex-wrap: wrap;
+}
+
+.express-banner-left {
+    flex: 1;
+    min-width: 240px;
+}
+
+.express-icon-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    background: #111827;
+    color: #ffffff;
+    padding: 3px 10px;
+    border-radius: 12px;
+    font-size: 0.76rem;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    margin-bottom: 6px;
+}
+
+.express-banner-desc {
+    font-size: 0.86rem;
+    color: #4b5563;
+    margin: 0;
+    line-height: 1.4;
+}
+
+.express-google-btn {
+    flex-shrink: 0;
+}
+
 /* Form Styles */
 .userpanal-checkout-form-grid {
     display: grid;

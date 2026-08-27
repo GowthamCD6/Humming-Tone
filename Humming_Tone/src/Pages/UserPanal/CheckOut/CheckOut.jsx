@@ -1,5 +1,7 @@
 import React, { useState, useMemo, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { GoogleLogin } from "@react-oauth/google";
+import { UserCheck, ShieldCheck, Zap, Sparkles } from "lucide-react";
 import "./CheckOut.css";
 import UserFooter from "../../../components/User-Footer-Card/UserFooter";
 import { API_BASE_URL } from "../../../utils/apiConfig";
@@ -28,15 +30,26 @@ const CheckOut = ({ onBack }) => {
     }
   });
 
-  const [formData, setFormData] = useState({
-    customer_name: "",
-    customer_email: "",
-    customer_phone: "",
-    customer_address: "",
-    city: "",
-    state: "",
-    pincode: "",
-    order_instructions: "",
+  const [customerUser, setCustomerUser] = useState(() => {
+    try {
+      return JSON.parse(localStorage.getItem("customerUser")) || null;
+    } catch {
+      return null;
+    }
+  });
+
+  const [formData, setFormData] = useState(() => {
+    const user = JSON.parse(localStorage.getItem("customerUser") || "null");
+    return {
+      customer_name: user?.name || "",
+      customer_email: user?.email || "",
+      customer_phone: user?.phone || "",
+      customer_address: "",
+      city: "",
+      state: "",
+      pincode: "",
+      order_instructions: "",
+    };
   });
 
   /* ---------------- FETCH DYNAMIC SETTINGS ---------------- */
@@ -58,6 +71,37 @@ const CheckOut = ({ onBack }) => {
       navigate("/usertab/cart");
     }
   }, [cartItems, navigate]);
+
+  const handleGoogleCheckoutSuccess = async (credentialResponse) => {
+    if (!credentialResponse?.credential) return;
+
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/auth/google/user`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ credential: credentialResponse.credential }),
+      });
+
+      const data = await response.json();
+
+      if (response.ok && data.token) {
+        localStorage.setItem("userToken", data.token);
+        localStorage.setItem("customerUser", JSON.stringify(data.user));
+        setCustomerUser(data.user);
+
+        // Auto fill form fields
+        setFormData((prev) => ({
+          ...prev,
+          customer_name: data.user.name || prev.customer_name,
+          customer_email: data.user.email || prev.customer_email,
+        }));
+
+        window.dispatchEvent(new Event("user:auth_changed"));
+      }
+    } catch (err) {
+      console.error("Google checkout auto-fill error:", err);
+    }
+  };
 
   /* ---------------- HELPERS ---------------- */
   const toNumber = (v) => Number(v) || 0;
@@ -108,6 +152,7 @@ const handleCheckout = async (e) => {
       discount_amount: discountAmount,
       gst_amount: gstAmount,
       shipping,
+      user_id: customerUser?.id || null,
 
       items: cartItems.map((item) => ({
         product_id: item.id,
@@ -253,9 +298,42 @@ const handleCheckout = async (e) => {
         <div className="userpanal-checkout-layout">
           <div className="userpanal-checkout-left-column">
             <section className="userpanal-checkout-section">
-              <h2 className="userpanal-checkout-section-title">
-                Shipping Information
-              </h2>
+              <div className="checkout-section-header-flex">
+                <h2 className="userpanal-checkout-section-title">
+                  Shipping Information
+                </h2>
+                {customerUser && (
+                  <div className="checkout-logged-badge">
+                    <UserCheck size={16} />
+                    <span>Logged in as <strong>{customerUser.name || customerUser.email}</strong></span>
+                  </div>
+                )}
+              </div>
+
+              {/* Express Google Checkout Auto-Fill for Guests */}
+              {!customerUser && (
+                <div className="checkout-express-banner">
+                  <div className="express-banner-left">
+                    <div className="express-icon-pill">
+                      <Sparkles size={16} />
+                      <span>Express Checkout</span>
+                    </div>
+                    <p className="express-banner-desc">
+                      Fill your contact details in 1-click using Google, or continue below as guest.
+                    </p>
+                  </div>
+                  <div className="express-google-btn">
+                    <GoogleLogin
+                      onSuccess={handleGoogleCheckoutSuccess}
+                      onError={() => {}}
+                      theme="filled_blue"
+                      shape="rectangular"
+                      size="medium"
+                      text="continue_with"
+                    />
+                  </div>
+                </div>
+              )}
 
               {/* 🔴 prevent default form submit */}
               <form

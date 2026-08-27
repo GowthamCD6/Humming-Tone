@@ -178,21 +178,10 @@ const AllProduct = ({ onViewDetails: _onViewDetails = () => {} }) => {
       {/* Products Section - Conditional Rendering */}
       {loading ? (
         <div className="all-products-products-section">
-          <div className="all-products-section-intro">
-            <h2 className="all-products-section-heading">All Products</h2>
-            <div className="all-products-heading-accent"></div>
-            <p className="all-products-section-description">Explore our curated collection of premium products</p>
-          </div>
           <LottieLoader size={160} message="Loading products..." />
         </div>
       ) : products.length > 0 ? (
         <div className="all-products-products-section">
-          <div className="all-products-section-intro">
-            <h2 className="all-products-section-heading">All Products</h2>
-            <div className="all-products-heading-accent"></div>
-            <p className="all-products-section-description">Explore our curated collection of premium products</p>
-          </div>
-          
           <div className="all-products-product-grid">
             {products.map(product => (
               <ProductCard key={product.id} product={product} />

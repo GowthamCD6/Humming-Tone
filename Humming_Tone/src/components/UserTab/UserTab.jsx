@@ -15,11 +15,14 @@ import BabyChangingStationIcon from "@mui/icons-material/BabyChangingStation";
 import SportsBasketballIcon from "@mui/icons-material/SportsBasketball";
 import TuneIcon from "@mui/icons-material/Tune";
 import ShoppingBagOutlinedIcon from "@mui/icons-material/ShoppingBagOutlined";
+import AccountCircleOutlinedIcon from "@mui/icons-material/AccountCircleOutlined";
+import LogoutIcon from "@mui/icons-material/Logout";
 import CloseIcon from "@mui/icons-material/Close";
 import MenuIcon from "@mui/icons-material/Menu";
 import logo from "../../assets/logo.png";
 import "./UserTab.css";
 import { fetchSiteContent } from "../../utils/siteContentStore";
+import AuthModal from "../AuthModal/AuthModal";
 
 const DEFAULT_GENDERS = [
   "Men",
@@ -36,8 +39,42 @@ const UserTab = () => {
   const [loading, setLoading] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [cartCount, setCartCount] = useState(0);
+  const [authModalOpen, setAuthModalOpen] = useState(false);
+  const [userDropdownOpen, setUserDropdownOpen] = useState(false);
+  const [customerUser, setCustomerUser] = useState(() => {
+    try {
+      return JSON.parse(localStorage.getItem("customerUser")) || null;
+    } catch {
+      return null;
+    }
+  });
+
   const navigate = useNavigate();
   const location = useLocation();
+
+  useEffect(() => {
+    const handleAuthChange = () => {
+      try {
+        setCustomerUser(JSON.parse(localStorage.getItem("customerUser")) || null);
+      } catch {
+        setCustomerUser(null);
+      }
+    };
+    window.addEventListener("user:auth_changed", handleAuthChange);
+    window.addEventListener("storage", handleAuthChange);
+    return () => {
+      window.removeEventListener("user:auth_changed", handleAuthChange);
+      window.removeEventListener("storage", handleAuthChange);
+    };
+  }, []);
+
+  const handleLogout = () => {
+    localStorage.removeItem("userToken");
+    localStorage.removeItem("customerUser");
+    setCustomerUser(null);
+    setUserDropdownOpen(false);
+    window.dispatchEvent(new Event("user:auth_changed"));
+  };
 
   const getCartCount = () => {
     try {
@@ -195,15 +232,79 @@ const UserTab = () => {
             </ul>
           </nav>
 
-          {/* Right Section - Cart & Hamburger */}
+          {/* Right Section - Cart, User Profile & Hamburger */}
           <div className="user-header-right">
-            {/* Cart - Always visible */}
+            {/* Cart Icon */}
             <div
               className="user-cart-icon"
               onClick={() => navigate("/usertab/cart")}
             >
               <ShoppingBagOutlinedIcon className="user-cart-bag" />
               <span className="user-cart-badge">{cartCount}</span>
+            </div>
+
+            {/* User Profile / Login Trigger */}
+            <div className="user-profile-menu-wrapper">
+              {customerUser ? (
+                <div
+                  className="user-profile-trigger logged-in"
+                  onClick={() => setUserDropdownOpen(!userDropdownOpen)}
+                  title={customerUser.name || "My Account"}
+                >
+                  {customerUser.avatar_url ? (
+                    <img
+                      src={customerUser.avatar_url}
+                      alt={customerUser.name}
+                      className="user-nav-avatar"
+                      referrerPolicy="no-referrer"
+                      crossOrigin="anonymous"
+                      onError={(e) => {
+                        e.target.style.display = 'none';
+                      }}
+                    />
+                  ) : (
+                    <div className="user-avatar-initials">
+                      {(customerUser.name || "U")[0].toUpperCase()}
+                    </div>
+                  )}
+                </div>
+              ) : (
+                <button
+                  className="user-login-nav-btn"
+                  onClick={() => setAuthModalOpen(true)}
+                  aria-label="Sign in"
+                >
+                  <AccountCircleOutlinedIcon className="user-login-icon" />
+                  <span className="user-login-nav-text">Sign In</span>
+                </button>
+              )}
+
+              {/* Profile Dropdown */}
+              {customerUser && userDropdownOpen && (
+                <div className="user-profile-dropdown">
+                  <div className="dropdown-user-info">
+                    <strong>{customerUser.name}</strong>
+                    <span className="dropdown-email">{customerUser.email}</span>
+                  </div>
+                  <div className="dropdown-divider"></div>
+                  <button
+                    className="dropdown-item"
+                    onClick={() => {
+                      setUserDropdownOpen(false);
+                      navigate("/usertab/track-order");
+                    }}
+                  >
+                    Track Orders
+                  </button>
+                  <button
+                    className="dropdown-item dropdown-logout"
+                    onClick={handleLogout}
+                  >
+                    <LogoutIcon fontSize="small" />
+                    <span>Sign Out</span>
+                  </button>
+                </div>
+              )}
             </div>
 
             {/* Hamburger Menu Toggle - Mobile only */}
@@ -228,6 +329,48 @@ const UserTab = () => {
         >
           <CloseIcon />
         </button>
+
+        {/* Mobile User Profile Section */}
+        <div className="mobile-user-auth-section">
+          {customerUser ? (
+            <div className="mobile-user-profile">
+              {customerUser.avatar_url ? (
+                <img
+                  src={customerUser.avatar_url}
+                  alt={customerUser.name}
+                  className="mobile-avatar"
+                  referrerPolicy="no-referrer"
+                  crossOrigin="anonymous"
+                  onError={(e) => {
+                    e.target.style.display = 'none';
+                  }}
+                />
+              ) : (
+                <div className="mobile-avatar-initials">
+                  {(customerUser.name || "U")[0].toUpperCase()}
+                </div>
+              )}
+              <div className="mobile-user-info">
+                <strong>{customerUser.name}</strong>
+                <span>{customerUser.email}</span>
+              </div>
+              <button className="mobile-logout-btn" onClick={handleLogout}>
+                Sign Out
+              </button>
+            </div>
+          ) : (
+            <button
+              className="mobile-login-btn"
+              onClick={() => {
+                setMobileMenuOpen(false);
+                setAuthModalOpen(true);
+              }}
+            >
+              <AccountCircleOutlinedIcon />
+              <span>Sign In with Google</span>
+            </button>
+          )}
+        </div>
 
         {/* Mobile Navigation Links */}
         <nav className="mobile-nav">
@@ -261,6 +404,15 @@ const UserTab = () => {
       <main className="user-main-content">
         <Outlet />
       </main>
+
+      {/* Storefront Customer Google Auth Modal */}
+      <AuthModal
+        isOpen={authModalOpen}
+        onClose={() => setAuthModalOpen(false)}
+        onAuthSuccess={(user) => {
+          setCustomerUser(user);
+        }}
+      />
     </div>
   );
 };

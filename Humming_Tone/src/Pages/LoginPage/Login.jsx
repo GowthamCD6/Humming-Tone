@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import './Login.css';
 import Visibility from '@mui/icons-material/Visibility';
 import VisibilityOff from '@mui/icons-material/VisibilityOff';
+import { GoogleLogin } from '@react-oauth/google';
 import { API_BASE_URL } from '../../utils/apiConfig';
 
 export default function Login({ onSuccess }) {
@@ -75,8 +76,44 @@ export default function Login({ onSuccess }) {
     }
   };
 
+  const handleGoogleSuccess = async (credentialResponse) => {
+    if (!credentialResponse?.credential) {
+      setError('Google Sign-In failed. No credentials received.');
+      return;
+    }
+
+    setIsLoading(true);
+    setError('');
+
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/auth/google/admin`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ credential: credentialResponse.credential }),
+      });
+
+      const data = await response.json();
+
+      if (response.ok && data.token) {
+        localStorage.setItem('adminToken', data.token);
+        if (onSuccess) onSuccess('admin');
+      } else {
+        setError(data.error?.message || data.message || 'Google account not authorized for admin access.');
+      }
+    } catch (err) {
+      setError('Failed to authenticate with Google. Please try again.');
+      console.error('Google Admin Login error:', err);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleGoogleError = () => {
+    setError('Google Sign-In was cancelled or encountered an error.');
+  };
+
   const togglePasswordVisibility = () => {
-    setShowPassword(!showPassword);
+    setShowPassword((prev) => !prev);
   };
 
   return (
@@ -96,6 +133,24 @@ export default function Login({ onSuccess }) {
             {error}
           </div>
         )}
+
+        {/* Google One-Click Login for Admin */}
+        <div className="admin-google-login-section">
+          <div className="google-btn-wrapper">
+            <GoogleLogin
+              onSuccess={handleGoogleSuccess}
+              onError={handleGoogleError}
+              theme="filled_black"
+              shape="rectangular"
+              size="large"
+              text="continue_with"
+              width="340"
+            />
+          </div>
+          <div className="admin-login-divider">
+            <span>OR SIGN IN WITH USERNAME</span>
+          </div>
+        </div>
 
         {/* Form */}
         <form onSubmit={handleSubmit} className="admin-login-form">

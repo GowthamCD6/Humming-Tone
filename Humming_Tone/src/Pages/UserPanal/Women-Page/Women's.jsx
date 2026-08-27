@@ -9,39 +9,16 @@ import { Link } from 'react-router-dom';
 import { API_BASE_URL, getImageUrl } from '../../../utils/apiConfig';
 
 const Women = ({ onViewDetails: _onViewDetails = () => {} }) => {
-  const [selectedGender, setSelectedGender] = useState('Women');
-  const [selectedCategory, setSelectedCategory] = useState('All Categories');
   const [products, setProducts] = useState([]);
-  const [allProducts, setAllProducts] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [categoryOptions, setCategoryOptions] = useState(['All Categories']);
 
-  const genderOptions = getGenderOptions();
-
-  // Fetch categories dynamically
-  useEffect(() => {
-    const fetchCategories = async () => {
-      try {
-        let url = `${API_BASE_URL}/user/fetch_categories`;
-        if (selectedGender !== 'All' && selectedGender !== 'All Gender') {
-           url += `?gender=${selectedGender}`;
-        }
-        const response = await axios.get(url);
-        setCategoryOptions(['All Categories', ...response.data]);
-      } catch (error) {
-        console.error('Error fetching categories:', error);
-      }
-    };
-    fetchCategories();
-  }, [selectedGender]);
-
-  // Fetch products when gender changes
+  // Fetch products from the API for Women's category
   useEffect(() => {
     const fetchProducts = async () => {
       try {
         setLoading(true);
         const response = await axios.get(
-          `${API_BASE_URL}/user/fetch_products?gender=${selectedGender.toLowerCase()}`
+          `${API_BASE_URL}/user/fetch_products?gender=women`
         );
 
         const fetchedProducts = response.data.map(product => ({
@@ -51,7 +28,6 @@ const Women = ({ onViewDetails: _onViewDetails = () => {} }) => {
         }));
 
         setProducts(fetchedProducts);
-        setAllProducts(fetchedProducts);
       } catch (error) {
         console.error('Error fetching products:', error);
       } finally {
@@ -60,21 +36,7 @@ const Women = ({ onViewDetails: _onViewDetails = () => {} }) => {
     };
 
     fetchProducts();
-  }, [selectedGender]);
-
-  const handleApplyFilters = () => {
-    let filtered = [...allProducts];
-    if (selectedCategory !== 'All Categories') {
-      filtered = filtered.filter(p => p.category === selectedCategory);
-    }
-    setProducts(filtered);
-  };
-
-  const handleClearAll = () => {
-    setSelectedGender('Women');
-    setSelectedCategory('All Categories');
-    setProducts(allProducts);
-  };
+  }, []);
 
   const ProductCard = ({ product }) => (
     <div className="women-product-card">
@@ -107,71 +69,12 @@ const Women = ({ onViewDetails: _onViewDetails = () => {} }) => {
 
   return (
     <div className="women-collection-page">
-      {/* Header */}
-      <div className="women-header">
-        <h1 className="women-title">Our Collection</h1>
-        <p className="women-item-count">{products.length} ITEMS FOUND</p>
-      </div>
-
-      <div className="women-divider"></div>
-
-      {/* Filters */}
-      <div className="women-filter-container">
-        <h2 className="women-filter-title">Refine Your Selection</h2>
-
-        <div className="women-filter-row">
-          <div className="women-filter-group">
-            <label className="women-filter-label">GENDER</label>
-            <div className="women-select-wrapper">
-              <select
-                className="women-select"
-                value={selectedGender}
-                disabled
-              >
-                {genderOptions.map(option => (
-                  <option key={option} value={option}>{option}</option>
-                ))}
-              </select>
-              <span className="women-select-arrow">▼</span>
-            </div>
-          </div>
-
-          <div className="women-filter-group">
-            <label className="women-filter-label">CATEGORY</label>
-            <div className="women-select-wrapper">
-              <select
-                className="women-select"
-                value={selectedCategory}
-                onChange={(e) => setSelectedCategory(e.target.value)}
-              >
-                {categoryOptions.map(option => (
-                  <option key={option} value={option}>{option}</option>
-                ))}
-              </select>
-              <span className="women-select-arrow">▼</span>
-            </div>
-          </div>
-
-          <div className="women-button-group">
-            <button className="women-apply-button" onClick={handleApplyFilters}>
-              APPLY FILTERS
-            </button>
-            <button className="women-clear-button" onClick={handleClearAll}>
-              CLEAR ALL
-            </button>
-          </div>
-        </div>
-      </div>
-
       {/* Products Section - Conditional Rendering */}
       {loading ? (
         <div className="women-products-section">
           <div className="women-section-intro">
             <h2 className="women-section-heading">Women's Collection</h2>
             <div className="women-heading-accent"></div>
-            <p className="women-section-description">
-              Explore our curated collection of premium women's wear
-            </p>
           </div>
           <LottieLoader size={160} message="Loading women's collection..." />
         </div>
@@ -180,9 +83,6 @@ const Women = ({ onViewDetails: _onViewDetails = () => {} }) => {
           <div className="women-section-intro">
             <h2 className="women-section-heading">Women's Collection</h2>
             <div className="women-heading-accent"></div>
-            <p className="women-section-description">
-              Explore our curated collection of premium women's wear
-            </p>
           </div>
 
           <div className="women-product-grid">
