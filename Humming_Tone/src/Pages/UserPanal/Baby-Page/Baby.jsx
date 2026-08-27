@@ -1,12 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import UserFooter from '../../../components/User-Footer-Card/UserFooter';
-import LottieLoader from '../../../components/LottieLoader/LottieLoader';
+import ProductGridSkeleton from '../../../components/ProductSkeleton/ProductSkeleton';
 import './Baby.css';
-import axios from 'axios';  // Import axios
-import { Link } from 'react-router-dom';
+import axios from 'axios';
+import { Link, useSearchParams } from 'react-router-dom';
 import { API_BASE_URL, getImageUrl } from '../../../utils/apiConfig';
 
 const Baby = ({ onViewDetails: _onViewDetails = () => {} }) => {
+  const [searchParams] = useSearchParams();
+  const selectedCategory = searchParams.get('category') || '';
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -15,7 +17,11 @@ const Baby = ({ onViewDetails: _onViewDetails = () => {} }) => {
     const fetchProducts = async () => {
       try {
         setLoading(true);
-        const response = await axios.get(`${API_BASE_URL}/user/fetch_products?gender=baby`);
+        let url = `${API_BASE_URL}/user/fetch_products?gender=baby`;
+        if (selectedCategory) {
+          url += `&category=${encodeURIComponent(selectedCategory)}`;
+        }
+        const response = await axios.get(url);
         const fetchedProducts = response.data.map(product => ({
           ...product,
           price: parseFloat(product.price),
@@ -30,7 +36,7 @@ const Baby = ({ onViewDetails: _onViewDetails = () => {} }) => {
     };
 
     fetchProducts();
-  }, []);
+  }, [selectedCategory]);
 
   // Product Card Component
   const ProductCard = ({ product }) => (
@@ -63,15 +69,19 @@ const Baby = ({ onViewDetails: _onViewDetails = () => {} }) => {
       {loading ? (
         <div className="baby-products-section">
           <div className="baby-section-intro">
-            <h2 className="baby-section-heading">Baby Collection</h2>
+            <h2 className="baby-section-heading">
+              {selectedCategory ? `Baby's ${selectedCategory}` : "Baby Collection"}
+            </h2>
             <div className="baby-heading-accent"></div>
           </div>
-          <LottieLoader size={160} message="Loading baby collection..." />
+          <ProductGridSkeleton count={6} />
         </div>
       ) : products.length > 0 ? (
         <div className="baby-products-section">
           <div className="baby-section-intro">
-            <h2 className="baby-section-heading">Baby Collection</h2>
+            <h2 className="baby-section-heading">
+              {selectedCategory ? `Baby's ${selectedCategory}` : "Baby Collection"}
+            </h2>
             <div className="baby-heading-accent"></div>
           </div>
           
@@ -85,9 +95,13 @@ const Baby = ({ onViewDetails: _onViewDetails = () => {} }) => {
         <div className="baby-no-products-container">
           <h2 className="baby-no-products-title">No Products Found</h2>
           <p className="baby-no-products-text">
-            Try adjusting your filters or browse our complete<br />collection.
+            {selectedCategory ? (
+              <>No products found in <strong>"{selectedCategory}"</strong>.<br />Try viewing the entire collection.</>
+            ) : (
+              <>Try adjusting your filters or browse our complete<br />collection.</>
+            )}
           </p>
-          <Link className="baby-view-all-button" to="/usertab/all-products">VIEW ALL PRODUCTS</Link>
+          <Link className="baby-view-all-button" to="/usertab/baby">VIEW ALL BABY PRODUCTS</Link>
         </div>
       )}
       

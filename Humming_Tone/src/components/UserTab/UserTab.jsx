@@ -49,6 +49,10 @@ const UserTab = () => {
     }
   });
 
+  const [genderCategories, setGenderCategories] = useState({});
+  const [hoveredGender, setHoveredGender] = useState(null);
+  const [expandedMobileGender, setExpandedMobileGender] = useState(null);
+
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -88,6 +92,7 @@ const UserTab = () => {
   // Close mobile menu when route changes
   useEffect(() => {
     setMobileMenuOpen(false);
+    setHoveredGender(null);
   }, [location.pathname]);
 
   useEffect(() => {
@@ -117,21 +122,22 @@ const UserTab = () => {
   }, []);
 
   useEffect(() => {
-    const loadGenders = async () => {
+    const loadGendersAndCategories = async () => {
       try {
-        // Force refresh to always get latest visibility from the server
+        // Force refresh to always get latest visibility and categories
         const data = await fetchSiteContent(true);
         const genderStatus = data.genderStatus || {};
+        const genderCatMap = data.genderCategory || {};
 
         // Get only active genders
         const activeGenderList = Object.keys(genderStatus).filter(
           (gender) => genderStatus[gender] === true
         );
 
-        setActiveGenders(activeGenderList);
+        setActiveGenders(activeGenderList.length > 0 ? activeGenderList : DEFAULT_GENDERS);
+        setGenderCategories(genderCatMap);
       } catch (error) {
-        console.error("Error loading genders:", error);
-        // Set default genders if API fails
+        console.error("Error loading genders & categories:", error);
         setActiveGenders([
           "Men",
           "Women",
@@ -145,7 +151,7 @@ const UserTab = () => {
       }
     };
 
-    loadGenders();
+    loadGendersAndCategories();
   }, [location.pathname]);
 
   // Icon mapping for genders
@@ -176,15 +182,11 @@ const UserTab = () => {
     const indexA = genderOrder.indexOf(a);
     const indexB = genderOrder.indexOf(b);
 
-    // If both are in the order array, sort by their position
     if (indexA !== -1 && indexB !== -1) {
       return indexA - indexB;
     }
-    // If only a is in the order array, it comes first
     if (indexA !== -1) return -1;
-    // If only b is in the order array, it comes first
     if (indexB !== -1) return 1;
-    // If neither is in the order array, maintain original order
     return 0;
   });
 
@@ -194,11 +196,15 @@ const UserTab = () => {
     { path: "all-products", label: "All Products", Icon: GridViewIcon },
   ];
 
-  const dynamicNavItems = sortedActiveGenders.map((gender) => ({
-    path: gender.toLowerCase().replace(/ /g, "-"),
-    label: gender,
-    Icon: getGenderIcon(gender),
-  }));
+  const dynamicNavItems = sortedActiveGenders.map((gender) => {
+    const cats = genderCategories[gender] || genderCategories[gender.toLowerCase()] || [];
+    return {
+      path: gender.toLowerCase().replace(/ /g, "-"),
+      label: gender,
+      Icon: getGenderIcon(gender),
+      categories: Array.isArray(cats) ? cats : [],
+    };
+  });
 
   const navItems = [...staticNavItems, ...dynamicNavItems];
 
@@ -212,23 +218,67 @@ const UserTab = () => {
             <img src={logo} alt="Humming Tone" className="user-logo-image" />
           </Link>
 
-          {/* Desktop Navigation */}
+          {/* Desktop Navigation with Category Dropdowns */}
           <nav className="user-nav desktop-nav">
             <ul className="user-nav-menu">
-              {navItems.map(({ path, label, Icon: _Icon }) => (
-                <li key={path} className="user-nav-item">
-                  <NavLink
-                    to={path}
-                    className={({ isActive }) =>
-                      `user-nav-link${isActive ? " active" : ""}`
-                    }
-                    end
+              {navItems.map(({ path, label, Icon: _Icon, categories = [] }) => {
+                const hasCategories = categories && categories.length > 0;
+                return (
+                  <li
+                    key={path}
+                    className={`user-nav-item ${hasCategories ? "has-dropdown" : ""}`}
+                    onMouseEnter={() => hasCategories && setHoveredGender(label)}
+                    onMouseLeave={() => setHoveredGender(null)}
                   >
-                    <_Icon className="user-nav-icon" />
-                    <span>{label}</span>
-                  </NavLink>
-                </li>
-              ))}
+                    <NavLink
+                      to={path}
+                      className={({ isActive }) =>
+                        `user-nav-link${isActive ? " active" : ""}`
+                      }
+                      end
+                    >
+                      <_Icon className="user-nav-icon" />
+                      <span>{label}</span>
+                    </NavLink>
+
+                    {/* Category Dropdown Menu */}
+                    {hasCategories && (
+                      <div className={`user-nav-dropdown ${hoveredGender === label ? "visible" : ""}`}>
+                        <div className="user-dropdown-card">
+                          <div className="user-dropdown-topbar">
+                            <span className="dropdown-category-title">EXPLORE {label.toUpperCase()}</span>
+                          </div>
+                          
+                          <div className="dropdown-category-list">
+                            <Link
+                              to={`/usertab/${path}`}
+                              className="dropdown-category-item view-all-cat"
+                              onClick={() => setHoveredGender(null)}
+                            >
+                              <span className="cat-item-name">All {label}'s Collection</span>
+                              <span className="cat-arrow-icon">›</span>
+                            </Link>
+
+                            <div className="dropdown-category-divider"></div>
+
+                            {categories.map((catName) => (
+                              <Link
+                                key={catName}
+                                to={`/usertab/${path}?category=${encodeURIComponent(catName)}`}
+                                className="dropdown-category-item"
+                                onClick={() => setHoveredGender(null)}
+                              >
+                                <span className="cat-item-name">{catName}</span>
+                                <span className="cat-arrow-icon">›</span>
+                              </Link>
+                            ))}
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                  </li>
+                );
+              })}
             </ul>
           </nav>
 
@@ -375,21 +425,64 @@ const UserTab = () => {
         {/* Mobile Navigation Links */}
         <nav className="mobile-nav">
           <ul className="mobile-nav-menu">
-            {navItems.map(({ path, label, Icon: _Icon }) => (
-              <li key={path} className="mobile-nav-item">
-                <NavLink
-                  to={path}
-                  className={({ isActive }) =>
-                    `mobile-nav-link${isActive ? " active" : ""}`
-                  }
-                  onClick={() => setMobileMenuOpen(false)}
-                  end
-                >
-                  <_Icon className="mobile-nav-icon" />
-                  <span>{label}</span>
-                </NavLink>
-              </li>
-            ))}
+            {navItems.map(({ path, label, Icon: _Icon, categories = [] }) => {
+              const hasCategories = categories && categories.length > 0;
+              const isExpanded = expandedMobileGender === label;
+
+              return (
+                <li key={path} className="mobile-nav-item">
+                  <div className="mobile-nav-item-header">
+                    <NavLink
+                      to={path}
+                      className={({ isActive }) =>
+                        `mobile-nav-link${isActive ? " active" : ""}`
+                      }
+                      onClick={() => setMobileMenuOpen(false)}
+                      end
+                    >
+                      <_Icon className="mobile-nav-icon" />
+                      <span>{label}</span>
+                    </NavLink>
+                    {hasCategories && (
+                      <button
+                        type="button"
+                        className={`mobile-cat-expand-btn ${isExpanded ? "expanded" : ""}`}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setExpandedMobileGender(isExpanded ? null : label);
+                        }}
+                        aria-label="Toggle categories"
+                      >
+                        ▾
+                      </button>
+                    )}
+                  </div>
+
+                  {/* Subcategories Accordion */}
+                  {hasCategories && isExpanded && (
+                    <div className="mobile-subcategory-list">
+                      <Link
+                        to={`/usertab/${path}`}
+                        className="mobile-subcat-link view-all"
+                        onClick={() => setMobileMenuOpen(false)}
+                      >
+                        All {label}'s
+                      </Link>
+                      {categories.map((catName) => (
+                        <Link
+                          key={catName}
+                          to={`/usertab/${path}?category=${encodeURIComponent(catName)}`}
+                          className="mobile-subcat-link"
+                          onClick={() => setMobileMenuOpen(false)}
+                        >
+                          {catName}
+                        </Link>
+                      ))}
+                    </div>
+                  )}
+                </li>
+              );
+            })}
           </ul>
         </nav>
       </div>
@@ -398,19 +491,21 @@ const UserTab = () => {
       <div
         className={`mobile-menu-overlay ${mobileMenuOpen ? "active" : ""}`}
         onClick={() => setMobileMenuOpen(false)}
-      ></div>
+        aria-label="Close menu"
+      />
 
-      {/* Nested Routes Render Here */}
+      {/* Main Content Area */}
       <main className="user-main-content">
         <Outlet />
       </main>
 
-      {/* Storefront Customer Google Auth Modal */}
+      {/* Dynamic Google Login Modal */}
       <AuthModal
         isOpen={authModalOpen}
         onClose={() => setAuthModalOpen(false)}
-        onAuthSuccess={(user) => {
+        onLoginSuccess={(user) => {
           setCustomerUser(user);
+          setAuthModalOpen(false);
         }}
       />
     </div>

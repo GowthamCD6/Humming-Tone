@@ -11,6 +11,7 @@ import LottieLoader from "./components/LottieLoader/LottieLoader.jsx";
 // User pages (Direct imports for instant static filter & layout render)
 import Home from "./Pages/UserPanal/HomePage/Home.jsx";
 import AllProductPage from "./Pages/UserPanal/All-Product/AllProduct.jsx";
+import FeaturedProductsPage from "./Pages/UserPanal/FeaturedProducts/FeaturedProductsPage.jsx";
 import Men from "./Pages/UserPanal/Men's-Page/Men's.jsx";
 import Women from "./Pages/UserPanal/Women-Page/Women's.jsx";
 import Children from "./Pages/UserPanal/Children's-Page/Children's.jsx";
@@ -227,6 +228,7 @@ export default function App() {
           <Route index element={<Navigate to="home" />} />
           <Route path="home" element={<Home />} />
           <Route path="all-products" element={<AllProductPage />} />
+          <Route path="featured-products" element={<FeaturedProductsPage />} />
           <Route
             path="men"
             element={

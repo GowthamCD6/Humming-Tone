@@ -70,36 +70,78 @@ export default function ManageProducts() {
 
   // Update filter category options when filter gender changes
   useEffect(() => {
-    if (filterGender !== 'All' && genderCategoryMap[filterGender]) {
-      setFilterCategoryOptions(genderCategoryMap[filterGender]);
-    } else if (filterGender === 'All') {
-      const allCategories = [];
-      Object.values(genderCategoryMap).forEach(cats => {
-        cats.forEach(cat => {
-          if (!allCategories.some(c => c.name === cat.name)) {
-            allCategories.push(cat);
+    const fetchFilterCategories = async () => {
+      try {
+        let url = `${BASE_URL}/user/fetch_categories`;
+        if (filterGender !== 'All') {
+          url += `?gender=${encodeURIComponent(filterGender)}`;
+        }
+        const res = await fetch(url);
+        if (res.ok) {
+          const list = await res.json();
+          if (Array.isArray(list) && list.length > 0) {
+            setFilterCategoryOptions(list.map(name => ({ name, slug: name })));
+            return;
           }
+        }
+      } catch (err) {
+        console.error('Error fetching filter categories:', err);
+      }
+
+      if (filterGender !== 'All' && genderCategoryMap[filterGender]) {
+        setFilterCategoryOptions(genderCategoryMap[filterGender]);
+      } else if (filterGender === 'All') {
+        const allCategories = [];
+        Object.values(genderCategoryMap).forEach(cats => {
+          cats.forEach(cat => {
+            if (!allCategories.some(c => c.name === cat.name)) {
+              allCategories.push(cat);
+            }
+          });
         });
-      });
-      setFilterCategoryOptions(allCategories);
-    }
+        setFilterCategoryOptions(allCategories);
+      }
+    };
+
+    fetchFilterCategories();
   }, [filterGender, genderCategoryMap]);
 
   // Update edit category options when editing product gender changes
   useEffect(() => {
-    if (editingProduct?.gender && genderCategoryMap[editingProduct.gender]) {
-      setEditCategoryOptions(genderCategoryMap[editingProduct.gender]);
-    } else {
-      const allCats = [];
-      Object.values(genderCategoryMap).forEach(cats => {
-        cats.forEach(c => {
-          if (!allCats.some(existing => existing.name === c.name)) {
-            allCats.push(c);
+    const fetchEditCategories = async () => {
+      try {
+        let url = `${BASE_URL}/user/fetch_categories`;
+        if (editingProduct?.gender && editingProduct.gender !== 'All') {
+          url += `?gender=${encodeURIComponent(editingProduct.gender)}`;
+        }
+        const res = await fetch(url);
+        if (res.ok) {
+          const list = await res.json();
+          if (Array.isArray(list) && list.length > 0) {
+            setEditCategoryOptions(list.map(name => ({ name, slug: name })));
+            return;
           }
+        }
+      } catch (err) {
+        console.error('Error fetching edit categories:', err);
+      }
+
+      if (editingProduct?.gender && genderCategoryMap[editingProduct.gender]) {
+        setEditCategoryOptions(genderCategoryMap[editingProduct.gender]);
+      } else {
+        const allCats = [];
+        Object.values(genderCategoryMap).forEach(cats => {
+          cats.forEach(c => {
+            if (!allCats.some(existing => existing.name === c.name)) {
+              allCats.push(c);
+            }
+          });
         });
-      });
-      setEditCategoryOptions(allCats);
-    }
+        setEditCategoryOptions(allCats);
+      }
+    };
+
+    fetchEditCategories();
   }, [editingProduct?.gender, genderCategoryMap]);
 
   const loadData = async () => {
@@ -583,10 +625,21 @@ export default function ManageProducts() {
               <div className="mp-form-row">
                 <div className="mp-form-group">
                   <label className="mp-form-label">Category</label>
-                  <input type="text" list="edit-category-options" className="mp-form-input" placeholder="Select category" value={editingProduct.category} onChange={(e) => setEditingProduct({...editingProduct, category: e.target.value})} />
-                  <datalist id="edit-category-options">
-                    {editCategoryOptions.map(c => <option key={c.name} value={c.name} />)}
-                  </datalist>
+                  <select
+                    className="mp-form-input"
+                    value={editingProduct.category || ''}
+                    onChange={(e) => setEditingProduct({...editingProduct, category: e.target.value})}
+                  >
+                    <option value="">Select Category</option>
+                    {editCategoryOptions.map((c, idx) => {
+                      const label = typeof c === 'object' ? (c.name || c.slug || String(idx)) : String(c);
+                      return (
+                        <option key={idx} value={label}>
+                          {label}
+                        </option>
+                      );
+                    })}
+                  </select>
                 </div>
                 <div className="mp-form-group">
                   <label className="mp-form-label">Gender</label>

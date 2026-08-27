@@ -33,6 +33,7 @@ const InventoryDashboard = () => {
       ...item,
       updateName: item.name,
       updateCode: item.code,
+      updateCategory: item.category !== '-' ? item.category : '',
       updateSupplier: item.supplierName !== '-' ? item.supplierName : '',
       updateGender: item.gender !== '-' ? item.gender : '',
       updateColor: item.color,
@@ -59,6 +60,7 @@ const InventoryDashboard = () => {
         product_id: detailsPanelItem.productId,
         material_name: detailsPanelItem.updateName,
         material_code: detailsPanelItem.updateCode,
+        category: detailsPanelItem.updateCategory,
         preferred_supplier: detailsPanelItem.updateSupplier,
         gender: detailsPanelItem.updateGender,
         color: detailsPanelItem.updateColor,
@@ -567,14 +569,20 @@ const InventoryDashboard = () => {
             </div>
             
             <div className="inv-form-body">
-              <div className="inv-form-group">
-                <label className="inv-label">Product Name</label>
-                <input required type="text" className="inv-input" value={detailsPanelItem.updateName} onChange={e => setDetailsPanelItem({...detailsPanelItem, updateName: e.target.value})} />
-              </div>
-              
               <div className="inv-form-row">
                 <div className="inv-form-group half">
-                  <label className="inv-label">SKU</label>
+                  <label className="inv-label">Product Name</label>
+                  <input required type="text" className="inv-input" value={detailsPanelItem.updateName} onChange={e => setDetailsPanelItem({...detailsPanelItem, updateName: e.target.value})} />
+                </div>
+                <div className="inv-form-group half">
+                  <label className="inv-label">Category</label>
+                  <input type="text" className="inv-input" placeholder="e.g. T-Shirts, Hoodies" value={detailsPanelItem.updateCategory || ''} onChange={e => setDetailsPanelItem({...detailsPanelItem, updateCategory: e.target.value})} />
+                </div>
+              </div>
+
+              <div className="inv-form-row">
+                <div className="inv-form-group half">
+                  <label className="inv-label">SKU / Code</label>
                   <input required type="text" className="inv-input" value={detailsPanelItem.updateCode} onChange={e => setDetailsPanelItem({...detailsPanelItem, updateCode: e.target.value})} />
                 </div>
                 <div className="inv-form-group half">

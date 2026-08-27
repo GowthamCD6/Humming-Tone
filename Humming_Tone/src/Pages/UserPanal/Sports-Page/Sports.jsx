@@ -1,12 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import UserFooter from '../../../components/User-Footer-Card/UserFooter';
-import LottieLoader from '../../../components/LottieLoader/LottieLoader';
+import ProductGridSkeleton from '../../../components/ProductSkeleton/ProductSkeleton';
 import './Sports.css';
-import axios from 'axios';  // Import axios
-import { Link } from 'react-router-dom';
+import axios from 'axios';
+import { Link, useSearchParams } from 'react-router-dom';
 import { API_BASE_URL, getImageUrl } from '../../../utils/apiConfig';
 
 const Sports = ({ onViewDetails: _onViewDetails = () => {} }) => {
+  const [searchParams] = useSearchParams();
+  const selectedCategory = searchParams.get('category') || '';
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -15,7 +17,11 @@ const Sports = ({ onViewDetails: _onViewDetails = () => {} }) => {
     const fetchProducts = async () => {
       try {
         setLoading(true);
-        const response = await axios.get(`${API_BASE_URL}/user/fetch_products?gender=sports`);
+        let url = `${API_BASE_URL}/user/fetch_products?gender=sports`;
+        if (selectedCategory) {
+          url += `&category=${encodeURIComponent(selectedCategory)}`;
+        }
+        const response = await axios.get(url);
         const fetchedProducts = response.data.map(product => ({
           ...product,
           price: parseFloat(product.price),
@@ -30,7 +36,7 @@ const Sports = ({ onViewDetails: _onViewDetails = () => {} }) => {
     };
 
     fetchProducts();
-  }, []);
+  }, [selectedCategory]);
 
   // Product Card Component
   const ProductCard = ({ product }) => (
@@ -63,15 +69,19 @@ const Sports = ({ onViewDetails: _onViewDetails = () => {} }) => {
       {loading ? (
         <div className="sports-products-section">
           <div className="sports-section-intro">
-            <h2 className="sports-section-heading">Sports Collection</h2>
+            <h2 className="sports-section-heading">
+              {selectedCategory ? `Sports ${selectedCategory}` : "Sports Collection"}
+            </h2>
             <div className="sports-heading-accent"></div>
           </div>
-          <LottieLoader size={160} message="Loading sports collection..." />
+          <ProductGridSkeleton count={6} />
         </div>
       ) : products.length > 0 ? (
         <div className="sports-products-section">
           <div className="sports-section-intro">
-            <h2 className="sports-section-heading">Sports Collection</h2>
+            <h2 className="sports-section-heading">
+              {selectedCategory ? `Sports ${selectedCategory}` : "Sports Collection"}
+            </h2>
             <div className="sports-heading-accent"></div>
           </div>
           
@@ -85,9 +95,13 @@ const Sports = ({ onViewDetails: _onViewDetails = () => {} }) => {
         <div className="sports-no-products-container">
           <h2 className="sports-no-products-title">No Products Found</h2>
           <p className="sports-no-products-text">
-            Try adjusting your filters or browse our complete<br />collection.
+            {selectedCategory ? (
+              <>No products found in <strong>"{selectedCategory}"</strong>.<br />Try viewing the entire collection.</>
+            ) : (
+              <>Try adjusting your filters or browse our complete<br />collection.</>
+            )}
           </p>
-          <Link className="sports-view-all-button" to="/usertab/all-products">VIEW ALL PRODUCTS</Link>
+          <Link className="sports-view-all-button" to="/usertab/sports">VIEW ALL SPORTS PRODUCTS</Link>
         </div>
       )}
       

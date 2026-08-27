@@ -1,0 +1,126 @@
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&family=Poppins:wght@300;400;500;600;700&display=swap');
+
+.featured-products-page {
+  background-color: #fbfbfb;
+  min-height: 100vh;
+  width: 100%;
+}
+
+.featured-page-container {
+  max-width: 1400px;
+  width: 90%;
+  margin: 0 auto;
+  padding: 3.5rem 0 5rem;
+}
+
+.featured-page-header {
+  text-align: center;
+  margin-bottom: 3.5rem;
+  animation: fadeIn 0.8s ease-out;
+}
+
+.featured-page-tag {
+  font-family: 'Poppins', sans-serif;
+  font-size: 11.5px;
+  font-weight: 600;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: #8c8c8c;
+  display: block;
+  margin-bottom: 0.75rem;
+}
+
+.featured-page-title {
+  font-family: 'Playfair Display', serif;
+  font-size: clamp(34px, 4.5vw, 48px);
+  font-weight: 500;
+  color: #111827;
+  letter-spacing: -0.02em;
+  margin: 0 0 1rem;
+}
+
+.featured-heading-accent {
+  width: 70px;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, #1a1a1a, transparent);
+  margin: 0 auto 1.5rem;
+  border-radius: 10px;
+}
+
+.featured-page-subtitle {
+  font-family: 'Poppins', sans-serif;
+  font-size: 15px;
+  color: #666666;
+  font-weight: 300;
+  max-width: 600px;
+  margin: 0 auto;
+  line-height: 1.7;
+}
+
+.featured-page-loader {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 6rem 0;
+}
+
+.featured-full-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 2.5rem 2rem;
+  animation: fadeIn 0.8s ease-out;
+}
+
+.featured-no-products {
+  text-align: center;
+  padding: 5rem 1rem;
+}
+
+.featured-no-products h2 {
+  font-family: 'Playfair Display', serif;
+  font-size: 28px;
+  color: #1a1a1a;
+  margin-bottom: 0.5rem;
+}
+
+.featured-no-products p {
+  color: #666;
+  font-size: 14.5px;
+  margin-bottom: 2rem;
+}
+
+.featured-browse-all-btn {
+  display: inline-block;
+  background: #111827;
+  color: #ffffff;
+  padding: 12px 32px;
+  border-radius: 2px;
+  font-family: 'Poppins', sans-serif;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-decoration: none;
+  transition: background 0.3s ease;
+}
+
+.featured-browse-all-btn:hover {
+  background: #000000;
+}
+
+@media (max-width: 1200px) {
+  .featured-full-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 2.5rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .featured-page-container {
+    padding: 2.5rem 0 4rem;
+  }
+
+  .featured-full-grid {
+    grid-template-columns: 1fr;
+    gap: 2rem;
+  }
+}

@@ -44,37 +44,63 @@ const AddProductAdmin = () => {
         const response = await fetch(`${API_BASE_URL}/api/site-content/genders-categories`, {
           headers: token ? { 'Authorization': `Bearer ${token}` } : {}
         });
-        if (!response.ok) throw new Error('Failed to fetch genders/categories');
-        const data = await response.json();
-        if (data.genders) {
-          setGenderOptions(data.genders);
-          setGenderCategoryMap(data.genderCategoryMap);
-          setBrandName(data.brandName || 'Humming Tone');
+        if (response.ok) {
+          const data = await response.json();
+          if (data.genders && data.genders.length > 0) {
+            setGenderOptions(data.genders);
+            setGenderCategoryMap(data.genderCategoryMap || {});
+            setBrandName(data.brandName || 'Humming Tone');
+          }
         }
       } catch (error) {
-        console.error('Error fetching genders and categories:', error);
+        console.error('Error fetching genders and categories from site content:', error);
       }
     };
 
     fetchGendersAndCategories();
   }, []);
 
-  // Update category options when gender changes
+  // Fetch dynamic categories directly from DB endpoint based on selected gender
   useEffect(() => {
-    if (gender && genderCategoryMap[gender]) {
-      setCategoryOptions(genderCategoryMap[gender]);
-    } else {
-      // If no gender selected, show ALL categories from all genders
-      const allCats = [];
-      Object.values(genderCategoryMap).forEach(cats => {
-        cats.forEach(c => {
-          if (!allCats.some(existing => existing.name === c.name)) {
-            allCats.push(c);
+    const fetchCategoriesFromDb = async () => {
+      try {
+        let url = `${API_BASE_URL}/user/fetch_categories`;
+        if (gender && gender !== 'All') {
+          url += `?gender=${encodeURIComponent(gender)}`;
+        }
+        const res = await fetch(url);
+        if (res.ok) {
+          const catList = await res.json();
+          if (Array.isArray(catList) && catList.length > 0) {
+            setCategoryOptions(catList.map(name => ({ name, slug: name })));
+            return;
+          }
+        }
+      } catch (err) {
+        console.error('Error fetching categories from db:', err);
+      }
+
+      // Fallback to site content map if DB query is empty
+      if (gender && genderCategoryMap[gender]) {
+        const mapped = Array.isArray(genderCategoryMap[gender]) ? genderCategoryMap[gender] : [];
+        setCategoryOptions(mapped.map(c => typeof c === 'object' ? (c.name || c.slug || '') : String(c)));
+      } else {
+        const allCats = [];
+        Object.values(genderCategoryMap).forEach(cats => {
+          if (Array.isArray(cats)) {
+            cats.forEach(c => {
+              const catName = typeof c === 'object' ? (c.name || c.slug || '') : String(c);
+              if (catName && !allCats.includes(catName)) {
+                allCats.push(catName);
+              }
+            });
           }
         });
-      });
-      setCategoryOptions(allCats);
-    }
+        setCategoryOptions(allCats);
+      }
+    };
+
+    fetchCategoriesFromDb();
   }, [gender, genderCategoryMap]);
 
   const validateForm = () => {
@@ -260,10 +286,22 @@ const AddProductAdmin = () => {
             </div>
             <div className="form-group">
               <label htmlFor="category">CATEGORY</label>
-              <input type="text" id="category" list="category-options" placeholder="Select or type category" value={category} onChange={(e) => { setCategory(e.target.value); clearFieldError('category'); }} className={errors.category ? 'input-error' : ''} />
-              <datalist id="category-options">
-                {categoryOptions.map(c => <option key={c.slug} value={c.name} />)}
-              </datalist>
+              <select
+                id="category"
+                value={category}
+                onChange={(e) => { setCategory(e.target.value); clearFieldError('category'); }}
+                className={errors.category ? 'input-error' : ''}
+              >
+                <option value="">Select Category</option>
+                {categoryOptions.map((c, idx) => {
+                  const label = typeof c === 'object' ? (c.name || c.slug || String(idx)) : String(c);
+                  return (
+                    <option key={idx} value={label}>
+                      {label}
+                    </option>
+                  );
+                })}
+              </select>
               {errors.category && <div className="field-error">{errors.category}</div>}
             </div>
             <div className="form-group">

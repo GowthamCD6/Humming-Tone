@@ -42,6 +42,7 @@ exports.update_inventory_full = (req, res) => {
     product_id,
     material_name,
     material_code,
+    category,
     preferred_supplier,
     gender,
     color,
@@ -63,7 +64,7 @@ exports.update_inventory_full = (req, res) => {
   db.getConnection((err, connection) => {
     if (err) return res.status(500).json({ success: false, message: "Database connection error" });
     
-    connection.beginTransaction(err => {
+    connection.beginTransaction(async (err) => {
       if (err) {
         connection.release();
         return res.status(500).json({ success: false, message: "Transaction start error" });
@@ -79,39 +80,56 @@ exports.update_inventory_full = (req, res) => {
           });
         }
 
-        // Update product
-        const productQuery = `
-          UPDATE products SET 
-            name = ?, sku = ?, brand = ?, gender = ?, color = ?, 
-            material = ?, care_instructions = ?, age_range = ?, weight = ?, 
-            dimensions = ?, about = ?
-          WHERE id = ?
-        `;
-        const productValues = [
-          material_name, material_code, preferred_supplier, gender, color,
-          material, care_instructions, age_range, weight, dimensions, about,
-          product_id
-        ];
+        // Check/get category_id if category is provided
+        const updateProduct = (categoryId) => {
+          let productQuery = `
+            UPDATE products SET 
+              name = ?, sku = ?, brand = ?, gender = ?, color = ?, 
+              material = ?, care_instructions = ?, age_range = ?, weight = ?, 
+              dimensions = ?, about = ?
+          `;
+          const productValues = [
+            material_name, material_code, preferred_supplier, gender, color,
+            material, care_instructions, age_range, weight, dimensions, about
+          ];
 
-        connection.query(productQuery, productValues, (err, prodResult) => {
-          if (err) {
-            return connection.rollback(() => {
-              connection.release();
-              res.status(500).json({ success: false, message: "Product update error" });
-            });
+          if (categoryId !== undefined) {
+            productQuery += `, category_id = ?`;
+            productValues.push(categoryId);
           }
 
-          connection.commit(err => {
+          productQuery += ` WHERE id = ?`;
+          productValues.push(product_id);
+
+          connection.query(productQuery, productValues, (err, prodResult) => {
             if (err) {
               return connection.rollback(() => {
                 connection.release();
-                res.status(500).json({ success: false, message: "Commit error" });
+                res.status(500).json({ success: false, message: "Product update error" });
               });
             }
-            connection.release();
-            res.status(200).json({ success: true, message: "Inventory updated successfully" });
+
+            connection.commit(err => {
+              if (err) {
+                return connection.rollback(() => {
+                  connection.release();
+                  res.status(500).json({ success: false, message: "Commit error" });
+                });
+              }
+              connection.release();
+              res.status(200).json({ success: true, message: "Updated successfully" });
+            });
           });
-        });
+        };
+
+        if (category) {
+          connection.query("SELECT id FROM categories WHERE name = ? LIMIT 1", [category], (err, catRes) => {
+            const catId = catRes && catRes.length > 0 ? catRes[0].id : null;
+            updateProduct(catId);
+          });
+        } else {
+          updateProduct();
+        }
       });
     });
   });

@@ -1,15 +1,15 @@
 const createError = require("http-errors");
 const db = require("../../config/db");
 
-exports.fetch_products = (req,res,next) => { // api request should be /user/fetch_products?gender=men
-    const { gender } = req.query;
+exports.fetch_products = (req,res,next) => { // api request can be /user/fetch_products?gender=men&category=T-Shirts
+    const { gender, category } = req.query;
     
     try {
       let fetchSql = `SELECT 
                         p.id,
                         p.name,
                         p.brand,
-                        p.subcategory as category,
+                        COALESCE(MAX(c.name), p.subcategory) as category,
                         p.gender,
                         p.is_featured,
                         COALESCE(
@@ -25,6 +25,7 @@ exports.fetch_products = (req,res,next) => { // api request should be /user/fetc
                         MIN(pv.price) AS price,
                         SUM(pv.stock_quantity) AS total_stock
                         FROM products p
+                        LEFT JOIN categories c ON p.category_id = c.id
                         LEFT JOIN product_variants pv 
                         ON pv.product_id = p.id
                         WHERE p.is_active = 1`;
@@ -33,15 +34,21 @@ exports.fetch_products = (req,res,next) => { // api request should be /user/fetc
 
       // If a gender is provided, filter by it. Otherwise, fetch all active products.
       if (gender && gender.trim() !== "") {
-        const allowedGenders = ['men', 'women', 'children', 'babies', 'sports'];
-        if (!allowedGenders.includes(gender)) {
-          return next(createError.BadRequest('Invalid Gender!'));
+        const allowedGenders = ['men', 'women', 'children', 'babies', 'baby', 'sports'];
+        const normalizedGender = gender.toLowerCase() === 'baby' ? 'babies' : gender.toLowerCase();
+        if (allowedGenders.includes(gender.toLowerCase())) {
+          fetchSql += ` AND (p.gender = ? OR p.gender = ?)`;
+          params.push(gender.toLowerCase(), normalizedGender);
         }
-        fetchSql += ` AND p.gender = ?`;
-        params.push(gender);
       }
 
-      fetchSql += ` GROUP BY p.id ORDER BY p.created_at DESC`;
+      // If category is provided, filter by category name or subcategory
+      if (category && category.trim() !== "" && category.toLowerCase() !== "all" && category.toLowerCase() !== "all categories") {
+        fetchSql += ` AND (c.name = ? OR p.subcategory = ?)`;
+        params.push(category.trim(), category.trim());
+      }
+
+      fetchSql += ` GROUP BY p.id, p.name, p.brand, p.subcategory, p.gender, p.is_featured, p.image_path, p.created_at ORDER BY p.created_at DESC`;
 
       db.query(fetchSql, params, (error, result) => {
         if(error){
