@@ -1431,7 +1431,8 @@
 .user-main-content .childrens-collection-page,
 .user-main-content .baby-collection-page,
 .user-main-content .sports-collection-page,
-.user-main-content .customize-page {
+.user-main-content .customize-page,
+.user-main-content .luxury-about-page {
   min-height: auto;
 }
 

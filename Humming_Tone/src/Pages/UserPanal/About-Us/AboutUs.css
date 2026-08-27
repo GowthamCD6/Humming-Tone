@@ -1,370 +1,479 @@
-@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&family=Poppins:wght@300;400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Poppins:wght@300;400;500;600;700&display=swap');
 
-/* Page Container */
-.about-us-page {
-    background-color: #fafafa;
-    min-height: 100vh;
-    font-family: 'Poppins', -apple-system, BlinkMacSystemFont, sans-serif;
+/* ==========================================================================
+   Page Container — prevents double scroll
+   ========================================================================== */
+.luxury-about-page {
+  background-color: #fbfbfb;
+  width: 100%;
+  font-family: 'Poppins', sans-serif;
+  color: #111827;
 }
 
-/* Hero Section */
-.about-hero {
-    background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
-    padding: 80px 40px;
-    text-align: center;
-    position: relative;
-    overflow: hidden;
-}
-
-.about-hero::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="50" cy="50" r="1" fill="rgba(255,255,255,0.03)"/></svg>');
-    background-size: 20px 20px;
-}
-
-.about-hero-content {
-    position: relative;
-    z-index: 1;
-    max-width: 800px;
-    margin: 0 auto;
-}
-
-.about-hero-title {
-    font-family: 'Playfair Display', serif;
-    font-size: clamp(40px, 6vw, 64px);
-    font-weight: 400;
-    color: #ffffff;
-    margin-bottom: 16px;
-    letter-spacing: -0.02em;
-    animation: fadeInUp 0.8s ease-out;
-}
-
-.about-hero-subtitle {
-    font-size: 18px;
-    color: rgba(255, 255, 255, 0.7);
-    font-weight: 300;
-    letter-spacing: 0.5px;
-    animation: fadeInUp 0.8s ease-out 0.1s backwards;
-}
-
-/* Content Section */
-.about-content {
-    max-width: 1200px;
-    margin: 0 auto;
-    padding: 60px 40px;
-}
-
-/* Intro Section */
-.about-intro {
-    text-align: center;
-    margin-bottom: 60px;
+/* ==========================================================================
+   Shared Typography Tokens
+   ========================================================================== */
+.about-section-kicker {
+  font-family: 'Poppins', sans-serif;
+  font-size: 11.5px;
+  font-weight: 600;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: #8c8c8c;
+  display: block;
+  margin-bottom: 1rem;
 }
 
 .about-section-title {
-    font-family: 'Playfair Display', serif;
-    font-size: clamp(28px, 4vw, 38px);
-    font-weight: 500;
-    color: #1a1a1a;
-    margin-bottom: 16px;
-    letter-spacing: -0.02em;
+  font-family: 'Playfair Display', serif;
+  font-size: clamp(28px, 3.6vw, 42px);
+  font-weight: 500;
+  color: #111827;
+  line-height: 1.22;
+  margin: 0 0 1.5rem;
+  letter-spacing: -0.02em;
 }
 
-.about-accent {
-    width: 60px;
-    height: 2px;
-    background: linear-gradient(90deg, transparent, #1a1a1a, transparent);
-    margin: 0 auto 24px;
+.about-section-body {
+  font-family: 'Poppins', sans-serif;
+  font-size: 15px;
+  line-height: 1.85;
+  color: #555555;
+  font-weight: 300;
+  margin: 0 0 1.25rem;
+  max-width: 560px;
 }
 
-.about-description {
-    font-size: 16px;
-    color: #666;
-    line-height: 1.8;
-    max-width: 700px;
-    margin: 0 auto;
-    font-weight: 300;
+.about-section-body:last-of-type {
+  margin-bottom: 0;
 }
 
-/* Cards Grid */
-.about-grid {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 30px;
-    margin-bottom: 60px;
+/* ==========================================================================
+   1. Hero Banner (Background Video)
+   ========================================================================== */
+.about-atelier-hero {
+  position: relative;
+  width: 100%;
+  height: 75vh;
+  min-height: 480px;
+  max-height: 720px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
 }
 
-.about-card {
-    background: #ffffff;
-    padding: 40px 30px;
-    text-align: center;
-    border: 1px solid #e5e5e5;
-    transition: all 0.4s ease;
+.about-hero-video-wrap {
+  position: absolute;
+  inset: 0;
 }
 
-.about-card:hover {
-    transform: translateY(-8px);
-    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.08);
-    border-color: transparent;
+.about-hero-bg-video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center center;
+  filter: brightness(0.85) contrast(1.05);
 }
 
-.about-card-icon {
-    width: 60px;
-    height: 60px;
-    margin: 0 auto 24px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: #f5f5f5;
-    border-radius: 50%;
-    transition: all 0.3s ease;
+.about-hero-overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, rgba(0,0,0,0.15) 0%, rgba(0,0,0,0.5) 100%);
 }
 
-.about-card:hover .about-card-icon {
-    background: #1a1a1a;
+.about-hero-caption {
+  position: relative;
+  z-index: 2;
+  text-align: center;
+  padding: 0 2rem;
 }
 
-.about-card-icon svg {
-    width: 28px;
-    height: 28px;
-    stroke: #1a1a1a;
-    transition: stroke 0.3s ease;
+.about-hero-subtag {
+  font-family: 'Poppins', sans-serif;
+  font-size: 11.5px;
+  font-weight: 600;
+  letter-spacing: 0.28em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.85);
+  display: block;
+  margin-bottom: 1rem;
 }
 
-.about-card:hover .about-card-icon svg {
-    stroke: #ffffff;
+.about-hero-headline {
+  font-family: 'Playfair Display', serif;
+  font-size: clamp(36px, 5.5vw, 64px);
+  font-weight: 500;
+  font-style: italic;
+  color: #ffffff;
+  margin: 0;
+  letter-spacing: -0.02em;
+  text-shadow: 0 4px 20px rgba(0, 0, 0, 0.35);
+  line-height: 1.15;
 }
 
-.about-card-title {
-    font-family: 'Playfair Display', serif;
-    font-size: 22px;
-    font-weight: 500;
-    color: #1a1a1a;
-    margin-bottom: 16px;
+/* ==========================================================================
+   2. About the Brand
+   ========================================================================== */
+.about-brand-section {
+  padding: 6rem 0;
+  background-color: #fbfbfb;
 }
 
-.about-card-text {
-    font-size: 14px;
-    color: #666;
-    line-height: 1.7;
-    font-weight: 300;
+.about-brand-container {
+  max-width: 1280px;
+  width: 90%;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: 1.15fr 1fr;
+  gap: 5rem;
+  align-items: center;
 }
 
-/* Why Choose Us */
-.about-why-us {
-    text-align: center;
-    margin-bottom: 60px;
-    padding: 50px 0;
-    background: #ffffff;
-    margin-left: -40px;
-    margin-right: -40px;
-    padding-left: 40px;
-    padding-right: 40px;
+.about-brand-text {
+  display: flex;
+  flex-direction: column;
 }
 
-.why-us-grid {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 40px;
-    max-width: 1000px;
-    margin: 30px auto 0;
+.about-brand-image-frame {
+  width: 100%;
+  aspect-ratio: 4 / 3.5;
+  overflow: hidden;
 }
 
-.why-us-item {
-    text-align: left;
-    padding: 20px 0;
-    border-left: 2px solid #e5e5e5;
-    padding-left: 24px;
-    transition: border-color 0.3s ease;
+.about-brand-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  transition: transform 0.8s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-.why-us-item:hover {
-    border-left-color: #1a1a1a;
+.about-brand-image-frame:hover .about-brand-img {
+  transform: scale(1.04);
 }
 
-.why-us-number {
-    font-family: 'Playfair Display', serif;
-    font-size: 32px;
-    font-weight: 600;
-    color: #e0e0e0;
-    display: block;
-    margin-bottom: 12px;
-    transition: color 0.3s ease;
+/* ==========================================================================
+   3. About Our Products
+   ========================================================================== */
+.about-product-section {
+  padding: 6rem 0;
+  background-color: #f3f4f6;
 }
 
-.why-us-item:hover .why-us-number {
-    color: #1a1a1a;
+.about-product-container {
+  max-width: 1280px;
+  width: 90%;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: 1fr 1.15fr;
+  gap: 5rem;
+  align-items: center;
 }
 
-.why-us-title {
-    font-size: 16px;
-    font-weight: 600;
-    color: #1a1a1a;
-    margin-bottom: 8px;
+.about-product-image-frame {
+  width: 100%;
+  aspect-ratio: 4 / 3.5;
+  overflow: hidden;
 }
 
-.why-us-text {
-    font-size: 14px;
-    color: #666;
-    line-height: 1.6;
-    font-weight: 300;
+.about-product-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  transition: transform 0.8s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-/* Stats Section */
-.about-stats {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 30px;
-    margin-bottom: 60px;
-    padding: 50px 0;
-    border-top: 1px solid #e5e5e5;
-    border-bottom: 1px solid #e5e5e5;
+.about-product-image-frame:hover .about-product-img {
+  transform: scale(1.04);
 }
 
-.stat-item {
-    text-align: center;
+.about-product-text {
+  display: flex;
+  flex-direction: column;
 }
 
-.stat-number {
-    font-family: 'Playfair Display', serif;
-    font-size: clamp(36px, 5vw, 48px);
-    font-weight: 500;
-    color: #1a1a1a;
-    display: block;
-    margin-bottom: 8px;
+.about-product-cta {
+  margin-top: 2rem;
 }
 
-.stat-label {
-    font-size: 14px;
-    color: #666;
-    font-weight: 400;
-    letter-spacing: 0.5px;
+.about-cta-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  font-family: 'Poppins', sans-serif;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: #111827;
+  text-decoration: none;
+  padding-bottom: 5px;
+  border-bottom: 1.5px solid #111827;
+  transition: all 0.3s ease;
 }
 
-/* CTA Section */
-.about-cta {
-    text-align: center;
-    padding: 60px 40px;
-    background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
-    margin-left: -40px;
-    margin-right: -40px;
-    margin-bottom: -60px;
+.about-cta-arrow {
+  font-size: 16px;
+  transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-.about-cta-title {
-    font-family: 'Playfair Display', serif;
-    font-size: clamp(28px, 4vw, 36px);
-    font-weight: 400;
-    color: #ffffff;
-    margin-bottom: 12px;
+.about-cta-link:hover {
+  color: #000;
+  border-bottom-color: #000;
 }
 
-.about-cta-text {
-    font-size: 16px;
-    color: rgba(255, 255, 255, 0.7);
-    margin-bottom: 30px;
-    font-weight: 300;
+.about-cta-link:hover .about-cta-arrow {
+  transform: translateX(6px);
 }
 
-.about-cta-button {
-    display: inline-block;
-    padding: 16px 48px;
-    background: #ffffff;
-    color: #1a1a1a;
-    text-decoration: none;
-    font-size: 13px;
-    font-weight: 600;
-    letter-spacing: 1.5px;
-    text-transform: uppercase;
-    transition: all 0.4s ease;
+/* ==========================================================================
+   4. Our Workers / Team
+   ========================================================================== */
+.about-team-section {
+  padding: 6rem 0;
+  background-color: #fbfbfb;
 }
 
-.about-cta-button:hover {
-    background: transparent;
-    color: #ffffff;
-    box-shadow: inset 0 0 0 2px #ffffff;
-    transform: translateY(-2px);
+.about-team-container {
+  max-width: 1280px;
+  width: 90%;
+  margin: 0 auto;
 }
 
-/* Animations */
-@keyframes fadeInUp {
-    from {
-        opacity: 0;
-        transform: translateY(20px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
+.about-team-header {
+  text-align: center;
+  max-width: 700px;
+  margin: 0 auto 3.5rem;
 }
 
-/* Responsive Styles */
+.about-team-intro {
+  font-family: 'Poppins', sans-serif;
+  font-size: 15px;
+  line-height: 1.85;
+  color: #555;
+  font-weight: 300;
+  margin: 0;
+}
+
+.about-team-values-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 2rem;
+}
+
+.team-value-card {
+  background: #ffffff;
+  border: 1px solid #f0f0f0;
+  padding: 2.75rem 2rem 2.5rem;
+  display: flex;
+  flex-direction: column;
+  transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.4s ease;
+}
+
+.team-value-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.06);
+}
+
+.team-value-number {
+  font-family: 'Playfair Display', serif;
+  font-size: 36px;
+  font-weight: 500;
+  color: #e5e7eb;
+  margin-bottom: 1.25rem;
+  line-height: 1;
+}
+
+.team-value-title {
+  font-family: 'Poppins', sans-serif;
+  font-size: 16px;
+  font-weight: 600;
+  color: #111827;
+  margin: 0 0 0.75rem;
+  letter-spacing: 0.01em;
+}
+
+.team-value-desc {
+  font-family: 'Poppins', sans-serif;
+  font-size: 13.5px;
+  line-height: 1.75;
+  color: #64748b;
+  font-weight: 300;
+  margin: 0;
+}
+
+/* ==========================================================================
+   5. Our Customers
+   ========================================================================== */
+.about-customers-section {
+  padding: 6rem 0;
+  background-color: #111827;
+  color: #ffffff;
+}
+
+.about-customers-container {
+  max-width: 1280px;
+  width: 90%;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: 1.2fr 1fr;
+  gap: 5rem;
+  align-items: center;
+}
+
+.about-customers-section .about-section-kicker {
+  color: #9ca3af;
+}
+
+.about-customers-section .about-section-title {
+  color: #ffffff;
+}
+
+.about-customers-section .about-section-body {
+  color: #d1d5db;
+}
+
+.about-customers-stats {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2.5rem;
+}
+
+.customer-stat-item {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 2rem 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.about-stat-value {
+  font-family: 'Playfair Display', serif;
+  font-size: clamp(36px, 4vw, 50px);
+  font-weight: 500;
+  color: #ffffff;
+  line-height: 1;
+}
+
+.about-stat-label {
+  font-family: 'Poppins', sans-serif;
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #9ca3af;
+}
+
+/* ==========================================================================
+   6. Final CTA Banner
+   ========================================================================== */
+.about-final-cta-section {
+  padding: 5.5rem 0;
+  background-color: #fbfbfb;
+  text-align: center;
+}
+
+.about-final-cta-container {
+  max-width: 700px;
+  width: 90%;
+  margin: 0 auto;
+}
+
+.about-final-cta-title {
+  font-family: 'Playfair Display', serif;
+  font-size: clamp(26px, 3.5vw, 38px);
+  font-weight: 500;
+  color: #111827;
+  margin: 0 0 1rem;
+  letter-spacing: -0.02em;
+}
+
+.about-final-cta-desc {
+  font-family: 'Poppins', sans-serif;
+  font-size: 15px;
+  color: #555;
+  font-weight: 300;
+  margin: 0 0 2.25rem;
+  line-height: 1.7;
+}
+
+.about-final-cta-btn {
+  display: inline-block;
+  background: #111827;
+  color: #ffffff;
+  font-family: 'Poppins', sans-serif;
+  font-size: 12.5px;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  text-decoration: none;
+  padding: 14px 42px;
+  transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.about-final-cta-btn:hover {
+  background: #000000;
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+}
+
+/* ==========================================================================
+   Responsive
+   ========================================================================== */
 @media (max-width: 1024px) {
-    .about-grid {
-        grid-template-columns: repeat(2, 1fr);
-    }
-    
-    .why-us-grid {
-        grid-template-columns: repeat(2, 1fr);
-    }
-    
-    .about-stats {
-        grid-template-columns: repeat(2, 1fr);
-    }
+  .about-brand-container,
+  .about-product-container,
+  .about-customers-container {
+    grid-template-columns: 1fr;
+    gap: 3rem;
+  }
+
+  /* Reverse visual order on mobile so image comes first */
+  .about-product-container {
+    direction: ltr;
+  }
+  .about-product-visual {
+    order: -1;
+  }
+
+  .about-team-values-grid {
+    grid-template-columns: 1fr;
+    max-width: 520px;
+    margin: 0 auto;
+    gap: 1.5rem;
+  }
+
+  .about-customers-stats {
+    max-width: 420px;
+  }
+
+  .about-section-body {
+    max-width: 100%;
+  }
 }
 
 @media (max-width: 768px) {
-    .about-hero {
-        padding: 60px 20px;
-    }
-    
-    .about-content {
-        padding: 40px 20px;
-    }
-    
-    .about-grid {
-        grid-template-columns: 1fr;
-    }
-    
-    .why-us-grid {
-        grid-template-columns: 1fr;
-        gap: 24px;
-    }
-    
-    .about-stats {
-        grid-template-columns: repeat(2, 1fr);
-        gap: 20px;
-    }
-    
-    .about-why-us {
-        margin-left: -20px;
-        margin-right: -20px;
-        padding-left: 20px;
-        padding-right: 20px;
-    }
-    
-    .about-cta {
-        margin-left: -20px;
-        margin-right: -20px;
-        padding: 40px 20px;
-    }
-}
+  .about-atelier-hero {
+    height: 60vh;
+    min-height: 360px;
+  }
 
-@media (max-width: 480px) {
-    .about-stats {
-        grid-template-columns: 1fr;
-    }
-    
-    .stat-item {
-        padding: 20px 0;
-        border-bottom: 1px solid #e5e5e5;
-    }
-    
-    .stat-item:last-child {
-        border-bottom: none;
-    }
+  .about-brand-section,
+  .about-product-section,
+  .about-team-section,
+  .about-customers-section,
+  .about-final-cta-section {
+    padding: 4rem 0;
+  }
+
+  .about-customers-stats {
+    grid-template-columns: 1fr 1fr;
+    gap: 1.5rem;
+  }
+
+  .customer-stat-item {
+    padding: 1.25rem 0;
+  }
 }
