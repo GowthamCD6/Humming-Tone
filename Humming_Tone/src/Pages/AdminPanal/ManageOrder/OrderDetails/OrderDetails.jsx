@@ -462,7 +462,7 @@ export default function OrderDetails() {
 
                     return (
                       <tr key={item.id || index}>
-                        <td className="od-product-cell">
+                        <td className="od-product-cell" data-label="Product">
                           <div className="od-prod-thumb">
                             <img
                               src={getImageUrl(item.image_path) || getImageUrl(item.product_image)}
@@ -481,22 +481,22 @@ export default function OrderDetails() {
                           </div>
                         </td>
 
-                        <td>
+                        <td data-label="Details">
                           <div className="od-variant-tags">
                             {item.size && <span className="od-v-tag">Size: <strong>{item.size}</strong></span>}
                             {item.color && <span className="od-v-tag">Color: <strong>{item.color}</strong></span>}
                           </div>
                         </td>
 
-                        <td className="od-price-cell">
+                        <td className="od-price-cell" data-label="Price">
                           ₹{unitPrice.toFixed(2)}
                         </td>
 
-                        <td className="od-qty-cell">
+                        <td className="od-qty-cell" data-label="Quantity">
                           <span className="od-qty-badge">{qty}</span>
                         </td>
 
-                        <td className="od-total-cell th-right">
+                        <td className="od-total-cell th-right" data-label="Total">
                           ₹{itemTotal.toFixed(2)}
                         </td>
                       </tr>

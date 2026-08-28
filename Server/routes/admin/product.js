@@ -10,10 +10,11 @@ router.get("/admin/fetch_products",product.fetch_products);
 router.get("/admin/fetch_deleted_products",product.fetch_deleted_products);
 router.get("/admin/fetch_variants/:id",product.fetch_variants);
 router.patch("/admin/update_product/:id", upload.single("image"), product.update_product);
-router.patch("/admin/update_variant/:id",product.update_variant);
-router.delete("/admin/delete_product",product.delete_product);
-router.patch("/admin/restore_product/:id",product.restore_product);
-
+router.patch("/admin/update_variant/:id", product.update_variant);
+router.delete("/admin/delete_product", product.delete_product);
+router.patch("/admin/restore_product/:id", product.restore_product);
+router.patch("/admin/toggle_featured/:id", product.toggle_featured);
+router.get("/admin/export_products_data", product.getExportProductsData);
 
 module.exports = router;
 

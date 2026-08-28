@@ -13,6 +13,7 @@ import RateReviewIcon from '@mui/icons-material/RateReview'
 import CategoryIcon from '@mui/icons-material/Category'
 import MenuIcon from '@mui/icons-material/Menu'
 import CloseIcon from '@mui/icons-material/Close'
+import FileDownloadIcon from '@mui/icons-material/FileDownload'
 import { Outlet, useLocation, useNavigate } from 'react-router-dom'
 import logo from '../../assets/logo.png'
 import './AdminTab.css'
@@ -37,6 +38,7 @@ const menuSections = [
   {
     title: 'ANALYTICS',
     items: [
+      { id: 'data-export', path: 'data-export', label: 'Data Export', Icon: FileDownloadIcon },
       { id: 'all-products', path: 'all-products', label: 'Product Data', Icon: ShoppingBagIcon },
       { id: 'product-buyers', path: 'product-buyers', label: 'Buyer Data', Icon: PeopleIcon },
     ]
@@ -66,7 +68,11 @@ export default function AdminTab({ onLogout = () => {} }) {
   const currentItem = menuItems.find(item =>
     item.path && location.pathname.startsWith(`/admin/${item.path}`)
   )
-  const activeTab = currentItem ? currentItem.id : 'dashboard'
+  const activeTab = currentItem
+    ? currentItem.id
+    : location.pathname.startsWith('/admin/order/')
+      ? 'manage-orders'
+      : 'dashboard'
 
   const activeTabLabel =
     menuItems.find(item => item.id === activeTab)?.label || 'Dashboard'

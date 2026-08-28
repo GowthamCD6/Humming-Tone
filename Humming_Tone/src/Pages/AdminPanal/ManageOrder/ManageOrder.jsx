@@ -584,7 +584,7 @@ export default function ManageOrder() {
                   ) : (
                     pagedOrders.map((order) => (
                       <tr key={order.id} className={selectedOrders.has(order.id) ? 'mo-row-selected' : ''}>
-                        <td className="mo-checkbox-td">
+                        <td className="mo-checkbox-td" data-label="Select">
                           <input
                             type="checkbox"
                             className="mo-checkbox"
@@ -593,31 +593,31 @@ export default function ManageOrder() {
                             aria-label={`Select order ${order.order_number}`}
                           />
                         </td>
-                        <td className="order-id">{order.order_number}</td>
-                        <td className="customer-info">
+                        <td className="order-id" data-label="Order">{order.order_number}</td>
+                        <td className="customer-info" data-label="Customer">
                           <div className="cust-name">{order.customer_name}</div>
                           <div className="cust-email">{order.customer_email}</div>
                         </td>
-                        <td className="date-info">
+                        <td className="date-info" data-label="Date">
                           <div className="date-main">{formatDate(order.created_at)}</div>
                           <div className="date-time">{formatTime(order.created_at)}</div>
                         </td>
-                        <td className="items-info">
+                        <td className="items-info" data-label="Items">
                           {order.unique_items_count} items
                         </td>
-                        <td className="total-price">₹{parseFloat(order.total_amount).toFixed(2)}</td>
-                        <td className="delivery-date-col">
+                        <td className="total-price" data-label="Total">₹{parseFloat(order.total_amount).toFixed(2)}</td>
+                        <td className="delivery-date-col" data-label="Delivery">
                           {formatShortDate(order.delivery_date)}
                         </td>
-                        <td>
+                        <td data-label="Status">
                           <span className={`status-badge ${order.status?.toLowerCase().replace(/ /g, '_')}`}>
                             {order.status?.replace(/_/g, ' ')}
                           </span>
                         </td>
-                        <td className="payment-info">
+                        <td className="payment-info" data-label="Payment">
                           <span className="payment-badge">{order.payment_id ? 'PAID' : 'UNPAID'}</span>
                         </td>
-                        <td className="action-info">
+                        <td className="action-info" data-label="Action">
                           <button 
                             className="view-order-btn"
                             onClick={() => navigate(`/admin/order/${order.id}`)}

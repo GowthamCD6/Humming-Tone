@@ -17,7 +17,6 @@ import {
   DollarSign,
   Clock,
   ArrowRight,
-  RefreshCw
 } from 'lucide-react'
 import './Dashboard.css'
 import { API_BASE_URL } from '../../../utils/apiConfig'
@@ -53,7 +52,20 @@ const statusMeta = (s = '') => {
   return { cls: 'db-badge-gray', label: s || '—' }
 }
 
-const todayISO = () => new Date().toISOString().split('T')[0]
+const localDateKey = (date) => {
+  const d = new Date(date)
+  if (Number.isNaN(d.getTime())) return ''
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
+}
+
+const todayISO = () => localDateKey(new Date())
+
+const isCompletedOrder = (order) => {
+  const status = String(order?.status || '').toLowerCase()
+  return status === 'delivered' || status === 'completed'
+}
+
+const orderAmount = (order) => Number(order?.total_amount || 0)
 
 const lastNDays = (n) =>
   Array.from({ length: n }, (_, i) => {
@@ -157,9 +169,7 @@ export default function Dashboard() {
   const totalOrders = orders.length
   const completedOrders = orders.filter(o => o.status?.toLowerCase() === 'delivered' || o.status?.toLowerCase() === 'completed').length
   const pendingOrders = orders.filter(o => o.status?.toLowerCase() === 'pending').length
-  const totalRevenue = orders
-    .filter(o => o.status?.toLowerCase() === 'delivered' || o.status?.toLowerCase() === 'completed')
-    .reduce((sum, o) => sum + parseFloat(o.total_amount || 0), 0)
+  const totalRevenue = orders.filter(isCompletedOrder).reduce((sum, o) => sum + orderAmount(o), 0)
 
   const uniqueCustomers = useMemo(() => {
     return new Set(orders.map(o => o.customer_email?.toLowerCase()).filter(Boolean)).size
@@ -176,11 +186,10 @@ export default function Dashboard() {
     const todayStr = todayISO()
     return orders
       .filter(o => {
-        const orderDay = (o.created_at || '').split('T')[0]
-        const isDelivered = o.status?.toLowerCase() === 'delivered' || o.status?.toLowerCase() === 'completed'
-        return orderDay === todayStr && isDelivered
+        const orderDay = localDateKey(o.created_at)
+        return orderDay === todayStr && isCompletedOrder(o)
       })
-      .reduce((sum, o) => sum + parseFloat(o.total_amount || 0), 0)
+      .reduce((sum, o) => sum + orderAmount(o), 0)
   }, [orders])
   const targetRevenue = 25000
   const dailyTargetPct = Math.round((todayRevenue / targetRevenue) * 100)
@@ -206,28 +215,29 @@ export default function Dashboard() {
     ].filter(d => d.value > 0)
   }, [totalProducts, outOfStockProducts])
 
-  // Top Selling Products (Aggregated dynamic list scaled with order totals)
+  // Top selling products are derived from order line items when available.
   const topProducts = useMemo(() => {
-    // Generate calculated mockup list linked to actual total revenue to make it dynamic
-    const baseProducts = [
-      { id: 1, name: 'Premium Humming Tone T-Shirt', salesFactor: 0.28, basePrice: 450 },
-      { id: 2, name: 'Humming-Tone Custom Design Dress', salesFactor: 0.20, basePrice: 1200 },
-      { id: 3, name: 'Humming-Tone Signature Hoodie', salesFactor: 0.17, basePrice: 1500 },
-      { id: 4, name: 'Comfort Kidswear Set', salesFactor: 0.12, basePrice: 350 },
-      { id: 5, name: 'Active Sports Jersey', salesFactor: 0.09, basePrice: 800 }
-    ]
-    return baseProducts.map(p => {
-      const share = totalRevenue * p.salesFactor
-      const sales = Math.round(share / p.basePrice)
-      return {
-        id: p.id,
-        name: p.name,
-        sales: sales > 0 ? sales : Math.floor(Math.random() * 5) + 1,
-        revenue: share > 0 ? share : p.basePrice * (Math.floor(Math.random() * 5) + 1),
-        percentage: Math.round(p.salesFactor * 100)
-      }
+    const productMap = {}
+    orders.filter(isCompletedOrder).forEach(order => {
+      ;(order.items || []).forEach(item => {
+        const id = item.product_id || item.id || item.product_name
+        if (!id) return
+        const quantity = Number(item.quantity || 1)
+        const revenue = item.total_price != null
+          ? Number(item.total_price)
+          : Number(item.product_price || item.unit_price || 0) * quantity
+        if (!productMap[id]) productMap[id] = { id, name: item.product_name || `Product #${id}`, sales: 0, revenue: 0 }
+        productMap[id].sales += quantity
+        productMap[id].revenue += revenue
+      })
     })
-  }, [totalRevenue])
+    const productsList = Object.values(productMap).sort((a, b) => b.revenue - a.revenue || b.sales - a.sales).slice(0, 5)
+    return productsList.map((product, index) => ({
+      ...product,
+      id: index + 1,
+      percentage: totalRevenue > 0 ? Math.round((product.revenue / totalRevenue) * 100) : 0
+    }))
+  }, [orders, totalRevenue])
 
   // Recent Orders List (Latest 5 orders)
   const recentOrders = useMemo(() => {
@@ -258,10 +268,9 @@ export default function Dashboard() {
       const map = {}
       days.forEach(d => { map[d] = 0 })
       orders.forEach(o => {
-        const orderDay = (o.created_at || '').split('T')[0]
-        const isDelivered = o.status?.toLowerCase() === 'delivered' || o.status?.toLowerCase() === 'completed'
-        if (map[orderDay] !== undefined && isDelivered) {
-          map[orderDay] += parseFloat(o.total_amount || 0)
+        const orderDay = localDateKey(o.created_at)
+        if (map[orderDay] !== undefined && isCompletedOrder(o)) {
+          map[orderDay] += orderAmount(o)
         }
       })
       return days.map(d => ({
@@ -273,15 +282,14 @@ export default function Dashboard() {
       const map = { 'Week 4': 0, 'Week 3': 0, 'Week 2': 0, 'Week 1 (Latest)': 0 }
       const now = new Date()
       orders.forEach(o => {
-        const isDelivered = o.status?.toLowerCase() === 'delivered' || o.status?.toLowerCase() === 'completed'
-        if (!isDelivered) return
+        if (!isCompletedOrder(o)) return
         const orderDate = new Date(o.created_at)
-        const diffTime = Math.abs(now - orderDate)
-        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24))
-        if (diffDays <= 7) map['Week 1 (Latest)'] += parseFloat(o.total_amount || 0)
-        else if (diffDays <= 14) map['Week 2'] += parseFloat(o.total_amount || 0)
-        else if (diffDays <= 21) map['Week 3'] += parseFloat(o.total_amount || 0)
-        else if (diffDays <= 28) map['Week 4'] += parseFloat(o.total_amount || 0)
+        const diffDays = Math.floor((now - orderDate) / (1000 * 60 * 60 * 24))
+        if (diffDays < 0) return
+        if (diffDays <= 7) map['Week 1 (Latest)'] += orderAmount(o)
+        else if (diffDays <= 14) map['Week 2'] += orderAmount(o)
+        else if (diffDays <= 21) map['Week 3'] += orderAmount(o)
+        else if (diffDays <= 28) map['Week 4'] += orderAmount(o)
       })
       return Object.entries(map).reverse().map(([label, revenue]) => ({
         label,
@@ -293,12 +301,11 @@ export default function Dashboard() {
       const map = {}
       months.forEach(m => { map[m.iso] = 0 })
       orders.forEach(o => {
-        const isDelivered = o.status?.toLowerCase() === 'delivered' || o.status?.toLowerCase() === 'completed'
-        if (!isDelivered) return
+        if (!isCompletedOrder(o)) return
         const date = new Date(o.created_at)
         const monthKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`
         if (map[monthKey] !== undefined) {
-          map[monthKey] += parseFloat(o.total_amount || 0)
+          map[monthKey] += orderAmount(o)
         }
       })
       return months.map(m => ({
@@ -308,9 +315,13 @@ export default function Dashboard() {
     }
   }, [orders, revenueView])
 
+  const selectedPeriodRevenue = useMemo(
+    () => chartData.reduce((sum, point) => sum + Number(point.revenue || 0), 0),
+    [chartData]
+  )
+
   return (
     <section className="db-page-container">
-
 
       {/* ═══════════════ ROW 1 – GAUGE KPI CARDS ═══════════════ */}
       <div className="db-gauge-row">
@@ -461,6 +472,10 @@ export default function Dashboard() {
                     {loading ? '₹—' : fmtCurrency(totalRevenue)}
                   </span>
                 </div>
+              </div>
+              <div className="db-period-revenue-display">
+                <span className="db-revenue-display-label">{revenueView} transactions</span>
+                <span className="db-period-revenue-value">{loading ? '₹—' : fmtCurrency(selectedPeriodRevenue)}</span>
               </div>
             </div>
           </div>

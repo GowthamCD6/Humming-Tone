@@ -99,6 +99,7 @@ app.use('/admin', (req, res, next) => {
 // Admin routes
 app.use("/", adminProductRoute);
 app.use("/", adminOrderRoute);
+app.use("/admin", adminOrderRoute);
 app.use("/", adminDashboardRoute);
 app.use("/", adminAuthRoute);
 app.use("/", adminReturnRoute);

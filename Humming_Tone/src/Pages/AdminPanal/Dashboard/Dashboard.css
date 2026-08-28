@@ -5,14 +5,14 @@
    ================================================================ */
 
 .db-page-container {
-  padding: 4px 2px;
+  padding: 2px 0 18px;
   max-width: 1440px;
   width: 100%;
   margin: 0 auto;
   box-sizing: border-box;
   display: flex;
   flex-direction: column;
-  gap: 24px;
+  gap: 18px;
   color: #334155;
   background-color: transparent;
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
@@ -28,8 +28,8 @@
 .db-gauge-card {
   background: #ffffff;
   border: 1px solid #e2e8f0;
-  border-radius: 16px;
-  padding: 24px 20px 18px;
+  border-radius: 12px;
+  padding: 20px 18px 16px;
   box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.05), 0 1px 2px -1px rgba(0, 0, 0, 0.05);
   display: flex;
   flex-direction: column;
@@ -93,8 +93,8 @@
 .db-stat-card {
   background: #ffffff;
   border: 1px solid #e2e8f0;
-  border-radius: 16px;
-  padding: 20px 16px;
+  border-radius: 12px;
+  padding: 16px 14px;
   display: flex;
   gap: 14px;
   align-items: center;
@@ -180,12 +180,12 @@
 .db-section {
   background: #ffffff;
   border: 1px solid #e2e8f0;
-  border-radius: 16px;
-  padding: 24px;
+  border-radius: 12px;
+  padding: 20px;
   box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.05), 0 1px 2px -1px rgba(0, 0, 0, 0.05);
   display: flex;
   flex-direction: column;
-  gap: 24px;
+  gap: 18px;
 }
 
 .db-section-header {
@@ -229,6 +229,20 @@
   padding: 10px 18px;
   border-radius: 10px;
   border: 1px solid #e2e8f0;
+}
+
+.db-period-revenue-display {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding-left: 16px;
+  border-left: 1px solid #e2e8f0;
+}
+
+.db-period-revenue-value {
+  font-size: 16px;
+  font-weight: 800;
+  color: #059669;
 }
 
 .db-total-revenue-display svg {
@@ -337,12 +351,12 @@
 .db-panel {
   background: #ffffff;
   border: 1px solid #e2e8f0;
-  border-radius: 16px;
-  padding: 24px;
+  border-radius: 12px;
+  padding: 20px;
   box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.05), 0 1px 2px -1px rgba(0, 0, 0, 0.05);
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap: 16px;
   min-width: 0;
   transition: all 0.25s ease;
 }
@@ -743,6 +757,14 @@
 }
 
 @media (max-width: 1200px) {
+  .db-page-container { gap: 18px; }
+  .db-gauge-row,
+  .db-stats-grid { gap: 14px; }
+  .db-section,
+  .db-panel { padding: 18px; }
+}
+
+@media (min-width: 769px) and (max-width: 1200px) {
   .db-stats-grid {
     grid-template-columns: repeat(3, 1fr);
   }
@@ -759,16 +781,29 @@
 }
 
 @media (max-width: 768px) {
+  .db-page-container { padding: 0; gap: 12px; }
   .db-gauge-row {
-    grid-template-columns: 1fr;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
   }
 
   .db-stats-grid {
     grid-template-columns: repeat(2, 1fr);
+    gap: 8px;
   }
 
+  .db-gauge-card { padding: 14px 10px 12px; border-radius: 10px; }
+  .db-gauge-title { font-size: 10px; }
+  .db-gauge-svg { max-width: 130px; }
+  .db-gauge-note { font-size: 10px; margin-top: 4px; }
+  .db-stat-card { padding: 13px 11px; gap: 9px; border-radius: 10px; }
+  .db-stat-icon-wrapper { width: 36px; height: 36px; border-radius: 9px; }
+  .db-stat-label { font-size: 9px; }
+  .db-stat-value { font-size: 20px; }
+
   .db-title-with-revenue {
-    gap: 16px;
+    gap: 10px;
+    align-items: stretch;
   }
 
   .db-total-revenue-display {
@@ -778,10 +813,38 @@
   .db-revenue-display-value {
     font-size: 16px;
   }
+
+  .db-period-revenue-display { padding-left: 10px; }
+  .db-period-revenue-value { font-size: 14px; }
+  .db-section-header { align-items: stretch; gap: 12px; }
+  .db-header-left { min-width: 0; }
+  .db-revenue-controls { width: 100%; }
+  .db-revenue-toggle { width: 100%; }
+  .db-toggle-btn { flex: 1; padding: 8px 6px; }
+  .db-section { padding: 14px; gap: 14px; border-radius: 10px; }
+  .db-panel { padding: 14px; gap: 14px; border-radius: 10px; }
+  .db-panel-head { align-items: flex-start; gap: 8px; }
+  .db-link-btn { padding: 5px 0; }
 }
 
 @media (max-width: 480px) {
-  .db-stats-grid {
-    grid-template-columns: 1fr;
-  }
+  .db-gauge-row { grid-template-columns: 1fr; }
+  .db-stats-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .db-gauge-card { display: grid; grid-template-columns: 1fr 1.4fr; align-items: center; text-align: left; padding: 12px; }
+  .db-gauge-title { grid-column: 1 / -1; margin-bottom: 0; }
+  .db-gauge-svg { grid-row: 2; max-width: 130px; }
+  .db-gauge-note { grid-column: 1 / -1; text-align: center; }
+  .db-title-with-revenue { flex-direction: column; }
+  .db-total-revenue-display,
+  .db-period-revenue-display { border-left: 0; padding: 8px 0 0; border-top: 1px solid #e2e8f0; }
+  .db-section-title { font-size: 15px; }
+  .db-section-description { font-size: 11px; }
+  .db-product-item,
+  .db-order-item { gap: 9px; padding: 10px 0; }
+  .db-product-name { font-size: 12px; }
+  .db-product-sales,
+  .db-order-meta { font-size: 10px; }
+  .db-revenue-value,
+  .db-order-amount { font-size: 12px; }
+  .db-badge { font-size: 8px; padding: 2px 6px; }
 }

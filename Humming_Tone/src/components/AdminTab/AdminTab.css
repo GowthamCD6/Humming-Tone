@@ -789,3 +789,23 @@
 
 .admin-tab-layout * { font-family: inherit; }
 
+@media (max-width: 820px) {
+  .admin-tab-layout {
+    height: auto;
+    min-height: 100dvh;
+    overflow: visible;
+  }
+
+  .admin-main {
+    height: auto;
+    min-height: 100dvh;
+    overflow: visible;
+  }
+
+  .admin-content {
+    height: auto;
+    min-height: calc(100dvh - 76px);
+    overflow: visible;
+  }
+}
+

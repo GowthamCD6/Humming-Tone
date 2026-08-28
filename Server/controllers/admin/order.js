@@ -298,3 +298,141 @@ exports.bulkUpdateStatus = async (req, res, next) => {
         next(error);
     }
 };
+
+// Export comprehensive orders data with line items & details
+exports.getExportOrdersData = async (req, res, next) => {
+    try {
+        const { startDate, endDate, status, paymentStatus, month, year } = req.query;
+
+        let whereClauses = [];
+        let params = [];
+
+        if (status && status !== 'all') {
+            whereClauses.push("LOWER(o.order_status) = LOWER(?)");
+            params.push(status);
+        }
+
+        if (paymentStatus && paymentStatus !== 'all') {
+            const pLower = paymentStatus.toLowerCase();
+            if (pLower === 'paid') {
+                whereClauses.push("LOWER(o.payment_status) IN ('paid', 'captured', 'success', 'completed')");
+            } else if (pLower === 'pending') {
+                whereClauses.push("LOWER(o.payment_status) IN ('pending', 'unpaid', 'created', 'processing')");
+            } else if (pLower === 'failed') {
+                whereClauses.push("LOWER(o.payment_status) IN ('failed', 'cancelled', 'declined')");
+            } else {
+                whereClauses.push("LOWER(o.payment_status) = LOWER(?)");
+                params.push(paymentStatus);
+            }
+        }
+
+        if (startDate) {
+            whereClauses.push("o.created_at >= ?");
+            params.push(startDate + ' 00:00:00');
+        }
+
+        if (endDate) {
+            whereClauses.push("o.created_at <= ?");
+            params.push(endDate + ' 23:59:59');
+        }
+
+        if (year && month && month !== 'all') {
+            whereClauses.push("YEAR(o.created_at) = ? AND MONTH(o.created_at) = ?");
+            params.push(parseInt(year, 10), parseInt(month, 10));
+        } else if (year && year !== 'all') {
+            whereClauses.push("YEAR(o.created_at) = ?");
+            params.push(parseInt(year, 10));
+        }
+
+        const whereSql = whereClauses.length > 0 ? `WHERE ${whereClauses.join(" AND ")}` : "";
+
+        const ordersQuery = `
+            SELECT 
+                o.id,
+                o.order_number,
+                o.customer_name,
+                o.customer_email,
+                o.customer_phone,
+                o.customer_address,
+                o.city,
+                o.state,
+                o.pincode,
+                o.subtotal,
+                o.discount_amount,
+                o.shipping,
+                o.gst_amount,
+                o.total_amount,
+                o.payment_id,
+                o.payment_status,
+                o.payment_verified,
+                o.order_status,
+                o.tracking_number,
+                o.courier_partner,
+                o.shipping_date,
+                o.delivery_date,
+                o.created_at
+            FROM orders o
+            ${whereSql}
+            ORDER BY o.created_at DESC
+        `;
+
+        const [orders] = await db.promise().query(ordersQuery, params);
+
+        if (!orders || orders.length === 0) {
+            return res.status(200).json({ success: true, orders: [], count: 0 });
+        }
+
+        const orderIds = orders.map(o => o.id);
+        const placeholders = orderIds.map(() => '?').join(',');
+
+        const itemsQuery = `
+            SELECT 
+                oi.id,
+                oi.order_id,
+                oi.product_id,
+                oi.variant_id,
+                oi.product_name,
+                oi.size,
+                oi.color,
+                oi.quantity,
+                oi.product_price AS unit_price,
+                (oi.product_price * oi.quantity) AS total_price,
+                p.sku AS product_sku,
+                COALESCE(
+                    (SELECT pi.image_path FROM product_images pi WHERE pi.product_id = oi.product_id AND pi.is_primary = 1 LIMIT 1),
+                    (SELECT pi.image_path FROM product_images pi WHERE pi.product_id = oi.product_id LIMIT 1),
+                    p.image_path
+                ) AS image_path
+            FROM order_items oi
+            LEFT JOIN products p ON p.id = oi.product_id
+            WHERE oi.order_id IN (${placeholders})
+            ORDER BY oi.id ASC
+        `;
+
+        const [items] = await db.promise().query(itemsQuery, orderIds);
+
+        const itemsByOrder = {};
+        items.forEach(item => {
+            if (!itemsByOrder[item.order_id]) itemsByOrder[item.order_id] = [];
+            itemsByOrder[item.order_id].push(item);
+        });
+
+        const fullOrders = orders.map(order => ({
+            ...order,
+            items: itemsByOrder[order.id] || [],
+            item_count: (itemsByOrder[order.id] || []).reduce((sum, it) => sum + (Number(it.quantity) || 1), 0),
+            products_summary: (itemsByOrder[order.id] || []).map(it => `${it.product_name || 'Product'} (${it.size || 'Free'} x${it.quantity})`).join(', ')
+        }));
+
+        res.status(200).json({
+            success: true,
+            orders: fullOrders,
+            count: fullOrders.length
+        });
+
+    } catch (error) {
+        console.error("Export orders error:", error);
+        next(error);
+    }
+};
+

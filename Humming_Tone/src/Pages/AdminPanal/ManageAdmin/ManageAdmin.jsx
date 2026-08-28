@@ -416,7 +416,7 @@ export default function ManageAdmin() {
                     const isSelf = parseInt(adm.id) === parseInt(currentUser?.id)
                     return (
                       <tr key={adm.id} className={isSelf ? 'row-self' : ''}>
-                        <td>
+                        <td data-label="User">
                           <div className="admin-user-cell">
                             <div className="user-avatar-circle">
                               {adm.avatar_url ? (
@@ -445,8 +445,8 @@ export default function ManageAdmin() {
                             </div>
                           </div>
                         </td>
-                        <td className="date-cell">{fmtDate(adm.created_at)}</td>
-                        <td>
+                        <td className="date-cell" data-label="Created">{fmtDate(adm.created_at)}</td>
+                        <td className="admin-user-actions" data-label="Actions">
                           <button
                             className="btn-action-delete"
                             onClick={() => handleDeleteAdmin(adm.id, adm.username)}

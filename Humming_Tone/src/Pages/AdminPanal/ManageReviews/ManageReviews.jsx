@@ -507,7 +507,7 @@ export default function ManageReviews() {
               {loading ? (
                 Array.from({ length: 6 }).map((_, index) => (
                   <tr key={`skel-${index}`} className="mr-skeleton-row">
-                    <td className="mr-checkbox-td">
+                    <td className="mr-checkbox-td" data-label="Select">
                       <div className="mr-skeleton-cell" style={{ width: "18px", height: "18px", borderRadius: "4px" }} />
                     </td>
                     <td>
@@ -547,7 +547,7 @@ export default function ManageReviews() {
                     </td>
 
                     {/* Product */}
-                    <td className="mr-product-cell" onClick={() => setSelectedReviewDetail(rev)} style={{ cursor: "pointer" }}>
+                    <td className="mr-product-cell" data-label="Product" onClick={() => setSelectedReviewDetail(rev)} style={{ cursor: "pointer" }}>
                       <div className="mr-prod-wrap">
                         {rev.product_image && (
                           <img
@@ -571,24 +571,24 @@ export default function ManageReviews() {
                     </td>
 
                     {/* Customer */}
-                    <td className="customer-info" onClick={() => setSelectedReviewDetail(rev)} style={{ cursor: "pointer" }}>
+                    <td className="customer-info" data-label="Customer" onClick={() => setSelectedReviewDetail(rev)} style={{ cursor: "pointer" }}>
                       <div className="cust-name">{rev.reviewer_name || "Anonymous Customer"}</div>
                       <div className="cust-email">{rev.reviewer_email}</div>
                     </td>
 
                     {/* Rating */}
-                    <td onClick={() => setSelectedReviewDetail(rev)} style={{ cursor: "pointer" }}>
+                    <td data-label="Rating" onClick={() => setSelectedReviewDetail(rev)} style={{ cursor: "pointer" }}>
                       {renderStars(rev.rating)}
                     </td>
 
                     {/* Feedback */}
-                    <td className="mr-comment-cell" onClick={() => setSelectedReviewDetail(rev)} style={{ cursor: "pointer" }}>
+                    <td className="mr-comment-cell" data-label="Feedback" onClick={() => setSelectedReviewDetail(rev)} style={{ cursor: "pointer" }}>
                       {rev.title && <div className="mr-comment-title">{rev.title}</div>}
                       <div className="mr-comment-text">{rev.comment || "—"}</div>
                     </td>
 
                     {/* Date */}
-                    <td className="date-info">
+                    <td className="date-info" data-label="Date">
                       <div className="date-main">
                         {new Date(rev.created_at).toLocaleDateString("en-IN", {
                           day: "numeric",
@@ -599,14 +599,14 @@ export default function ManageReviews() {
                     </td>
 
                     {/* Status */}
-                    <td>
+                    <td data-label="Status">
                       <span className={`status-badge ${rev.status?.toLowerCase()}`}>
                         {rev.status}
                       </span>
                     </td>
 
                     {/* Action */}
-                    <td style={{ textAlign: "right", paddingRight: "20px" }}>
+                    <td className="mr-action-cell" data-label="Action" style={{ textAlign: "right", paddingRight: "20px" }}>
                       <button
                         type="button"
                         className="view-order-btn"

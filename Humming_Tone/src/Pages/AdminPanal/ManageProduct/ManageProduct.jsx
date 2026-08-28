@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Plus, Search, Edit, Trash2, X } from 'lucide-react'
+import { Plus, Search, Edit, Trash2, X, Star } from 'lucide-react'
 import axios from 'axios'
 import './ManageProduct.css'
 import { API_BASE_URL as BASE_URL, getImageUrl } from '../../../utils/apiConfig'
@@ -13,6 +13,21 @@ const getAuthHeaders = (contentType) => {
   return headers;
 };
 
+// Toast notification component
+function Toast({ message, type, onClose }) {
+  useEffect(() => {
+    const t = setTimeout(onClose, 3500);
+    return () => clearTimeout(t);
+  }, [onClose]);
+
+  return (
+    <div className={`mp-toast mp-toast-${type}`}>
+      <span>{message}</span>
+      <button className="mp-toast-close" onClick={onClose}>×</button>
+    </div>
+  );
+}
+
 export default function ManageProducts() {
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(true);
@@ -23,6 +38,14 @@ export default function ManageProducts() {
   const [showEditModal, setShowEditModal] = useState(false)
   const [showDeleteModal, setShowDeleteModal] = useState(false)
   const [productToDelete, setProductToDelete] = useState(null)
+
+  // Toast State
+  const [toasts, setToasts] = useState([]);
+  const addToast = (message, type = 'success') => {
+    const id = Date.now();
+    setToasts((prev) => [...prev, { id, message, type }]);
+  };
+  const removeToast = (id) => setToasts((prev) => prev.filter((t) => t.id !== id));
   
   // Promo State
   const [showAddPromoModal, setShowAddPromoModal] = useState(false)
@@ -33,6 +56,7 @@ export default function ManageProducts() {
 
   const [filterGender, setFilterGender] = useState('All')
   const [filterCategory, setFilterCategory] = useState('All')
+  const [filterFeatured, setFilterFeatured] = useState('All')
   const [searchQuery, setSearchQuery] = useState('')
   const [productPage, setProductPage] = useState(1)
   const [productLimit, setProductLimit] = useState(10)
@@ -158,7 +182,8 @@ export default function ManageProducts() {
           category: p.subcategory || 'General',
           gender: p.gender,
           price: p.price || 0,
-          stock: p.stock_quantity || 0
+          stock: p.stock_quantity || 0,
+          is_featured: Number(p.is_featured) === 1 ? 1 : 0
         })));
       }
       const promoRes = await fetch(`${BASE_URL}/admin/fetch_promos`, {
@@ -182,10 +207,14 @@ export default function ManageProducts() {
                   
     const catOk = filterCategory === 'All' || 
                   String(p.category || '').toLowerCase() === String(filterCategory || '').toLowerCase();
+
+    const featOk = filterFeatured === 'All' ||
+                   (filterFeatured === 'Featured' && p.is_featured === 1) ||
+                   (filterFeatured === 'Normal' && (!p.is_featured || p.is_featured === 0));
                   
     const nameOk = String(p.name || '').toLowerCase().includes(searchQuery.toLowerCase());
     
-    return genOk && catOk && nameOk;
+    return genOk && catOk && featOk && nameOk;
   });
 
   const totalProductPages = Math.max(1, Math.ceil(filteredProducts.length / productLimit));
@@ -197,7 +226,7 @@ export default function ManageProducts() {
 
   useEffect(() => {
     setProductPage(1);
-  }, [searchQuery, filterGender, filterCategory, productLimit]);
+  }, [searchQuery, filterGender, filterCategory, filterFeatured, productLimit]);
 
   useEffect(() => {
     if (productPage > totalProductPages) {
@@ -208,8 +237,35 @@ export default function ManageProducts() {
   // --- PRODUCT HANDLERS ---
   const [productSizes, setProductSizes] = useState([]);
 
+  // 1-Click Toggle Featured Status
+  const handleToggleFeatured = async (productId, currentFeatured) => {
+    const newFeatured = currentFeatured === 1 ? 0 : 1;
+    // Optimistic UI update
+    setProducts(prev => prev.map(p => p.id === productId ? { ...p, is_featured: newFeatured } : p));
+    
+    try {
+      const res = await fetch(`${BASE_URL}/admin/toggle_featured/${productId}`, {
+        method: 'PATCH',
+        headers: getAuthHeaders('application/json'),
+        body: JSON.stringify({ is_featured: newFeatured })
+      });
+      const data = await res.json();
+      if (data.success) {
+        addToast(data.message || `Product set as ${newFeatured ? 'Featured' : 'Normal'}`, 'success');
+      } else {
+        // Revert
+        setProducts(prev => prev.map(p => p.id === productId ? { ...p, is_featured: currentFeatured } : p));
+        addToast('Failed to update featured status', 'error');
+      }
+    } catch (err) {
+      console.error('Error updating featured status:', err);
+      setProducts(prev => prev.map(p => p.id === productId ? { ...p, is_featured: currentFeatured } : p));
+      addToast('Error updating featured status', 'error');
+    }
+  };
+
   const handleEditProduct = async (p) => { 
-    setEditingProduct({ ...p }); 
+    setEditingProduct({ ...p, is_featured: Number(p.is_featured) === 1 }); 
     setEditImageFile(null); 
     setProductSizes([]);
     setShowEditModal(true); 
@@ -237,6 +293,7 @@ export default function ManageProducts() {
     formData.append('category', editingProduct.category);
     formData.append('gender', editingProduct.gender);
     formData.append('about', editingProduct.about || '');
+    formData.append('is_featured', editingProduct.is_featured ? 1 : 0);
     if (editImageFile) {
       formData.append('image', editImageFile);
     }
@@ -248,7 +305,14 @@ export default function ManageProducts() {
       body: formData
     });
     const data = await res.json();
-    if (data.success) { setShowEditModal(false); setEditImageFile(null); loadData(); }
+    if (data.success) {
+      addToast('Product updated successfully', 'success');
+      setShowEditModal(false);
+      setEditImageFile(null);
+      loadData();
+    } else {
+      addToast(data.message || 'Failed to update product', 'error');
+    }
   }
 
   const openDeleteModal = (product) => {
@@ -347,6 +411,13 @@ export default function ManageProducts() {
   return (
     <div className="mp-page">
 
+      {/* Toast notifications */}
+      <div className="mp-toast-container">
+        {toasts.map((t) => (
+          <Toast key={t.id} message={t.message} type={t.type} onClose={() => removeToast(t.id)} />
+        ))}
+      </div>
+
       {/* --- Promo Codes Table --- */}
       <div className="mp-card">
         <div className="mp-card-header">
@@ -437,6 +508,15 @@ export default function ManageProducts() {
             <option value="All">All Categories</option>
             {filterCategoryOptions.map(c => <option key={c.name} value={c.name}>{c.name}</option>)}
           </select>
+          <select
+            className="mp-filter-select"
+            value={filterFeatured}
+            onChange={(e) => setFilterFeatured(e.target.value)}
+          >
+            <option value="All">All Types</option>
+            <option value="Featured">⭐ Featured Only</option>
+            <option value="Normal">Normal Only</option>
+          </select>
           <span className="mp-products-count">{filteredProducts.length} matched / {products.length} total</span>
         </div>
 
@@ -444,13 +524,14 @@ export default function ManageProducts() {
           <table className="mp-table">
             <thead>
               <tr>
-                <th style={{ width: '25%' }}>Product</th>
-                <th style={{ width: '15%' }}>SKU</th>
-                <th style={{ width: '12%' }}>Price</th>
-                <th style={{ width: '12%' }}>Stock</th>
-                <th style={{ width: '13%' }}>Category</th>
-                <th style={{ width: '10%' }}>Gender</th>
-                <th className="mp-text-center" style={{ width: '13%' }}>Actions</th>
+                <th style={{ width: '23%' }}>Product</th>
+                <th style={{ width: '13%' }}>SKU</th>
+                <th style={{ width: '11%' }}>Price</th>
+                <th style={{ width: '11%' }}>Stock</th>
+                <th style={{ width: '12%' }}>Category</th>
+                <th style={{ width: '9%' }}>Gender</th>
+                <th style={{ width: '11%' }}>Featured</th>
+                <th className="mp-text-center" style={{ width: '10%' }}>Actions</th>
               </tr>
             </thead>
             <tbody>
@@ -468,6 +549,7 @@ export default function ManageProducts() {
                     <td><div className="mp-skeleton mp-skeleton-text" style={{ width: '70px', borderRadius: '12px' }}></div></td>
                     <td><div className="mp-skeleton mp-skeleton-text" style={{ width: '90px', borderRadius: '12px' }}></div></td>
                     <td><div className="mp-skeleton mp-skeleton-text" style={{ width: '60px', borderRadius: '12px' }}></div></td>
+                    <td><div className="mp-skeleton mp-skeleton-text" style={{ width: '80px', borderRadius: '12px' }}></div></td>
                     <td>
                       <div className="mp-actions" style={{ justifyContent: 'center' }}>
                         <div className="mp-skeleton mp-skeleton-text" style={{ width: '28px', height: '28px', borderRadius: '6px' }}></div>
@@ -503,6 +585,21 @@ export default function ManageProducts() {
                         {p.gender ? p.gender.charAt(0).toUpperCase() + p.gender.slice(1).toLowerCase() : ''}
                       </span>
                     </td>
+                    <td>
+                      <button
+                        type="button"
+                        className={`mp-featured-toggle-btn ${p.is_featured === 1 ? 'is-featured' : 'is-normal'}`}
+                        onClick={() => handleToggleFeatured(p.id, p.is_featured)}
+                        title={p.is_featured === 1 ? "Click to set as Standard (Normal) product" : "Click to set as Featured product"}
+                      >
+                        <Star
+                          size={13}
+                          fill={p.is_featured === 1 ? "#f59e0b" : "none"}
+                          color={p.is_featured === 1 ? "#f59e0b" : "#94a3b8"}
+                        />
+                        <span>{p.is_featured === 1 ? "Featured" : "Normal"}</span>
+                      </button>
+                    </td>
                     <td className="mp-text-center">
                       <div className="mp-actions">
                         <button className="mp-icon-btn" onClick={() => handleEditProduct(p)} title="Edit">
@@ -517,7 +614,7 @@ export default function ManageProducts() {
                 ))
               ) : (
                 <tr>
-                  <td colSpan="7" className="mp-empty">No products found matching your filters.</td>
+                  <td colSpan="8" className="mp-empty">No products found matching your filters.</td>
                 </tr>
               )}
             </tbody>
@@ -662,6 +759,36 @@ export default function ManageProducts() {
                     <span style={{ fontSize: '13px', color: '#94a3b8' }}>No sizes added</span>
                   )}
                 </div>
+              </div>
+
+              {/* Featured Product Toggle */}
+              <div className="mp-featured-panel-toggle">
+                <div className="mp-featured-panel-info">
+                  <div className="mp-featured-label-title">
+                    <Star
+                      size={16}
+                      fill={editingProduct.is_featured ? "#f59e0b" : "none"}
+                      color={editingProduct.is_featured ? "#f59e0b" : "#64748b"}
+                    />
+                    <span>Featured Product</span>
+                    {editingProduct.is_featured ? (
+                      <span className="mp-badge-tag-featured">ACTIVE</span>
+                    ) : (
+                      <span className="mp-badge-tag-normal">NORMAL</span>
+                    )}
+                  </div>
+                  <span className="mp-featured-panel-hint">
+                    Highlight this product on the store home page and in the Featured Collection.
+                  </span>
+                </div>
+                <label className="mp-toggle-switch" title="Toggle Featured status">
+                  <input
+                    type="checkbox"
+                    checked={!!editingProduct.is_featured}
+                    onChange={(e) => setEditingProduct({ ...editingProduct, is_featured: e.target.checked })}
+                  />
+                  <span className="mp-toggle-slider"></span>
+                </label>
               </div>
             </div>
             <div className="mp-panel-footer">
