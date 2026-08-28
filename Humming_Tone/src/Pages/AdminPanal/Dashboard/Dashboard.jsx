@@ -4,7 +4,7 @@ import axios from 'axios'
 import {
   AreaChart, Area,
   PieChart, Pie, Cell,
-  XAxis, YAxis, CartesianGrid, Tooltip, Legend,
+  XAxis, YAxis, CartesianGrid, Tooltip,
   ResponsiveContainer,
 } from 'recharts'
 import {
@@ -12,9 +12,7 @@ import {
   CheckCircle,
   AlertCircle,
   TrendingUp,
-  Users,
   ShoppingCart,
-  DollarSign,
   Clock,
   ArrowRight,
 } from 'lucide-react'
@@ -39,11 +37,6 @@ const fmtDate = (d) => {
   return new Date(d).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })
 }
 
-const fmtDay = (iso) => {
-  const d = new Date(iso)
-  return d.toLocaleDateString('en-IN', { day: '2-digit', month: 'short' })
-}
-
 const statusMeta = (s = '') => {
   const k = String(s).toLowerCase()
   if (k.includes('delivered') || k.includes('completed')) return { cls: 'db-badge-green', label: s }
@@ -52,44 +45,11 @@ const statusMeta = (s = '') => {
   return { cls: 'db-badge-gray', label: s || '—' }
 }
 
-const localDateKey = (date) => {
-  const d = new Date(date)
-  if (Number.isNaN(d.getTime())) return ''
-  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
-}
-
-const todayISO = () => localDateKey(new Date())
-
-const isCompletedOrder = (order) => {
-  const status = String(order?.status || '').toLowerCase()
-  return status === 'delivered' || status === 'completed'
-}
-
-const orderAmount = (order) => Number(order?.total_amount || 0)
-
-const lastNDays = (n) =>
-  Array.from({ length: n }, (_, i) => {
-    const d = new Date()
-    d.setDate(d.getDate() - (n - 1 - i))
-    return d.toISOString().split('T')[0]
-  })
-
-// Get last N months (e.g. ['Jan 2026', 'Feb 2026'])
-const lastNMonths = (n) =>
-  Array.from({ length: n }, (_, i) => {
-    const d = new Date()
-    d.setMonth(d.getMonth() - (n - 1 - i))
-    return {
-      iso: `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`,
-      label: d.toLocaleDateString('en-IN', { month: 'short', year: 'numeric' })
-    }
-  })
-
 // ─── SVG Semi-circle Gauge ──────────────────────────────────────────────────
 const SemiGauge = ({ pct = 0, color = '#2563eb', trackColor = '#dbeafe', label, sub, minLabel, maxLabel }) => {
   const cx = 100, cy = 106, r = 76, sw = 13
   const pathLen = Math.PI * r
-  const filled = Math.min(Math.max(pct, 0), 100) / 100 * pathLen
+  const filled = (Math.min(Math.max(pct, 0), 100) / 100) * pathLen
   const arcPath = `M ${cx - r} ${cy} A ${r} ${r} 0 0 1 ${cx + r} ${cy}`
 
   return (
@@ -132,26 +92,61 @@ export default function Dashboard() {
   const navigate = useNavigate()
 
   const [loading, setLoading] = useState(true)
-  const [products, setProducts] = useState([])
-  const [orders, setOrders] = useState([])
   const [revenueView, setRevenueView] = useState('daily')
+  const [dashboardData, setDashboardData] = useState(null)
 
   const fetchData = useCallback(async () => {
     setLoading(true)
     try {
-      const [prodRes, ordersRes] = await Promise.allSettled([
-        axios.get(`${API_BASE_URL}/admin/fetch_products`, getAxiosConfig()),
-        axios.get(`${API_BASE_URL}/api/orders/manage`, getAxiosConfig())
-      ])
-
-      if (prodRes.status === 'fulfilled' && Array.isArray(prodRes.value?.data)) {
-        setProducts(prodRes.value.data)
-      }
-      if (ordersRes.status === 'fulfilled' && Array.isArray(ordersRes.value?.data)) {
-        setOrders(ordersRes.value.data)
+      // 1. Fetch from dedicated backend dashboard analytics endpoint
+      const res = await axios.get(`${API_BASE_URL}/admin/dashboard/analytics`, getAxiosConfig())
+      if (res.data?.success) {
+        setDashboardData(res.data)
       }
     } catch (err) {
-      console.error('Dashboard fetch error:', err)
+      console.error('Dashboard analytics endpoint error, falling back to multi-source:', err)
+      // Fallback: Fetch products and orders
+      try {
+        const [prodRes, ordersRes] = await Promise.allSettled([
+          axios.get(`${API_BASE_URL}/admin/fetch_products`, getAxiosConfig()),
+          axios.get(`${API_BASE_URL}/api/orders/manage`, getAxiosConfig())
+        ])
+        const products = prodRes.status === 'fulfilled' && Array.isArray(prodRes.value?.data) ? prodRes.value.data : []
+        const orders = ordersRes.status === 'fulfilled' && Array.isArray(ordersRes.value?.data) ? ordersRes.value.data : []
+
+        const totalRevenue = orders
+          .filter(o => String(o.status || '').toLowerCase() !== 'cancelled')
+          .reduce((sum, o) => sum + Number(o.total_amount || 0), 0)
+
+        setDashboardData({
+          summary: {
+            totalRevenue,
+            todayRevenue: 0,
+            targetRevenue: 25000,
+            dailyTargetPct: 0,
+            totalOrders: orders.length,
+            completedOrders: orders.filter(o => ['delivered', 'completed'].includes(String(o.status || '').toLowerCase())).length,
+            pendingOrders: orders.filter(o => ['pending', 'confirmed', 'packed'].includes(String(o.status || '').toLowerCase())).length,
+            totalProducts: products.length,
+            activeProducts: products.filter(p => p.is_active || p.status === 'Active').length,
+            outOfStockProducts: products.filter(p => Number(p.stock_quantity || 0) <= 0).length,
+            catalogHealthPct: products.length > 0 ? Math.round((products.filter(p => p.is_active).length / products.length) * 100) : 0,
+            fulfillmentPct: orders.length > 0 ? Math.round((orders.filter(o => ['delivered', 'completed'].includes(String(o.status || '').toLowerCase())).length / orders.length) * 100) : 0,
+            uniqueCustomers: new Set(orders.map(o => o.customer_email).filter(Boolean)).size,
+            retentionPct: 0
+          },
+          charts: {
+            daily: [],
+            monthly: [],
+            inventoryHealth: []
+          },
+          topProducts: [],
+          recentOrders: orders.slice(0, 5),
+          categories: []
+        })
+      } catch (fallbackErr) {
+        console.error('Fallback fetch error:', fallbackErr)
+      }
     } finally {
       setLoading(false)
     }
@@ -161,164 +156,30 @@ export default function Dashboard() {
     fetchData()
   }, [fetchData])
 
-  // ── Derived Values ────────────────────────────────────────────────────────
-  const totalProducts = products.length
-  const activeProducts = products.filter(p => p.is_active || p.status === 'Active').length
-  const outOfStockProducts = products.filter(p => Number(p.stock_quantity || 0) <= 0).length
+  const summary = dashboardData?.summary || {}
+  const charts = dashboardData?.charts || {}
+  const topProducts = dashboardData?.topProducts || []
+  const recentOrders = dashboardData?.recentOrders || []
+  const categoriesData = dashboardData?.categories || []
 
-  const totalOrders = orders.length
-  const completedOrders = orders.filter(o => o.status?.toLowerCase() === 'delivered' || o.status?.toLowerCase() === 'completed').length
-  const pendingOrders = orders.filter(o => o.status?.toLowerCase() === 'pending').length
-  const totalRevenue = orders.filter(isCompletedOrder).reduce((sum, o) => sum + orderAmount(o), 0)
-
-  const uniqueCustomers = useMemo(() => {
-    return new Set(orders.map(o => o.customer_email?.toLowerCase()).filter(Boolean)).size
-  }, [orders])
-
-  // Catalog Utilization Rate (Active Products vs Total Products)
-  const catalogHealthPct = totalProducts > 0 ? Math.round((activeProducts / totalProducts) * 100) : 0
-
-  // Fulfillment SLA rate (Completed vs Total Orders)
-  const fulfillmentPct = totalOrders > 0 ? Math.round((completedOrders / totalOrders) * 100) : 0
-
-  // Today's Sales vs target (₹25,000 target)
-  const todayRevenue = useMemo(() => {
-    const todayStr = todayISO()
-    return orders
-      .filter(o => {
-        const orderDay = localDateKey(o.created_at)
-        return orderDay === todayStr && isCompletedOrder(o)
-      })
-      .reduce((sum, o) => sum + orderAmount(o), 0)
-  }, [orders])
-  const targetRevenue = 25000
-  const dailyTargetPct = Math.round((todayRevenue / targetRevenue) * 100)
-
-  // Customer Retention Rate (Customers with >= 2 orders vs total customers)
-  const retentionPct = useMemo(() => {
-    if (uniqueCustomers === 0) return 0
-    const customerOrderCounts = {}
-    orders.forEach(o => {
-      const email = o.customer_email?.toLowerCase()
-      if (email) customerOrderCounts[email] = (customerOrderCounts[email] || 0) + 1
-    })
-    const repeatCustomers = Object.values(customerOrderCounts).filter(count => count >= 2).length
-    return Math.round((repeatCustomers / uniqueCustomers) * 100)
-  }, [orders, uniqueCustomers])
-
-  // Donut chart inventory health data
-  const donutData = useMemo(() => {
-    const inStock = totalProducts - outOfStockProducts
-    return [
-      { name: 'In Stock', value: inStock, fill: '#10b981' },
-      { name: 'Out of Stock', value: outOfStockProducts, fill: '#ef4444' }
-    ].filter(d => d.value > 0)
-  }, [totalProducts, outOfStockProducts])
-
-  // Top selling products are derived from order line items when available.
-  const topProducts = useMemo(() => {
-    const productMap = {}
-    orders.filter(isCompletedOrder).forEach(order => {
-      ;(order.items || []).forEach(item => {
-        const id = item.product_id || item.id || item.product_name
-        if (!id) return
-        const quantity = Number(item.quantity || 1)
-        const revenue = item.total_price != null
-          ? Number(item.total_price)
-          : Number(item.product_price || item.unit_price || 0) * quantity
-        if (!productMap[id]) productMap[id] = { id, name: item.product_name || `Product #${id}`, sales: 0, revenue: 0 }
-        productMap[id].sales += quantity
-        productMap[id].revenue += revenue
-      })
-    })
-    const productsList = Object.values(productMap).sort((a, b) => b.revenue - a.revenue || b.sales - a.sales).slice(0, 5)
-    return productsList.map((product, index) => ({
-      ...product,
-      id: index + 1,
-      percentage: totalRevenue > 0 ? Math.round((product.revenue / totalRevenue) * 100) : 0
-    }))
-  }, [orders, totalRevenue])
-
-  // Recent Orders List (Latest 5 orders)
-  const recentOrders = useMemo(() => {
-    return [...orders]
-      .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
-      .slice(0, 5)
-  }, [orders])
-
-  // Category Distribution count
-  const categoriesData = useMemo(() => {
-    const map = {}
-    products.forEach(p => {
-      const cat = p.subcategory || 'General'
-      map[cat] = (map[cat] || 0) + 1
-    })
-    const total = products.length || 1
-    return Object.entries(map).map(([label, count]) => ({
-      label: label.toUpperCase(),
-      count,
-      percentage: Math.round((count / total) * 100)
-    })).sort((a, b) => b.count - a.count)
-  }, [products])
-
-  // Revenue Analytics dynamic charts calculations
+  // Dynamic Chart Data based on selected toggle (daily / weekly / monthly)
   const chartData = useMemo(() => {
+    if (!charts) return []
     if (revenueView === 'daily') {
-      const days = lastNDays(7)
-      const map = {}
-      days.forEach(d => { map[d] = 0 })
-      orders.forEach(o => {
-        const orderDay = localDateKey(o.created_at)
-        if (map[orderDay] !== undefined && isCompletedOrder(o)) {
-          map[orderDay] += orderAmount(o)
-        }
-      })
-      return days.map(d => ({
-        label: fmtDay(d),
-        revenue: map[d]
-      }))
+      return charts.daily || []
     } else if (revenueView === 'weekly') {
-      // Group last 28 days into 4 weekly bins
-      const map = { 'Week 4': 0, 'Week 3': 0, 'Week 2': 0, 'Week 1 (Latest)': 0 }
-      const now = new Date()
-      orders.forEach(o => {
-        if (!isCompletedOrder(o)) return
-        const orderDate = new Date(o.created_at)
-        const diffDays = Math.floor((now - orderDate) / (1000 * 60 * 60 * 24))
-        if (diffDays < 0) return
-        if (diffDays <= 7) map['Week 1 (Latest)'] += orderAmount(o)
-        else if (diffDays <= 14) map['Week 2'] += orderAmount(o)
-        else if (diffDays <= 21) map['Week 3'] += orderAmount(o)
-        else if (diffDays <= 28) map['Week 4'] += orderAmount(o)
-      })
-      return Object.entries(map).reverse().map(([label, revenue]) => ({
-        label,
-        revenue
-      }))
+      return charts.weekly || []
     } else {
-      // Monthly view (last 6 months)
-      const months = lastNMonths(6)
-      const map = {}
-      months.forEach(m => { map[m.iso] = 0 })
-      orders.forEach(o => {
-        if (!isCompletedOrder(o)) return
-        const date = new Date(o.created_at)
-        const monthKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`
-        if (map[monthKey] !== undefined) {
-          map[monthKey] += orderAmount(o)
-        }
-      })
-      return months.map(m => ({
-        label: m.label,
-        revenue: map[m.iso]
-      }))
+      return charts.monthly || []
     }
-  }, [orders, revenueView])
+  }, [charts, revenueView])
 
   const selectedPeriodRevenue = useMemo(
     () => chartData.reduce((sum, point) => sum + Number(point.revenue || 0), 0),
     [chartData]
   )
+
+  const donutData = charts.inventoryHealth || []
 
   return (
     <section className="db-page-container">
@@ -332,17 +193,17 @@ export default function Dashboard() {
             <div className="db-skeleton-gauge" />
           ) : (
             <SemiGauge
-              pct={catalogHealthPct}
+              pct={summary.catalogHealthPct || 0}
               color="#10b981"
               trackColor="#d1fae5"
-              label={`${catalogHealthPct}%`}
+              label={`${summary.catalogHealthPct || 0}%`}
               sub="Active Catalog"
               minLabel="Total"
-              maxLabel={`${activeProducts}/${totalProducts}`}
+              maxLabel={`${summary.activeProducts || 0}/${summary.totalProducts || 0}`}
             />
           )}
           <p className="db-gauge-note">
-            <span style={{ color: '#10b981' }}>{fmt(activeProducts)}</span> active products listed
+            <span style={{ color: '#10b981' }}>{fmt(summary.activeProducts)}</span> active products listed
           </p>
         </div>
 
@@ -353,17 +214,17 @@ export default function Dashboard() {
             <div className="db-skeleton-gauge" />
           ) : (
             <SemiGauge
-              pct={fulfillmentPct}
+              pct={summary.fulfillmentPct || 0}
               color="#3b82f6"
               trackColor="#dbeafe"
-              label={`${fulfillmentPct}%`}
+              label={`${summary.fulfillmentPct || 0}%`}
               sub="Delivered Orders"
               minLabel="Pending"
-              maxLabel={`${pendingOrders}`}
+              maxLabel={`${summary.pendingOrders || 0}`}
             />
           )}
           <p className="db-gauge-note">
-            <span style={{ color: '#3b82f6' }}>{fmt(completedOrders)}</span> delivered orders
+            <span style={{ color: '#3b82f6' }}>{fmt(summary.completedOrders)}</span> delivered orders
           </p>
         </div>
 
@@ -374,10 +235,10 @@ export default function Dashboard() {
             <div className="db-skeleton-gauge" />
           ) : (
             <SemiGauge
-              pct={dailyTargetPct}
+              pct={summary.dailyTargetPct || 0}
               color="#f59e0b"
               trackColor="#fef3c7"
-              label={fmtCurrency(todayRevenue)}
+              label={fmtCurrency(summary.todayRevenue)}
               sub="Today's Revenue"
               minLabel="Target"
               maxLabel="₹25k"
@@ -393,13 +254,13 @@ export default function Dashboard() {
             <div className="db-skeleton-gauge" />
           ) : (
             <SemiGauge
-              pct={retentionPct}
+              pct={summary.retentionPct || 0}
               color="#8b5cf6"
               trackColor="#ede9fe"
-              label={`${retentionPct}%`}
+              label={`${summary.retentionPct || 0}%`}
               sub="Repeat Buyers"
               minLabel="Total Users"
-              maxLabel={`${uniqueCustomers}`}
+              maxLabel={`${summary.uniqueCustomers || 0}`}
             />
           )}
           <p className="db-gauge-note">Customers with 2+ orders</p>
@@ -414,7 +275,7 @@ export default function Dashboard() {
           </div>
           <div className="db-stat-content">
             <p className="db-stat-label">TOTAL PRODUCTS</p>
-            <p className="db-stat-value">{loading ? '—' : fmt(totalProducts)}</p>
+            <p className="db-stat-value">{loading ? '—' : fmt(summary.totalProducts)}</p>
           </div>
         </div>
         <div className="db-stat-card db-green">
@@ -423,7 +284,7 @@ export default function Dashboard() {
           </div>
           <div className="db-stat-content">
             <p className="db-stat-label">ACTIVE PRODUCTS</p>
-            <p className="db-stat-value">{loading ? '—' : fmt(activeProducts)}</p>
+            <p className="db-stat-value">{loading ? '—' : fmt(summary.activeProducts)}</p>
           </div>
         </div>
         <div className="db-stat-card db-red">
@@ -432,7 +293,7 @@ export default function Dashboard() {
           </div>
           <div className="db-stat-content">
             <p className="db-stat-label">OUT OF STOCK</p>
-            <p className="db-stat-value">{loading ? '—' : fmt(outOfStockProducts)}</p>
+            <p className="db-stat-value">{loading ? '—' : fmt(summary.outOfStockProducts)}</p>
           </div>
         </div>
         <div className="db-stat-card db-purple">
@@ -441,7 +302,7 @@ export default function Dashboard() {
           </div>
           <div className="db-stat-content">
             <p className="db-stat-label">TOTAL ORDERS</p>
-            <p className="db-stat-value">{loading ? '—' : fmt(totalOrders)}</p>
+            <p className="db-stat-value">{loading ? '—' : fmt(summary.totalOrders)}</p>
           </div>
         </div>
         <div className="db-stat-card db-orange">
@@ -450,7 +311,7 @@ export default function Dashboard() {
           </div>
           <div className="db-stat-content">
             <p className="db-stat-label">PENDING ORDERS</p>
-            <p className="db-stat-value">{loading ? '—' : fmt(pendingOrders)}</p>
+            <p className="db-stat-value">{loading ? '—' : fmt(summary.pendingOrders)}</p>
           </div>
         </div>
       </div>
@@ -462,19 +323,19 @@ export default function Dashboard() {
             <div className="db-title-with-revenue">
               <div className="db-title-section">
                 <h3 className="db-section-title">Revenue Analytics</h3>
-                <p className="db-section-description">Revenue trends over time (delivered orders)</p>
+                <p className="db-section-description">Revenue trends over time (excluding cancelled orders)</p>
               </div>
               <div className="db-total-revenue-display">
                 <TrendingUp size={20} />
                 <div>
                   <span className="db-revenue-display-label">Total Revenue</span>
                   <span className="db-revenue-display-value">
-                    {loading ? '₹—' : fmtCurrency(totalRevenue)}
+                    {loading ? '₹—' : fmtCurrency(summary.totalRevenue)}
                   </span>
                 </div>
               </div>
               <div className="db-period-revenue-display">
-                <span className="db-revenue-display-label">{revenueView} transactions</span>
+                <span className="db-revenue-display-label">{revenueView} revenue</span>
                 <span className="db-period-revenue-value">{loading ? '₹—' : fmtCurrency(selectedPeriodRevenue)}</span>
               </div>
             </div>
@@ -511,7 +372,7 @@ export default function Dashboard() {
               <AreaChart data={chartData} margin={{ top: 10, right: 20, left: 10, bottom: 0 }}>
                 <defs>
                   <linearGradient id="gradRevenue" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#2563eb" stopOpacity={0.2} />
+                    <stop offset="5%" stopColor="#2563eb" stopOpacity={0.25} />
                     <stop offset="95%" stopColor="#2563eb" stopOpacity={0.0} />
                   </linearGradient>
                 </defs>
@@ -541,7 +402,7 @@ export default function Dashboard() {
                 <ResponsiveContainer width="100%" height={160}>
                   <PieChart>
                     <Pie
-                      data={donutData.length > 0 ? donutData : [{ name: 'No Data', value: 1, fill: '#e2e8f0' }]}
+                      data={donutData.length > 0 ? donutData : [{ name: 'In Stock', value: summary.inStockProducts || summary.totalProducts || 1, fill: '#10b981' }]}
                       cx="50%" cy="50%"
                       innerRadius={45} outerRadius={65}
                       paddingAngle={3}
@@ -556,7 +417,7 @@ export default function Dashboard() {
                   </PieChart>
                 </ResponsiveContainer>
                 <div className="db-donut-overlay">
-                  <span className="db-donut-val">{loading ? '—' : `${totalProducts}`}</span>
+                  <span className="db-donut-val">{loading ? '—' : `${summary.totalProducts || 0}`}</span>
                   <span className="db-donut-sub">Products</span>
                 </div>
               </div>
@@ -564,12 +425,12 @@ export default function Dashboard() {
                 <div className="db-legend-row">
                   <span className="db-legend-dot" style={{ background: '#10b981' }} />
                   <span className="db-legend-label">In Stock</span>
-                  <span className="db-legend-count">{fmt(totalProducts - outOfStockProducts)}</span>
+                  <span className="db-legend-count">{fmt(summary.inStockProducts !== undefined ? summary.inStockProducts : (summary.totalProducts - (summary.outOfStockProducts || 0)))}</span>
                 </div>
                 <div className="db-legend-row">
                   <span className="db-legend-dot" style={{ background: '#ef4444' }} />
                   <span className="db-legend-label">Out of Stock</span>
-                  <span className="db-legend-count">{fmt(outOfStockProducts)}</span>
+                  <span className="db-legend-count">{fmt(summary.outOfStockProducts || 0)}</span>
                 </div>
               </div>
             </div>
@@ -620,18 +481,22 @@ export default function Dashboard() {
               <div className="db-skeleton-rows">
                 {[1, 2, 3, 4].map(i => <div key={i} className="db-skeleton-row" style={{ height: '48px', margin: '8px 0' }} />)}
               </div>
-            ) : topProducts.map((product) => (
-              <div key={product.id} className="db-product-item">
-                <div className="db-product-rank">{product.id}</div>
-                <div className="db-product-info">
-                  <h4 className="db-product-name">{product.name}</h4>
-                  <p className="db-product-sales">{product.sales} sales • {product.percentage}% revenue share</p>
+            ) : topProducts.length === 0 ? (
+              <div className="db-empty-state">No sales recorded yet.</div>
+            ) : (
+              topProducts.map((product) => (
+                <div key={product.id} className="db-product-item">
+                  <div className="db-product-rank">{product.id}</div>
+                  <div className="db-product-info">
+                    <h4 className="db-product-name">{product.name}</h4>
+                    <p className="db-product-sales">{product.sales} sales • {product.percentage}% revenue share</p>
+                  </div>
+                  <div className="db-product-revenue">
+                    <p className="db-revenue-value">{fmtCurrency(product.revenue)}</p>
+                  </div>
                 </div>
-                <div className="db-product-revenue">
-                  <p className="db-revenue-value">{fmtCurrency(product.revenue)}</p>
-                </div>
-              </div>
-            ))}
+              ))
+            )}
           </div>
         </div>
 

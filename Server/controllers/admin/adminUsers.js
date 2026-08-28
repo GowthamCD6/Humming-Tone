@@ -102,3 +102,44 @@ exports.changePassword = async (req, res, next) => {
     next(error);
   }
 };
+
+exports.updateUserPassword = async (req, res, next) => {
+  const { id } = req.params;
+  const { newPassword, currentPassword } = req.body;
+  const currentAdminId = req.adminUser.id;
+
+  if (!newPassword || newPassword.length < 6) {
+    return next(createError.BadRequest('New password must be at least 6 characters long'));
+  }
+
+  try {
+    if (parseInt(id) === parseInt(currentAdminId) && currentPassword) {
+      db.query('SELECT password_hash FROM admin_users WHERE id = ?', [id], async (err, results) => {
+        if (err) return next(err);
+        if (results.length === 0) return next(createError.NotFound('Admin user not found'));
+
+        const isMatch = await bcrypt.compare(currentPassword, results[0].password_hash);
+        if (!isMatch) {
+          return next(createError.Unauthorized('Incorrect current password'));
+        }
+
+        const new_password_hash = await bcrypt.hash(newPassword, 10);
+        db.query('UPDATE admin_users SET password_hash = ? WHERE id = ?', [new_password_hash, id], (updateErr) => {
+          if (updateErr) return next(updateErr);
+          return res.status(200).json({ success: true, message: 'Password updated successfully' });
+        });
+      });
+    } else {
+      const new_password_hash = await bcrypt.hash(newPassword, 10);
+      db.query('UPDATE admin_users SET password_hash = ? WHERE id = ?', [new_password_hash, id], (err, result) => {
+        if (err) return next(err);
+        if (result.affectedRows === 0) {
+          return next(createError.NotFound('Admin user not found'));
+        }
+        res.status(200).json({ success: true, message: 'Password updated successfully' });
+      });
+    }
+  } catch (error) {
+    next(error);
+  }
+};

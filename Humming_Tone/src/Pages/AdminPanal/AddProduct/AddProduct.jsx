@@ -1,8 +1,17 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import './AddProduct.css';
 import AddPhotoAlternateIcon from '@mui/icons-material/AddPhotoAlternate';
 import CloseIcon from '@mui/icons-material/Close';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
+import Inventory2Icon from '@mui/icons-material/Inventory2';
+import CategoryIcon from '@mui/icons-material/Category';
+import TuneIcon from '@mui/icons-material/Tune';
+import LayersIcon from '@mui/icons-material/Layers';
+import CloudUploadIcon from '@mui/icons-material/CloudUpload';
+import RestartAltIcon from '@mui/icons-material/RestartAlt';
+import VisibilityIcon from '@mui/icons-material/Visibility';
+import AddIcon from '@mui/icons-material/Add';
+import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
 import { API_BASE_URL } from '../../../utils/apiConfig';
 
 const AddProductAdmin = () => {
@@ -25,16 +34,17 @@ const AddProductAdmin = () => {
   const [weight, setWeight] = useState('');
 
   const [errors, setErrors] = useState({});
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
 
-  // Fetch from backend
+  // Dynamic Options
   const [genderOptions, setGenderOptions] = useState([]);
   const [genderCategoryMap, setGenderCategoryMap] = useState({});
   const [categoryOptions, setCategoryOptions] = useState([]);
   const [brandName, setBrandName] = useState('Humming Tone');
 
-  const colorOptions = ['Red', 'Blue', 'Green', 'Yellow', 'Black', 'White', 'Pink', 'Purple', 'Orange', 'Brown', 'Gray', 'Multicolor'];
-  const materialOptions = ['Cotton', 'Polyester', 'Wool', 'Silk', 'Denim', 'Leather', 'Linen', 'Nylon', 'Rayon', 'Velvet', 'Mixed'];
+  const colorOptions = ['Black', 'White', 'Navy Blue', 'Beige', 'Red', 'Green', 'Yellow', 'Pink', 'Purple', 'Orange', 'Brown', 'Gray', 'Olive', 'Maroon', 'Multicolor'];
+  const materialOptions = ['100% Premium Cotton', 'Organic Cotton', 'Polyester Blend', 'French Terry Cotton', 'Fleece Cotton', 'Wool Blend', 'Silk Blend', 'Denim', 'Linen Blend', 'Rayon', 'Velvet'];
 
   // Fetch genders and categories from backend
   useEffect(() => {
@@ -50,6 +60,7 @@ const AddProductAdmin = () => {
             setGenderOptions(data.genders);
             setGenderCategoryMap(data.genderCategoryMap || {});
             setBrandName(data.brandName || 'Humming Tone');
+            if (!brand) setBrand(data.brandName || 'Humming Tone');
           }
         }
       } catch (error) {
@@ -103,10 +114,20 @@ const AddProductAdmin = () => {
     fetchCategoriesFromDb();
   }, [gender, genderCategoryMap]);
 
+  // Live Summary Calculations
+  const summaryStats = useMemo(() => {
+    const totalStock = variants.reduce((sum, v) => sum + (parseInt(v.stock, 10) || 0), 0);
+    const validPrices = variants.map(v => parseFloat(v.price)).filter(p => !isNaN(p) && p > 0);
+    const minPrice = validPrices.length > 0 ? Math.min(...validPrices) : 0;
+    const maxPrice = validPrices.length > 0 ? Math.max(...validPrices) : 0;
+    const uploadedImagesCount = images.filter(Boolean).length;
+    return { totalStock, minPrice, maxPrice, uploadedImagesCount };
+  }, [variants, images]);
+
   const validateForm = () => {
     const newErrors = {};
-    if (!productName.trim()) newErrors.productName = 'Product name is required';
-    if (!about.trim()) newErrors.about = 'Product description is required';
+    if (!productName.trim()) newErrors.productName = 'Product title is required';
+    if (!about.trim()) newErrors.about = 'Description is required';
     if (!category) newErrors.category = 'Category is required';
     if (!gender) newErrors.gender = 'Gender is required';
     if (!brand) newErrors.brand = 'Brand is required';
@@ -114,13 +135,15 @@ const AddProductAdmin = () => {
     if (!material.trim()) newErrors.material = 'Material is required';
     if (!sku.trim()) newErrors.sku = 'SKU is required';
     if (!dimensions.trim()) newErrors.dimensions = 'Dimensions are required';
-    if (!images[0]) newErrors.mainImage = 'Main product image is required';
+    if (!images[0]) newErrors.mainImage = 'Primary product photo is required';
+
     variants.forEach((v, i) => {
-      if (!v.size.trim()) newErrors[`variant_${i}_size`] = 'Size is required';
-      if (!v.price || parseFloat(v.price) <= 0) newErrors[`variant_${i}_price`] = 'Valid price is required';
-      if (!v.originalPrice || parseFloat(v.originalPrice) <= 0) newErrors[`variant_${i}_originalPrice`] = 'Valid original price is required';
-      if (!v.stock || parseInt(v.stock) < 0) newErrors[`variant_${i}_stock`] = 'Valid stock quantity is required';
+      if (!v.size.trim()) newErrors[`variant_${i}_size`] = 'Size required';
+      if (!v.price || parseFloat(v.price) <= 0) newErrors[`variant_${i}_price`] = 'Valid price required';
+      if (!v.originalPrice || parseFloat(v.originalPrice) <= 0) newErrors[`variant_${i}_originalPrice`] = 'Valid MRP required';
+      if (!v.stock || parseInt(v.stock, 10) < 0) newErrors[`variant_${i}_stock`] = 'Valid stock required';
     });
+
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -135,8 +158,16 @@ const AddProductAdmin = () => {
     }
   };
 
-  const addVariant = () => setVariants([...variants, { size: '', price: '', originalPrice: '', stock: '' }]);
-  const removeVariant = (i) => setVariants(variants.filter((_, idx) => idx !== i));
+  const addVariant = () => {
+    setVariants([...variants, { size: '', price: '', originalPrice: '', stock: '' }]);
+  };
+
+  const removeVariant = (i) => {
+    if (variants.length > 1) {
+      setVariants(variants.filter((_, idx) => idx !== i));
+    }
+  };
+
   const updateVariant = (i, field, val) => {
     const newVariants = [...variants];
     newVariants[i][field] = val;
@@ -162,278 +193,609 @@ const AddProductAdmin = () => {
     setImages(newImages);
   };
 
-  const handleSubmit = () => {
-    if (!validateForm()) return;
+  const handleSubmit = async () => {
+    if (!validateForm()) {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      return;
+    }
 
-    const formData = new FormData();
+    setIsSubmitting(true);
 
-    formData.append("name", productName);
-    formData.append("about", about);
-    formData.append("sku", sku);
-    formData.append("category", category); // Category now directly holds the database slug
-    formData.append("subcategory", subcategory);
-    formData.append("brand", brand);
-    formData.append("color", color);
-    formData.append("material", material);
-    formData.append("care_instructions", careInstructions);
-    formData.append("gender", gender.toLowerCase());
-    formData.append("age_range", ageRange);
-    formData.append("weight", weight);
-    formData.append("dimensions", dimensions);
-    formData.append("is_featured", featuredProduct ? 1 : 0);
-    formData.append("is_active", active ? 1 : 0);
+    try {
+      const formData = new FormData();
+      formData.append("name", productName);
+      formData.append("about", about);
+      formData.append("sku", sku);
+      formData.append("category", category);
+      formData.append("subcategory", subcategory);
+      formData.append("brand", brand);
+      formData.append("color", color);
+      formData.append("material", material);
+      formData.append("care_instructions", careInstructions);
+      formData.append("gender", gender.toLowerCase());
+      formData.append("age_range", ageRange);
+      formData.append("weight", weight);
+      formData.append("dimensions", dimensions);
+      formData.append("is_featured", featuredProduct ? 1 : 0);
+      formData.append("is_active", active ? 1 : 0);
 
-    const formattedVariants = variants.map(v => ({
-      size: v.size,
-      price: Number(v.price),
-      original_price: Number(v.originalPrice),
-      stock_quantity: Number(v.stock)
-    }));
-    formData.append("variants", JSON.stringify(formattedVariants));
+      const formattedVariants = variants.map(v => ({
+        size: v.size,
+        price: Number(v.price),
+        original_price: Number(v.originalPrice),
+        stock_quantity: Number(v.stock)
+      }));
+      formData.append("variants", JSON.stringify(formattedVariants));
 
-    images.forEach(img => { if (img?.file) formData.append("images", img.file); });
+      images.forEach(img => {
+        if (img?.file) formData.append("images", img.file);
+      });
 
-    const token = localStorage.getItem('adminToken');
-    fetch(`${API_BASE_URL}/admin/add_product`, {
-      method: "POST",
-      headers: token ? { 'Authorization': `Bearer ${token}` } : {},
-      body: formData
-    })
-    .then(async res => {
+      const token = localStorage.getItem('adminToken');
+      const res = await fetch(`${API_BASE_URL}/admin/add_product`, {
+        method: "POST",
+        headers: token ? { 'Authorization': `Bearer ${token}` } : {},
+        body: formData
+      });
+
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error?.message || "Database Error");
-      return data;
-    })
-    .then(() => {
+      if (!res.ok) throw new Error(data.error?.message || data.message || "Database Error");
+
       setShowSuccessModal(true);
-      setTimeout(() => resetForm(), 2500);
-    })
-    .catch(err => alert("Error: " + err.message));
+      setTimeout(() => {
+        resetForm();
+      }, 2500);
+
+    } catch (err) {
+      alert("Error: " + err.message);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const resetForm = () => {
-    setProductName(''); setAbout(''); setVariants([{ size: '', price: '', originalPrice: '', stock: '' }]);
-    setCategory(''); setSku(''); setBrand(''); setGender(''); setDimensions(''); setColor('');
-    setMaterial(''); setFeaturedProduct(false); setActive(true); setImages([null, null, null, null, null]);
-    setSubcategory(''); setCareInstructions(''); setAgeRange(''); setWeight(''); setErrors({});
+    setProductName('');
+    setAbout('');
+    setVariants([{ size: '', price: '', originalPrice: '', stock: '' }]);
+    setCategory('');
+    setSku('');
+    setBrand(brandName || 'Humming Tone');
+    setGender('');
+    setDimensions('');
+    setColor('');
+    setMaterial('');
+    setFeaturedProduct(false);
+    setActive(true);
+    setImages([null, null, null, null, null]);
+    setSubcategory('');
+    setCareInstructions('');
+    setAgeRange('');
+    setWeight('');
+    setErrors({});
   };
 
   return (
-    <div className="admin-add-product-page">
-      <div className="add-product-container">
+    <div className="ap-container">
 
-      <div className="product-form">
-        <section className="form-section">
-          <h2 className="section-title">Basic Information</h2>
-          <div className="form-grid">
-            <div className="form-group full-width">
-              <label htmlFor="productName">PRODUCT NAME</label>
-              <input type="text" id="productName" placeholder="Enter product name" value={productName} onChange={(e) => { setProductName(e.target.value); clearFieldError('productName'); }} className={errors.productName ? 'input-error' : ''} />
-              {errors.productName && <div className="field-error">{errors.productName}</div>}
+      {/* ===== 2-COLUMN MINIMAL LAYOUT ===== */}
+      <div className="ap-layout-grid">
+
+        {/* LEFT COLUMN: Main Form (62%) */}
+        <div className="ap-main-col">
+
+          {/* CARD 1: Basic Information */}
+          <div className="ap-card">
+            <div className="ap-card-header">
+              <div className="ap-card-title-wrap">
+                <span className="ap-card-icon ap-icon-blue"><Inventory2Icon fontSize="inherit" /></span>
+                <h3 className="ap-card-title">Basic Information</h3>
+              </div>
             </div>
-            <div className="form-group full-width">
-              <label htmlFor="about">PRODUCT DESCRIPTION</label>
-              <textarea id="about" placeholder="Enter detailed product description" value={about} onChange={(e) => { setAbout(e.target.value); clearFieldError('about'); }} rows="5" className={errors.about ? 'input-error' : ''} />
-              {errors.about && <div className="field-error">{errors.about}</div>}
+
+            <div className="ap-card-body">
+              <div className="ap-form-grid">
+                <div className="ap-form-group full-width">
+                  <label htmlFor="productName">PRODUCT TITLE <span className="req">*</span></label>
+                  <input
+                    type="text"
+                    id="productName"
+                    placeholder="e.g. Oversized Heavyweight Graphic T-Shirt"
+                    value={productName}
+                    onChange={(e) => { setProductName(e.target.value); clearFieldError('productName'); }}
+                    className={`ap-input ${errors.productName ? 'input-error' : ''}`}
+                  />
+                  {errors.productName && <span className="ap-field-error">{errors.productName}</span>}
+                </div>
+
+                <div className="ap-form-group">
+                  <label htmlFor="sku">SKU <span className="req">*</span></label>
+                  <input
+                    type="text"
+                    id="sku"
+                    placeholder="e.g. HT-OST-BLK-001"
+                    value={sku}
+                    onChange={(e) => { setSku(e.target.value.toUpperCase()); clearFieldError('sku'); }}
+                    className={`ap-input font-mono ${errors.sku ? 'input-error' : ''}`}
+                  />
+                  {errors.sku && <span className="ap-field-error">{errors.sku}</span>}
+                </div>
+
+                <div className="ap-form-group">
+                  <label htmlFor="brand">BRAND <span className="req">*</span></label>
+                  <input
+                    type="text"
+                    id="brand"
+                    list="brand-options"
+                    placeholder="Brand name"
+                    value={brand}
+                    onChange={(e) => { setBrand(e.target.value); clearFieldError('brand'); }}
+                    className={`ap-input ${errors.brand ? 'input-error' : ''}`}
+                  />
+                  <datalist id="brand-options">
+                    <option value={brandName} />
+                    <option value="Humming Tone" />
+                  </datalist>
+                  {errors.brand && <span className="ap-field-error">{errors.brand}</span>}
+                </div>
+
+                <div className="ap-form-group full-width">
+                  <label htmlFor="about">DESCRIPTION <span className="req">*</span></label>
+                  <textarea
+                    id="about"
+                    placeholder="Product details, fabric, fit, and styling tips..."
+                    value={about}
+                    onChange={(e) => { setAbout(e.target.value); clearFieldError('about'); }}
+                    rows="3"
+                    className={`ap-textarea ${errors.about ? 'input-error' : ''}`}
+                  />
+                  {errors.about && <span className="ap-field-error">{errors.about}</span>}
+                </div>
+              </div>
             </div>
           </div>
-        </section>
 
-        <section className="form-section">
-          <h2 className="section-title">Category & Details</h2>
-          <div className="form-grid">
-            <div className="form-group">
-              <label htmlFor="gender">GENDER</label>
-              <select id="gender" value={gender} onChange={(e) => { setGender(e.target.value); clearFieldError('gender'); }} className={errors.gender ? 'input-error' : ''}>
-                <option value="">Select Gender</option>
-                {genderOptions.map(g => <option key={g} value={g}>{g}</option>)}
-              </select>
-              {errors.gender && <div className="field-error">{errors.gender}</div>}
+          {/* CARD 2: Pricing & Variants */}
+          <div className="ap-card">
+            <div className="ap-card-header">
+              <div className="ap-card-title-wrap">
+                <span className="ap-card-icon ap-icon-emerald"><TuneIcon fontSize="inherit" /></span>
+                <h3 className="ap-card-title">Pricing & Variants</h3>
+              </div>
+              <button type="button" className="ap-btn ap-btn-sm ap-btn-outline" onClick={addVariant}>
+                <AddIcon fontSize="small" /> Add Variant
+              </button>
             </div>
-            <div className="form-group">
-              <label htmlFor="ageRange">AGE RANGE</label>
-              <input type="text" id="ageRange" placeholder="e.g. 2-4 years, 6-8 years" value={ageRange} onChange={(e) => setAgeRange(e.target.value)} />
-            </div>
-            <div className="form-group">
-              <label htmlFor="subcategory">SUBCATEGORY</label>
-              <input type="text" id="subcategory" placeholder="e.g. Full Sleeve, Half Sleeve" value={subcategory} onChange={(e) => setSubcategory(e.target.value)} />
-            </div>
-            <div className="form-group">
-              <label htmlFor="sku">SKU</label>
-              <input type="text" id="sku" placeholder="Enter SKU" value={sku} onChange={(e) => { setSku(e.target.value); clearFieldError('sku'); }} className={errors.sku ? 'input-error' : ''} />
-              {errors.sku && <div className="field-error">{errors.sku}</div>}
-            </div>
-            <div className="form-group full-width">
-              <label htmlFor="careInstructions">CARE INSTRUCTIONS</label>
-              <textarea id="careInstructions" placeholder="Wash cold, do not bleach" value={careInstructions} onChange={(e) => setCareInstructions(e.target.value)} rows="3" />
-            </div>
-            <div className="form-group">
-              <label htmlFor="brand">BRAND</label>
-              <input 
-                type="text" 
-                id="brand" 
-                list="brand-options" 
-                placeholder="Enter or select brand" 
-                value={brand} 
-                onChange={(e) => { setBrand(e.target.value); clearFieldError('brand'); }} 
-                className={errors.brand ? 'input-error' : ''} 
-              />
-              <datalist id="brand-options">
-                <option value={brandName} />
-                <option value="Other" />
-              </datalist>
-              {errors.brand && <div className="field-error">{errors.brand}</div>}
-            </div>
-            <div className="form-group">
-              <label htmlFor="category">CATEGORY</label>
-              <select
-                id="category"
-                value={category}
-                onChange={(e) => { setCategory(e.target.value); clearFieldError('category'); }}
-                className={errors.category ? 'input-error' : ''}
-              >
-                <option value="">Select Category</option>
-                {categoryOptions.map((c, idx) => {
-                  const label = typeof c === 'object' ? (c.name || c.slug || String(idx)) : String(c);
+
+            <div className="ap-card-body">
+              <div className="ap-variants-container">
+                {variants.map((variant, index) => {
+                  const discountPercent = variant.originalPrice && variant.price && parseFloat(variant.originalPrice) > parseFloat(variant.price)
+                    ? Math.round(((parseFloat(variant.originalPrice) - parseFloat(variant.price)) / parseFloat(variant.originalPrice)) * 100)
+                    : null;
+
                   return (
-                    <option key={idx} value={label}>
-                      {label}
-                    </option>
+                    <div key={index} className="ap-variant-card">
+                      <div className="ap-variant-top">
+                        <div className="ap-variant-tag">
+                          <span className="ap-variant-idx">#{index + 1}</span>
+                          <strong>Variant {variant.size ? `(${variant.size})` : ''}</strong>
+                          {discountPercent && <span className="ap-discount-pill">{discountPercent}% OFF</span>}
+                        </div>
+                        {variants.length > 1 && (
+                          <button
+                            type="button"
+                            className="ap-variant-del-btn"
+                            onClick={() => removeVariant(index)}
+                            title="Remove Variant"
+                          >
+                            <DeleteOutlineIcon fontSize="small" />
+                          </button>
+                        )}
+                      </div>
+
+                      <div className="ap-variant-grid">
+                        <div className="ap-form-group">
+                          <label>SIZE <span className="req">*</span></label>
+                          <input
+                            type="text"
+                            placeholder="S, M, L, XL"
+                            value={variant.size}
+                            onChange={(e) => { updateVariant(index, 'size', e.target.value.toUpperCase()); clearFieldError(`variant_${index}_size`); }}
+                            className={`ap-input ${errors[`variant_${index}_size`] ? 'input-error' : ''}`}
+                          />
+                        </div>
+
+                        <div className="ap-form-group">
+                          <label>PRICE (₹) <span className="req">*</span></label>
+                          <input
+                            type="number"
+                            placeholder="499"
+                            value={variant.price}
+                            onChange={(e) => { updateVariant(index, 'price', e.target.value); clearFieldError(`variant_${index}_price`); }}
+                            className={`ap-input ${errors[`variant_${index}_price`] ? 'input-error' : ''}`}
+                          />
+                        </div>
+
+                        <div className="ap-form-group">
+                          <label>MRP (₹) <span className="req">*</span></label>
+                          <input
+                            type="number"
+                            placeholder="999"
+                            value={variant.originalPrice}
+                            onChange={(e) => { updateVariant(index, 'originalPrice', e.target.value); clearFieldError(`variant_${index}_originalPrice`); }}
+                            className={`ap-input ${errors[`variant_${index}_originalPrice`] ? 'input-error' : ''}`}
+                          />
+                        </div>
+
+                        <div className="ap-form-group">
+                          <label>STOCK <span className="req">*</span></label>
+                          <input
+                            type="number"
+                            placeholder="50"
+                            value={variant.stock}
+                            onChange={(e) => { updateVariant(index, 'stock', e.target.value); clearFieldError(`variant_${index}_stock`); }}
+                            className={`ap-input ${errors[`variant_${index}_stock`] ? 'input-error' : ''}`}
+                          />
+                        </div>
+                      </div>
+                    </div>
                   );
                 })}
-              </select>
-              {errors.category && <div className="field-error">{errors.category}</div>}
-            </div>
-            <div className="form-group">
-              <label htmlFor="color">COLOR</label>
-              <input type="text" id="color" list="color-options" placeholder="Select or type color" value={color} onChange={(e) => { setColor(e.target.value); clearFieldError('color'); }} className={errors.color ? 'input-error' : ''} />
-              <datalist id="color-options">{colorOptions.map(c => <option key={c} value={c} />)}</datalist>
-              {errors.color && <div className="field-error">{errors.color}</div>}
-            </div>
-            <div className="form-group">
-              <label htmlFor="material">MATERIAL</label>
-              <input type="text" id="material" list="material-options" placeholder="Select or type material" value={material} onChange={(e) => { setMaterial(e.target.value); clearFieldError('material'); }} className={errors.material ? 'input-error' : ''} />
-              <datalist id="material-options">{materialOptions.map(m => <option key={m} value={m} />)}</datalist>
-              {errors.material && <div className="field-error">{errors.material}</div>}
-            </div>
-            <div className="form-group full-width">
-              <label htmlFor="dimensions">DIMENSIONS</label>
-              <input type="text" id="dimensions" placeholder="Length x Width x Height" value={dimensions} onChange={(e) => { setDimensions(e.target.value); clearFieldError('dimensions'); }} className={errors.dimensions ? 'input-error' : ''} />
-              {errors.dimensions && <div className="field-error">{errors.dimensions}</div>}
-            </div>
-            <div className="form-group">
-              <label htmlFor="weight">WEIGHT (kg)</label>
-              <input type="number" step="0.01" id="weight" placeholder="e.g. 0.75" value={weight} onChange={(e) => setWeight(e.target.value)} />
+              </div>
             </div>
           </div>
-        </section>
 
-        <section className="form-section">
-          <h2 className="section-title">Product Variants</h2>
-          {variants.map((variant, index) => (
-            <div key={index} className="variant-card">
-              <div className="variant-header">
-                <span className="variant-number">Variant {index + 1}</span>
-                {variants.length > 1 && <button type="button" className="btn-remove-icon" onClick={() => removeVariant(index)}>×</button>}
+          {/* CARD 3: Category & Attributes */}
+          <div className="ap-card">
+            <div className="ap-card-header">
+              <div className="ap-card-title-wrap">
+                <span className="ap-card-icon ap-icon-purple"><CategoryIcon fontSize="inherit" /></span>
+                <h3 className="ap-card-title">Category & Attributes</h3>
               </div>
-              <div className="variant-fields">
-                <div className="form-group">
-                  <label>SIZE</label>
-                  <input type="text" placeholder="S, M, L, XL" value={variant.size} onChange={(e) => { updateVariant(index, 'size', e.target.value); clearFieldError(`variant_${index}_size`); }} className={errors[`variant_${index}_size`] ? 'input-error' : ''} />
+            </div>
+
+            <div className="ap-card-body">
+              <div className="ap-form-grid">
+                <div className="ap-form-group">
+                  <label htmlFor="gender">GENDER <span className="req">*</span></label>
+                  <select
+                    id="gender"
+                    value={gender}
+                    onChange={(e) => { setGender(e.target.value); clearFieldError('gender'); }}
+                    className={`ap-select ${errors.gender ? 'input-error' : ''}`}
+                  >
+                    <option value="">Select Gender</option>
+                    {genderOptions.map(g => (
+                      <option key={g} value={g}>{g}</option>
+                    ))}
+                  </select>
+                  {errors.gender && <span className="ap-field-error">{errors.gender}</span>}
                 </div>
-                <div className="form-group">
-                  <label>PRICE (₹)</label>
-                  <input type="number" placeholder="0.00" value={variant.price} onChange={(e) => { updateVariant(index, 'price', e.target.value); clearFieldError(`variant_${index}_price`); }} className={errors[`variant_${index}_price`] ? 'input-error' : ''} />
+
+                <div className="ap-form-group">
+                  <label htmlFor="category">CATEGORY <span className="req">*</span></label>
+                  <select
+                    id="category"
+                    value={category}
+                    onChange={(e) => { setCategory(e.target.value); clearFieldError('category'); }}
+                    className={`ap-select ${errors.category ? 'input-error' : ''}`}
+                  >
+                    <option value="">Select Category</option>
+                    {categoryOptions.map((c, idx) => {
+                      const label = typeof c === 'object' ? (c.name || c.slug || String(idx)) : String(c);
+                      return (
+                        <option key={idx} value={label}>{label}</option>
+                      );
+                    })}
+                  </select>
+                  {errors.category && <span className="ap-field-error">{errors.category}</span>}
                 </div>
-                <div className="form-group">
-                  <label>ORIGINAL PRICE (₹)</label>
-                  <input type="number" placeholder="0.00" value={variant.originalPrice} onChange={(e) => { updateVariant(index, 'originalPrice', e.target.value); clearFieldError(`variant_${index}_originalPrice`); }} className={errors[`variant_${index}_originalPrice`] ? 'input-error' : ''} />
+
+                <div className="ap-form-group">
+                  <label htmlFor="subcategory">SUBCATEGORY</label>
+                  <input
+                    type="text"
+                    id="subcategory"
+                    placeholder="e.g. Drop Shoulder"
+                    value={subcategory}
+                    onChange={(e) => setSubcategory(e.target.value)}
+                    className="ap-input"
+                  />
                 </div>
-                <div className="form-group">
-                  <label>STOCK</label>
-                  <input type="number" placeholder="0" value={variant.stock} onChange={(e) => { updateVariant(index, 'stock', e.target.value); clearFieldError(`variant_${index}_stock`); }} className={errors[`variant_${index}_stock`] ? 'input-error' : ''} />
+
+                <div className="ap-form-group">
+                  <label htmlFor="ageRange">AGE RANGE</label>
+                  <input
+                    type="text"
+                    id="ageRange"
+                    placeholder="e.g. Adults, 18-35"
+                    value={ageRange}
+                    onChange={(e) => setAgeRange(e.target.value)}
+                    className="ap-input"
+                  />
+                </div>
+
+                <div className="ap-form-group">
+                  <label htmlFor="color">COLOR <span className="req">*</span></label>
+                  <input
+                    type="text"
+                    id="color"
+                    list="color-options"
+                    placeholder="Color name"
+                    value={color}
+                    onChange={(e) => { setColor(e.target.value); clearFieldError('color'); }}
+                    className={`ap-input ${errors.color ? 'input-error' : ''}`}
+                  />
+                  <datalist id="color-options">
+                    {colorOptions.map(c => <option key={c} value={c} />)}
+                  </datalist>
+                  {errors.color && <span className="ap-field-error">{errors.color}</span>}
+                </div>
+
+                <div className="ap-form-group">
+                  <label htmlFor="material">MATERIAL <span className="req">*</span></label>
+                  <input
+                    type="text"
+                    id="material"
+                    list="material-options"
+                    placeholder="e.g. 100% Cotton"
+                    value={material}
+                    onChange={(e) => { setMaterial(e.target.value); clearFieldError('material'); }}
+                    className={`ap-input ${errors.material ? 'input-error' : ''}`}
+                  />
+                  <datalist id="material-options">
+                    {materialOptions.map(m => <option key={m} value={m} />)}
+                  </datalist>
+                  {errors.material && <span className="ap-field-error">{errors.material}</span>}
+                </div>
+
+                <div className="ap-form-group">
+                  <label htmlFor="dimensions">DIMENSIONS <span className="req">*</span></label>
+                  <input
+                    type="text"
+                    id="dimensions"
+                    placeholder="L x W x H"
+                    value={dimensions}
+                    onChange={(e) => { setDimensions(e.target.value); clearFieldError('dimensions'); }}
+                    className={`ap-input ${errors.dimensions ? 'input-error' : ''}`}
+                  />
+                  {errors.dimensions && <span className="ap-field-error">{errors.dimensions}</span>}
+                </div>
+
+                <div className="ap-form-group">
+                  <label htmlFor="weight">WEIGHT (KG)</label>
+                  <input
+                    type="number"
+                    step="0.01"
+                    id="weight"
+                    placeholder="0.35"
+                    value={weight}
+                    onChange={(e) => setWeight(e.target.value)}
+                    className="ap-input"
+                  />
+                </div>
+
+                <div className="ap-form-group full-width">
+                  <label htmlFor="careInstructions">CARE INSTRUCTIONS</label>
+                  <textarea
+                    id="careInstructions"
+                    placeholder="Machine wash cold, do not bleach..."
+                    value={careInstructions}
+                    onChange={(e) => setCareInstructions(e.target.value)}
+                    rows="2"
+                    className="ap-textarea"
+                  />
                 </div>
               </div>
             </div>
-          ))}
-          <button type="button" className="btn-add-variant" onClick={addVariant}>+ ADD VARIANT</button>
-        </section>
+          </div>
 
-        <section className="form-section">
-          <h2 className="section-title">Product Images</h2>
-          <p className="section-subtitle">Upload up to 5 images. First image will be the main product image.</p>
-          <div className="images-upload-grid">
-            <div className={`image-upload-box main-image ${errors.mainImage ? 'upload-error' : ''}`}>
-              <input type="file" id="image-0" accept="image/*" onChange={(e) => { handleImageUpload(0, e); clearFieldError('mainImage'); }} style={{ display: 'none' }} />
-              {images[0] ? (
-                <div className="image-preview">
-                  <img src={images[0].preview} alt="Main product" />
-                  <button type="button" className="remove-image-btn" onClick={() => removeImage(0)}><CloseIcon /></button>
-                  <span className="image-badge">MAIN</span>
-                </div>
-              ) : (
-                <label htmlFor="image-0" className="upload-placeholder"><AddPhotoAlternateIcon className="upload-icon" /><span className="upload-text">Main Image</span><span className="upload-subtext">Required</span></label>
-              )}
+          {/* Action Buttons */}
+          <div className="ap-bottom-actions">
+            <button type="button" className="ap-btn ap-btn-outline" onClick={resetForm} disabled={isSubmitting}>
+              <RestartAltIcon fontSize="small" />
+              Reset Form
+            </button>
+            <button type="button" className="ap-btn ap-btn-primary" onClick={handleSubmit} disabled={isSubmitting}>
+              <CloudUploadIcon fontSize="small" />
+              {isSubmitting ? 'Publishing Product...' : 'Publish Product to Store'}
+            </button>
+          </div>
+
+        </div>
+
+        {/* RIGHT COLUMN: Media & Status Sidebar (38%) */}
+        <div className="ap-side-col">
+
+          {/* CARD 4: Product Media (Portrait 3:4 Aspect Ratio matching user panel) */}
+          <div className="ap-card">
+            <div className="ap-card-header">
+              <div className="ap-card-title-wrap">
+                <span className="ap-card-icon ap-icon-blue"><AddPhotoAlternateIcon fontSize="inherit" /></span>
+                <h3 className="ap-card-title">Product Media</h3>
+              </div>
+              <span className="ap-badge-tag-sm">3:4 Aspect Ratio</span>
             </div>
-            {[1, 2, 3, 4].map((i) => (
-              <div key={i} className="image-upload-box">
-                <input type="file" id={`image-${i}`} accept="image/*" onChange={(e) => handleImageUpload(i, e)} style={{ display: 'none' }} />
-                {images[i] ? (
-                  <div className="image-preview">
-                    <img src={images[i].preview} alt={`Product ${i}`} />
-                    <button type="button" className="remove-image-btn" onClick={() => removeImage(i)}><CloseIcon /></button>
+
+            <div className="ap-card-body">
+              {/* Primary 3:4 Hero Image Box */}
+              <div className="ap-media-hero-container">
+                <input
+                  type="file"
+                  id="image-0"
+                  accept="image/*"
+                  onChange={(e) => { handleImageUpload(0, e); clearFieldError('mainImage'); }}
+                  style={{ display: 'none' }}
+                />
+
+                {images[0] ? (
+                  <div className="ap-userpanel-img-box">
+                    <img src={images[0].preview} alt="Main product" className="ap-userpanel-img" />
+                    <span className="ap-main-pill">PRIMARY IMAGE</span>
+                    <button type="button" className="ap-media-remove-btn" onClick={() => removeImage(0)}>
+                      <CloseIcon fontSize="small" />
+                    </button>
                   </div>
                 ) : (
-                  <label htmlFor={`image-${i}`} className="upload-placeholder"><AddPhotoAlternateIcon className="upload-icon" /><span className="upload-text">Image {i}</span><span className="upload-subtext">Optional</span></label>
+                  <label htmlFor="image-0" className={`ap-userpanel-placeholder ${errors.mainImage ? 'error-border' : ''}`}>
+                    <AddPhotoAlternateIcon className="ap-upload-icon-large" />
+                    <strong>Upload Primary Photo</strong>
+                    <span>3:4 Portrait Fashion Ratio</span>
+                    <span className="ap-badge-req">Required</span>
+                  </label>
                 )}
+                {errors.mainImage && <span className="ap-field-error text-center">{errors.mainImage}</span>}
               </div>
-            ))}
-          </div>
-          {errors.mainImage && <div className="field-error">{errors.mainImage}</div>}
-        </section>
 
-        <section className="form-section">
-          <h2 className="section-title">Product Status</h2>
-          <div className="checkbox-grid">
-            <label className="checkbox-card">
-              <input type="checkbox" checked={featuredProduct} onChange={(e) => setFeaturedProduct(e.target.checked)} />
-              <div className="checkbox-content"><span className="checkbox-title">FEATURED PRODUCT</span><span className="checkbox-desc">Display this product in featured section</span></div>
-            </label>
-            <label className="checkbox-card">
-              <input type="checkbox" checked={active} onChange={(e) => setActive(e.target.checked)} />
-              <div className="checkbox-content"><span className="checkbox-title">ACTIVE</span><span className="checkbox-desc">Make this product visible to customers</span></div>
-            </label>
+              {/* Secondary Thumbnails */}
+              <div className="ap-secondary-media-grid">
+                {[1, 2, 3, 4].map((i) => (
+                  <div key={i} className="ap-secondary-item">
+                    <input
+                      type="file"
+                      id={`image-${i}`}
+                      accept="image/*"
+                      onChange={(e) => handleImageUpload(i, e)}
+                      style={{ display: 'none' }}
+                    />
+                    {images[i] ? (
+                      <div className="ap-sub-preview-box">
+                        <img src={images[i].preview} alt={`Angle ${i + 1}`} className="ap-userpanel-img" />
+                        <button type="button" className="ap-sub-remove-btn" onClick={() => removeImage(i)}>
+                          <CloseIcon fontSize="inherit" />
+                        </button>
+                      </div>
+                    ) : (
+                      <label htmlFor={`image-${i}`} className="ap-sub-placeholder">
+                        <AddPhotoAlternateIcon fontSize="small" />
+                        <span>Angle {i + 1}</span>
+                      </label>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </div>
           </div>
-        </section>
 
-        <div className="form-actions">
-          <button type="button" className="btn-cancel" onClick={resetForm}>CANCEL</button>
-          <button type="button" className="btn-submit" onClick={handleSubmit}>ADD PRODUCT</button>
+          {/* CARD 5: Publishing & Status */}
+          <div className="ap-card">
+            <div className="ap-card-header">
+              <div className="ap-card-title-wrap">
+                <span className="ap-card-icon ap-icon-gold"><VisibilityIcon fontSize="inherit" /></span>
+                <h3 className="ap-card-title">Publishing & Status</h3>
+              </div>
+            </div>
+
+            <div className="ap-card-body">
+              <div className="ap-toggles-list">
+                <label className={`ap-toggle-card ${active ? 'active-state' : ''}`}>
+                  <input
+                    type="checkbox"
+                    checked={active}
+                    onChange={(e) => setActive(e.target.checked)}
+                  />
+                  <div className="ap-toggle-info">
+                    <strong>Catalog Visibility</strong>
+                    <p>Visible to customers in store</p>
+                  </div>
+                  <span className={`ap-status-badge ${active ? 'badge-green' : 'badge-gray'}`}>
+                    {active ? 'ACTIVE' : 'DRAFT'}
+                  </span>
+                </label>
+
+                <label className={`ap-toggle-card ${featuredProduct ? 'featured-state' : ''}`}>
+                  <input
+                    type="checkbox"
+                    checked={featuredProduct}
+                    onChange={(e) => setFeaturedProduct(e.target.checked)}
+                  />
+                  <div className="ap-toggle-info">
+                    <strong>Featured Showcase</strong>
+                    <p>Highlight on homepage slider</p>
+                  </div>
+                  <span className={`ap-status-badge ${featuredProduct ? 'badge-gold' : 'badge-gray'}`}>
+                    {featuredProduct ? '★ FEATURED' : 'STANDARD'}
+                  </span>
+                </label>
+              </div>
+            </div>
+          </div>
+
+          {/* CARD 6: Live Summary Card */}
+          <div className="ap-card ap-summary-card">
+            <div className="ap-card-header">
+              <div className="ap-card-title-wrap">
+                <span className="ap-card-icon ap-icon-blue"><CheckCircleIcon fontSize="inherit" /></span>
+                <h3 className="ap-card-title">Summary Snapshot</h3>
+              </div>
+            </div>
+
+            <div className="ap-card-body">
+              <div className="ap-snapshot-grid">
+                <div className="ap-snapshot-item">
+                  <span>VARIANTS</span>
+                  <strong>{variants.length} SKU(s)</strong>
+                </div>
+                <div className="ap-snapshot-item">
+                  <span>TOTAL STOCK</span>
+                  <strong className="color-emerald">{summaryStats.totalStock} Units</strong>
+                </div>
+                <div className="ap-snapshot-item">
+                  <span>PRICE RANGE</span>
+                  <strong className="color-dark">
+                    ₹{summaryStats.minPrice.toFixed(0)} {summaryStats.minPrice !== summaryStats.maxPrice ? `– ₹${summaryStats.maxPrice.toFixed(0)}` : ''}
+                  </strong>
+                </div>
+                <div className="ap-snapshot-item">
+                  <span>PHOTOS</span>
+                  <strong>{summaryStats.uploadedImagesCount} / 5</strong>
+                </div>
+              </div>
+
+              <button
+                type="button"
+                className="ap-btn ap-btn-primary full-width"
+                onClick={handleSubmit}
+                disabled={isSubmitting}
+              >
+                <CloudUploadIcon fontSize="small" />
+                {isSubmitting ? 'Publishing...' : 'Publish Product'}
+              </button>
+            </div>
+          </div>
+
         </div>
+
       </div>
 
+      {/* ===== SUCCESS MODAL ===== */}
       {showSuccessModal && (
         <div className="ap-modal-overlay" onClick={() => setShowSuccessModal(false)}>
           <div className="ap-modal" onClick={(e) => e.stopPropagation()}>
             <div className="ap-modal-header">
-              <CheckCircleIcon className="success-icon" />
+              <div className="ap-modal-icon-wrap">
+                <CheckCircleIcon className="ap-success-icon" />
+              </div>
               <h3 className="ap-modal-title">Product Added Successfully!</h3>
-              <button className="ap-modal-close" onClick={() => setShowSuccessModal(false)}><CloseIcon /></button>
+              <button className="ap-modal-close" onClick={() => setShowSuccessModal(false)}>
+                <CloseIcon fontSize="small" />
+              </button>
             </div>
             <div className="ap-modal-body">
-              <p className="success-message">Your product has been successfully added to the catalog.</p>
-              <div className="success-details">
-                <span className="product-name-display">{productName}</span>
-                <span className="success-sub">has been saved and is now available for management.</span>
+              <p className="ap-success-message">Your new product has been successfully saved to the catalog and inventory database.</p>
+              <div className="ap-success-details">
+                <span className="ap-product-name-display">{productName}</span>
+                <span className="ap-success-sub">SKU: {sku || 'N/A'} • {variants.length} Variant(s) Created</span>
               </div>
             </div>
             <div className="ap-modal-footer">
-              <button className="btn-primary" onClick={() => setShowSuccessModal(false)}>Continue</button>
+              <button className="ap-btn ap-btn-primary" onClick={() => setShowSuccessModal(false)}>
+                Add Another Product
+              </button>
             </div>
           </div>
         </div>
       )}
-      </div>
     </div>
   );
 };

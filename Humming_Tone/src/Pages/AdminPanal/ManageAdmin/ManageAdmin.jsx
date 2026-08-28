@@ -2,12 +2,16 @@ import React, { useState, useEffect } from 'react'
 import axios from 'axios'
 import AdminPanelSettingsIcon from '@mui/icons-material/AdminPanelSettings'
 import PersonAddIcon from '@mui/icons-material/PersonAdd'
-import LockIcon from '@mui/icons-material/Lock'
+import LockResetIcon from '@mui/icons-material/LockReset'
 import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline'
 import VisibilityIcon from '@mui/icons-material/Visibility'
 import VisibilityOffIcon from '@mui/icons-material/VisibilityOff'
 import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline'
 import ErrorOutlineIcon from '@mui/icons-material/ErrorOutline'
+import CloseIcon from '@mui/icons-material/Close'
+import KeyIcon from '@mui/icons-material/Key'
+import SearchIcon from '@mui/icons-material/Search'
+import ShieldIcon from '@mui/icons-material/Shield'
 import './ManageAdmin.css'
 import { API_BASE_URL } from '../../../utils/apiConfig'
 
@@ -32,8 +36,10 @@ export default function ManageAdmin() {
   const [admins, setAdmins] = useState([])
   const [loading, setLoading] = useState(true)
   const [currentUser, setCurrentUser] = useState(null)
+  const [searchQuery, setSearchQuery] = useState('')
 
-  // Form states - Create Admin
+  // Create Admin Modal State
+  const [showCreateModal, setShowCreateModal] = useState(false)
   const [createUsername, setCreateUsername] = useState('')
   const [createEmail, setCreateEmail] = useState('')
   const [createPassword, setCreatePassword] = useState('')
@@ -43,7 +49,8 @@ export default function ManageAdmin() {
   const [createSuccess, setCreateSuccess] = useState('')
   const [submittingCreate, setSubmittingCreate] = useState(false)
 
-  // Form states - Change Password
+  // In-Card Change Password Modal State
+  const [passwordModalUser, setPasswordModalUser] = useState(null)
   const [currentPassword, setCurrentPassword] = useState('')
   const [newPassword, setNewPassword] = useState('')
   const [confirmNewPassword, setConfirmNewPassword] = useState('')
@@ -57,7 +64,10 @@ export default function ManageAdmin() {
   const fetchAdmins = async () => {
     try {
       setLoading(true)
-      const res = await axios.get(`${API_BASE_URL}/admin/users`)
+      const token = localStorage.getItem('adminToken')
+      const res = await axios.get(`${API_BASE_URL}/admin/users`, {
+        headers: token ? { Authorization: `Bearer ${token}` } : {}
+      })
       setAdmins(res.data)
     } catch (err) {
       console.error('Error fetching admin users:', err)
@@ -82,7 +92,7 @@ export default function ManageAdmin() {
     setCreateSuccess('')
 
     if (!createUsername.trim() || !createPassword || !confirmPassword) {
-      setCreateError('All fields are required.')
+      setCreateError('All required fields must be filled.')
       return
     }
 
@@ -103,11 +113,18 @@ export default function ManageAdmin() {
 
     try {
       setSubmittingCreate(true)
-      await axios.post(`${API_BASE_URL}/admin/users`, {
-        username: createUsername.trim(),
-        email: createEmail.trim() || undefined,
-        password: createPassword,
-      })
+      const token = localStorage.getItem('adminToken')
+      await axios.post(
+        `${API_BASE_URL}/admin/users`,
+        {
+          username: createUsername.trim(),
+          email: createEmail.trim() || undefined,
+          password: createPassword,
+        },
+        {
+          headers: token ? { Authorization: `Bearer ${token}` } : {}
+        }
+      )
 
       setCreateSuccess(`Admin "${createUsername}" created successfully!`)
       setCreateUsername('')
@@ -115,6 +132,10 @@ export default function ManageAdmin() {
       setCreatePassword('')
       setConfirmPassword('')
       fetchAdmins()
+      setTimeout(() => {
+        setShowCreateModal(false)
+        setCreateSuccess('')
+      }, 1500)
     } catch (err) {
       setCreateError(err.response?.data?.error?.message || err.response?.data?.message || 'Failed to create admin user.')
     } finally {
@@ -122,14 +143,44 @@ export default function ManageAdmin() {
     }
   }
 
-  // Change password submit
+  // Open Change Password Modal for specific user card
+  const openPasswordModal = (user) => {
+    setPasswordModalUser(user)
+    setCurrentPassword('')
+    setNewPassword('')
+    setConfirmNewPassword('')
+    setChangeError('')
+    setChangeSuccess('')
+    setShowCurrentPass(false)
+    setShowNewPass(false)
+  }
+
+  const closePasswordModal = () => {
+    setPasswordModalUser(null)
+    setCurrentPassword('')
+    setNewPassword('')
+    setConfirmNewPassword('')
+    setChangeError('')
+    setChangeSuccess('')
+  }
+
+  // Change password submit for user
   const handleChangePassword = async (e) => {
     e.preventDefault()
     setChangeError('')
     setChangeSuccess('')
 
-    if (!currentPassword || !newPassword || !confirmNewPassword) {
-      setChangeError('All fields are required.')
+    if (!passwordModalUser) return
+
+    const isSelf = parseInt(passwordModalUser.id) === parseInt(currentUser?.id)
+
+    if (isSelf && !currentPassword) {
+      setChangeError('Please enter your current password.')
+      return
+    }
+
+    if (!newPassword || !confirmNewPassword) {
+      setChangeError('Please enter and confirm the new password.')
       return
     }
 
@@ -145,17 +196,24 @@ export default function ManageAdmin() {
 
     try {
       setSubmittingChange(true)
-      await axios.put(`${API_BASE_URL}/admin/change-password`, {
-        currentPassword,
-        newPassword,
-      })
+      const token = localStorage.getItem('adminToken')
+      await axios.put(
+        `${API_BASE_URL}/admin/users/${passwordModalUser.id}/password`,
+        {
+          currentPassword: isSelf ? currentPassword : undefined,
+          newPassword,
+        },
+        {
+          headers: token ? { Authorization: `Bearer ${token}` } : {}
+        }
+      )
 
-      setChangeSuccess('Password changed successfully!')
-      setCurrentPassword('')
-      setNewPassword('')
-      setConfirmNewPassword('')
+      setChangeSuccess(`Password for "${passwordModalUser.username}" updated successfully!`)
+      setTimeout(() => {
+        closePasswordModal()
+      }, 1500)
     } catch (err) {
-      setChangeError(err.response?.data?.error?.message || err.response?.data?.message || 'Failed to change password.')
+      setChangeError(err.response?.data?.error?.message || err.response?.data?.message || 'Failed to update password.')
     } finally {
       setSubmittingChange(false)
     }
@@ -164,13 +222,16 @@ export default function ManageAdmin() {
   // Delete admin user
   const handleDeleteAdmin = async (id, username) => {
     if (parseInt(id) === parseInt(currentUser?.id)) {
-      alert('You cannot delete your own admin account.')
+      alert('You cannot delete your own active admin account.')
       return
     }
 
-    if (window.confirm(`Are you sure you want to delete admin "${username}"?`)) {
+    if (window.confirm(`Are you sure you want to delete administrator "${username}"?`)) {
       try {
-        await axios.delete(`${API_BASE_URL}/admin/users/${id}`)
+        const token = localStorage.getItem('adminToken')
+        await axios.delete(`${API_BASE_URL}/admin/users/${id}`, {
+          headers: token ? { Authorization: `Bearer ${token}` } : {}
+        })
         fetchAdmins()
       } catch (err) {
         alert(err.response?.data?.error?.message || 'Failed to delete admin user.')
@@ -184,287 +245,364 @@ export default function ManageAdmin() {
       day: '2-digit',
       month: 'short',
       year: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit',
     })
   }
 
+  const filteredAdmins = admins.filter((adm) => {
+    const q = searchQuery.toLowerCase()
+    return (
+      adm.username?.toLowerCase().includes(q) ||
+      adm.email?.toLowerCase().includes(q)
+    )
+  })
+
   return (
     <div className="manage-admin-container">
-      {/* LEFT COLUMN: FORMS */}
-      <div className="admin-forms-col">
-        {/* CREATE ADMIN FORM */}
-        <div className="admin-card">
-          <div className="card-header-with-icon">
-            <div className="icon-badge primary">
-              <PersonAddIcon />
-            </div>
-            <div>
-              <h2 className="card-title">Create Admin User</h2>
-              <p className="card-subtitle">Add a new admin account to manage the store</p>
-            </div>
-          </div>
-
-          <form onSubmit={handleCreateAdmin} className="admin-form">
-            {createError && (
-              <div className="alert-message error">
-                <ErrorOutlineIcon className="alert-icon" />
-                <span>{createError}</span>
-              </div>
-            )}
-            {createSuccess && (
-              <div className="alert-message success">
-                <CheckCircleOutlineIcon className="alert-icon" />
-                <span>{createSuccess}</span>
-              </div>
-            )}
-
-            <div className="form-group">
-              <label htmlFor="createUsername">Username</label>
-              <input
-                type="text"
-                id="createUsername"
-                value={createUsername}
-                onChange={(e) => setCreateUsername(e.target.value)}
-                placeholder="e.g. admin_jane"
-                disabled={submittingCreate}
-                required
-              />
-            </div>
-
-            <div className="form-group">
-              <label htmlFor="createEmail">Google / Admin Email (Optional)</label>
-              <input
-                type="email"
-                id="createEmail"
-                value={createEmail}
-                onChange={(e) => setCreateEmail(e.target.value)}
-                placeholder="e.g. jane@gmail.com (for 1-click Google Login)"
-                disabled={submittingCreate}
-              />
-            </div>
-
-            <div className="form-group">
-              <label htmlFor="createPassword">Password</label>
-              <div className="password-input-wrapper">
-                <input
-                  type={showCreatePass ? 'text' : 'password'}
-                  id="createPassword"
-                  value={createPassword}
-                  onChange={(e) => setCreatePassword(e.target.value)}
-                  placeholder="At least 6 characters"
-                  disabled={submittingCreate}
-                  required
-                />
-                <button
-                  type="button"
-                  className="password-toggle-btn"
-                  onClick={() => setShowCreatePass(!showCreatePass)}
-                >
-                  {showCreatePass ? <VisibilityOffIcon /> : <VisibilityIcon />}
-                </button>
-              </div>
-            </div>
-
-            <div className="form-group">
-              <label htmlFor="confirmPassword">Confirm Password</label>
-              <input
-                type={showCreatePass ? 'text' : 'password'}
-                id="confirmPassword"
-                value={confirmPassword}
-                onChange={(e) => setConfirmPassword(e.target.value)}
-                placeholder="Re-enter password"
-                disabled={submittingCreate}
-                required
-              />
-            </div>
-
-            <button type="submit" className="admin-btn-submit" disabled={submittingCreate}>
-              {submittingCreate ? 'Creating...' : 'Create Admin Account'}
-            </button>
-          </form>
+      {/* 1. TOP HEADER & METRICS BAR */}
+      <div className="ma-top-bar">
+        <div className="ma-top-left">
+          <div className="ma-badge-tag">ADMINISTRATION • ACCESS CONTROL</div>
+          <h1 className="ma-page-title">Admin Users</h1>
         </div>
 
-        {/* CHANGE PASSWORD FORM */}
-        <div className="admin-card">
-          <div className="card-header-with-icon">
-            <div className="icon-badge accent">
-              <LockIcon />
-            </div>
-            <div>
-              <h2 className="card-title">Change Password</h2>
-              <p className="card-subtitle">Update your admin account credentials</p>
-            </div>
+        <div className="ma-top-actions">
+          <div className="ma-search-wrap">
+            <SearchIcon className="ma-search-icon" fontSize="small" />
+            <input
+              type="text"
+              placeholder="Search admin users..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="ma-search-input"
+            />
           </div>
 
-          <form onSubmit={handleChangePassword} className="admin-form">
-            {changeError && (
-              <div className="alert-message error">
-                <ErrorOutlineIcon className="alert-icon" />
-                <span>{changeError}</span>
-              </div>
-            )}
-            {changeSuccess && (
-              <div className="alert-message success">
-                <CheckCircleOutlineIcon className="alert-icon" />
-                <span>{changeSuccess}</span>
-              </div>
-            )}
+          <button
+            type="button"
+            className="ma-btn ma-btn-primary"
+            onClick={() => {
+              setShowCreateModal(true)
+              setCreateError('')
+              setCreateSuccess('')
+            }}
+          >
+            <PersonAddIcon fontSize="small" />
+            Create Admin
+          </button>
+        </div>
+      </div>
 
-            <div className="form-group">
-              <label htmlFor="currentPassword">Current Password</label>
-              <div className="password-input-wrapper">
-                <input
-                  type={showCurrentPass ? 'text' : 'password'}
-                  id="currentPassword"
-                  value={currentPassword}
-                  onChange={(e) => setCurrentPassword(e.target.value)}
-                  placeholder="Enter current password"
-                  disabled={submittingChange}
-                  required
-                />
-                <button
-                  type="button"
-                  className="password-toggle-btn"
-                  onClick={() => setShowCurrentPass(!showCurrentPass)}
-                >
-                  {showCurrentPass ? <VisibilityOffIcon /> : <VisibilityIcon />}
-                </button>
+      {/* 2. ADMIN USERS CARDS GRID */}
+      <div className="ma-cards-section">
+        {loading ? (
+          <div className="ma-loading-box">
+            <div className="ma-spinner" />
+            <span>Loading admin users...</span>
+          </div>
+        ) : filteredAdmins.length === 0 ? (
+          <div className="ma-empty-box">
+            <ShieldIcon className="ma-empty-icon" />
+            <h3>No admin users found</h3>
+            <p>Try refining your search query or add a new administrator account.</p>
+          </div>
+        ) : (
+          <div className="ma-users-grid">
+            {filteredAdmins.map((adm) => {
+              const isSelf = parseInt(adm.id) === parseInt(currentUser?.id)
+
+              return (
+                <div key={adm.id} className={`ma-user-card ${isSelf ? 'card-self' : ''}`}>
+                  {/* Top Card Info */}
+                  <div className="ma-user-card-header">
+                    <div className="ma-avatar-wrap">
+                      {adm.avatar_url ? (
+                        <img
+                          src={adm.avatar_url}
+                          alt={adm.username}
+                          referrerPolicy="no-referrer"
+                          crossOrigin="anonymous"
+                          className="ma-avatar-img"
+                        />
+                      ) : (
+                        <div className="ma-avatar-initials">
+                          {adm.username.substring(0, 2).toUpperCase()}
+                        </div>
+                      )}
+                      <span className="ma-online-dot" title="Active Account" />
+                    </div>
+
+                    <div className="ma-user-meta">
+                      <div className="ma-name-row">
+                        <h3 className="ma-user-name">{adm.username}</h3>
+                        {isSelf && <span className="ma-badge-self">You</span>}
+                      </div>
+                      <span className="ma-user-email">{adm.email || 'No email linked'}</span>
+                    </div>
+                  </div>
+
+                  {/* Badges & Meta Details */}
+                  <div className="ma-user-card-body">
+                    <div className="ma-meta-tags">
+                      <span className="ma-tag ma-tag-role">
+                        <ShieldIcon fontSize="inherit" /> Administrator
+                      </span>
+                      {adm.google_id && (
+                        <span className="ma-tag ma-tag-google">
+                          ✓ Google Linked
+                        </span>
+                      )}
+                    </div>
+
+                    <div className="ma-meta-info-row">
+                      <span className="ma-meta-label">MEMBER SINCE</span>
+                      <span className="ma-meta-val">{fmtDate(adm.created_at)}</span>
+                    </div>
+                  </div>
+
+                  {/* Actions in User Card */}
+                  <div className="ma-user-card-footer">
+                    <button
+                      type="button"
+                      className="ma-btn ma-btn-card-action"
+                      onClick={() => openPasswordModal(adm)}
+                      title={`Change password for ${adm.username}`}
+                    >
+                      <KeyIcon fontSize="small" />
+                      Change Password
+                    </button>
+
+                    <button
+                      type="button"
+                      className="ma-btn-delete-card"
+                      onClick={() => handleDeleteAdmin(adm.id, adm.username)}
+                      disabled={isSelf}
+                      title={isSelf ? 'Cannot delete your own logged-in account' : `Delete ${adm.username}`}
+                    >
+                      <DeleteOutlineIcon fontSize="small" />
+                    </button>
+                  </div>
+                </div>
+              )
+            })}
+          </div>
+        )}
+      </div>
+
+      {/* ===== MODAL 1: CHANGE PASSWORD FOR USER ===== */}
+      {passwordModalUser && (
+        <div className="ma-modal-overlay" onClick={closePasswordModal}>
+          <div className="ma-modal" onClick={(e) => e.stopPropagation()}>
+            <div className="ma-modal-header">
+              <div className="ma-modal-icon-wrap accent">
+                <LockResetIcon className="ma-modal-icon" />
               </div>
+              <div>
+                <h3 className="ma-modal-title">Change Password</h3>
+                <p className="ma-modal-sub">
+                  Update credentials for <strong>{passwordModalUser.username}</strong>
+                </p>
+              </div>
+              <button className="ma-modal-close-btn" onClick={closePasswordModal}>
+                <CloseIcon fontSize="small" />
+              </button>
             </div>
 
-            <div className="form-group">
-              <label htmlFor="newPassword">New Password</label>
-              <div className="password-input-wrapper">
+            <form onSubmit={handleChangePassword} className="ma-modal-body">
+              {changeError && (
+                <div className="ma-alert error">
+                  <ErrorOutlineIcon fontSize="small" />
+                  <span>{changeError}</span>
+                </div>
+              )}
+              {changeSuccess && (
+                <div className="ma-alert success">
+                  <CheckCircleOutlineIcon fontSize="small" />
+                  <span>{changeSuccess}</span>
+                </div>
+              )}
+
+              {parseInt(passwordModalUser.id) === parseInt(currentUser?.id) && (
+                <div className="ma-form-group">
+                  <label htmlFor="currentPassword">Current Password <span className="req">*</span></label>
+                  <div className="ma-pass-wrap">
+                    <input
+                      type={showCurrentPass ? 'text' : 'password'}
+                      id="currentPassword"
+                      value={currentPassword}
+                      onChange={(e) => setCurrentPassword(e.target.value)}
+                      placeholder="Enter current password"
+                      disabled={submittingChange}
+                      required
+                      className="ma-input"
+                    />
+                    <button
+                      type="button"
+                      className="ma-pass-toggle"
+                      onClick={() => setShowCurrentPass(!showCurrentPass)}
+                    >
+                      {showCurrentPass ? <VisibilityOffIcon fontSize="small" /> : <VisibilityIcon fontSize="small" />}
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              <div className="ma-form-group">
+                <label htmlFor="newPassword">New Password <span className="req">*</span></label>
+                <div className="ma-pass-wrap">
+                  <input
+                    type={showNewPass ? 'text' : 'password'}
+                    id="newPassword"
+                    value={newPassword}
+                    onChange={(e) => setNewPassword(e.target.value)}
+                    placeholder="At least 6 characters"
+                    disabled={submittingChange}
+                    required
+                    className="ma-input"
+                  />
+                  <button
+                    type="button"
+                    className="ma-pass-toggle"
+                    onClick={() => setShowNewPass(!showNewPass)}
+                  >
+                    {showNewPass ? <VisibilityOffIcon fontSize="small" /> : <VisibilityIcon fontSize="small" />}
+                  </button>
+                </div>
+              </div>
+
+              <div className="ma-form-group">
+                <label htmlFor="confirmNewPassword">Confirm New Password <span className="req">*</span></label>
                 <input
                   type={showNewPass ? 'text' : 'password'}
-                  id="newPassword"
-                  value={newPassword}
-                  onChange={(e) => setNewPassword(e.target.value)}
-                  placeholder="At least 6 characters"
+                  id="confirmNewPassword"
+                  value={confirmNewPassword}
+                  onChange={(e) => setConfirmNewPassword(e.target.value)}
+                  placeholder="Re-enter new password"
                   disabled={submittingChange}
                   required
+                  className="ma-input"
                 />
-                <button
-                  type="button"
-                  className="password-toggle-btn"
-                  onClick={() => setShowNewPass(!showNewPass)}
-                >
-                  {showNewPass ? <VisibilityOffIcon /> : <VisibilityIcon />}
+              </div>
+
+              <div className="ma-modal-footer">
+                <button type="button" className="ma-btn ma-btn-outline" onClick={closePasswordModal} disabled={submittingChange}>
+                  Cancel
+                </button>
+                <button type="submit" className="ma-btn ma-btn-primary" disabled={submittingChange}>
+                  {submittingChange ? 'Saving...' : 'Update Password'}
                 </button>
               </div>
-            </div>
-
-            <div className="form-group">
-              <label htmlFor="confirmNewPassword">Confirm New Password</label>
-              <input
-                type={showNewPass ? 'text' : 'password'}
-                id="confirmNewPassword"
-                value={confirmNewPassword}
-                onChange={(e) => setConfirmNewPassword(e.target.value)}
-                placeholder="Re-enter new password"
-                disabled={submittingChange}
-                required
-              />
-            </div>
-
-            <button type="submit" className="admin-btn-submit accent-btn" disabled={submittingChange}>
-              {submittingChange ? 'Updating...' : 'Update Password'}
-            </button>
-          </form>
-        </div>
-      </div>
-
-      {/* RIGHT COLUMN: LIST */}
-      <div className="admin-list-col">
-        <div className="admin-card list-card">
-          <div className="card-header-with-icon">
-            <div className="icon-badge info">
-              <AdminPanelSettingsIcon />
-            </div>
-            <div>
-              <h2 className="card-title">Administrator Accounts</h2>
-              <p className="card-subtitle">Active accounts with panel privileges</p>
-            </div>
-          </div>
-
-          <div className="table-responsive">
-            <table className="admin-users-table">
-              <thead>
-                <tr>
-                  <th>Username</th>
-                  <th>Created At</th>
-                  <th>Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {loading ? (
-                  <tr>
-                    <td colSpan="3" className="loading-cell">
-                      <div className="spinner" />
-                      <span>Loading admin users...</span>
-                    </td>
-                  </tr>
-                ) : admins.length === 0 ? (
-                  <tr>
-                    <td colSpan="3" className="empty-cell">
-                      No admin users found.
-                    </td>
-                  </tr>
-                ) : (
-                  admins.map((adm) => {
-                    const isSelf = parseInt(adm.id) === parseInt(currentUser?.id)
-                    return (
-                      <tr key={adm.id} className={isSelf ? 'row-self' : ''}>
-                        <td data-label="User">
-                          <div className="admin-user-cell">
-                            <div className="user-avatar-circle">
-                              {adm.avatar_url ? (
-                                <img
-                                  src={adm.avatar_url}
-                                  alt={adm.username}
-                                  referrerPolicy="no-referrer"
-                                  crossOrigin="anonymous"
-                                  style={{ width: '100%', height: '100%', borderRadius: '50%', objectFit: 'cover' }}
-                                />
-                              ) : (
-                                adm.username.substring(0, 2).toUpperCase()
-                              )}
-                            </div>
-                            <div className="username-info">
-                              <span className="name">{adm.username}</span>
-                              {adm.email && <span style={{ fontSize: '0.78rem', color: '#6b7280', display: 'block' }}>{adm.email}</span>}
-                              <div style={{ display: 'flex', gap: '6px', alignItems: 'center', marginTop: '2px' }}>
-                                {isSelf && <span className="self-badge">You</span>}
-                                {adm.google_id && (
-                                  <span style={{ background: '#ecfdf5', color: '#059669', border: '1px solid #a7f3d0', fontSize: '0.7rem', fontWeight: 600, padding: '1px 6px', borderRadius: '10px' }}>
-                                    ✓ Google Linked
-                                  </span>
-                                )}
-                              </div>
-                            </div>
-                          </div>
-                        </td>
-                        <td className="date-cell" data-label="Created">{fmtDate(adm.created_at)}</td>
-                        <td className="admin-user-actions" data-label="Actions">
-                          <button
-                            className="btn-action-delete"
-                            onClick={() => handleDeleteAdmin(adm.id, adm.username)}
-                            disabled={isSelf}
-                            title={isSelf ? 'Cannot delete your logged-in account' : `Delete ${adm.username}`}
-                          >
-                            <DeleteOutlineIcon />
-                          </button>
-                        </td>
-                      </tr>
-                    )
-                  })
-                )}
-              </tbody>
-            </table>
+            </form>
           </div>
         </div>
-      </div>
+      )}
+
+      {/* ===== MODAL 2: CREATE ADMIN USER ===== */}
+      {showCreateModal && (
+        <div className="ma-modal-overlay" onClick={() => setShowCreateModal(false)}>
+          <div className="ma-modal" onClick={(e) => e.stopPropagation()}>
+            <div className="ma-modal-header">
+              <div className="ma-modal-icon-wrap primary">
+                <PersonAddIcon className="ma-modal-icon" />
+              </div>
+              <div>
+                <h3 className="ma-modal-title">Create Admin User</h3>
+                <p className="ma-modal-sub">Add a new admin account with store panel privileges</p>
+              </div>
+              <button className="ma-modal-close-btn" onClick={() => setShowCreateModal(false)}>
+                <CloseIcon fontSize="small" />
+              </button>
+            </div>
+
+            <form onSubmit={handleCreateAdmin} className="ma-modal-body">
+              {createError && (
+                <div className="ma-alert error">
+                  <ErrorOutlineIcon fontSize="small" />
+                  <span>{createError}</span>
+                </div>
+              )}
+              {createSuccess && (
+                <div className="ma-alert success">
+                  <CheckCircleOutlineIcon fontSize="small" />
+                  <span>{createSuccess}</span>
+                </div>
+              )}
+
+              <div className="ma-form-group">
+                <label htmlFor="createUsername">Username <span className="req">*</span></label>
+                <input
+                  type="text"
+                  id="createUsername"
+                  value={createUsername}
+                  onChange={(e) => setCreateUsername(e.target.value)}
+                  placeholder="e.g. admin_alex"
+                  disabled={submittingCreate}
+                  required
+                  className="ma-input"
+                />
+              </div>
+
+              <div className="ma-form-group">
+                <label htmlFor="createEmail">Email Address (Optional)</label>
+                <input
+                  type="email"
+                  id="createEmail"
+                  value={createEmail}
+                  onChange={(e) => setCreateEmail(e.target.value)}
+                  placeholder="e.g. alex@gmail.com (for Google Login)"
+                  disabled={submittingCreate}
+                  className="ma-input"
+                />
+              </div>
+
+              <div className="ma-form-group">
+                <label htmlFor="createPassword">Password <span className="req">*</span></label>
+                <div className="ma-pass-wrap">
+                  <input
+                    type={showCreatePass ? 'text' : 'password'}
+                    id="createPassword"
+                    value={createPassword}
+                    onChange={(e) => setCreatePassword(e.target.value)}
+                    placeholder="At least 6 characters"
+                    disabled={submittingCreate}
+                    required
+                    className="ma-input"
+                  />
+                  <button
+                    type="button"
+                    className="ma-pass-toggle"
+                    onClick={() => setShowCreatePass(!showCreatePass)}
+                  >
+                    {showCreatePass ? <VisibilityOffIcon fontSize="small" /> : <VisibilityIcon fontSize="small" />}
+                  </button>
+                </div>
+              </div>
+
+              <div className="ma-form-group">
+                <label htmlFor="confirmPassword">Confirm Password <span className="req">*</span></label>
+                <input
+                  type={showCreatePass ? 'text' : 'password'}
+                  id="confirmPassword"
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  placeholder="Re-enter password"
+                  disabled={submittingCreate}
+                  required
+                  className="ma-input"
+                />
+              </div>
+
+              <div className="ma-modal-footer">
+                <button type="button" className="ma-btn ma-btn-outline" onClick={() => setShowCreateModal(false)} disabled={submittingCreate}>
+                  Cancel
+                </button>
+                <button type="submit" className="ma-btn ma-btn-primary" disabled={submittingCreate}>
+                  {submittingCreate ? 'Creating...' : 'Create Account'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

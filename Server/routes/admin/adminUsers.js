@@ -8,5 +8,6 @@ router.get('/admin/users', adminAuth, adminUsersController.getAdminUsers);
 router.post('/admin/users', adminAuth, adminUsersController.createAdminUser);
 router.delete('/admin/users/:id', adminAuth, adminUsersController.deleteAdminUser);
 router.put('/admin/change-password', adminAuth, adminUsersController.changePassword);
+router.put('/admin/users/:id/password', adminAuth, adminUsersController.updateUserPassword);
 
 module.exports = router;
