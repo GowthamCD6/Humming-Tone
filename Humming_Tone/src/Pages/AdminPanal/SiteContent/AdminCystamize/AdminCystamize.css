@@ -15,37 +15,39 @@
 .admin-customize-header {
   display: flex;
   align-items: center;
-  gap: 16px;
-  margin-bottom: 24px;
-  padding: 20px 24px;
-  background: white;
-  border-bottom: 1px solid #e5e7eb;
+  gap: 14px;
+  margin-bottom: 20px;
+  padding: 14px 18px;
+  background: #ffffff;
+  border-radius: 12px;
+  border: 1px solid #e2e8f0;
 }
 
 .admin-customize-back-btn {
   display: flex;
   align-items: center;
-  gap: 8px;
-  padding: 10px 16px;
-  background: #3b82f6;
-  border: none;
-  border-radius: 6px;
+  gap: 6px;
+  padding: 8px 14px;
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
   cursor: pointer;
-  font-size: 14px;
+  font-size: 13.5px;
   font-weight: 600;
-  color: white;
-  transition: all 0.2s ease;
+  color: #334155;
+  transition: all 0.15s ease;
 }
 
 .admin-customize-back-btn:hover {
-  transform: translateY(-1px);
-  background: #2563eb;
+  background: #f1f5f9;
+  border-color: #cbd5e1;
+  color: #0f172a;
 }
 
 .admin-customize-title {
-  font-size: 24px;
+  font-size: 18px;
   font-weight: 700;
-  color: #1a1a1a;
+  color: #0f172a;
   margin: 0;
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 }

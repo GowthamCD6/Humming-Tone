@@ -27,8 +27,8 @@
 }
 
 .manage-admin-container {
-  padding: 4px 4px 40px;
-  max-width: 1440px;
+  padding: 0 0 24px;
+  max-width: 100%;
   width: 100%;
   margin: 0 auto;
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
@@ -386,32 +386,36 @@
   gap: 8px;
 }
 
-/* ===== 4. EMPTY & LOADING STATES ===== */
-.ma-loading-box,
-.ma-empty-box {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 10px;
-  padding: 60px 20px;
-  background: var(--ma-white);
-  border: 1px solid var(--ma-border);
-  border-radius: 12px;
-  text-align: center;
+/* ===== 4. SKELETON & EMPTY STATES ===== */
+.ma-skeleton-card {
+  pointer-events: none;
+  border-color: #f1f5f9;
 }
 
-.ma-spinner {
-  width: 32px;
-  height: 32px;
-  border: 3px solid #e2e8f0;
-  border-top-color: var(--ma-primary);
-  border-radius: 50%;
-  animation: maSpin 0.7s linear infinite;
+.ma-skeleton-box {
+  background: linear-gradient(90deg, #f1f5f9 25%, #e2e8f0 50%, #f1f5f9 75%);
+  background-size: 200% 100%;
+  animation: maShimmer 1.5s infinite;
+  border-radius: 6px;
 }
 
-@keyframes maSpin {
-  to { transform: rotate(360deg); }
+.ma-skeleton-avatar {
+  border-radius: 50% !important;
+  width: 48px;
+  height: 48px;
+}
+
+.ma-skeleton-tag {
+  border-radius: 6px;
+}
+
+.ma-skeleton-btn {
+  border-radius: 8px;
+}
+
+@keyframes maShimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
 }
 
 .ma-empty-icon {

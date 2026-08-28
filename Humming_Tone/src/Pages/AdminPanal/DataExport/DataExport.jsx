@@ -1496,7 +1496,27 @@ export default function DataExport() {
               </thead>
               <tbody>
                 {loading ? (
-                  <tr><td colSpan="10" className="de-empty">Loading records...</td></tr>
+                  [1, 2, 3, 4, 5, 6, 7, 8].map((idx) => (
+                    <tr key={`skel-ord-${idx}`}>
+                      <td data-label="Select"><div className="de-skeleton de-skeleton-box" style={{ width: '18px', height: '18px', borderRadius: '4px' }} /></td>
+                      <td data-label="Order"><div className="de-skeleton de-skeleton-text" style={{ width: '100px', height: '16px' }} /></td>
+                      <td data-label="Date"><div className="de-skeleton de-skeleton-text" style={{ width: '80px', height: '14px' }} /></td>
+                      <td data-label="Customer">
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                          <div className="de-skeleton de-skeleton-text" style={{ width: '120px', height: '14px' }} />
+                          <div className="de-skeleton de-skeleton-text" style={{ width: '90px', height: '12px' }} />
+                        </div>
+                      </td>
+                      <td data-label="Items & Products"><div className="de-skeleton de-skeleton-text" style={{ width: '150px', height: '14px' }} /></td>
+                      <td data-label="Amount"><div className="de-skeleton de-skeleton-text" style={{ width: '70px', height: '16px' }} /></td>
+                      <td data-label="Payment"><div className="de-skeleton de-skeleton-pill" style={{ width: '60px', height: '22px' }} /></td>
+                      <td data-label="Status"><div className="de-skeleton de-skeleton-pill" style={{ width: '75px', height: '22px' }} /></td>
+                      <td data-label="Logistics"><div className="de-skeleton de-skeleton-text" style={{ width: '85px', height: '14px' }} /></td>
+                      <td className="de-text-center" data-label="Action">
+                        <div className="de-skeleton de-skeleton-box" style={{ width: '28px', height: '28px', borderRadius: '6px', margin: '0 auto' }} />
+                      </td>
+                    </tr>
+                  ))
                 ) : filteredOrders.length === 0 ? (
                   <tr><td colSpan="10" className="de-empty">No orders match the selected export filters.</td></tr>
                 ) : (
@@ -1597,7 +1617,23 @@ export default function DataExport() {
               </thead>
               <tbody>
                 {loading ? (
-                  <tr><td colSpan="11" className="de-empty">Loading products...</td></tr>
+                  [1, 2, 3, 4, 5, 6, 7, 8].map((idx) => (
+                    <tr key={`skel-prod-${idx}`}>
+                      <td><div className="de-skeleton de-skeleton-box" style={{ width: '18px', height: '18px', borderRadius: '4px' }} /></td>
+                      <td><div className="de-skeleton de-skeleton-img" style={{ width: '38px', height: '38px', borderRadius: '6px' }} /></td>
+                      <td><div className="de-skeleton de-skeleton-text" style={{ width: '140px', height: '16px' }} /></td>
+                      <td><div className="de-skeleton de-skeleton-text" style={{ width: '90px', height: '14px' }} /></td>
+                      <td><div className="de-skeleton de-skeleton-pill" style={{ width: '70px', height: '22px' }} /></td>
+                      <td><div className="de-skeleton de-skeleton-pill" style={{ width: '50px', height: '22px' }} /></td>
+                      <td><div className="de-skeleton de-skeleton-pill" style={{ width: '70px', height: '22px' }} /></td>
+                      <td><div className="de-skeleton de-skeleton-text" style={{ width: '80px', height: '16px' }} /></td>
+                      <td><div className="de-skeleton de-skeleton-pill" style={{ width: '65px', height: '22px' }} /></td>
+                      <td><div className="de-skeleton de-skeleton-pill" style={{ width: '60px', height: '22px' }} /></td>
+                      <td className="de-text-center">
+                        <div className="de-skeleton de-skeleton-box" style={{ width: '28px', height: '28px', borderRadius: '6px', margin: '0 auto' }} />
+                      </td>
+                    </tr>
+                  ))
                 ) : filteredProducts.length === 0 ? (
                   <tr><td colSpan="11" className="de-empty">No products match the selected catalog filters.</td></tr>
                 ) : (
@@ -1685,16 +1721,31 @@ export default function DataExport() {
                 </tr>
               </thead>
               <tbody>
-                {reviewsData.map((r) => (
-                  <tr key={r.id}>
-                    <td data-label="Product"><strong>{r.product_name || `Product #${r.product_id}`}</strong></td>
-                    <td data-label="Customer">{r.reviewer_name} ({r.reviewer_email})</td>
-                    <td data-label="Rating"><span className="de-rating-value"><StarIcon fontSize="inherit" /> {r.rating} / 5</span></td>
-                    <td data-label="Feedback">{r.title && <strong>{r.title}: </strong>}{r.comment}</td>
-                    <td data-label="Status"><span className={`de-badge de-status-${r.status}`}>{r.status}</span></td>
-                    <td data-label="Date">{new Date(r.created_at).toLocaleDateString('en-IN')}</td>
-                  </tr>
-                ))}
+                {loading ? (
+                  [1, 2, 3, 4, 5, 6, 7, 8].map((idx) => (
+                    <tr key={`skel-rev-${idx}`}>
+                      <td data-label="Product"><div className="de-skeleton de-skeleton-text" style={{ width: '140px', height: '16px' }} /></td>
+                      <td data-label="Customer"><div className="de-skeleton de-skeleton-text" style={{ width: '110px', height: '14px' }} /></td>
+                      <td data-label="Rating"><div className="de-skeleton de-skeleton-pill" style={{ width: '60px', height: '22px' }} /></td>
+                      <td data-label="Feedback"><div className="de-skeleton de-skeleton-text" style={{ width: '200px', height: '14px' }} /></td>
+                      <td data-label="Status"><div className="de-skeleton de-skeleton-pill" style={{ width: '65px', height: '22px' }} /></td>
+                      <td data-label="Date"><div className="de-skeleton de-skeleton-text" style={{ width: '75px', height: '14px' }} /></td>
+                    </tr>
+                  ))
+                ) : reviewsData.length === 0 ? (
+                  <tr><td colSpan="6" className="de-empty">No reviews match the selected filters.</td></tr>
+                ) : (
+                  reviewsData.map((r) => (
+                    <tr key={r.id}>
+                      <td data-label="Product"><strong>{r.product_name || `Product #${r.product_id}`}</strong></td>
+                      <td data-label="Customer">{r.reviewer_name} ({r.reviewer_email})</td>
+                      <td data-label="Rating"><span className="de-rating-value"><StarIcon fontSize="inherit" /> {r.rating} / 5</span></td>
+                      <td data-label="Feedback">{r.title && <strong>{r.title}: </strong>}{r.comment}</td>
+                      <td data-label="Status"><span className={`de-badge de-status-${r.status}`}>{r.status}</span></td>
+                      <td data-label="Date">{new Date(r.created_at).toLocaleDateString('en-IN')}</td>
+                    </tr>
+                  ))
+                )}
               </tbody>
             </table>
           )}

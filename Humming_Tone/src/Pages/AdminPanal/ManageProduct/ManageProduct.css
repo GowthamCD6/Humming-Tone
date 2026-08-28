@@ -16,8 +16,8 @@
 }
 
 .mp-page {
-  padding: 2px 2px 20px;
-  max-width: 1440px;
+  padding: 0 0 20px;
+  max-width: 100%;
   width: 100%;
   margin: 0 auto;
   min-height: calc(100vh - 20px);
@@ -1078,5 +1078,36 @@
 @keyframes mpToastFadeIn {
   from { opacity: 0; transform: translateY(-10px); }
   to { opacity: 1; transform: translateY(0); }
+}
+
+/* ===== SKELETON SHIMMER ===== */
+.mp-skeleton {
+  background: linear-gradient(90deg, #f1f5f9 25%, #e2e8f0 50%, #f1f5f9 75%);
+  background-size: 200% 100%;
+  animation: mpShimmer 1.5s infinite;
+  display: inline-block;
+  vertical-align: middle;
+}
+
+.mp-skeleton-img {
+  width: 44px;
+  height: 44px;
+  border-radius: 8px;
+  flex-shrink: 0;
+}
+
+.mp-skeleton-text {
+  height: 16px;
+  border-radius: 4px;
+}
+
+.mp-skeleton-pill {
+  height: 22px;
+  border-radius: 12px;
+}
+
+@keyframes mpShimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
 }
 

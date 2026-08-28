@@ -282,13 +282,55 @@ export default function OrderDetails() {
     return items.reduce((sum, item) => sum + (Number(item.product_price || 0) * Number(item.quantity || 1)), 0);
   }, [items]);
 
-  /* ================= LOADING / ERROR ================= */
   if (loading) {
     return (
       <section className="od-container">
-        <div className="od-loading-state">
-          <div className="od-loading-spinner" />
-          <p>Loading order details...</p>
+        <div className="od-header od-skeleton-header">
+          <div className="od-header-left" style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+            <div className="od-skeleton-box" style={{ width: '140px', height: '14px' }} />
+            <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
+              <div className="od-skeleton-box" style={{ width: '220px', height: '28px' }} />
+              <div className="od-skeleton-box" style={{ width: '90px', height: '24px', borderRadius: '999px' }} />
+            </div>
+          </div>
+          <div className="od-header-right">
+            <div className="od-skeleton-box" style={{ width: '130px', height: '36px', borderRadius: '8px' }} />
+          </div>
+        </div>
+
+        <div className="od-layout-grid">
+          <div className="od-main-col">
+            <div className="od-card od-skeleton-card">
+              <div className="od-card-header">
+                <div className="od-skeleton-box" style={{ width: '160px', height: '20px' }} />
+              </div>
+              <div className="od-card-body" style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+                {[1, 2, 3].map(i => (
+                  <div key={i} style={{ display: 'flex', gap: '14px', alignItems: 'center' }}>
+                    <div className="od-skeleton-box" style={{ width: '56px', height: '56px', borderRadius: '8px' }} />
+                    <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                      <div className="od-skeleton-box" style={{ width: '200px', height: '16px' }} />
+                      <div className="od-skeleton-box" style={{ width: '120px', height: '12px' }} />
+                    </div>
+                    <div className="od-skeleton-box" style={{ width: '80px', height: '18px' }} />
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          <div className="od-side-col">
+            <div className="od-card od-skeleton-card">
+              <div className="od-card-header">
+                <div className="od-skeleton-box" style={{ width: '140px', height: '20px' }} />
+              </div>
+              <div className="od-card-body" style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                <div className="od-skeleton-box" style={{ width: '100%', height: '14px' }} />
+                <div className="od-skeleton-box" style={{ width: '80%', height: '14px' }} />
+                <div className="od-skeleton-box" style={{ width: '90%', height: '14px' }} />
+              </div>
+            </div>
+          </div>
         </div>
       </section>
     );

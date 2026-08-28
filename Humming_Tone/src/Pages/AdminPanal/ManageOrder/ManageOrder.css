@@ -26,10 +26,10 @@
 }
 
 .manage-orders-container {
-  max-width: 1440px;
+  max-width: 100%;
   width: 100%;
   margin: 0 auto;
-  padding: 2px;
+  padding: 0 0 20px;
   height: auto;
   min-height: 0;
   display: flex;

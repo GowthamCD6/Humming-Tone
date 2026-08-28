@@ -448,27 +448,45 @@ export default function ManageProducts() {
               </tr>
             </thead>
             <tbody>
-              {promoCodes.length > 0 ? promoCodes.map((p) => (
-                <tr key={p.id}>
-                  <td><span className="mp-text-bold">{p.code}</span></td>
-                  <td>{p.discount_type}</td>
-                  <td><span className="mp-amount">{formatCurrency(p.discount_value)}</span></td>
-                  <td><span className="mp-amount">{formatCurrency(p.min_order_amount)}</span></td>
-                  <td>{p.used_count || 0} / {p.usage_limit || '∞'}</td>
-                  <td>
-                    <span className={`mp-badge ${p.is_active ? 'mp-badge-green' : 'mp-badge-red'}`}>
-                      {p.is_active ? 'Active' : 'Inactive'}
-                    </span>
-                  </td>
-                  <td className="mp-text-center">
-                    <div className="mp-actions">
-                      <button className="mp-icon-btn" onClick={() => handleEditPromo(p)} title="Edit">
-                        <Edit size={15} />
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              )) : (
+              {isLoading ? (
+                [1, 2].map((idx) => (
+                  <tr key={`promo-skel-${idx}`}>
+                    <td><div className="mp-skeleton mp-skeleton-text" style={{ width: '80px', height: '16px' }} /></td>
+                    <td><div className="mp-skeleton mp-skeleton-text" style={{ width: '60px', height: '14px' }} /></td>
+                    <td><div className="mp-skeleton mp-skeleton-text" style={{ width: '70px', height: '16px' }} /></td>
+                    <td><div className="mp-skeleton mp-skeleton-text" style={{ width: '70px', height: '16px' }} /></td>
+                    <td><div className="mp-skeleton mp-skeleton-text" style={{ width: '50px', height: '14px' }} /></td>
+                    <td><div className="mp-skeleton mp-skeleton-pill" style={{ width: '64px' }} /></td>
+                    <td className="mp-text-center">
+                      <div className="mp-actions" style={{ justifyContent: 'center' }}>
+                        <div className="mp-skeleton mp-skeleton-text" style={{ width: '28px', height: '28px', borderRadius: '6px' }} />
+                      </div>
+                    </td>
+                  </tr>
+                ))
+              ) : promoCodes.length > 0 ? (
+                promoCodes.map((p) => (
+                  <tr key={p.id}>
+                    <td><span className="mp-text-bold">{p.code}</span></td>
+                    <td>{p.discount_type}</td>
+                    <td><span className="mp-amount">{formatCurrency(p.discount_value)}</span></td>
+                    <td><span className="mp-amount">{formatCurrency(p.min_order_amount)}</span></td>
+                    <td>{p.used_count || 0} / {p.usage_limit || '∞'}</td>
+                    <td>
+                      <span className={`mp-badge ${p.is_active ? 'mp-badge-green' : 'mp-badge-red'}`}>
+                        {p.is_active ? 'Active' : 'Inactive'}
+                      </span>
+                    </td>
+                    <td className="mp-text-center">
+                      <div className="mp-actions">
+                        <button className="mp-icon-btn" onClick={() => handleEditPromo(p)} title="Edit">
+                          <Edit size={15} />
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))
+              ) : (
                 <tr>
                   <td colSpan="7" className="mp-empty">No promo codes found.</td>
                 </tr>

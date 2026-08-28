@@ -269,17 +269,34 @@ export default function SiteContent() {
   if (loading) {
     return (
       <section className="tab-content">
-        <div className="loading-state">Loading site content...</div>
+        <div className="stats-grid">
+          {[1, 2, 3].map((i) => (
+            <div key={i} className="stat-card sc-skeleton-card">
+              <div className="sc-skeleton-box sc-skeleton-label" />
+              <div className="sc-skeleton-box sc-skeleton-val" />
+            </div>
+          ))}
+        </div>
+        <div className="sitecontent-cards">
+          {[1, 2, 3, 4].map((i) => (
+            <div key={i} className="sitecontent-main-card sc-skeleton-main-card">
+              <div className="sitecontent-card-header">
+                <div className="sc-skeleton-box sc-skeleton-icon" />
+                <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                  <div className="sc-skeleton-box sc-skeleton-title" />
+                  <div className="sc-skeleton-box sc-skeleton-desc" />
+                </div>
+                <div className="sc-skeleton-box sc-skeleton-chev" />
+              </div>
+            </div>
+          ))}
+        </div>
       </section>
     );
   }
 
   return (
     <section className="tab-content">
-      <div className="content-header">
-        <h3 className="content-subtitle">Store Content Management</h3>
-      </div>
-      
       {/* Stats Overview */}
       <div className="stats-grid">
         <div className="stat-card">

@@ -295,9 +295,29 @@ export default function ManageAdmin() {
       {/* 2. ADMIN USERS CARDS GRID */}
       <div className="ma-cards-section">
         {loading ? (
-          <div className="ma-loading-box">
-            <div className="ma-spinner" />
-            <span>Loading admin users...</span>
+          <div className="ma-users-grid">
+            {[1, 2, 3, 4, 5, 6].map((i) => (
+              <div key={i} className="ma-user-card ma-skeleton-card">
+                <div className="ma-user-card-header">
+                  <div className="ma-avatar-wrap ma-skeleton-box ma-skeleton-avatar" />
+                  <div className="ma-user-meta" style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                    <div className="ma-skeleton-box ma-skeleton-line" style={{ width: '120px', height: '16px' }} />
+                    <div className="ma-skeleton-box ma-skeleton-line" style={{ width: '160px', height: '12px' }} />
+                  </div>
+                </div>
+                <div className="ma-user-card-body" style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                  <div style={{ display: 'flex', gap: '8px' }}>
+                    <div className="ma-skeleton-box ma-skeleton-tag" style={{ width: '80px', height: '22px' }} />
+                    <div className="ma-skeleton-box ma-skeleton-tag" style={{ width: '90px', height: '22px' }} />
+                  </div>
+                  <div className="ma-skeleton-box ma-skeleton-line" style={{ width: '100%', height: '14px' }} />
+                </div>
+                <div className="ma-user-card-footer" style={{ display: 'flex', gap: '8px' }}>
+                  <div className="ma-skeleton-box ma-skeleton-btn" style={{ flex: 1, height: '32px' }} />
+                  <div className="ma-skeleton-box ma-skeleton-btn" style={{ width: '34px', height: '32px' }} />
+                </div>
+              </div>
+            ))}
           </div>
         ) : filteredAdmins.length === 0 ? (
           <div className="ma-empty-box">
