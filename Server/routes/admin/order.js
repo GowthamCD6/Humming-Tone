@@ -6,5 +6,7 @@ const adminAuth = require('../../middlewares/adminAuth');
 router.get('/manage', adminAuth, orderController.getManageOrders);
 router.get("/admin/get_order_items/:order_id", adminAuth, orderController.getOrderItems);
 router.put('/:orderId/status', adminAuth, orderController.updateOrderStatus);
+router.post('/label-data', adminAuth, orderController.getOrderLabelData);
+router.put('/bulk-status', adminAuth, orderController.bulkUpdateStatus);
 
 module.exports = router;

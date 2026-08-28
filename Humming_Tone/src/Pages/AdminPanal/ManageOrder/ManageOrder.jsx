@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useMemo, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
@@ -10,7 +10,19 @@ import SearchIcon from '@mui/icons-material/Search';
 import DownloadIcon from '@mui/icons-material/Download';
 import RotateLeftIcon from '@mui/icons-material/RotateLeft';
 import { API_BASE_URL } from '../../../utils/apiConfig';
+import ShippingLabel from './ShippingLabel/ShippingLabel';
 import './ManageOrder.css';
+
+const STATUS_CHIPS = [
+  { key: 'All Statuses', label: 'All', color: '#64748b' },
+  { key: 'Pending', label: 'Pending', color: '#f59e0b' },
+  { key: 'Confirmed', label: 'Confirmed', color: '#3b82f6' },
+  { key: 'Packed', label: 'Packed', color: '#10b981' },
+  { key: 'Shipped', label: 'Shipped', color: '#8b5cf6' },
+  { key: 'Out_for_delivery', label: 'Out for Delivery', color: '#f97316' },
+  { key: 'Delivered', label: 'Delivered', color: '#16a34a' },
+  { key: 'Cancelled', label: 'Cancelled', color: '#ef4444' },
+];
 
 const getTodayInputValue = () => {
   const now = new Date();
@@ -33,9 +45,17 @@ export default function ManageOrder() {
     status: 'All Statuses',
     startDate: '',
     endDate: '',
-    startTime: '', // Added
-    endTime: ''    // Added
+    startTime: '',
+    endTime: ''
   });
+
+  // Bulk selection state
+  const [selectedOrders, setSelectedOrders] = useState(new Set());
+  const [bulkStatusUpdating, setBulkStatusUpdating] = useState(false);
+
+  // Shipping label state
+  const [showLabel, setShowLabel] = useState(false);
+  const [labelData, setLabelData] = useState([]);
 
   useEffect(() => {
     const fetchOrders = async () => {
@@ -69,15 +89,14 @@ export default function ManageOrder() {
       status: 'All Statuses',
       startDate: '',
       endDate: '',
-      startTime: '', // Reset
-      endTime: ''    // Reset
+      startTime: '',
+      endTime: ''
     });
   };
 
   const formatStatementDate = (dateStr) => {
     const d = new Date(dateStr);
     if (Number.isNaN(d.getTime())) return '';
-    // YYYY-MM-DD
     const yyyy = d.getFullYear();
     const mm = String(d.getMonth() + 1).padStart(2, '0');
     const dd = String(d.getDate()).padStart(2, '0');
@@ -159,7 +178,6 @@ export default function ManageOrder() {
       }
 
       // 2. Date & Time Filter Logic
-      // Parse the order's created_at safely as local time to avoid UTC drift
       const orderDate = new Date(order.created_at);
       
       // Start Boundary
@@ -243,7 +261,90 @@ export default function ManageOrder() {
     return d.toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' });
   };
 
-  // Skeleton loader is now handled in the render instead of early return
+  // ===== BULK SELECTION =====
+  const handleSelectOrder = (orderId) => {
+    setSelectedOrders(prev => {
+      const next = new Set(prev);
+      if (next.has(orderId)) {
+        next.delete(orderId);
+      } else {
+        next.add(orderId);
+      }
+      return next;
+    });
+  };
+
+  const handleSelectAll = () => {
+    if (selectedOrders.size === pagedOrders.length) {
+      setSelectedOrders(new Set());
+    } else {
+      setSelectedOrders(new Set(pagedOrders.map(o => o.id)));
+    }
+  };
+
+  const isAllSelected = pagedOrders.length > 0 && selectedOrders.size === pagedOrders.length;
+
+  // Clear selection when filters or page changes
+  useEffect(() => {
+    setSelectedOrders(new Set());
+  }, [filters, safeOrderPage, orderLimit]);
+
+  // ===== BULK LABEL DOWNLOAD =====
+  const handleBulkLabels = useCallback(async () => {
+    if (selectedOrders.size === 0) return;
+    try {
+      const token = localStorage.getItem('adminToken');
+      const res = await fetch(`${API_BASE_URL}/api/orders/label-data`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+        },
+        body: JSON.stringify({ orderIds: Array.from(selectedOrders) })
+      });
+
+      const data = await res.json();
+      if (res.ok && data.success) {
+        setLabelData(data.labels);
+        setShowLabel(true);
+      }
+    } catch (error) {
+      console.error('Error fetching label data:', error);
+    }
+  }, [selectedOrders]);
+
+  // ===== BULK STATUS UPDATE =====
+  const handleBulkStatusUpdate = useCallback(async (newStatus) => {
+    if (selectedOrders.size === 0) return;
+    setBulkStatusUpdating(true);
+    try {
+      const token = localStorage.getItem('adminToken');
+      const res = await fetch(`${API_BASE_URL}/api/orders/bulk-status`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+        },
+        body: JSON.stringify({
+          orderIds: Array.from(selectedOrders),
+          status: newStatus
+        })
+      });
+
+      const data = await res.json();
+      if (res.ok && data.success) {
+        // Update local state
+        setOrders(prev => prev.map(o =>
+          selectedOrders.has(o.id) ? { ...o, status: newStatus } : o
+        ));
+        setSelectedOrders(new Set());
+      }
+    } catch (error) {
+      console.error('Error bulk updating status:', error);
+    } finally {
+      setBulkStatusUpdating(false);
+    }
+  }, [selectedOrders]);
 
   return (
     <section className="manage-orders-container">
@@ -288,6 +389,34 @@ export default function ManageOrder() {
           {loading ? <div className="mo-skeleton-val" /> : <div className="inv-stat-value mo-stat-value-red">{stats.cancelled}</div>}
           <div className="mo-stat-note">Orders removed from the active flow</div>
         </div>
+      </div>
+
+      {/* ===== QUICK STATUS CHIPS ===== */}
+      <div className="mo-status-chips">
+        {STATUS_CHIPS.map(chip => (
+          <button
+            key={chip.key}
+            className={`mo-chip ${filters.status === chip.key ? 'mo-chip-active' : ''}`}
+            style={{
+              '--chip-color': chip.color,
+              '--chip-bg': filters.status === chip.key ? chip.color : 'transparent'
+            }}
+            onClick={() => handleFilterChange('status', chip.key)}
+          >
+            <span
+              className="mo-chip-dot"
+              style={{ background: chip.color }}
+            />
+            {chip.label}
+            {chip.key !== 'All Statuses' && (
+              <span className="mo-chip-count">
+                {orders.filter(o =>
+                  o.status?.toLowerCase() === chip.key.toLowerCase()
+                ).length}
+              </span>
+            )}
+          </button>
+        ))}
       </div>
 
       <div className="filter-prototype-card">
@@ -400,88 +529,109 @@ export default function ManageOrder() {
 
       {/* Table */}
       <div className="table-container">
-        <table className="orders-table">
-          <thead>
-            <tr>
-              <th>ORDER #</th>
-              <th>CUSTOMER</th>
-              <th>DATE</th>
-              <th>ITEMS</th>
-              <th>TOTAL</th>
-              <th>DELIVERY DATE</th>
-              <th>STATUS</th>
-              <th>PAYMENT</th>
-              <th>ACTION</th>
-            </tr>
-          </thead>
-          <tbody>
-                {loading ? (
-                  Array.from({ length: orderLimit }).map((_, index) => (
-                    <tr key={`skel-${index}`} className="mo-skeleton-row">
-                      <td><div className="mo-skeleton-cell" style={{ width: '80px' }}></div></td>
-                      <td>
-                        <div className="mo-skeleton-cell" style={{ width: '120px', height: '14px', marginBottom: '6px' }}></div>
-                        <div className="mo-skeleton-cell" style={{ width: '90px', height: '10px' }}></div>
-                      </td>
-                      <td>
-                        <div className="mo-skeleton-cell" style={{ width: '80px', height: '14px', marginBottom: '6px' }}></div>
-                        <div className="mo-skeleton-cell" style={{ width: '60px', height: '10px' }}></div>
-                      </td>
-                      <td><div className="mo-skeleton-cell" style={{ width: '50px' }}></div></td>
-                      <td><div className="mo-skeleton-cell" style={{ width: '70px' }}></div></td>
-                      <td><div className="mo-skeleton-cell" style={{ width: '80px', height: '14px' }}></div></td>
-                      <td><div className="mo-skeleton-cell" style={{ width: '80px', height: '24px', borderRadius: '12px' }}></div></td>
-                      <td><div className="mo-skeleton-cell" style={{ width: '60px', height: '22px', borderRadius: '4px' }}></div></td>
-                      <td><div className="mo-skeleton-cell" style={{ width: '80px', height: '32px', borderRadius: '4px' }}></div></td>
-                    </tr>
-                  ))
-                ) : filteredOrders.length === 0 ? (
-                  <tr>
-                    <td colSpan="9">
-                      <div className="no-orders">No orders found matching your filters.</div>
-                    </td>
-                  </tr>
-                ) : (
-                  pagedOrders.map((order) => (
-                    <tr key={order.id}>
-                      <td className="order-id">{order.order_number}</td>
-                      <td className="customer-info">
-                        <div className="cust-name">{order.customer_name}</div>
-                        <div className="cust-email">{order.customer_email}</div>
-                      </td>
-                      <td className="date-info">
-                        <div className="date-main">{formatDate(order.created_at)}</div>
-                        <div className="date-time">{formatTime(order.created_at)}</div>
-                      </td>
-                      <td className="items-info">
-                        {order.unique_items_count} items
-                      </td>
-                      <td className="total-price">₹{parseFloat(order.total_amount).toFixed(2)}</td>
-                      <td className="delivery-date-col">
-                        {formatShortDate(order.delivery_date)}
-                      </td>
-                      <td>
-                        <span className={`status-badge ${order.status?.toLowerCase().replace(/ /g, '_')}`}>
-                          {order.status?.replace(/_/g, ' ')}
-                        </span>
-                      </td>
-                      <td className="payment-info">
-                        <span className="payment-badge">{order.payment_id ? 'PAID' : 'UNPAID'}</span>
-                      </td>
-                      <td className="action-info">
-                        <button 
-                          className="view-order-btn"
-                          onClick={() => navigate(`/admin/order/${order.id}`)}
-                          title="View Order Details"
-                        >
-                          <VisibilityIcon /> View
-                        </button>
+        <div className="orders-table-wrapper">
+          <table className="orders-table">
+            <thead>
+              <tr>
+                <th className="mo-checkbox-th">
+                  <input
+                    type="checkbox"
+                    className="mo-checkbox"
+                    checked={isAllSelected}
+                    onChange={handleSelectAll}
+                    aria-label="Select all orders"
+                  />
+                </th>
+                <th>ORDER #</th>
+                <th>CUSTOMER</th>
+                <th>DATE</th>
+                <th>ITEMS</th>
+                <th>TOTAL</th>
+                <th>DELIVERY DATE</th>
+                <th>STATUS</th>
+                <th>PAYMENT</th>
+                <th>ACTION</th>
+              </tr>
+            </thead>
+            <tbody>
+                  {loading ? (
+                    Array.from({ length: orderLimit }).map((_, index) => (
+                      <tr key={`skel-${index}`} className="mo-skeleton-row">
+                        <td><div className="mo-skeleton-cell" style={{ width: '18px', height: '18px', borderRadius: '4px' }}></div></td>
+                        <td><div className="mo-skeleton-cell" style={{ width: '80px' }}></div></td>
+                        <td>
+                          <div className="mo-skeleton-cell" style={{ width: '120px', height: '14px', marginBottom: '6px' }}></div>
+                          <div className="mo-skeleton-cell" style={{ width: '90px', height: '10px' }}></div>
+                        </td>
+                        <td>
+                          <div className="mo-skeleton-cell" style={{ width: '80px', height: '14px', marginBottom: '6px' }}></div>
+                          <div className="mo-skeleton-cell" style={{ width: '60px', height: '10px' }}></div>
+                        </td>
+                        <td><div className="mo-skeleton-cell" style={{ width: '50px' }}></div></td>
+                        <td><div className="mo-skeleton-cell" style={{ width: '70px' }}></div></td>
+                        <td><div className="mo-skeleton-cell" style={{ width: '80px', height: '14px' }}></div></td>
+                        <td><div className="mo-skeleton-cell" style={{ width: '80px', height: '24px', borderRadius: '12px' }}></div></td>
+                        <td><div className="mo-skeleton-cell" style={{ width: '60px', height: '22px', borderRadius: '4px' }}></div></td>
+                        <td><div className="mo-skeleton-cell" style={{ width: '80px', height: '32px', borderRadius: '4px' }}></div></td>
+                      </tr>
+                    ))
+                  ) : filteredOrders.length === 0 ? (
+                    <tr>
+                      <td colSpan="10">
+                        <div className="no-orders">No orders found matching your filters.</div>
                       </td>
                     </tr>
-                  ))
-                )}
-              </tbody>
-            </table>
+                  ) : (
+                    pagedOrders.map((order) => (
+                      <tr key={order.id} className={selectedOrders.has(order.id) ? 'mo-row-selected' : ''}>
+                        <td className="mo-checkbox-td">
+                          <input
+                            type="checkbox"
+                            className="mo-checkbox"
+                            checked={selectedOrders.has(order.id)}
+                            onChange={() => handleSelectOrder(order.id)}
+                            aria-label={`Select order ${order.order_number}`}
+                          />
+                        </td>
+                        <td className="order-id">{order.order_number}</td>
+                        <td className="customer-info">
+                          <div className="cust-name">{order.customer_name}</div>
+                          <div className="cust-email">{order.customer_email}</div>
+                        </td>
+                        <td className="date-info">
+                          <div className="date-main">{formatDate(order.created_at)}</div>
+                          <div className="date-time">{formatTime(order.created_at)}</div>
+                        </td>
+                        <td className="items-info">
+                          {order.unique_items_count} items
+                        </td>
+                        <td className="total-price">₹{parseFloat(order.total_amount).toFixed(2)}</td>
+                        <td className="delivery-date-col">
+                          {formatShortDate(order.delivery_date)}
+                        </td>
+                        <td>
+                          <span className={`status-badge ${order.status?.toLowerCase().replace(/ /g, '_')}`}>
+                            {order.status?.replace(/_/g, ' ')}
+                          </span>
+                        </td>
+                        <td className="payment-info">
+                          <span className="payment-badge">{order.payment_id ? 'PAID' : 'UNPAID'}</span>
+                        </td>
+                        <td className="action-info">
+                          <button 
+                            className="view-order-btn"
+                            onClick={() => navigate(`/admin/order/${order.id}`)}
+                            title="View Order Details"
+                          >
+                            <VisibilityIcon /> View
+                          </button>
+                        </td>
+                      </tr>
+                    ))
+                  )}
+            </tbody>
+          </table>
+        </div>
 
             <div className="table-footer">
               <div className="footer-text">
@@ -520,6 +670,53 @@ export default function ManageOrder() {
             </div>
       </div>
 
+      {/* ===== BULK ACTION BAR ===== */}
+      {selectedOrders.size > 0 && (
+        <div className="mo-bulk-bar">
+          <div className="mo-bulk-left">
+            <span className="mo-bulk-count">{selectedOrders.size} selected</span>
+            <button className="mo-bulk-clear" onClick={() => setSelectedOrders(new Set())}>
+              Clear
+            </button>
+          </div>
+          <div className="mo-bulk-actions">
+            <button
+              className="mo-bulk-btn mo-bulk-btn-label"
+              onClick={handleBulkLabels}
+            >
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <rect x="2" y="7" width="20" height="14" rx="2" ry="2" />
+                <polyline points="16 21 12 17 8 21" />
+                <line x1="12" y1="3" x2="12" y2="7" />
+              </svg>
+              Download Labels ({selectedOrders.size})
+            </button>
+            <div className="mo-bulk-status-wrap">
+              <select
+                className="mo-bulk-status-select"
+                disabled={bulkStatusUpdating}
+                defaultValue=""
+                onChange={(e) => {
+                  if (e.target.value) {
+                    handleBulkStatusUpdate(e.target.value);
+                    e.target.value = '';
+                  }
+                }}
+              >
+                <option value="" disabled>Bulk Status Update</option>
+                <option value="pending">Pending</option>
+                <option value="confirmed">Confirmed</option>
+                <option value="packed">Packed</option>
+                <option value="shipped">Shipped</option>
+                <option value="out_for_delivery">Out for Delivery</option>
+                <option value="delivered">Delivered</option>
+                <option value="cancelled">Cancelled</option>
+              </select>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* No Orders Modal */}
       {showNoOrdersModal && (
         <div className="mo-modal-overlay" onClick={() => setShowNoOrdersModal(false)}>
@@ -536,7 +733,7 @@ export default function ManageOrder() {
             </div>
             <div className="mo-modal-body">
               <p>
-                There are no orders available for the selected filters, so a statement can’t be downloaded.
+                There are no orders available for the selected filters, so a statement can't be downloaded.
               </p>
             </div>
             <div className="mo-modal-footer">
@@ -546,6 +743,14 @@ export default function ManageOrder() {
             </div>
           </div>
         </div>
+      )}
+
+      {/* Shipping Label Modal */}
+      {showLabel && (
+        <ShippingLabel
+          orders={labelData}
+          onClose={() => setShowLabel(false)}
+        />
       )}
     </section>
   );

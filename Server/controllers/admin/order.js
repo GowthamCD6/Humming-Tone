@@ -27,6 +27,8 @@ exports.getManageOrders = async (req, res) => {
                 o.order_status AS status,
                 o.shipping_date,
                 o.delivery_date,
+                o.tracking_number,
+                o.courier_partner,
                 COUNT(oi.id) AS unique_items_count,
                 IFNULL(SUM(oi.quantity), 0) AS total_qty
             FROM orders o
@@ -62,8 +64,10 @@ exports.getOrderItems = (req,res,next) => {
            COALESCE(
              (SELECT pi.image_path FROM product_images pi WHERE pi.product_id = oi.product_id AND pi.is_primary = 1 LIMIT 1),
              (SELECT pi.image_path FROM product_images pi WHERE pi.product_id = oi.product_id LIMIT 1)
-           ) AS image_path
+           ) AS image_path,
+           p.sku AS product_sku
          FROM order_items oi
+         LEFT JOIN products p ON p.id = oi.product_id
          WHERE oi.order_id = ?
        `;
        db.query(sql,[order_id],(error,result) => {
@@ -79,7 +83,7 @@ exports.getOrderItems = (req,res,next) => {
 exports.updateOrderStatus = async (req, res, next) => {
     try {
         const { orderId } = req.params;
-        const { status, shipping_date, delivery_date } = req.body;
+        const { status, shipping_date, delivery_date, tracking_number, courier_partner } = req.body;
 
         if (!orderId || !status) {
             return next(createError.BadRequest('Order ID and status are required'));
@@ -110,6 +114,18 @@ exports.updateOrderStatus = async (req, res, next) => {
         if (delivery_date !== undefined) {
             sql += ", delivery_date = ?";
             params.push(delivery_date || null);
+        }
+
+        // Update tracking_number if provided
+        if (tracking_number !== undefined) {
+            sql += ", tracking_number = ?";
+            params.push(tracking_number || null);
+        }
+
+        // Update courier_partner if provided
+        if (courier_partner !== undefined) {
+            sql += ", courier_partner = ?";
+            params.push(courier_partner || null);
         }
 
         sql += " WHERE id = ?";
@@ -152,3 +168,133 @@ exports.updateOrderStatus = async (req, res, next) => {
     }
 }
 
+// New: Get label-ready data for one or more orders (for shipping sticker generation)
+exports.getOrderLabelData = async (req, res, next) => {
+    try {
+        const { orderIds } = req.body;
+
+        if (!orderIds || !Array.isArray(orderIds) || orderIds.length === 0) {
+            return next(createError.BadRequest('orderIds array is required'));
+        }
+
+        // Sanitize IDs
+        const safeIds = orderIds.map(id => parseInt(id, 10)).filter(id => !isNaN(id));
+        if (safeIds.length === 0) {
+            return next(createError.BadRequest('No valid order IDs provided'));
+        }
+
+        const placeholders = safeIds.map(() => '?').join(',');
+
+        // Fetch orders
+        const [orders] = await db.promise().query(
+            `SELECT 
+                o.id,
+                o.order_number,
+                o.customer_name,
+                o.customer_email,
+                o.customer_phone,
+                o.customer_address,
+                o.city,
+                o.state,
+                o.pincode,
+                o.created_at,
+                o.total_amount,
+                o.payment_id,
+                o.payment_status,
+                o.order_status AS status,
+                o.shipping_date,
+                o.delivery_date,
+                o.tracking_number,
+                o.courier_partner
+             FROM orders o
+             WHERE o.id IN (${placeholders})
+             ORDER BY o.created_at DESC`,
+            safeIds
+        );
+
+        // Fetch items for all orders in one query
+        const [items] = await db.promise().query(
+            `SELECT 
+                oi.*,
+                p.sku AS product_sku,
+                COALESCE(
+                  (SELECT pi.image_path FROM product_images pi WHERE pi.product_id = oi.product_id AND pi.is_primary = 1 LIMIT 1),
+                  (SELECT pi.image_path FROM product_images pi WHERE pi.product_id = oi.product_id LIMIT 1)
+                ) AS image_path
+             FROM order_items oi
+             LEFT JOIN products p ON p.id = oi.product_id
+             WHERE oi.order_id IN (${placeholders})`,
+            safeIds
+        );
+
+        // Group items by order_id
+        const itemsByOrder = {};
+        items.forEach(item => {
+            if (!itemsByOrder[item.order_id]) {
+                itemsByOrder[item.order_id] = [];
+            }
+            itemsByOrder[item.order_id].push(item);
+        });
+
+        // Assemble label data
+        const labelData = orders.map(order => ({
+            ...order,
+            items: itemsByOrder[order.id] || []
+        }));
+
+        res.status(200).json({ success: true, labels: labelData });
+
+    } catch (error) {
+        console.error("Label data error:", error);
+        next(error);
+    }
+};
+
+// New: Bulk status update
+exports.bulkUpdateStatus = async (req, res, next) => {
+    try {
+        const { orderIds, status } = req.body;
+
+        if (!orderIds || !Array.isArray(orderIds) || orderIds.length === 0) {
+            return next(createError.BadRequest('orderIds array is required'));
+        }
+
+        if (!status) {
+            return next(createError.BadRequest('status is required'));
+        }
+
+        const validStatuses = ['pending', 'confirmed', 'packed', 'shipped', 'out_for_delivery', 'delivered', 'cancelled'];
+        if (!validStatuses.includes(status.toLowerCase())) {
+            return next(createError.BadRequest('Invalid status value'));
+        }
+
+        const safeIds = orderIds.map(id => parseInt(id, 10)).filter(id => !isNaN(id));
+        if (safeIds.length === 0) {
+            return next(createError.BadRequest('No valid order IDs provided'));
+        }
+
+        const placeholders = safeIds.map(() => '?').join(',');
+
+        let sql = `UPDATE orders SET order_status = ?`;
+        const params = [status];
+
+        if (status.toLowerCase() === 'packed') {
+            sql += ", packed_at = NOW()";
+        }
+
+        sql += ` WHERE id IN (${placeholders})`;
+        params.push(...safeIds);
+
+        const [result] = await db.promise().query(sql, params);
+
+        res.status(200).json({
+            success: true,
+            message: `${result.affectedRows} order(s) updated to ${status}`,
+            affectedRows: result.affectedRows
+        });
+
+    } catch (error) {
+        console.error("Bulk status update error:", error);
+        next(error);
+    }
+};

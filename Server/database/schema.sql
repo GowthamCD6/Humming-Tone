@@ -291,3 +291,8 @@ ALTER TABLE orders
 
 ALTER TABLE orders MODIFY COLUMN order_status
   ENUM('pending','confirmed','packed','shipped','out_for_delivery','delivered','cancelled') DEFAULT 'pending';
+
+-- ===== Shipping Label & Tracking Columns =====
+ALTER TABLE orders
+  ADD COLUMN tracking_number VARCHAR(100) DEFAULT NULL,
+  ADD COLUMN courier_partner VARCHAR(100) DEFAULT NULL;
