@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import demoImage from '../../../assets/demo.jpeg';
+import { SITE_ASSETS } from '../../../utils/siteAssets';
 import UserFooter from '../../../components/User-Footer-Card/UserFooter';
 import LottieLoader from '../../../components/LottieLoader/LottieLoader';
 import './AllProduct.css';
+
+const demoImage = SITE_ASSETS.demoProduct;
 import { getGenderOptions } from '../../../utils/siteContentStore';
 import { Link } from 'react-router-dom';
 import { API_BASE_URL, getImageUrl } from '../../../utils/apiConfig';

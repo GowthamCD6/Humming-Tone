@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import demoImage from '../../../assets/demo.jpeg';
+import { SITE_ASSETS } from '../../../utils/siteAssets';
 import UserFooter from '../../../components/User-Footer-Card/UserFooter';
 import ProductGridSkeleton from '../../../components/ProductSkeleton/ProductSkeleton';
 import './Women.css';
+
+const demoImage = SITE_ASSETS.demoProduct;
 import { getGenderOptions } from '../../../utils/siteContentStore';
 import axios from 'axios';
 import { Link, useSearchParams } from 'react-router-dom';

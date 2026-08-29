@@ -16,8 +16,10 @@ import CloseIcon from '@mui/icons-material/Close'
 import FileDownloadIcon from '@mui/icons-material/FileDownload'
 import StorefrontIcon from '@mui/icons-material/Storefront'
 import { Outlet, useLocation, useNavigate } from 'react-router-dom'
-import logo from '../../assets/logo.png'
+import { SITE_ASSETS } from '../../utils/siteAssets'
 import './AdminTab.css'
+
+const logo = SITE_ASSETS.logo
 
 const decodeToken = (token) => {
   try {

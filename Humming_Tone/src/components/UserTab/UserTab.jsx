@@ -22,10 +22,12 @@ import MenuIcon from "@mui/icons-material/Menu";
 import HomeOutlinedIcon from "@mui/icons-material/HomeOutlined";
 import SearchIcon from "@mui/icons-material/Search";
 import PersonOutlineIcon from "@mui/icons-material/PersonOutline";
-import logo from "../../assets/logo.png";
+import { SITE_ASSETS } from "../../utils/siteAssets";
 import "./UserTab.css";
 import { fetchSiteContent } from "../../utils/siteContentStore";
 import AuthModal from "../AuthModal/AuthModal";
+
+const logo = SITE_ASSETS.logo;
 
 const DEFAULT_GENDERS = [
   "Men",

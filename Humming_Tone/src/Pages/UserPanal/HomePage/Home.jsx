@@ -1,13 +1,15 @@
 import React, { useEffect, useState } from 'react';
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
-import homeImage from '../../../assets/home1.png';
-import craftsmanshipImage from '../../../assets/craftsmanship.jpg';
+import { SITE_ASSETS } from '../../../utils/siteAssets';
 import UserFooter from '../../../components/User-Footer-Card/UserFooter';
 import ProductGridSkeleton from '../../../components/ProductSkeleton/ProductSkeleton';
 import './Home.css';
 import axios from 'axios';
 import { Link, useLocation } from 'react-router-dom';
 import { API_BASE_URL, getImageUrl } from '../../../utils/apiConfig';
+
+const homeImage = SITE_ASSETS.homeHero;
+const craftsmanshipImage = SITE_ASSETS.craftsmanship;
 
 const Home = ({ onViewDetails: _onViewDetails = () => {} }) => {
   const [featuredProducts, setFeaturedProducts] = useState([]);

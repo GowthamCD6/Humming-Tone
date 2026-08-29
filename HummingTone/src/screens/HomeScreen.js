@@ -20,6 +20,7 @@ import { PerksTicker } from '../components/PerksTicker';
 import { Button } from '../components/Button';
 import { ProductService } from '../api/services';
 import { useSiteContent } from '../context/SiteContentContext';
+import { SITE_ASSETS } from '../api/siteAssets';
 
 const { width } = Dimensions.get('window');
 
@@ -103,7 +104,7 @@ export const HomeScreen = ({ navigation }) => {
         <View style={styles.heroWrapper}>
           <Image
             source={{
-              uri: 'https://images.unsplash.com/photo-1490481651871-ab68de25d43d?auto=format&fit=crop&w=1200&q=80',
+              uri: SITE_ASSETS.homeHero,
             }}
             style={styles.heroImageAbsolute}
             resizeMode="cover"

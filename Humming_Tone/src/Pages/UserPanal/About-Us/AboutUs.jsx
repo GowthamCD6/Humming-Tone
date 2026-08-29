@@ -1,12 +1,14 @@
 import React, { useEffect } from 'react';
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
+import { SITE_ASSETS } from '../../../utils/siteAssets';
 import UserFooter from '../../../components/User-Footer-Card/UserFooter';
-import aboutHeroImage from '../../../assets/about_hero.jpg';
-import aboutHeroVideo from '../../../assets/aboutus.mp4';
-import aboutDetailImage from '../../../assets/about_detail.jpg';
-import craftsmanshipImage from '../../../assets/craftsmanship.jpg';
 import { Link } from 'react-router-dom';
 import './AboutUs.css';
+
+const aboutHeroImage = SITE_ASSETS.aboutHero;
+const aboutHeroVideo = SITE_ASSETS.aboutVideo;
+const aboutDetailImage = SITE_ASSETS.aboutDetail;
+const craftsmanshipImage = SITE_ASSETS.craftsmanship;
 
 const AboutUs = () => {
   useEffect(() => {

@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
-import demoImage from "../../../assets/demo.jpeg";
+import { SITE_ASSETS } from "../../../utils/siteAssets";
 import UserFooter from "../../../components/User-Footer-Card/UserFooter";
+
+const demoImage = SITE_ASSETS.demoProduct;
 import AddToCartModal from "./Product-Buying modal/AddToCartModal";
 import ProductReviews from "./ReviewsSection/ProductReviews";
 import "./Details.css";

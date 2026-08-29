@@ -1,7 +1,9 @@
 
 import React, { useState, useEffect, useMemo } from 'react';
 import './ProductData.css';
-import demoImage from '../../../assets/demo.jpeg';
+import { SITE_ASSETS } from '../../../utils/siteAssets';
+
+const demoImage = SITE_ASSETS.demoProduct;
 import axios from 'axios';
 import Inventory2Icon from '@mui/icons-material/Inventory2';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
