@@ -1,8 +1,8 @@
 import React from 'react';
-import { View, StyleSheet, Platform } from 'react-native';
+import { View, StyleSheet, Platform, Text } from 'react-native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { Ionicons } from '../components/Icons';
-import { colors } from '../theme/colors';
+import { colors, shadows } from '../theme/colors';
 import { typography } from '../theme/typography';
 import { useCart } from '../context/CartContext';
 
@@ -26,17 +26,13 @@ export const BottomTabNavigator = () => {
         tabBarActiveTintColor: colors.primary,
         tabBarInactiveTintColor: colors.textMuted,
         tabBarStyle: {
-          backgroundColor: colors.background,
+          backgroundColor: colors.surface,
           borderTopColor: colors.borderLight,
           borderTopWidth: 1,
-          height: Platform.OS === 'ios' ? 84 : 64,
-          paddingBottom: Platform.OS === 'ios' ? 24 : 8,
+          height: Platform.OS === 'ios' ? 86 : 68,
+          paddingBottom: Platform.OS === 'ios' ? 24 : 10,
           paddingTop: 8,
-          elevation: 8,
-          shadowColor: '#000',
-          shadowOffset: { width: 0, height: -2 },
-          shadowOpacity: 0.05,
-          shadowRadius: 6,
+          ...shadows.bottomBar,
         },
         tabBarLabelStyle: {
           fontFamily: typography.fontSans,
@@ -60,7 +56,12 @@ export const BottomTabNavigator = () => {
             iconName = focused ? 'person' : 'person-outline';
           }
 
-          return <Ionicons name={iconName} size={22} color={color} />;
+          return (
+            <View style={styles.iconContainer}>
+              <Ionicons name={iconName} size={23} color={focused ? colors.primary : colors.textMuted} />
+              {focused && <View style={styles.activeDot} />}
+            </View>
+          );
         },
       })}
     >
@@ -86,12 +87,13 @@ export const BottomTabNavigator = () => {
           tabBarLabel: 'Bag',
           tabBarBadge: cartCount > 0 ? (cartCount > 99 ? '99+' : cartCount) : undefined,
           tabBarBadgeStyle: {
-            backgroundColor: colors.primary,
+            backgroundColor: colors.goldDark,
             color: colors.textInverse,
             fontSize: 9,
             fontWeight: typography.weightBold,
-            minWidth: 16,
-            height: 16,
+            minWidth: 18,
+            height: 18,
+            borderRadius: 9,
           },
         }}
       />
@@ -103,3 +105,18 @@ export const BottomTabNavigator = () => {
     </Tab.Navigator>
   );
 };
+
+const styles = StyleSheet.create({
+  iconContainer: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    height: 28,
+  },
+  activeDot: {
+    width: 4,
+    height: 4,
+    borderRadius: 2,
+    backgroundColor: colors.gold,
+    marginTop: 2,
+  },
+});

@@ -10,7 +10,7 @@ import {
   TextInput,
 } from 'react-native';
 import { Ionicons } from '../components/Icons';
-import { colors } from '../theme/colors';
+import { colors, shadows } from '../theme/colors';
 import { typography, spacing } from '../theme/typography';
 import { Header } from '../components/Header';
 import { Button } from '../components/Button';
@@ -20,33 +20,41 @@ import { useWishlist } from '../context/WishlistContext';
 export const ProfileScreen = ({ navigation }) => {
   const { user, isAuthenticated, logout } = useAuth();
   const { wishlistCount } = useWishlist();
+  const [editModalVisible, setEditModalVisible] = useState(false);
+  const [editName, setEditName] = useState(user?.name || '');
+  const [editPhone, setEditPhone] = useState(user?.phone || '');
 
   const handleLogout = () => {
-    Alert.alert('Sign Out', 'Are you sure you want to sign out from your atelier account?', [
+    Alert.alert('Sign Out', 'Are you sure you want to sign out from your Humming Tone account?', [
       { text: 'Cancel', style: 'cancel' },
       { text: 'Sign Out', style: 'destructive', onPress: logout },
     ]);
+  };
+
+  const handleSaveProfile = () => {
+    setEditModalVisible(false);
+    Alert.alert('Profile Updated', 'Your profile details have been saved.');
   };
 
   const PROFILE_MENU = [
     {
       id: 'wishlist',
       title: 'Saved Items & Wishlist',
-      subtitle: `${wishlistCount} curated pieces`,
+      subtitle: `${wishlistCount} curated items`,
       icon: 'heart-outline',
       onPress: () => navigation.navigate('Wishlist'),
     },
     {
       id: 'track',
       title: 'Track Orders & Shipments',
-      subtitle: 'Real-time delivery milestones',
+      subtitle: 'Real-time delivery status & history',
       icon: 'location-outline',
       onPress: () => navigation.navigate('OrderTracking'),
     },
     {
       id: 'returns',
       title: 'Returns & Exchanges',
-      subtitle: 'Complimentary 7-day pickup',
+      subtitle: 'Easy 7-day pickup assistance',
       icon: 'repeat-outline',
       onPress: () => navigation.navigate('ReturnRequest'),
     },
@@ -60,7 +68,7 @@ export const ProfileScreen = ({ navigation }) => {
     {
       id: 'support',
       title: 'Customer Care & WhatsApp',
-      subtitle: 'Order help & product inquiries',
+      subtitle: 'Order help & instant support',
       icon: 'chatbubble-ellipses-outline',
       onPress: () => navigation.navigate('Support'),
     },
@@ -84,7 +92,9 @@ export const ProfileScreen = ({ navigation }) => {
               <>
                 <Text style={styles.userName}>{user.name}</Text>
                 <Text style={styles.userEmail}>{user.email}</Text>
-                <Text style={styles.memberBadge}>HUMMING TONE MEMBER</Text>
+                <View style={styles.memberBadgeWrap}>
+                  <Text style={styles.memberBadge}>HUMMING TONE PATRON</Text>
+                </View>
               </>
             ) : (
               <>
@@ -103,15 +113,21 @@ export const ProfileScreen = ({ navigation }) => {
               onPress={() => navigation.navigate('Login')}
               variant="primary"
               size="md"
+              style={styles.authBtn}
             />
           </View>
         ) : (
           <View style={styles.authCtaBox}>
             <Button
               title="EDIT PROFILE"
-              onPress={() => setEditModalVisible(true)}
+              onPress={() => {
+                setEditName(user?.name || '');
+                setEditPhone(user?.phone || '');
+                setEditModalVisible(true);
+              }}
               variant="outline"
               size="sm"
+              style={styles.editBtn}
             />
           </View>
         )}
@@ -152,12 +168,53 @@ export const ProfileScreen = ({ navigation }) => {
         {/* Footer Brand Info */}
         <View style={styles.footerBrand}>
           <Text style={styles.footerBrandName}>HUMMING TONE</Text>
-          <Text style={styles.footerBrandDesc}>Premium Fashion & Custom Apparel</Text>
+          <Text style={styles.footerBrandDesc}>Premium Apparel & Custom Print Studio</Text>
           <Text style={styles.copyrightText}>© 2026 Humming Tone. All Rights Reserved.</Text>
         </View>
 
         <View style={{ height: 60 }} />
       </ScrollView>
+
+      {/* Edit Profile Modal */}
+      <Modal visible={editModalVisible} transparent animationType="slide">
+        <View style={styles.modalBackdrop}>
+          <View style={styles.modalContent}>
+            <View style={styles.modalHeader}>
+              <Text style={styles.modalTitle}>Edit Profile</Text>
+              <TouchableOpacity onPress={() => setEditModalVisible(false)}>
+                <Ionicons name="close" size={22} color={colors.textPrimary} />
+              </TouchableOpacity>
+            </View>
+
+            <Text style={styles.inputLabel}>Full Name</Text>
+            <TextInput
+              style={styles.modalInput}
+              value={editName}
+              onChangeText={setEditName}
+              placeholder="Enter your name"
+              placeholderTextColor={colors.textMuted}
+            />
+
+            <Text style={styles.inputLabel}>Phone Number</Text>
+            <TextInput
+              style={styles.modalInput}
+              value={editPhone}
+              onChangeText={setEditPhone}
+              placeholder="Enter phone number"
+              placeholderTextColor={colors.textMuted}
+              keyboardType="phone-pad"
+            />
+
+            <Button
+              title="SAVE CHANGES"
+              onPress={handleSaveProfile}
+              variant="primary"
+              size="md"
+              style={{ marginTop: 12 }}
+            />
+          </View>
+        </View>
+      </Modal>
     </View>
   );
 };
@@ -186,6 +243,8 @@ const styles = StyleSheet.create({
     backgroundColor: colors.primary,
     alignItems: 'center',
     justifyContent: 'center',
+    borderWidth: 2,
+    borderColor: colors.gold,
   },
   avatarText: {
     fontFamily: typography.fontSans,
@@ -198,83 +257,130 @@ const styles = StyleSheet.create({
   },
   userName: {
     fontFamily: typography.fontSerif,
-    fontSize: 16.5,
+    fontSize: 18,
     fontWeight: typography.weightBold,
     color: colors.textPrimary,
     marginBottom: 2,
   },
   userEmail: {
     fontFamily: typography.fontSans,
-    fontSize: 12,
+    fontSize: 12.5,
     color: colors.textSecondary,
     marginBottom: 4,
+  },
+  memberBadgeWrap: {
+    alignSelf: 'flex-start',
+    backgroundColor: 'rgba(212, 175, 55, 0.12)',
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    borderRadius: 4,
   },
   memberBadge: {
     fontFamily: typography.fontSans,
     fontSize: 9,
     fontWeight: typography.weightBold,
-    color: colors.goldMuted,
-    letterSpacing: 1,
+    letterSpacing: 1.2,
+    color: colors.goldDark,
   },
   authCtaBox: {
-    paddingHorizontal: spacing.screenPadding,
-    paddingVertical: 14,
-  },
-  menuSection: {
-    paddingHorizontal: spacing.screenPadding,
-    paddingTop: 16,
-  },
-  menuHeading: {
-    fontFamily: typography.fontSans,
-    fontSize: 10.5,
-    fontWeight: typography.weightBold,
-    letterSpacing: 1.5,
-    color: colors.textSecondary,
-    marginBottom: 10,
-  },
-  menuItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingVertical: 14,
+    padding: spacing.screenPadding,
+    backgroundColor: colors.surface,
     borderBottomWidth: 1,
     borderBottomColor: colors.borderLight,
   },
-  menuLeft: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 12,
-    flex: 1,
+  authBtn: {
+    borderRadius: 8,
   },
-  iconCircle: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
+  editBtn: {
+    borderRadius: 8,
+  },
+  menuSection: {
+    marginTop: spacing.md,
     backgroundColor: colors.surface,
-    alignItems: 'center',
-    justifyContent: 'center',
+    borderTopWidth: 1,
+    borderBottomWidth: 1,
+    borderColor: colors.borderLight,
+    paddingVertical: 8,
   },
-  menuTitle: {
-    fontFamily: typography.fontSans,
-    fontSize: 13.5,
-    color: colors.textPrimary,
-    fontWeight: typography.weightSemiBold,
-  },
-  menuSubtitle: {
-    fontFamily: typography.fontSans,
-    fontSize: 11,
-    color: colors.textSecondary,
-    marginTop: 2,
-  },
-  versionSection: {
-    alignItems: 'center',
-    paddingVertical: 32,
-  },
-  versionText: {
+  menuHeading: {
     fontFamily: typography.fontSans,
     fontSize: 10,
     fontWeight: typography.weightBold,
     letterSpacing: 1.5,
+    color: colors.goldDark,
+    paddingHorizontal: spacing.screenPadding,
+    paddingVertical: 8,
+  },
+  menuItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: spacing.screenPadding,
+    paddingVertical: 14,
+    borderBottomWidth: 1,
+    borderBottomColor: colors.borderLight,
+  },
+  menuIconWrap: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: colors.surface,
+    borderWidth: 1,
+    borderColor: colors.border,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 14,
+  },
+  menuTextWrap: {
+    flex: 1,
+  },
+  menuTitle: {
+    fontFamily: typography.fontSans,
+    fontSize: 13.5,
+    fontWeight: typography.weightMedium,
+    color: colors.textPrimary,
+    marginBottom: 2,
+  },
+  menuSubtitle: {
+    fontFamily: typography.fontSans,
+    fontSize: 11,
+    color: colors.textMuted,
+  },
+  logoutButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+    marginTop: 24,
+    marginHorizontal: spacing.screenPadding,
+    paddingVertical: 14,
+    backgroundColor: colors.surface,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: colors.errorLight,
+  },
+  logoutText: {
+    fontFamily: typography.fontSans,
+    fontSize: 12,
+    fontWeight: typography.weightBold,
+    letterSpacing: 1.2,
+    color: colors.error,
+  },
+  footerBrand: {
+    alignItems: 'center',
+    marginTop: 36,
+    paddingHorizontal: spacing.screenPadding,
+  },
+  footerBrandName: {
+    fontFamily: typography.fontSerif,
+    fontSize: 15,
+    fontWeight: typography.weightBold,
+    letterSpacing: 2,
+    color: colors.textPrimary,
+    marginBottom: 4,
+  },
+  footerBrandDesc: {
+    fontFamily: typography.fontSans,
+    fontSize: 11,
     color: colors.textMuted,
     marginBottom: 4,
   },
@@ -283,5 +389,46 @@ const styles = StyleSheet.create({
     fontSize: 10,
     color: colors.textMuted,
   },
+  modalBackdrop: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.5)',
+    justifyContent: 'flex-end',
+  },
+  modalContent: {
+    backgroundColor: colors.surface,
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
+    padding: spacing.screenPadding,
+    paddingBottom: 40,
+  },
+  modalHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 16,
+  },
+  modalTitle: {
+    fontFamily: typography.fontSerif,
+    fontSize: 18,
+    fontWeight: typography.weightBold,
+    color: colors.textPrimary,
+  },
+  inputLabel: {
+    fontFamily: typography.fontSans,
+    fontSize: 12,
+    fontWeight: typography.weightMedium,
+    color: colors.textSecondary,
+    marginBottom: 6,
+    marginTop: 10,
+  },
+  modalInput: {
+    borderWidth: 1,
+    borderColor: colors.border,
+    borderRadius: 8,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    fontSize: 14,
+    color: colors.textPrimary,
+    fontFamily: typography.fontSans,
+  },
 });
-

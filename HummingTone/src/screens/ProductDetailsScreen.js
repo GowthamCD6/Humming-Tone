@@ -377,11 +377,23 @@ export const ProductDetailsScreen = ({ route, navigation }) => {
       <View style={[styles.bottomBar, { paddingBottom: Math.max(insets.bottom, 12) }]}>
         <View style={styles.bottomBarContent}>
           <TouchableOpacity
+            style={styles.bottomWishlistBtn}
+            onPress={() => toggleWishlist(product)}
+            activeOpacity={0.8}
+          >
+            <Ionicons
+              name={isInWishlist(product?.id) ? 'heart' : 'heart-outline'}
+              size={22}
+              color={isInWishlist(product?.id) ? colors.error : colors.textPrimary}
+            />
+          </TouchableOpacity>
+
+          <TouchableOpacity
             style={styles.addCartBtn}
             onPress={() => handleAddToCart(true)}
             activeOpacity={0.8}
           >
-            <Ionicons name="bag-add-outline" size={20} color={colors.primary} />
+            <Ionicons name="bag-add-outline" size={19} color={colors.primary} />
             <Text style={styles.addCartText}>ADD TO BAG</Text>
           </TouchableOpacity>
 
@@ -737,16 +749,27 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     gap: 12,
   },
+  bottomWishlistBtn: {
+    width: 48,
+    height: 48,
+    borderRadius: 10,
+    borderWidth: 1.5,
+    borderColor: colors.border,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: colors.surface,
+  },
   addCartBtn: {
     flex: 1,
     height: 48,
     borderWidth: 1.5,
     borderColor: colors.primary,
-    borderRadius: 2,
+    borderRadius: 10,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
     gap: 6,
+    backgroundColor: colors.surface,
   },
   addCartText: {
     fontFamily: typography.fontSans,
@@ -759,7 +782,7 @@ const styles = StyleSheet.create({
     flex: 1,
     height: 48,
     backgroundColor: colors.primary,
-    borderRadius: 2,
+    borderRadius: 10,
     alignItems: 'center',
     justifyContent: 'center',
   },

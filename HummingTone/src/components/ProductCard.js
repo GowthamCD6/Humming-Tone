@@ -1,9 +1,8 @@
 import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Image, Dimensions } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
-import { colors } from '../theme/colors';
+import { colors, shadows } from '../theme/colors';
 import { typography, spacing } from '../theme/typography';
-
 import { Ionicons } from './Icons';
 import { useWishlist } from '../context/WishlistContext';
 
@@ -29,12 +28,13 @@ export const ProductCard = ({ product, onPress, style }) => {
   };
 
   const formattedPrice = `₹${(product.price || 0).toLocaleString('en-IN')}`;
+  const originalPrice = product.original_price ? `₹${Number(product.original_price).toLocaleString('en-IN')}` : null;
 
   return (
     <TouchableOpacity
       style={[styles.card, style]}
       onPress={handlePress}
-      activeOpacity={0.88}
+      activeOpacity={0.92}
     >
       {/* Image Container */}
       <View style={styles.imageContainer}>
@@ -43,11 +43,17 @@ export const ProductCard = ({ product, onPress, style }) => {
           style={styles.image}
           resizeMode="cover"
         />
-        {product.isNewArrival && (
+
+        {/* Badge Pill */}
+        {product.isNewArrival ? (
           <View style={styles.newBadge}>
             <Text style={styles.newBadgeText}>NEW</Text>
           </View>
-        )}
+        ) : product.is_featured ? (
+          <View style={[styles.newBadge, { backgroundColor: colors.goldDark }]}>
+            <Text style={styles.newBadgeText}>FEATURED</Text>
+          </View>
+        ) : null}
 
         {/* Wishlist Heart Button */}
         <TouchableOpacity
@@ -59,7 +65,7 @@ export const ProductCard = ({ product, onPress, style }) => {
           <Ionicons
             name={isWishlisted ? 'heart' : 'heart-outline'}
             size={18}
-            color={isWishlisted ? colors.accent : colors.textPrimary}
+            color={isWishlisted ? colors.error : colors.textPrimary}
           />
         </TouchableOpacity>
       </View>
@@ -67,12 +73,18 @@ export const ProductCard = ({ product, onPress, style }) => {
       {/* Product Meta */}
       <View style={styles.metaContainer}>
         <Text style={styles.category} numberOfLines={1}>
-          {product.category || product.brand || 'ATELIER COLLECTION'}
+          {product.category || product.brand || 'HUMMING TONE'}
         </Text>
         <Text style={styles.title} numberOfLines={2}>
           {product.name}
         </Text>
-        <Text style={styles.price}>{formattedPrice}</Text>
+        
+        <View style={styles.priceRow}>
+          <Text style={styles.price}>{formattedPrice}</Text>
+          {originalPrice && (
+            <Text style={styles.originalPrice}>{originalPrice}</Text>
+          )}
+        </View>
       </View>
     </TouchableOpacity>
   );
@@ -83,10 +95,15 @@ const styles = StyleSheet.create({
     width: CARD_WIDTH,
     marginBottom: spacing.md,
     backgroundColor: colors.cardBg,
+    borderRadius: 12,
+    overflow: 'hidden',
+    borderWidth: 1,
+    borderColor: colors.borderLight,
+    ...shadows.subtle,
   },
   imageContainer: {
     width: '100%',
-    height: CARD_WIDTH * 1.35,
+    height: CARD_WIDTH * 1.32,
     backgroundColor: colors.surface,
     position: 'relative',
     overflow: 'hidden',
@@ -97,60 +114,72 @@ const styles = StyleSheet.create({
   },
   newBadge: {
     position: 'absolute',
-    top: 8,
-    left: 8,
+    top: 10,
+    left: 10,
     backgroundColor: colors.primary,
-    paddingHorizontal: 6,
-    paddingVertical: 3,
-    borderRadius: 2,
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 4,
   },
   newBadgeText: {
     color: colors.textInverse,
-    fontSize: 9,
+    fontSize: 8.5,
     fontWeight: typography.weightBold,
-    letterSpacing: 1,
+    letterSpacing: 1.2,
   },
   wishlistBtn: {
     position: 'absolute',
-    top: 8,
-    right: 8,
-    backgroundColor: 'rgba(255, 255, 255, 0.9)',
+    top: 10,
+    right: 10,
+    backgroundColor: 'rgba(255, 255, 255, 0.95)',
     width: 32,
     height: 32,
     borderRadius: 16,
     alignItems: 'center',
     justifyContent: 'center',
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.15,
-    shadowRadius: 2,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 3,
     elevation: 3,
   },
   metaContainer: {
-    paddingTop: 8,
-    paddingHorizontal: 2,
+    padding: 10,
+    backgroundColor: colors.cardBg,
   },
   category: {
     fontSize: 9.5,
     fontWeight: typography.weightSemiBold,
-    letterSpacing: typography.spacingWide,
+    letterSpacing: 1.2,
     textTransform: 'uppercase',
-    color: colors.textSecondary,
-    marginBottom: 2,
+    color: colors.goldDark,
+    marginBottom: 3,
     fontFamily: typography.fontSans,
   },
   title: {
-    fontSize: 13.5,
+    fontSize: 13,
     fontWeight: typography.weightMedium,
     color: colors.textPrimary,
     lineHeight: 18,
-    marginBottom: 4,
+    marginBottom: 6,
     fontFamily: typography.fontSerif,
+    minHeight: 36,
+  },
+  priceRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
   },
   price: {
-    fontSize: 14,
+    fontSize: 14.5,
     fontWeight: typography.weightBold,
     color: colors.primary,
+    fontFamily: typography.fontSans,
+  },
+  originalPrice: {
+    fontSize: 12,
+    color: colors.textMuted,
+    textDecorationLine: 'line-through',
     fontFamily: typography.fontSans,
   },
 });
