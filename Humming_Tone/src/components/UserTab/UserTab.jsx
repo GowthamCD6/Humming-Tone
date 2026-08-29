@@ -40,8 +40,8 @@ const DEFAULT_GENDERS = [
 
 const UserTab = () => {
   const [isScrolled, setIsScrolled] = useState(false);
-  const [activeGenders, setActiveGenders] = useState(DEFAULT_GENDERS);
-  const [loading, setLoading] = useState(false);
+  const [activeGenders, setActiveGenders] = useState([]);
+  const [navLoading, setNavLoading] = useState(true);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [cartCount, setCartCount] = useState(0);
   const [authModalOpen, setAuthModalOpen] = useState(false);
@@ -127,37 +127,38 @@ const UserTab = () => {
   }, []);
 
   useEffect(() => {
+    let isMounted = true;
     const loadGendersAndCategories = async () => {
       try {
-        // Force refresh to always get latest visibility and categories
-        const data = await fetchSiteContent(true);
+        const data = await fetchSiteContent(false);
+        if (!isMounted) return;
         const genderStatus = data.genderStatus || {};
         const genderCatMap = data.genderCategory || {};
 
-        // Get only active genders
+        // Get only active genders from database
         const activeGenderList = Object.keys(genderStatus).filter(
           (gender) => genderStatus[gender] === true
         );
 
-        setActiveGenders(activeGenderList.length > 0 ? activeGenderList : DEFAULT_GENDERS);
+        setActiveGenders(activeGenderList);
         setGenderCategories(genderCatMap);
       } catch (error) {
         console.error("Error loading genders & categories:", error);
-        setActiveGenders([
-          "Men",
-          "Women",
-          "Children",
-          "Baby",
-          "Sports",
-          "Customize",
-        ]);
+        if (isMounted) {
+          setActiveGenders(DEFAULT_GENDERS);
+        }
       } finally {
-        setLoading(false);
+        if (isMounted) {
+          setNavLoading(false);
+        }
       }
     };
 
     loadGendersAndCategories();
-  }, [location.pathname]);
+    return () => {
+      isMounted = false;
+    };
+  }, []);
 
   // Icon mapping for genders
   const getGenderIcon = (gender) => {
@@ -225,66 +226,77 @@ const UserTab = () => {
 
           {/* Desktop Navigation with Category Dropdowns */}
           <nav className="user-nav desktop-nav">
-            <ul className="user-nav-menu">
-              {navItems.map(({ path, label, Icon: _Icon, categories = [] }) => {
-                const hasCategories = categories && categories.length > 0;
-                return (
-                  <li
-                    key={path}
-                    className={`user-nav-item ${hasCategories ? "has-dropdown" : ""}`}
-                    onMouseEnter={() => hasCategories && setHoveredGender(label)}
-                    onMouseLeave={() => setHoveredGender(null)}
-                  >
-                    <NavLink
-                      to={path}
-                      className={({ isActive }) =>
-                        `user-nav-link${isActive ? " active" : ""}`
-                      }
-                      end
+            {navLoading ? (
+              <div className="user-nav-skeleton-wrap">
+                <div className="user-nav-skeleton-pill" style={{ width: '80px' }}></div>
+                <div className="user-nav-skeleton-pill" style={{ width: '115px' }}></div>
+                <div className="user-nav-skeleton-pill" style={{ width: '85px' }}></div>
+                <div className="user-nav-skeleton-pill" style={{ width: '95px' }}></div>
+                <div className="user-nav-skeleton-pill" style={{ width: '100px' }}></div>
+                <div className="user-nav-skeleton-pill" style={{ width: '90px' }}></div>
+              </div>
+            ) : (
+              <ul className="user-nav-menu">
+                {navItems.map(({ path, label, Icon: _Icon, categories = [] }) => {
+                  const hasCategories = categories && categories.length > 0;
+                  return (
+                    <li
+                      key={path}
+                      className={`user-nav-item ${hasCategories ? "has-dropdown" : ""}`}
+                      onMouseEnter={() => hasCategories && setHoveredGender(label)}
+                      onMouseLeave={() => setHoveredGender(null)}
                     >
-                      <_Icon className="user-nav-icon" />
-                      <span>{label}</span>
-                    </NavLink>
+                      <NavLink
+                        to={path}
+                        className={({ isActive }) =>
+                          `user-nav-link${isActive ? " active" : ""}`
+                        }
+                        end
+                      >
+                        <_Icon className="user-nav-icon" />
+                        <span>{label}</span>
+                      </NavLink>
 
-                    {/* Category Dropdown Menu */}
-                    {hasCategories && (
-                      <div className={`user-nav-dropdown ${hoveredGender === label ? "visible" : ""}`}>
-                        <div className="user-dropdown-card">
-                          <div className="user-dropdown-topbar">
-                            <span className="dropdown-category-title">EXPLORE {label.toUpperCase()}</span>
-                          </div>
-                          
-                          <div className="dropdown-category-list">
-                            <Link
-                              to={`/usertab/${path}`}
-                              className="dropdown-category-item view-all-cat"
-                              onClick={() => setHoveredGender(null)}
-                            >
-                              <span className="cat-item-name">All {label}'s Collection</span>
-                              <span className="cat-arrow-icon">›</span>
-                            </Link>
-
-                            <div className="dropdown-category-divider"></div>
-
-                            {categories.map((catName) => (
+                      {/* Category Dropdown Menu */}
+                      {hasCategories && (
+                        <div className={`user-nav-dropdown ${hoveredGender === label ? "visible" : ""}`}>
+                          <div className="user-dropdown-card">
+                            <div className="user-dropdown-topbar">
+                              <span className="dropdown-category-title">EXPLORE {label.toUpperCase()}</span>
+                            </div>
+                            
+                            <div className="dropdown-category-list">
                               <Link
-                                key={catName}
-                                to={`/usertab/${path}?category=${encodeURIComponent(catName)}`}
-                                className="dropdown-category-item"
+                                to={`/usertab/${path}`}
+                                className="dropdown-category-item view-all-cat"
                                 onClick={() => setHoveredGender(null)}
                               >
-                                <span className="cat-item-name">{catName}</span>
+                                <span className="cat-item-name">All {label}'s Collection</span>
                                 <span className="cat-arrow-icon">›</span>
                               </Link>
-                            ))}
+
+                              <div className="dropdown-category-divider"></div>
+
+                              {categories.map((catName) => (
+                                <Link
+                                  key={catName}
+                                  to={`/usertab/${path}?category=${encodeURIComponent(catName)}`}
+                                  className="dropdown-category-item"
+                                  onClick={() => setHoveredGender(null)}
+                                >
+                                  <span className="cat-item-name">{catName}</span>
+                                  <span className="cat-arrow-icon">›</span>
+                                </Link>
+                              ))}
+                            </div>
                           </div>
                         </div>
-                      </div>
-                    )}
-                  </li>
-                );
-              })}
-            </ul>
+                      )}
+                    </li>
+                  );
+                })}
+              </ul>
+            )}
           </nav>
 
           {/* Right Section - Cart, User Profile & Hamburger */}
@@ -429,66 +441,77 @@ const UserTab = () => {
 
         {/* Mobile Navigation Links */}
         <nav className="mobile-nav">
-          <ul className="mobile-nav-menu">
-            {navItems.map(({ path, label, Icon: _Icon, categories = [] }) => {
-              const hasCategories = categories && categories.length > 0;
-              const isExpanded = expandedMobileGender === label;
+          {navLoading ? (
+            <div className="user-mobile-nav-skeleton">
+              <div className="user-mobile-skeleton-row"></div>
+              <div className="user-mobile-skeleton-row"></div>
+              <div className="user-mobile-skeleton-row"></div>
+              <div className="user-mobile-skeleton-row"></div>
+              <div className="user-mobile-skeleton-row"></div>
+              <div className="user-mobile-skeleton-row"></div>
+            </div>
+          ) : (
+            <ul className="mobile-nav-menu">
+              {navItems.map(({ path, label, Icon: _Icon, categories = [] }) => {
+                const hasCategories = categories && categories.length > 0;
+                const isExpanded = expandedMobileGender === label;
 
-              return (
-                <li key={path} className="mobile-nav-item">
-                  <div className="mobile-nav-item-header">
-                    <NavLink
-                      to={path}
-                      className={({ isActive }) =>
-                        `mobile-nav-link${isActive ? " active" : ""}`
-                      }
-                      onClick={() => setMobileMenuOpen(false)}
-                      end
-                    >
-                      <_Icon className="mobile-nav-icon" />
-                      <span>{label}</span>
-                    </NavLink>
-                    {hasCategories && (
-                      <button
-                        type="button"
-                        className={`mobile-cat-expand-btn ${isExpanded ? "expanded" : ""}`}
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setExpandedMobileGender(isExpanded ? null : label);
-                        }}
-                        aria-label="Toggle categories"
-                      >
-                        ▾
-                      </button>
-                    )}
-                  </div>
-
-                  {/* Subcategories Accordion */}
-                  {hasCategories && isExpanded && (
-                    <div className="mobile-subcategory-list">
-                      <Link
-                        to={`/usertab/${path}`}
-                        className="mobile-subcat-link view-all"
+                return (
+                  <li key={path} className="mobile-nav-item">
+                    <div className="mobile-nav-item-header">
+                      <NavLink
+                        to={path}
+                        className={({ isActive }) =>
+                          `mobile-nav-link${isActive ? " active" : ""}`
+                        }
                         onClick={() => setMobileMenuOpen(false)}
+                        end
                       >
-                        All {label}'s
-                      </Link>
-                      {categories.map((catName) => (
+                        <_Icon className="mobile-nav-icon" />
+                        <span>{label}</span>
+                      </NavLink>
+                      {hasCategories && (
+                        <button
+                          type="button"
+                          className={`mobile-cat-expand-btn ${isExpanded ? "expanded" : ""}`}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setExpandedMobileGender(isExpanded ? null : label);
+                          }}
+                          aria-label="Toggle categories"
+                        >
+                          ▾
+                        </button>
+                      )}
+                    </div>
+
+                    {/* Subcategories Accordion */}
+                    {hasCategories && isExpanded && (
+                      <div className="mobile-subcategory-list">
                         <Link
-                          key={catName}
-                          to={`/usertab/${path}?category=${encodeURIComponent(catName)}`}
-                          className="mobile-subcat-link"
+                          to={`/usertab/${path}`}
+                          className="mobile-subcat-link view-all"
                           onClick={() => setMobileMenuOpen(false)}
                         >
-                          {catName}
+                          All {label}'s
                         </Link>
-                      ))}
-                    </div>
-                  )}
-                </li>
-              );
-            })}
-          </ul>
+                        {categories.map((catName) => (
+                          <Link
+                            key={catName}
+                            to={`/usertab/${path}?category=${encodeURIComponent(catName)}`}
+                            className="mobile-subcat-link"
+                            onClick={() => setMobileMenuOpen(false)}
+                          >
+                            {catName}
+                          </Link>
+                        ))}
+                      </div>
+                    )}
+                  </li>
+                );
+              })}
+            </ul>
+          )}
         </nav>
       </div>
 
