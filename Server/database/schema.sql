@@ -296,3 +296,19 @@ ALTER TABLE orders MODIFY COLUMN order_status
 ALTER TABLE orders
   ADD COLUMN tracking_number VARCHAR(100) DEFAULT NULL,
   ADD COLUMN courier_partner VARCHAR(100) DEFAULT NULL;
+
+-- ===== Site & App Assets Storage Table =====
+CREATE TABLE IF NOT EXISTS site_assets (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  asset_key VARCHAR(100) NOT NULL UNIQUE,
+  category VARCHAR(100) DEFAULT 'general',
+  file_name VARCHAR(255) NOT NULL,
+  file_type VARCHAR(50) DEFAULT 'image',
+  local_path VARCHAR(500),
+  cloudinary_url VARCHAR(500) NOT NULL,
+  public_id VARCHAR(255),
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  INDEX idx_asset_key (asset_key),
+  INDEX idx_asset_category (category)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;

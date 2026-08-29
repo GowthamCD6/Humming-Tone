@@ -125,6 +125,22 @@ app.use("/", userCheckoutRoutes);
 app.use("/", userReviewRoute);
 app.use("/", googleAuthRoute);
 
+// Public Site Assets Endpoint (Cloudinary asset catalog from TiDB)
+app.get("/api/assets", (req, res) => {
+  const pool = require("./config/db");
+  pool.query("SELECT asset_key, category, file_name, file_type, cloudinary_url FROM site_assets", (err, results) => {
+    if (err) {
+      console.error("Error fetching site assets:", err);
+      return res.status(500).json({ error: "Failed to fetch site assets" });
+    }
+    const assetMap = {};
+    results.forEach(item => {
+      assetMap[item.asset_key] = item.cloudinary_url;
+    });
+    res.status(200).json({ success: true, assets: results, assetMap });
+  });
+});
+
 // Safe Health Check & Keep-Alive endpoints (for UptimeRobot, cron jobs, and Render)
 app.get("/health", (req, res) => {
   res.status(200).json({ status: "ok", uptime: process.uptime(), timestamp: Date.now() });
