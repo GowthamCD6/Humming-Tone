@@ -19,6 +19,9 @@ import AccountCircleOutlinedIcon from "@mui/icons-material/AccountCircleOutlined
 import LogoutIcon from "@mui/icons-material/Logout";
 import CloseIcon from "@mui/icons-material/Close";
 import MenuIcon from "@mui/icons-material/Menu";
+import HomeOutlinedIcon from "@mui/icons-material/HomeOutlined";
+import SearchIcon from "@mui/icons-material/Search";
+import PersonOutlineIcon from "@mui/icons-material/PersonOutline";
 import logo from "../../assets/logo.png";
 import "./UserTab.css";
 import { fetchSiteContent } from "../../utils/siteContentStore";
@@ -498,6 +501,69 @@ const UserTab = () => {
       <main className="user-main-content">
         <Outlet />
       </main>
+
+      {/* Mobile Bottom Navigation Bar */}
+      <nav className="mobile-bottom-nav">
+        <NavLink
+          to="/usertab/home"
+          className={({ isActive }) => `bottom-nav-item${isActive ? " active" : ""}`}
+        >
+          <HomeOutlinedIcon className="bottom-nav-icon" />
+          <span className="bottom-nav-label">Home</span>
+        </NavLink>
+
+        <NavLink
+          to="/usertab/all-products"
+          className={({ isActive }) => `bottom-nav-item${isActive ? " active" : ""}`}
+        >
+          <SearchIcon className="bottom-nav-icon" />
+          <span className="bottom-nav-label">Explore</span>
+        </NavLink>
+
+        <div
+          className={`bottom-nav-item bottom-nav-cart${location.pathname.includes("/cart") ? " active" : ""}`}
+          onClick={() => navigate("/usertab/cart")}
+        >
+          <div className="bottom-nav-cart-wrapper">
+            <ShoppingBagOutlinedIcon className="bottom-nav-icon" />
+            {cartCount > 0 && (
+              <span className="bottom-nav-cart-badge">{cartCount}</span>
+            )}
+          </div>
+          <span className="bottom-nav-label">Cart</span>
+        </div>
+
+        <div
+          className={`bottom-nav-item${customerUser ? " has-avatar" : ""}`}
+          onClick={() => {
+            if (customerUser) {
+              navigate("/usertab/track-order");
+            } else {
+              setAuthModalOpen(true);
+            }
+          }}
+        >
+          {customerUser ? (
+            customerUser.avatar_url ? (
+              <img
+                src={customerUser.avatar_url}
+                alt={customerUser.name}
+                className="bottom-nav-avatar"
+                referrerPolicy="no-referrer"
+                crossOrigin="anonymous"
+                onError={(e) => { e.target.style.display = 'none'; }}
+              />
+            ) : (
+              <div className="bottom-nav-avatar-initials">
+                {(customerUser.name || "U")[0].toUpperCase()}
+              </div>
+            )
+          ) : (
+            <PersonOutlineIcon className="bottom-nav-icon" />
+          )}
+          <span className="bottom-nav-label">{customerUser ? "Account" : "Sign In"}</span>
+        </div>
+      </nav>
 
       {/* Dynamic Google Login Modal */}
       <AuthModal

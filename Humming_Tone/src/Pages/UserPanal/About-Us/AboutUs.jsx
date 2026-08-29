@@ -1,4 +1,5 @@
 import React, { useEffect } from 'react';
+import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 import UserFooter from '../../../components/User-Footer-Card/UserFooter';
 import aboutHeroImage from '../../../assets/about_hero.jpg';
 import aboutHeroVideo from '../../../assets/aboutus.mp4';
@@ -35,9 +36,19 @@ const AboutUs = () => {
           </video>
           <div className="about-hero-overlay"></div>
         </div>
+
         <div className="about-hero-caption">
           <span className="about-hero-subtag">ABOUT HUMMING TONE</span>
           <h1 className="about-hero-headline">A Legacy of Refinement</h1>
+          <p className="about-hero-subtext">Discover the craftsmanship, passion, and vision behind Humming Tone</p>
+          <div className="hero-buttons">
+            <Link to="/usertab/all-products" className="hero-cta-button">EXPLORE COLLECTIONS</Link>
+            <Link to="/usertab/customize" className="hero-secondary-button">CUSTOMIZE ATELIER</Link>
+          </div>
+        </div>
+
+        <div className="hero-scroll-down" onClick={() => window.scrollTo({ top: window.innerHeight * 0.75, behavior: 'smooth' })}>
+          <KeyboardArrowDownIcon className="bounce-icon" />
         </div>
       </section>
 
@@ -188,7 +199,51 @@ const AboutUs = () => {
         </div>
       </section>
 
-      {/* ── 6. CTA Banner ── */}
+      {/* ── 6. Infinite Loop Luxury Perks Marquee Slider ── */}
+      <section className="luxury-ticker-section">
+        <div className="luxury-ticker-track">
+          {[...Array(2)].map((_, trackIdx) => (
+            <div className="luxury-ticker-group" key={trackIdx}>
+              <div className="ticker-item">
+                <span className="ticker-icon">✦</span>
+                <span className="ticker-title">COMPLIMENTARY EXPRESS DELIVERY</span>
+                <span className="ticker-sub">ON ALL DOMESTIC ORDERS</span>
+              </div>
+              <span className="ticker-dot">•</span>
+
+              <div className="ticker-item">
+                <span className="ticker-icon">✦</span>
+                <span className="ticker-title">ALL TAXES & DUTIES INCLUDED</span>
+                <span className="ticker-sub">TRANSPARENT ATELIER PRICING</span>
+              </div>
+              <span className="ticker-dot">•</span>
+
+              <div className="ticker-item">
+                <span className="ticker-icon">✦</span>
+                <span className="ticker-title">EXCLUSIVE PROMO CODES</span>
+                <span className="ticker-sub">USE CODE "HUMMING10" FOR 10% OFF</span>
+              </div>
+              <span className="ticker-dot">•</span>
+
+              <div className="ticker-item">
+                <span className="ticker-icon">✦</span>
+                <span className="ticker-title">100% BESPOKE CRAFTSMANSHIP</span>
+                <span className="ticker-sub">PREMIUM ITALIAN WOOL & COTTON</span>
+              </div>
+              <span className="ticker-dot">•</span>
+
+              <div className="ticker-item">
+                <span className="ticker-icon">✦</span>
+                <span className="ticker-title">EASY 7-DAY EXCHANGES</span>
+                <span className="ticker-sub">SEAMLESS DOORSTEP PICKUP</span>
+              </div>
+              <span className="ticker-dot">•</span>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* ── 7. CTA Banner ── */}
       <section className="about-final-cta-section">
         <div className="about-final-cta-container">
           <h2 className="about-final-cta-title">Ready to Experience Humming Tone?</h2>

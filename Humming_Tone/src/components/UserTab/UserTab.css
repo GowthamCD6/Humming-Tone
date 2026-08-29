@@ -1452,3 +1452,177 @@
   background-color: rgba(255, 255, 255, 0.98);
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
 }
+
+/* ============================================
+   MOBILE BOTTOM NAVIGATION BAR
+   Premium e-commerce style fixed bottom tab bar
+   ============================================ */
+
+.mobile-bottom-nav {
+  display: none;
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 999;
+  background: rgba(255, 255, 255, 0.92);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  border-top: 1px solid rgba(0, 0, 0, 0.06);
+  padding: 6px 0 max(6px, env(safe-area-inset-bottom));
+  box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.06);
+  justify-content: space-around;
+  align-items: center;
+  height: auto;
+}
+
+.bottom-nav-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  padding: 6px 12px;
+  text-decoration: none;
+  color: #9ca3af;
+  cursor: pointer;
+  position: relative;
+  transition: color 0.25s ease, transform 0.2s ease;
+  -webkit-tap-highlight-color: transparent;
+  min-width: 60px;
+}
+
+.bottom-nav-item:active {
+  transform: scale(0.92);
+}
+
+.bottom-nav-item.active {
+  color: #1a1a1a;
+}
+
+.bottom-nav-item.active::before {
+  content: '';
+  position: absolute;
+  top: -6px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 24px;
+  height: 3px;
+  background: #1a1a1a;
+  border-radius: 0 0 4px 4px;
+}
+
+.bottom-nav-icon {
+  font-size: 24px !important;
+  transition: transform 0.2s ease;
+}
+
+.bottom-nav-item.active .bottom-nav-icon {
+  transform: scale(1.1);
+}
+
+.bottom-nav-label {
+  font-family: 'Poppins', sans-serif;
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.bottom-nav-item.active .bottom-nav-label {
+  font-weight: 600;
+  color: #1a1a1a;
+}
+
+/* Cart badge in bottom nav */
+.bottom-nav-cart-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.bottom-nav-cart-badge {
+  position: absolute;
+  top: -6px;
+  right: -10px;
+  background: #1a1a1a;
+  color: #ffffff;
+  font-size: 9px;
+  font-weight: 700;
+  font-family: 'Poppins', sans-serif;
+  min-width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+  animation: pulse 2s ease-in-out infinite;
+}
+
+/* Avatar in bottom nav */
+.bottom-nav-avatar {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 1.5px solid #1a1a1a;
+}
+
+.bottom-nav-avatar-initials {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: #1a1a1a;
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  font-weight: 600;
+  font-family: 'Poppins', sans-serif;
+}
+
+/* Show bottom nav only on mobile/tablet (≤991px) */
+@media (max-width: 991px) {
+  .mobile-bottom-nav {
+    display: flex;
+  }
+
+  /* Add padding to main content to avoid bottom nav overlap */
+  .user-main-content {
+    padding-bottom: 80px;
+  }
+}
+
+@media (max-width: 479px) {
+  .bottom-nav-item {
+    min-width: 50px;
+    padding: 5px 8px;
+  }
+
+  .bottom-nav-icon {
+    font-size: 22px !important;
+  }
+
+  .bottom-nav-label {
+    font-size: 9px;
+  }
+}
+
+@media (max-width: 379px) {
+  .bottom-nav-item {
+    min-width: 44px;
+    padding: 4px 6px;
+  }
+
+  .bottom-nav-icon {
+    font-size: 20px !important;
+  }
+
+  .bottom-nav-label {
+    font-size: 8px;
+  }
+}

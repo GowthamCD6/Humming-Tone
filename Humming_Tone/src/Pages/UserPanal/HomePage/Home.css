@@ -564,9 +564,16 @@
         font-size: 15px;
     }
     
-    .userpanal-homepage .hero-cta-button {
+    .userpanal-homepage .hero-cta-button,
+    .userpanal-homepage .hero-secondary-button {
         padding: 16px 42px;
         font-size: 13px;
+    }
+
+    .userpanal-homepage .editorial-section-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 12px;
     }
     
     .userpanal-homepage .product-section {
@@ -618,6 +625,10 @@
         min-height: 360px;
         height: 55vh;
     }
+
+    .userpanal-homepage .hero-visual {
+        background-attachment: scroll;
+    }
     
     .userpanal-homepage .hero-main-title {
         font-size: 38px;
@@ -628,9 +639,32 @@
         margin-bottom: 35px;
     }
     
-    .userpanal-homepage .hero-cta-button {
+    .userpanal-homepage .hero-cta-button,
+    .userpanal-homepage .hero-secondary-button {
         padding: 14px 36px;
         font-size: 12px;
+    }
+
+    .userpanal-homepage .hero-buttons {
+        flex-direction: column;
+        gap: 12px;
+        width: 100%;
+        max-width: 360px;
+        margin: 0 auto;
+    }
+
+    .userpanal-homepage .hero-cta-button,
+    .userpanal-homepage .hero-secondary-button {
+        width: 100%;
+        text-align: center;
+        box-sizing: border-box;
+    }
+
+    .userpanal-homepage .editorial-section-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 10px;
+        margin-bottom: 2rem;
     }
     
     .userpanal-homepage .product-section {
@@ -674,6 +708,10 @@
         min-height: 320px;
         height: 50vh;
     }
+
+    .userpanal-homepage .hero-visual {
+        background-attachment: scroll;
+    }
     
     .userpanal-homepage .hero-text-content {
         padding: 0 24px;
@@ -689,13 +727,36 @@
         margin-bottom: 28px;
     }
     
-    .userpanal-homepage .hero-cta-button {
+    .userpanal-homepage .hero-cta-button,
+    .userpanal-homepage .hero-secondary-button {
         padding: 13px 32px;
         font-size: 11px;
+    }
+
+    .userpanal-homepage .hero-buttons {
+        flex-direction: column;
+        gap: 10px;
+        width: 100%;
+        max-width: 340px;
+        margin: 0 auto;
+    }
+
+    .userpanal-homepage .hero-cta-button,
+    .userpanal-homepage .hero-secondary-button {
+        width: 100%;
+        text-align: center;
+        box-sizing: border-box;
     }
     
     .userpanal-homepage .bounce-icon {
         font-size: 36px !important;
+    }
+
+    .userpanal-homepage .editorial-section-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 8px;
+        margin-bottom: 1.5rem;
     }
     
     .userpanal-homepage .product-section {
@@ -750,6 +811,10 @@
         min-height: 280px;
         height: 45vh;
     }
+
+    .userpanal-homepage .hero-visual {
+        background-attachment: scroll;
+    }
     
     .userpanal-homepage .hero-text-content {
         padding: 0 20px;
@@ -765,7 +830,8 @@
         margin-bottom: 24px;
     }
     
-    .userpanal-homepage .hero-cta-button {
+    .userpanal-homepage .hero-cta-button,
+    .userpanal-homepage .hero-secondary-button {
         padding: 12px 28px;
         font-size: 10px;
     }
@@ -776,6 +842,17 @@
     
     .userpanal-homepage .bounce-icon {
         font-size: 32px !important;
+    }
+
+    .userpanal-homepage .editorial-section-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 8px;
+        margin-bottom: 1.5rem;
+    }
+
+    .userpanal-homepage .editorial-view-all-link {
+        font-size: 10px;
     }
     
     .userpanal-homepage .product-section {
@@ -842,6 +919,10 @@
         min-height: 260px;
         height: 42vh;
     }
+
+    .userpanal-homepage .hero-visual {
+        background-attachment: scroll;
+    }
     
     .userpanal-homepage .hero-text-content {
         padding: 0 16px;
@@ -857,7 +938,8 @@
         margin-bottom: 20px;
     }
     
-    .userpanal-homepage .hero-cta-button {
+    .userpanal-homepage .hero-cta-button,
+    .userpanal-homepage .hero-secondary-button {
         padding: 10px 24px;
         font-size: 9px;
     }
@@ -868,6 +950,22 @@
     
     .userpanal-homepage .bounce-icon {
         font-size: 28px !important;
+    }
+
+    .userpanal-homepage .editorial-section-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 6px;
+        margin-bottom: 1.2rem;
+    }
+
+    .userpanal-homepage .editorial-view-all-link {
+        font-size: 9px;
+    }
+
+    .userpanal-homepage .luxury-featured-section {
+        width: 95%;
+        padding: 2.5rem 0 3rem;
     }
     
     .userpanal-homepage .product-section {
@@ -921,6 +1019,23 @@
     
     .userpanal-homepage .all-products-product-price {
         font-size: 15px;
+    }
+
+    .userpanal-homepage .craftsmanship-title {
+        font-size: 22px;
+    }
+
+    .userpanal-homepage .craftsmanship-description {
+        font-size: 12.5px;
+        line-height: 1.65;
+    }
+
+    .userpanal-homepage .craftsmanship-tag {
+        font-size: 10px;
+    }
+
+    .userpanal-homepage .craftsmanship-link {
+        font-size: 10.5px;
     }
 }
 
@@ -1254,21 +1369,21 @@
 
 @media (max-width: 768px) {
     .userpanal-homepage .luxury-featured-section {
-        padding: 4rem 0 5rem;
+        padding: 3.5rem 0 4rem;
     }
 
     .userpanal-homepage .luxury-editorial-grid {
-        grid-template-columns: 1fr;
-        gap: 2rem;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 1.25rem;
     }
     
     .userpanal-homepage .craftsmanship-story-section {
-        padding: 4.5rem 0;
+        padding: 3.5rem 0;
     }
 
     .userpanal-homepage .craftsmanship-container {
         grid-template-columns: 1fr;
-        gap: 3rem;
+        gap: 2.5rem;
     }
     
     .userpanal-homepage .craftsmanship-content {
@@ -1276,11 +1391,51 @@
     }
     
     .userpanal-homepage .craftsmanship-title {
-        font-size: 30px;
+        font-size: 26px;
     }
     
     .userpanal-homepage .craftsmanship-description {
-        font-size: 14px;
+        font-size: 13.5px;
+        line-height: 1.7;
+    }
+}
+
+@media (max-width: 480px) {
+    .userpanal-homepage .luxury-editorial-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 10px;
+    }
+
+    .userpanal-homepage .luxury-product-card {
+        margin-bottom: 0.5rem;
+    }
+
+    .userpanal-homepage .luxury-product-title {
+        font-size: 13px;
+    }
+
+    .userpanal-homepage .luxury-product-category {
+        font-size: 9.5px;
+    }
+
+    .userpanal-homepage .luxury-product-price {
+        font-size: 13.5px;
+    }
+
+    .userpanal-homepage .hero-buttons {
+        flex-direction: column;
+        gap: 10px;
+        width: 100%;
+        max-width: 320px;
+        margin: 0 auto;
+    }
+
+    .userpanal-homepage .hero-cta-button,
+    .userpanal-homepage .hero-secondary-button {
+        width: 100%;
+        text-align: center;
+        padding: 12px 18px;
+        box-sizing: border-box;
     }
 }
 
