@@ -22,6 +22,12 @@ export const getApiUrl = (path = '') => {
 
 export const getImageUrl = (imagePath) => {
   if (!imagePath) return '';
+  if (typeof imagePath === 'string' && imagePath.includes('cloudinary.com')) {
+    if (!imagePath.includes('/f_auto') && !imagePath.includes('/q_auto')) {
+      return imagePath.replace('/upload/', '/upload/f_auto,q_auto/');
+    }
+    return imagePath;
+  }
   if (imagePath.startsWith('http://') || imagePath.startsWith('https://') || imagePath.startsWith('data:')) {
     return imagePath;
   }
