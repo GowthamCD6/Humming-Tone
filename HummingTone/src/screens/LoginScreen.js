@@ -10,6 +10,7 @@ import {
   Platform,
   StatusBar,
 } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '../components/Icons';
 import { colors } from '../theme/colors';
 import { typography, spacing } from '../theme/typography';
@@ -18,6 +19,7 @@ import { Button } from '../components/Button';
 import { useAuth } from '../context/AuthContext';
 
 export const LoginScreen = ({ navigation }) => {
+  const insets = useSafeAreaInsets();
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [phone, setPhone] = useState('');
@@ -37,7 +39,7 @@ export const LoginScreen = ({ navigation }) => {
     try {
       await login(
         {
-          name: (name || email.split('@')[0] || 'Atelier Member').trim(),
+          name: (name || email.split('@')[0] || 'Humming Tone Member').trim(),
           email: email.trim() || 'member@hummingtone.com',
           phone: phone.trim() || '9876543210',
         },
@@ -54,7 +56,7 @@ export const LoginScreen = ({ navigation }) => {
   const handleGuestContinue = async () => {
     await login(
       {
-        name: 'Atelier Guest',
+        name: 'Humming Tone Patron',
         email: 'guest@hummingtone.com',
         phone: '',
       },
@@ -73,7 +75,7 @@ export const LoginScreen = ({ navigation }) => {
         style={{ flex: 1 }}
       >
         <ScrollView
-          contentContainerStyle={styles.scrollContent}
+          contentContainerStyle={[styles.scrollContent, { paddingBottom: Math.max(insets.bottom + 24, 36) }]}
           showsVerticalScrollIndicator={false}
           keyboardShouldPersistTaps="handled"
         >

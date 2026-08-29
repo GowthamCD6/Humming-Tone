@@ -7,6 +7,7 @@ import {
   RefreshControl,
   TouchableOpacity,
 } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '../components/Icons';
 import { colors } from '../theme/colors';
 import { typography, spacing } from '../theme/typography';
@@ -16,6 +17,7 @@ import { SkeletonGrid } from '../components/SkeletonLoader';
 import { ProductService } from '../api/services';
 
 export const CategoryProductsScreen = ({ route, navigation }) => {
+  const insets = useSafeAreaInsets();
   const { title = 'Products', gender, category, searchQuery } = route.params || {};
 
   const [products, setProducts] = useState([]);
@@ -203,7 +205,7 @@ export const CategoryProductsScreen = ({ route, navigation }) => {
             <TouchableOpacity
               style={styles.resetBtn}
               onPress={() => {
-                navigation.navigate('ExploreTab');
+                navigation.navigate('MainTabs', { screen: 'ExploreTab' });
               }}
             >
               <Text style={styles.resetBtnText}>EXPLORE ALL COLLECTIONS</Text>
@@ -211,7 +213,7 @@ export const CategoryProductsScreen = ({ route, navigation }) => {
           </View>
         )}
 
-        <View style={{ height: 40 }} />
+        <View style={{ height: Math.max(insets.bottom + 80, 90) }} />
       </ScrollView>
     </View>
   );

@@ -10,37 +10,40 @@ import {
   Dimensions,
   StatusBar,
 } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '../components/Icons';
 import { colors, shadows } from '../theme/colors';
 import { typography, spacing } from '../theme/typography';
-import { Header } from '../components/Header';
 import { ProductCard } from '../components/ProductCard';
 import { SkeletonGrid } from '../components/SkeletonLoader';
-import { PerksTicker } from '../components/PerksTicker';
-import { Button } from '../components/Button';
 import { ProductService } from '../api/services';
 import { useSiteContent } from '../context/SiteContentContext';
+import { useAuth } from '../context/AuthContext';
 import { SITE_ASSETS } from '../api/siteAssets';
 
 const { width } = Dimensions.get('window');
 
-const GENDER_IMAGES = {
-  Men: 'https://images.unsplash.com/photo-1617137984095-74e4e5e3613f?auto=format&fit=crop&w=400&q=80',
-  Women: 'https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?auto=format&fit=crop&w=400&q=80',
-  Children: 'https://images.unsplash.com/photo-1503919545889-aef636e10ad4?auto=format&fit=crop&w=400&q=80',
-  Baby: 'https://images.unsplash.com/photo-1522771930-78848d9293e8?auto=format&fit=crop&w=400&q=80',
-  Sports: 'https://images.unsplash.com/photo-1517838277536-f5f99be501cd?auto=format&fit=crop&w=400&q=80',
-  Customize: 'https://images.unsplash.com/photo-1521572267360-ee0c2909d518?auto=format&fit=crop&w=400&q=80',
+// Dynamic Gender Icon Mapper
+const GENDER_ICON_MAP = {
+  Men: 'shirt-outline',
+  Women: 'woman-outline',
+  Children: 'happy-outline',
+  Baby: 'heart-outline',
+  Sports: 'fitness-outline',
+  Customize: 'color-palette-outline',
 };
 
 export const HomeScreen = ({ navigation }) => {
+  const insets = useSafeAreaInsets();
+  const { activeGenders, refreshSiteContent } = useSiteContent();
+  const { user, isAuthenticated } = useAuth();
+
   const [featuredProducts, setFeaturedProducts] = useState([]);
   const [newArrivals, setNewArrivals] = useState([]);
   const [loadingFeatured, setLoadingFeatured] = useState(true);
   const [loadingNewArrivals, setLoadingNewArrivals] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
-
-  const { activeGenders, refreshSiteContent } = useSiteContent();
+  const [activeSlide, setActiveSlide] = useState(0);
 
   const loadData = async () => {
     try {
@@ -71,7 +74,7 @@ export const HomeScreen = ({ navigation }) => {
 
   const handleGenderPress = (gender) => {
     if (gender.toLowerCase() === 'customize') {
-      navigation.navigate('CustomizeTab');
+      navigation.navigate('MainTabs', { screen: 'CustomizeTab' });
     } else {
       navigation.navigate('CategoryProducts', {
         title: `${gender}'s Collection`,
@@ -82,95 +85,142 @@ export const HomeScreen = ({ navigation }) => {
 
   return (
     <View style={styles.container}>
-      <StatusBar barStyle="dark-content" backgroundColor={colors.surface} />
-      <Header />
+      <StatusBar barStyle="dark-content" backgroundColor="#FFFFFF" />
+
+      {/* ── 1. PROMINENT WELCOME GREETING & NOTIFICATION HEADER ── */}
+      <View style={[styles.topLocationBar, { paddingTop: Math.max((insets.top || 0) + 14, (StatusBar.currentHeight || 0) + 14, 32) }]}>
+        <View style={styles.welcomeContainer}>
+          <Text style={styles.welcomeSub}>
+            {isAuthenticated ? 'Welcome back,' : 'Hello, Welcome'}
+          </Text>
+          <TouchableOpacity
+            style={styles.welcomeUserRow}
+            onPress={() => navigation.navigate(isAuthenticated ? 'MainTabs' : 'Login', { screen: 'ProfileTab' })}
+            activeOpacity={0.8}
+          >
+            <Text style={styles.welcomeUserName} numberOfLines={1}>
+              {isAuthenticated ? (user?.name || 'Patron') : 'Guest'}
+            </Text>
+            <Text style={styles.waveEmoji}> 👋</Text>
+          </TouchableOpacity>
+        </View>
+
+        <TouchableOpacity
+          style={styles.notificationBtn}
+          onPress={() => navigation.navigate('Wishlist')}
+          activeOpacity={0.8}
+        >
+          <Ionicons name="notifications-outline" size={22} color={colors.textPrimary} />
+          <View style={styles.notifBadge} />
+        </TouchableOpacity>
+      </View>
 
       <ScrollView
         style={styles.scroll}
-        contentContainerStyle={styles.scrollContent}
+        contentContainerStyle={[styles.scrollContent, { paddingBottom: Math.max(insets.bottom + 80, 90) }]}
         showsVerticalScrollIndicator={false}
         refreshControl={
           <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.primary} />
         }
       >
-        {/* Dynamic Category Story Cards Bar */}
-        <View style={styles.storyBarContainer}>
-          <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.storyBarScroll}>
-            {activeGenders.map((gender) => (
-              <TouchableOpacity
-                key={gender}
-                style={styles.storyItem}
-                onPress={() => handleGenderPress(gender)}
-                activeOpacity={0.8}
-              >
-                <View style={styles.storyImageRing}>
-                  <Image
-                    source={{ uri: GENDER_IMAGES[gender] || GENDER_IMAGES.Men }}
-                    style={styles.storyImage}
-                    resizeMode="cover"
-                  />
-                </View>
-                <Text style={styles.storyLabel} numberOfLines={1}>{gender}</Text>
-              </TouchableOpacity>
-            ))}
-          </ScrollView>
+        {/* ── 2. REFINED SEARCH BAR & FILTER TUNE BUTTON ── */}
+        <View style={styles.searchRow}>
+          <TouchableOpacity
+            style={styles.searchInputContainer}
+            onPress={() => navigation.navigate('MainTabs', { screen: 'ExploreTab' })}
+            activeOpacity={0.9}
+          >
+            <Ionicons name="search-outline" size={18} color={colors.textMuted} />
+            <Text style={styles.searchPlaceholder}>Search apparel, hoodies, tees...</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={styles.filterTuneBtn}
+            onPress={() => navigation.navigate('MainTabs', { screen: 'ExploreTab' })}
+            activeOpacity={0.85}
+          >
+            <Ionicons name="options-outline" size={18} color="#FFFFFF" />
+          </TouchableOpacity>
         </View>
 
-        {/* Hero Section */}
-        <View style={styles.heroWrapper}>
-          <Image
-            source={{
-              uri: SITE_ASSETS.homeHero,
-            }}
-            style={styles.heroImageAbsolute}
-            resizeMode="cover"
-          />
-          <View style={styles.heroOverlay}>
-            <View style={styles.heroBadge}>
-              <Text style={styles.heroBadgeText}>BESPOKE APPAREL</Text>
-            </View>
-            <Text style={styles.heroTitle}>Elegance Crafted For You</Text>
-            <Text style={styles.heroDesc}>
-              Discover bespoke t-shirts, premium hoodies, luxury knitwear, and customized essentials.
+        {/* ── 3. HERO PROMOTIONAL BANNER CARD ── */}
+        <View style={styles.heroPromoCard}>
+          <View style={styles.heroTextSide}>
+            <Text style={styles.heroCardTitle}>New Collection</Text>
+            <Text style={styles.heroCardSub}>
+              Discover handcrafted apparel & custom silhouettes
             </Text>
-            <View style={styles.heroActions}>
-              <Button
-                title="CUSTOM STUDIO"
-                onPress={() => navigation.navigate('CustomizeTab')}
-                variant="primary"
-                size="md"
-                style={[styles.heroBtn, styles.heroBtnPrimary]}
-                textStyle={styles.heroBtnText}
-              />
-              <Button
-                title="EXPLORE ALL"
-                onPress={() => navigation.navigate('ExploreTab')}
-                variant="outline"
-                size="md"
-                style={[styles.heroBtn, styles.heroBtnSecondary]}
-                textStyle={{ color: colors.textInverse, fontWeight: typography.weightBold }}
-              />
-            </View>
-          </View>
-        </View>
-
-        {/* Featured Products Section */}
-        <View style={styles.section}>
-          <View style={styles.sectionHeader}>
-            <View>
-              <Text style={styles.sectionCategory}>CURATED SELECTION</Text>
-              <Text style={styles.sectionTitle}>Featured Collection</Text>
-            </View>
             <TouchableOpacity
-              onPress={() => navigation.navigate('ExploreTab')}
-              style={styles.viewAllButton}
-              activeOpacity={0.7}
+              style={styles.heroShopNowBtn}
+              onPress={() => navigation.navigate('MainTabs', { screen: 'CustomizeTab' })}
+              activeOpacity={0.85}
             >
-              <Text style={styles.viewAllText}>VIEW ALL</Text>
-              <Ionicons name="arrow-forward" size={14} color={colors.primary} />
+              <Text style={styles.heroShopNowText}>Shop Now</Text>
             </TouchableOpacity>
           </View>
 
+          <View style={styles.heroImageSide}>
+            <Image
+              source={{ uri: SITE_ASSETS.homeHero }}
+              style={styles.heroModelImg}
+              resizeMode="cover"
+            />
+          </View>
+        </View>
+
+        {/* Hero Carousel Indicator Dots */}
+        <View style={styles.heroDotsRow}>
+          {[0, 1, 2, 3].map((dot) => (
+            <View
+              key={dot}
+              style={[
+                styles.heroDot,
+                activeSlide === dot && styles.heroDotActive,
+              ]}
+            />
+          ))}
+        </View>
+
+        {/* ── 4. BACKEND DYNAMIC CATEGORY CIRCLES ── */}
+        <View style={styles.sectionHeaderRow}>
+          <Text style={styles.sectionTitleBold}>Category</Text>
+          <TouchableOpacity onPress={() => navigation.navigate('MainTabs', { screen: 'ExploreTab' })}>
+            <Text style={styles.seeAllText}>See All</Text>
+          </TouchableOpacity>
+        </View>
+
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={styles.categoryCirclesScroll}
+        >
+          {activeGenders.map((gender) => {
+            const iconName = GENDER_ICON_MAP[gender] || 'grid-outline';
+            return (
+              <TouchableOpacity
+                key={gender}
+                style={styles.categoryCircleItem}
+                onPress={() => handleGenderPress(gender)}
+                activeOpacity={0.8}
+              >
+                <View style={styles.categoryCircle}>
+                  <Ionicons name={iconName} size={24} color={colors.primary} />
+                </View>
+                <Text style={styles.categoryNameText} numberOfLines={1}>{gender}</Text>
+              </TouchableOpacity>
+            );
+          })}
+        </ScrollView>
+
+        {/* ── 5. FEATURED PRODUCTS SECTION ── */}
+        <View style={styles.sectionHeaderRow}>
+          <Text style={styles.sectionTitleBold}>Featured Products</Text>
+          <TouchableOpacity onPress={() => navigation.navigate('MainTabs', { screen: 'ExploreTab' })}>
+            <Text style={styles.seeAllText}>See All</Text>
+          </TouchableOpacity>
+        </View>
+
+        <View style={styles.productsGridWrap}>
           {loadingFeatured ? (
             <SkeletonGrid count={4} />
           ) : featuredProducts.length > 0 ? (
@@ -184,47 +234,15 @@ export const HomeScreen = ({ navigation }) => {
           )}
         </View>
 
-        {/* Infinite Perks Marquee Ticker */}
-        <PerksTicker />
-
-        {/* Craftsmanship Brand Story Section */}
-        <View style={styles.storySection}>
-          <View style={styles.storyContent}>
-            <View style={styles.goldPill}>
-              <Text style={styles.storyTag}>HUMMING TONE PROMISE</Text>
-            </View>
-            <Text style={styles.storyTitle}>Exceptional Quality & Bespoke Craftsmanship</Text>
-            <Text style={styles.storyDescription}>
-              Every piece in our collection is a testament to meticulous tailoring, organic cottons, and refined aesthetics. Designed for comfort, longevity, and modern individuality.
-            </Text>
-            <TouchableOpacity
-              style={styles.storyLink}
-              onPress={() => navigation.navigate('CustomizeTab')}
-              activeOpacity={0.8}
-            >
-              <Text style={styles.storyLinkText}>ENTER CUSTOM STUDIO</Text>
-              <Ionicons name="arrow-forward" size={14} color={colors.goldLight} />
-            </TouchableOpacity>
-          </View>
+        {/* ── 6. NEW ARRIVALS SECTION ── */}
+        <View style={[styles.sectionHeaderRow, { marginTop: 14 }]}>
+          <Text style={styles.sectionTitleBold}>New Arrivals</Text>
+          <TouchableOpacity onPress={() => navigation.navigate('MainTabs', { screen: 'ExploreTab' })}>
+            <Text style={styles.seeAllText}>See All</Text>
+          </TouchableOpacity>
         </View>
 
-        {/* New Arrivals Section */}
-        <View style={styles.section}>
-          <View style={styles.sectionHeader}>
-            <View>
-              <Text style={styles.sectionCategory}>LATEST RELEASES</Text>
-              <Text style={styles.sectionTitle}>New Arrivals</Text>
-            </View>
-            <TouchableOpacity
-              onPress={() => navigation.navigate('ExploreTab')}
-              style={styles.viewAllButton}
-              activeOpacity={0.7}
-            >
-              <Text style={styles.viewAllText}>VIEW ALL</Text>
-              <Ionicons name="arrow-forward" size={14} color={colors.primary} />
-            </TouchableOpacity>
-          </View>
-
+        <View style={styles.productsGridWrap}>
           {loadingNewArrivals ? (
             <SkeletonGrid count={4} />
           ) : newArrivals.length > 0 ? (
@@ -237,9 +255,6 @@ export const HomeScreen = ({ navigation }) => {
             <Text style={styles.emptyText}>No new arrivals available.</Text>
           )}
         </View>
-
-        {/* Bottom Spacing */}
-        <View style={{ height: 40 }} />
       </ScrollView>
     </View>
   );
@@ -248,161 +263,221 @@ export const HomeScreen = ({ navigation }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: colors.background,
+    backgroundColor: '#FFFFFF',
   },
   scroll: {
     flex: 1,
   },
   scrollContent: {
-    paddingBottom: 24,
+    paddingHorizontal: 20,
+    paddingTop: 6,
   },
-  storyBarContainer: {
-    backgroundColor: colors.surface,
-    paddingVertical: 12,
-    borderBottomWidth: 1,
-    borderBottomColor: colors.borderLight,
-  },
-  storyBarScroll: {
-    paddingHorizontal: spacing.screenPadding,
-    gap: 16,
-  },
-  storyItem: {
+
+  // 1. Welcome Greeting Header
+  topLocationBar: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
     alignItems: 'center',
-    width: 68,
+    paddingHorizontal: 20,
+    paddingBottom: 14,
+    backgroundColor: '#FFFFFF',
   },
-  storyImageRing: {
-    width: 58,
-    height: 58,
-    borderRadius: 29,
-    padding: 2,
-    borderWidth: 1.5,
-    borderColor: colors.gold,
-    backgroundColor: colors.surface,
+  welcomeContainer: {
+    flex: 1,
+    paddingRight: 12,
+  },
+  welcomeSub: {
+    fontFamily: typography.fontSans,
+    fontSize: 13,
+    color: colors.textSecondary,
+    marginBottom: 3,
+    fontWeight: typography.weightMedium,
+  },
+  welcomeUserRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  welcomeUserName: {
+    fontFamily: typography.fontSans,
+    fontSize: 20,
+    fontWeight: typography.weightBold,
+    color: colors.textPrimary,
+    letterSpacing: -0.3,
+  },
+  waveEmoji: {
+    fontSize: 18,
+  },
+  notificationBtn: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: colors.surfaceMuted,
+    alignItems: 'center',
+    justifyContent: 'center',
+    position: 'relative',
+  },
+  notifBadge: {
+    position: 'absolute',
+    top: 11,
+    right: 11,
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    backgroundColor: colors.primary,
+  },
+
+  // 2. Search Row
+  searchRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+    marginTop: 6,
+    marginBottom: 16,
+  },
+  searchInputContainer: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: colors.surfaceMuted,
+    height: 42,
+    borderRadius: 21,
+    paddingHorizontal: 14,
+    gap: 8,
+  },
+  searchPlaceholder: {
+    fontFamily: typography.fontSans,
+    fontSize: 13,
+    color: colors.textMuted,
+  },
+  filterTuneBtn: {
+    width: 42,
+    height: 42,
+    borderRadius: 21,
+    backgroundColor: colors.primary,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  storyImage: {
-    width: 50,
-    height: 50,
-    borderRadius: 25,
+
+  // 3. Hero Promo Card
+  heroPromoCard: {
+    flexDirection: 'row',
+    backgroundColor: '#EAE1D8',
+    borderRadius: 20,
+    overflow: 'hidden',
+    height: 150,
+    position: 'relative',
   },
-  storyLabel: {
+  heroTextSide: {
+    flex: 1.2,
+    padding: 16,
+    justifyContent: 'center',
+  },
+  heroCardTitle: {
+    fontFamily: typography.fontSans,
+    fontSize: 18,
+    fontWeight: typography.weightBold,
+    color: colors.textPrimary,
+    marginBottom: 4,
+  },
+  heroCardSub: {
     fontFamily: typography.fontSans,
     fontSize: 11,
-    fontWeight: typography.weightSemiBold,
-    color: colors.textPrimary,
-    marginTop: 6,
-    textAlign: 'center',
+    color: colors.textSecondary,
+    lineHeight: 15,
+    marginBottom: 12,
   },
-  heroWrapper: {
-    marginHorizontal: spacing.screenPadding,
-    marginTop: 14,
-    height: 400,
-    borderRadius: 16,
-    overflow: 'hidden',
-    position: 'relative',
-    ...shadows.card,
+  heroShopNowBtn: {
+    backgroundColor: colors.primary,
+    paddingHorizontal: 16,
+    paddingVertical: 7,
+    borderRadius: 18,
+    alignSelf: 'flex-start',
   },
-  heroImageAbsolute: {
-    ...StyleSheet.absoluteFillObject,
+  heroShopNowText: {
+    fontFamily: typography.fontSans,
+    fontSize: 11,
+    fontWeight: typography.weightBold,
+    color: '#FFFFFF',
+  },
+  heroImageSide: {
+    flex: 1,
+    height: '100%',
+  },
+  heroModelImg: {
     width: '100%',
     height: '100%',
   },
-  heroOverlay: {
-    ...StyleSheet.absoluteFillObject,
-    backgroundColor: 'rgba(11, 15, 25, 0.62)',
-    padding: spacing.lg,
-    justifyContent: 'flex-end',
-  },
-  heroBadge: {
-    alignSelf: 'flex-start',
-    backgroundColor: colors.goldDark,
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    borderRadius: 4,
-    marginBottom: 8,
-  },
-  heroBadgeText: {
-    fontFamily: typography.fontSans,
-    fontSize: 9.5,
-    fontWeight: typography.weightBold,
-    letterSpacing: 1.5,
-    color: colors.textInverse,
-  },
-  heroTitle: {
-    fontFamily: typography.fontSerif,
-    fontSize: 28,
-    fontWeight: typography.weightBold,
-    color: colors.textInverse,
-    lineHeight: 34,
-    marginBottom: 8,
-  },
-  heroDesc: {
-    fontFamily: typography.fontSans,
-    fontSize: 13,
-    color: 'rgba(255, 255, 255, 0.9)',
-    lineHeight: 19,
-    marginBottom: 18,
-  },
-  heroActions: {
+  heroDotsRow: {
     flexDirection: 'row',
-    gap: 12,
+    justifyContent: 'center',
+    alignItems: 'center',
+    gap: 6,
+    marginTop: 10,
+    marginBottom: 16,
   },
-  heroBtn: {
-    flex: 1,
-    minHeight: 44,
-    borderRadius: 8,
+  heroDot: {
+    width: 6,
+    height: 6,
+    borderRadius: 3,
+    backgroundColor: colors.border,
   },
-  heroBtnPrimary: {
-    backgroundColor: colors.surface,
+  heroDotActive: {
+    width: 18,
+    height: 6,
+    borderRadius: 3,
+    backgroundColor: colors.primary,
   },
-  heroBtnText: {
-    color: colors.primary,
-    fontWeight: typography.weightBold,
-    letterSpacing: 1,
-    fontSize: 12,
-  },
-  heroBtnSecondary: {
-    borderColor: 'rgba(255, 255, 255, 0.8)',
-    borderWidth: 1.5,
-    backgroundColor: 'rgba(255, 255, 255, 0.1)',
-  },
-  section: {
-    paddingHorizontal: spacing.screenPadding,
-    paddingTop: spacing.xl,
-  },
-  sectionHeader: {
+
+  // 4. Category Circles
+  sectionHeaderRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    alignItems: 'flex-end',
-    marginBottom: spacing.md,
+    alignItems: 'center',
+    marginBottom: 12,
+    marginTop: 4,
   },
-  sectionCategory: {
+  sectionTitleBold: {
     fontFamily: typography.fontSans,
-    fontSize: 10,
-    fontWeight: typography.weightSemiBold,
-    letterSpacing: 1.5,
-    color: colors.goldDark,
-    marginBottom: 3,
-  },
-  sectionTitle: {
-    fontFamily: typography.fontSerif,
-    fontSize: 22,
+    fontSize: 16,
     fontWeight: typography.weightBold,
     color: colors.textPrimary,
   },
-  viewAllButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 4,
-    paddingBottom: 4,
+  seeAllText: {
+    fontFamily: typography.fontSans,
+    fontSize: 12,
+    fontWeight: typography.weightSemiBold,
+    color: colors.primary,
   },
-  viewAllText: {
+  categoryCirclesScroll: {
+    gap: 16,
+    paddingBottom: 4,
+    marginBottom: 18,
+  },
+  categoryCircleItem: {
+    alignItems: 'center',
+    width: 64,
+  },
+  categoryCircle: {
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+    backgroundColor: colors.surfaceMuted,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 6,
+  },
+  categoryNameText: {
     fontFamily: typography.fontSans,
     fontSize: 11,
-    fontWeight: typography.weightBold,
-    letterSpacing: 1,
-    color: colors.primary,
+    fontWeight: typography.weightMedium,
+    color: colors.textPrimary,
+    textAlign: 'center',
+  },
+
+  // 5. Product Grid
+  productsGridWrap: {
+    paddingTop: 2,
+    marginBottom: 8,
   },
   grid: {
     flexDirection: 'row',
@@ -414,65 +489,5 @@ const styles = StyleSheet.create({
     color: colors.textMuted,
     marginVertical: 20,
     fontSize: 13,
-  },
-  storySection: {
-    backgroundColor: colors.darkSurface,
-    marginVertical: spacing.xl,
-    paddingVertical: spacing.xl + 4,
-    paddingHorizontal: spacing.screenPadding,
-    borderTopWidth: 1,
-    borderBottomWidth: 1,
-    borderColor: colors.borderGold,
-  },
-  storyContent: {
-    maxWidth: 500,
-  },
-  goldPill: {
-    alignSelf: 'flex-start',
-    backgroundColor: 'rgba(212, 175, 55, 0.15)',
-    borderWidth: 1,
-    borderColor: colors.gold,
-    paddingHorizontal: 10,
-    paddingVertical: 3,
-    borderRadius: 12,
-    marginBottom: 10,
-  },
-  storyTag: {
-    fontFamily: typography.fontSans,
-    fontSize: 9.5,
-    fontWeight: typography.weightBold,
-    letterSpacing: 1.5,
-    color: colors.goldLight,
-  },
-  storyTitle: {
-    fontFamily: typography.fontSerif,
-    fontSize: 23,
-    fontWeight: typography.weightBold,
-    color: colors.textInverse,
-    marginBottom: 12,
-    lineHeight: 30,
-  },
-  storyDescription: {
-    fontFamily: typography.fontSans,
-    fontSize: 13,
-    lineHeight: 21,
-    color: 'rgba(255, 255, 255, 0.8)',
-    marginBottom: 20,
-  },
-  storyLink: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-    borderBottomWidth: 1,
-    borderBottomColor: colors.goldLight,
-    paddingBottom: 4,
-    alignSelf: 'flex-start',
-  },
-  storyLinkText: {
-    fontFamily: typography.fontSans,
-    fontSize: 11,
-    fontWeight: typography.weightBold,
-    letterSpacing: 1.5,
-    color: colors.goldLight,
   },
 });

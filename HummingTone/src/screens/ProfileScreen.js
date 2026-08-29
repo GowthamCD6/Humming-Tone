@@ -12,12 +12,14 @@ import {
 import { Ionicons } from '../components/Icons';
 import { colors, shadows } from '../theme/colors';
 import { typography, spacing } from '../theme/typography';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Header } from '../components/Header';
 import { Button } from '../components/Button';
 import { useAuth } from '../context/AuthContext';
 import { useWishlist } from '../context/WishlistContext';
 
 export const ProfileScreen = ({ navigation }) => {
+  const insets = useSafeAreaInsets();
   const { user, isAuthenticated, logout } = useAuth();
   const { wishlistCount } = useWishlist();
   const [editModalVisible, setEditModalVisible] = useState(false);
@@ -63,7 +65,7 @@ export const ProfileScreen = ({ navigation }) => {
       title: 'Customize Apparel',
       subtitle: 'Create personalized custom garments',
       icon: 'color-palette-outline',
-      onPress: () => navigation.navigate('CustomizeTab'),
+      onPress: () => navigation.navigate('MainTabs', { screen: 'CustomizeTab' }),
     },
     {
       id: 'support',
@@ -78,7 +80,11 @@ export const ProfileScreen = ({ navigation }) => {
     <View style={styles.container}>
       <Header title="My Account" />
 
-      <ScrollView style={styles.scroll} showsVerticalScrollIndicator={false}>
+      <ScrollView
+        style={styles.scroll}
+        contentContainerStyle={{ paddingBottom: Math.max(insets.bottom + 80, 90) }}
+        showsVerticalScrollIndicator={false}
+      >
         {/* User Card */}
         <View style={styles.userCard}>
           <View style={styles.avatar}>

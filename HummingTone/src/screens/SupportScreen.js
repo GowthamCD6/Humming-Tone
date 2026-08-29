@@ -8,6 +8,7 @@ import {
   Linking,
   StatusBar,
 } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '../components/Icons';
 import { colors } from '../theme/colors';
 import { typography, spacing } from '../theme/typography';
@@ -33,6 +34,7 @@ const FAQ_DATA = [
 ];
 
 export const SupportScreen = ({ navigation }) => {
+  const insets = useSafeAreaInsets();
   const [expandedIndex, setExpandedIndex] = useState(0);
 
   const handleWhatsApp = () => {
@@ -53,7 +55,7 @@ export const SupportScreen = ({ navigation }) => {
       <Header title="Customer Care & Support" showBack={true} />
 
       <ScrollView
-        contentContainerStyle={styles.scrollContent}
+        contentContainerStyle={[styles.scrollContent, { paddingBottom: Math.max(insets.bottom + 20, 30) }]}
         showsVerticalScrollIndicator={false}
       >
         {/* Hero Card */}

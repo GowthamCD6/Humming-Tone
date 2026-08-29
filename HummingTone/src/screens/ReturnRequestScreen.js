@@ -9,6 +9,7 @@ import {
   Alert,
   StatusBar,
 } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '../components/Icons';
 import { colors } from '../theme/colors';
 import { typography, spacing } from '../theme/typography';
@@ -25,6 +26,7 @@ const REASONS = [
 ];
 
 export const ReturnRequestScreen = ({ navigation, route }) => {
+  const insets = useSafeAreaInsets();
   const initialOrderId = route.params?.orderId || '';
   const [orderId, setOrderId] = useState(initialOrderId);
   const [selectedReason, setSelectedReason] = useState(REASONS[0]);
@@ -74,7 +76,7 @@ export const ReturnRequestScreen = ({ navigation, route }) => {
       <Header title="Return & Exchange" showBack={true} />
 
       <ScrollView
-        contentContainerStyle={styles.scrollContent}
+        contentContainerStyle={[styles.scrollContent, { paddingBottom: Math.max(insets.bottom + 20, 30) }]}
         showsVerticalScrollIndicator={false}
       >
         <Text style={styles.headerSubtitle}>COMPLIMENTARY CONCIERGE PICKUP</Text>

@@ -7,404 +7,261 @@ import {
   Image,
   TouchableOpacity,
   Dimensions,
-  ActivityIndicator,
+  StatusBar,
   Alert,
-  TextInput,
 } from 'react-native';
-import { Ionicons } from '../components/Icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { colors } from '../theme/colors';
+import { Ionicons } from '../components/Icons';
+import { colors, shadows } from '../theme/colors';
 import { typography, spacing } from '../theme/typography';
-import { Header } from '../components/Header';
-import { StarRating } from '../components/StarRating';
-import { Button } from '../components/Button';
-import { ProductService } from '../api/services';
 import { useCart } from '../context/CartContext';
 import { useWishlist } from '../context/WishlistContext';
+import { ProductService } from '../api/services';
 
 const { width } = Dimensions.get('window');
+const SIZES = ['S', 'M', 'L', 'XL', 'XXL', 'XXXL'];
+
+const COLOR_SWATCHES = [
+  { id: 'brown', name: 'Brown', color: '#704F38' },
+  { id: 'black', name: 'Black', color: '#1F1A17' },
+  { id: 'cream', name: 'Cream', color: '#EAE1D8' },
+  { id: 'sage', name: 'Sage', color: '#8A9A86' },
+];
 
 export const ProductDetailsScreen = ({ route, navigation }) => {
-  const { productId, initialProduct } = route.params || {};
   const insets = useSafeAreaInsets();
-  const { addToCart } = useCart();
-  const { isInWishlist, toggleWishlist } = useWishlist();
-
-
+  const { productId, initialProduct } = route.params || {};
   const [product, setProduct] = useState(initialProduct || null);
   const [loading, setLoading] = useState(!initialProduct);
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
-  const [selectedSize, setSelectedSize] = useState('');
-  const [quantity, setQuantity] = useState(1);
-  const [reviewsData, setReviewsData] = useState({ reviews: [], averageRating: 5, totalReviews: 0 });
-  const [reviewsLoading, setReviewsLoading] = useState(true);
+  const [selectedSize, setSelectedSize] = useState('M');
+  const [selectedColor, setSelectedColor] = useState(COLOR_SWATCHES[0]);
+  const [isExpandedDesc, setIsExpandedDesc] = useState(false);
 
-  // Review form states
-  const [showReviewForm, setShowReviewForm] = useState(false);
-  const [reviewName, setReviewName] = useState('');
-  const [reviewRating, setReviewRating] = useState(5);
-  const [reviewComment, setReviewComment] = useState('');
-  const [submittingReview, setSubmittingReview] = useState(false);
+  const { addToCart } = useCart();
+  const { isInWishlist, toggleWishlist } = useWishlist();
 
   useEffect(() => {
-    const loadDetails = async () => {
-      try {
-        const data = await ProductService.fetchProductDetails(productId);
-        setProduct(data);
-        if (data.variants && data.variants.length > 0) {
-          setSelectedSize(data.variants[0].size);
+    const fetchDetails = async () => {
+      if (productId) {
+        try {
+          const data = await ProductService.fetchProductById(productId);
+          if (data) setProduct(data);
+        } catch (e) {
+          console.warn('Error fetching product details:', e);
+        } finally {
+          setLoading(false);
         }
-      } catch (e) {
-        console.warn('Failed to load product details:', e);
-      } finally {
-        setLoading(false);
       }
     };
-
-    const loadReviews = async () => {
-      try {
-        const rev = await ProductService.fetchProductReviews(productId);
-        setReviewsData(rev);
-      } catch (e) {
-        console.warn('Failed to load reviews:', e);
-      } finally {
-        setReviewsLoading(false);
-      }
-    };
-
-    loadDetails();
-    loadReviews();
+    fetchDetails();
   }, [productId]);
 
-  const handleAddToCart = (showToast = true) => {
-    if (!product) return;
-    const selectedVariant = product.variants?.find((v) => v.size === selectedSize);
-    addToCart(product, selectedVariant || { size: selectedSize || 'Standard' }, quantity);
+  if (!product && !loading) {
+    return (
+      <View style={styles.notFoundContainer}>
+        <Text style={styles.notFoundText}>Product not found.</Text>
+        <TouchableOpacity
+          style={styles.backBtn}
+          onPress={() => navigation.goBack()}
+        >
+          <Text style={styles.backBtnText}>Go Back</Text>
+        </TouchableOpacity>
+      </View>
+    );
+  }
 
-    if (showToast) {
+  const galleryImages = [
+    product?.image,
+    'https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?auto=format&fit=crop&w=800&q=80',
+    'https://images.unsplash.com/photo-1539109136881-3be0616acf4b?auto=format&fit=crop&w=800&q=80',
+    'https://images.unsplash.com/photo-1556905055-8f358a7a47b2?auto=format&fit=crop&w=800&q=80',
+    'https://images.unsplash.com/photo-1521572267360-ee0c2909d518?auto=format&fit=crop&w=800&q=80',
+  ].filter(Boolean);
+
+  const isWishlisted = product ? isInWishlist(product.id) : false;
+  const rating = product?.rating || 4.5;
+  const formattedPrice = `₹${(product?.price || 0).toLocaleString('en-IN')}`;
+
+  const handleAddToCart = () => {
+    if (product) {
+      addToCart(product, selectedSize, 1);
       Alert.alert(
         'Added to Bag',
-        `${product.name} (Size: ${selectedSize || 'Standard'}) added to your shopping bag.`,
+        `${product.name} (Size: ${selectedSize}) added to your shopping bag.`,
         [
           { text: 'Continue Shopping', style: 'cancel' },
-          { text: 'View Bag', onPress: () => navigation.navigate('CartTab') },
+          { text: 'View Bag', onPress: () => navigation.navigate('MainTabs', { screen: 'CartTab' }) },
         ]
       );
     }
   };
 
-  const handleBuyNow = () => {
-    handleAddToCart(false);
-    navigation.navigate('CartTab');
-  };
-
-  const handleSubmitReview = async () => {
-    if (!reviewName.trim() || !reviewComment.trim()) {
-      Alert.alert('Missing Details', 'Please enter your name and comment.');
-      return;
-    }
-    try {
-      setSubmittingReview(true);
-      await ProductService.submitReview(productId, {
-        customer_name: reviewName,
-        rating: reviewRating,
-        comment: reviewComment,
-      });
-      Alert.alert('Review Submitted', 'Thank you for sharing your feedback!');
-      setShowReviewForm(false);
-      setReviewComment('');
-      // Reload reviews
-      const updatedReviews = await ProductService.fetchProductReviews(productId);
-      setReviewsData(updatedReviews);
-    } catch (e) {
-      Alert.alert('Error', 'Unable to submit review at this time.');
-    } finally {
-      setSubmittingReview(false);
-    }
-  };
-
-  if (loading || !product) {
-    return (
-      <View style={styles.loadingContainer}>
-        <Header showBack={true} />
-        <ActivityIndicator size="large" color={colors.primary} style={{ marginTop: 60 }} />
-      </View>
-    );
-  }
-
-  const images = product.images && product.images.length > 0 ? product.images : [product.image];
-  const formattedPrice = `₹${(product.price || 0).toLocaleString('en-IN')}`;
-
-  const availableSizes = product.variants && product.variants.length > 0
-    ? product.variants.map((v) => v.size)
-    : ['S', 'M', 'L', 'XL', 'XXL'];
-
   return (
     <View style={styles.container}>
-      <Header title={product.name} showBack={true} />
+      <StatusBar barStyle="dark-content" backgroundColor="#FFFFFF" />
 
-      <ScrollView style={styles.scroll} showsVerticalScrollIndicator={false}>
-        {/* Main Image Slider */}
-        <View style={styles.imageGallery}>
+      {/* ── 1. TOP HEADER BAR (Template Exact) ── */}
+      <View style={[styles.topBar, { paddingTop: Math.max(insets.top, 12) }]}>
+        <TouchableOpacity
+          style={styles.circleIconBtn}
+          onPress={() => navigation.goBack()}
+          activeOpacity={0.8}
+        >
+          <Ionicons name="arrow-back" size={20} color={colors.textPrimary} />
+        </TouchableOpacity>
+
+        <Text style={styles.headerTitle}>Product Details</Text>
+
+        <TouchableOpacity
+          style={styles.circleIconBtn}
+          onPress={() => product && toggleWishlist(product)}
+          activeOpacity={0.8}
+        >
+          <Ionicons
+            name={isWishlisted ? 'heart' : 'heart-outline'}
+            size={20}
+            color={isWishlisted ? colors.error : colors.textPrimary}
+          />
+        </TouchableOpacity>
+      </View>
+
+      <ScrollView
+        style={styles.scroll}
+        contentContainerStyle={styles.scrollContent}
+        showsVerticalScrollIndicator={false}
+      >
+        {/* ── 2. LARGE MAIN PRODUCT IMAGE ── */}
+        <View style={styles.mainImageWrap}>
           <Image
-            source={{ uri: images[selectedImageIndex] || product.image }}
+            source={{ uri: galleryImages[selectedImageIndex] || product?.image }}
             style={styles.mainImage}
             resizeMode="cover"
           />
-
-          <TouchableOpacity
-            style={styles.detailsWishlistBtn}
-            onPress={() => toggleWishlist(product)}
-            activeOpacity={0.8}
-          >
-            <Ionicons
-              name={isInWishlist(product?.id) ? 'heart' : 'heart-outline'}
-              size={22}
-              color={isInWishlist(product?.id) ? colors.accent : colors.textPrimary}
-            />
-          </TouchableOpacity>
-
-          {/* Thumbnail Dots/Images Bar */}
-          {images.length > 1 && (
-            <ScrollView
-              horizontal
-              showsHorizontalScrollIndicator={false}
-              contentContainerStyle={styles.thumbnailScroll}
-            >
-              {images.map((imgUri, index) => (
-                <TouchableOpacity
-                  key={index}
-                  onPress={() => setSelectedImageIndex(index)}
-                  style={[
-                    styles.thumbnail,
-                    selectedImageIndex === index && styles.thumbnailActive,
-                  ]}
-                >
-                  <Image source={{ uri: imgUri }} style={styles.thumbImage} />
-                </TouchableOpacity>
-              ))}
-            </ScrollView>
-          )}
         </View>
 
-        {/* Product Details Section */}
-        <View style={styles.detailsContent}>
-          <Text style={styles.brandTag}>
-            {product.brand || product.category || 'ATELIER LUXURY COLLECTION'}
+        {/* Thumbnails Row */}
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={styles.thumbnailsRow}
+        >
+          {galleryImages.map((img, idx) => (
+            <TouchableOpacity
+              key={idx}
+              style={[
+                styles.thumbnailWrap,
+                selectedImageIndex === idx && styles.thumbnailWrapActive,
+              ]}
+              onPress={() => setSelectedImageIndex(idx)}
+              activeOpacity={0.8}
+            >
+              <Image source={{ uri: img }} style={styles.thumbnailImg} resizeMode="cover" />
+            </TouchableOpacity>
+          ))}
+        </ScrollView>
+
+        {/* ── 3. PRODUCT TITLE & RATING ROW ── */}
+        <View style={styles.infoSection}>
+          <View style={styles.titleRow}>
+            <View style={{ flex: 1 }}>
+              <Text style={styles.categoryOverline}>
+                {product?.category || "Female's Style"}
+              </Text>
+              <Text style={styles.productTitle}>{product?.name || 'Luxury Tailored Piece'}</Text>
+            </View>
+            <View style={styles.ratingBadge}>
+              <Ionicons name="star" size={13} color={colors.star} />
+              <Text style={styles.ratingText}>{rating}</Text>
+            </View>
+          </View>
+
+          {/* ── 4. PRODUCT DETAILS DESCRIPTION ── */}
+          <Text style={styles.sectionHeading}>Product Details</Text>
+          <Text
+            style={styles.descriptionText}
+            numberOfLines={isExpandedDesc ? undefined : 3}
+          >
+            {product?.description ||
+              'Crafted from 100% premium combed cotton, tailored for everyday comfort and structured luxury silhouette. Features reinforced seams, pre-shrunk weave, and breathable natural drape.'}
           </Text>
-          <Text style={styles.productTitle}>{product.name}</Text>
-
-          {/* Rating Summary */}
-          <View style={styles.ratingRow}>
-            <StarRating rating={reviewsData.averageRating || 5} size={16} />
-            <Text style={styles.ratingText}>
-              {(reviewsData.averageRating || 5).toFixed(1)} ({reviewsData.totalReviews || reviewsData.reviews?.length || 0} reviews)
+          <TouchableOpacity onPress={() => setIsExpandedDesc(!isExpandedDesc)}>
+            <Text style={styles.readMoreText}>
+              {isExpandedDesc ? 'Read less' : 'Read more'}
             </Text>
-          </View>
+          </TouchableOpacity>
 
-          {/* Price */}
-          <View style={styles.priceRow}>
-            <Text style={styles.priceValue}>{formattedPrice}</Text>
-            <Text style={styles.taxIncluded}>All Taxes & Duties Included</Text>
-          </View>
-
-          {/* Divider */}
-          <View style={styles.divider} />
-
-          {/* Size Selector */}
-          <View style={styles.sectionBlock}>
-            <View style={styles.sectionBlockHeader}>
-              <Text style={styles.blockTitle}>SELECT SIZE</Text>
-              <Text style={styles.sizeGuideText}>Size Guide</Text>
-            </View>
-            <View style={styles.sizesRow}>
-              {availableSizes.map((size) => (
-                <TouchableOpacity
-                  key={size}
+          {/* ── 5. SELECT SIZE PILLS (Template Exact) ── */}
+          <Text style={styles.sectionHeading}>Select Size</Text>
+          <View style={styles.sizePillsRow}>
+            {SIZES.map((size) => (
+              <TouchableOpacity
+                key={size}
+                style={[
+                  styles.sizePill,
+                  selectedSize === size && styles.sizePillActive,
+                ]}
+                onPress={() => setSelectedSize(size)}
+                activeOpacity={0.8}
+              >
+                <Text
                   style={[
-                    styles.sizePill,
-                    selectedSize === size && styles.sizePillActive,
+                    styles.sizePillText,
+                    selectedSize === size && styles.sizePillTextActive,
                   ]}
-                  onPress={() => setSelectedSize(size)}
-                  activeOpacity={0.8}
                 >
-                  <Text
-                    style={[
-                      styles.sizePillText,
-                      selectedSize === size && styles.sizePillTextActive,
-                    ]}
-                  >
-                    {size}
-                  </Text>
-                </TouchableOpacity>
-              ))}
-            </View>
-          </View>
-
-          {/* Quantity Selector */}
-          <View style={styles.sectionBlock}>
-            <Text style={styles.blockTitle}>QUANTITY</Text>
-            <View style={styles.qtyControl}>
-              <TouchableOpacity
-                style={styles.qtyBtn}
-                onPress={() => setQuantity(Math.max(1, quantity - 1))}
-              >
-                <Ionicons name="remove" size={18} color={colors.textPrimary} />
-              </TouchableOpacity>
-              <Text style={styles.qtyValue}>{quantity}</Text>
-              <TouchableOpacity
-                style={styles.qtyBtn}
-                onPress={() => setQuantity(quantity + 1)}
-              >
-                <Ionicons name="add" size={18} color={colors.textPrimary} />
-              </TouchableOpacity>
-            </View>
-          </View>
-
-          {/* Description */}
-          <View style={styles.sectionBlock}>
-            <Text style={styles.blockTitle}>PRODUCT DETAILS & CRAFTSMANSHIP</Text>
-            <Text style={styles.descriptionText}>
-              {product.description ||
-                'Crafted with premium natural fibers and tailored to perfection. Features reinforced stitching, breathable luxury drape, and timeless comfort design.'}
-            </Text>
-          </View>
-
-          {/* Trust Perks List */}
-          <View style={styles.perksList}>
-            <View style={styles.perkItem}>
-              <Ionicons name="shield-checkmark-outline" size={20} color={colors.primary} />
-              <Text style={styles.perkText}>100% Authentic Humming Tone Quality</Text>
-            </View>
-            <View style={styles.perkItem}>
-              <Ionicons name="cube-outline" size={20} color={colors.primary} />
-              <Text style={styles.perkText}>Complimentary Express Delivery & Easy Returns</Text>
-            </View>
-          </View>
-
-          {/* Customer Reviews Section */}
-          <View style={styles.reviewsSection}>
-            <View style={styles.reviewsHeader}>
-              <Text style={styles.reviewsTitle}>Customer Reviews</Text>
-              <TouchableOpacity
-                style={styles.writeReviewBtn}
-                onPress={() => setShowReviewForm(!showReviewForm)}
-              >
-                <Text style={styles.writeReviewText}>
-                  {showReviewForm ? 'Close Form' : 'Write a Review'}
+                  {size}
                 </Text>
               </TouchableOpacity>
-            </View>
-
-            {/* Write Review Form */}
-            {showReviewForm && (
-              <View style={styles.reviewForm}>
-                <Text style={styles.formTitle}>Write a Review</Text>
-
-                <TextInput
-                  style={styles.formInput}
-                  placeholder="Your Name"
-                  placeholderTextColor={colors.textMuted}
-                  value={reviewName}
-                  onChangeText={setReviewName}
-                />
-
-                {/* Rating selection */}
-                <View style={styles.starSelectRow}>
-                  <Text style={styles.starSelectLabel}>Your Rating: </Text>
-                  <View style={styles.starSelectButtons}>
-                    {[1, 2, 3, 4, 5].map((star) => (
-                      <TouchableOpacity
-                        key={star}
-                        onPress={() => setReviewRating(star)}
-                        style={{ padding: 4 }}
-                      >
-                        <Ionicons
-                          name={reviewRating >= star ? 'star' : 'star-outline'}
-                          size={22}
-                          color={colors.gold}
-                        />
-                      </TouchableOpacity>
-                    ))}
-                  </View>
-                </View>
-
-                <TextInput
-                  style={[styles.formInput, styles.formTextArea]}
-                  placeholder="Tell us about the fabric quality, fit, and elegance..."
-                  placeholderTextColor={colors.textMuted}
-                  value={reviewComment}
-                  onChangeText={setReviewComment}
-                  multiline
-                  numberOfLines={4}
-                />
-
-                <Button
-                  title="SUBMIT VERIFIED REVIEW"
-                  onPress={handleSubmitReview}
-                  loading={submittingReview}
-                  variant="primary"
-                  size="md"
-                />
-              </View>
-            )}
-
-            {/* Reviews List */}
-            {reviewsLoading ? (
-              <ActivityIndicator size="small" color={colors.primary} style={{ marginVertical: 20 }} />
-            ) : reviewsData.reviews && reviewsData.reviews.length > 0 ? (
-              reviewsData.reviews.map((rev, i) => (
-                <View key={rev.id || i} style={styles.reviewCard}>
-                  <View style={styles.reviewTop}>
-                    <Text style={styles.reviewerName}>{rev.customer_name || 'Verified Patron'}</Text>
-                    <StarRating rating={rev.rating || 5} size={12} />
-                  </View>
-                  <Text style={styles.reviewComment}>{rev.comment}</Text>
-                </View>
-              ))
-            ) : (
-              <Text style={styles.noReviewsText}>
-                Be the first to review this atelier masterpiece!
-              </Text>
-            )}
+            ))}
           </View>
 
-          <View style={{ height: 100 }} />
+          {/* ── 6. SELECT COLOR (Template Exact) ── */}
+          <Text style={styles.sectionHeading}>
+            Select Color : <Text style={styles.colorSelectedName}>{selectedColor.name}</Text>
+          </Text>
+          <View style={styles.colorsRow}>
+            {COLOR_SWATCHES.map((swatch) => (
+              <TouchableOpacity
+                key={swatch.id}
+                style={[
+                  styles.colorCircle,
+                  { backgroundColor: swatch.color },
+                  selectedColor.id === swatch.id && styles.colorCircleActive,
+                ]}
+                onPress={() => setSelectedColor(swatch)}
+                activeOpacity={0.8}
+              >
+                {selectedColor.id === swatch.id && (
+                  <Ionicons
+                    name="checkmark"
+                    size={14}
+                    color={swatch.id === 'cream' ? colors.primary : '#FFFFFF'}
+                  />
+                )}
+              </TouchableOpacity>
+            ))}
+          </View>
         </View>
+
+        <View style={{ height: 100 }} />
       </ScrollView>
 
-      {/* Floating Bottom Sticky Action Bar */}
-      <View style={[styles.bottomBar, { paddingBottom: Math.max(insets.bottom, 12) }]}>
-        <View style={styles.bottomBarContent}>
-          <TouchableOpacity
-            style={styles.bottomWishlistBtn}
-            onPress={() => toggleWishlist(product)}
-            activeOpacity={0.8}
-          >
-            <Ionicons
-              name={isInWishlist(product?.id) ? 'heart' : 'heart-outline'}
-              size={22}
-              color={isInWishlist(product?.id) ? colors.error : colors.textPrimary}
-            />
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            style={styles.addCartBtn}
-            onPress={() => handleAddToCart(true)}
-            activeOpacity={0.8}
-          >
-            <Ionicons name="bag-add-outline" size={19} color={colors.primary} />
-            <Text style={styles.addCartText}>ADD TO BAG</Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            style={styles.buyNowBtn}
-            onPress={handleBuyNow}
-            activeOpacity={0.8}
-          >
-            <Text style={styles.buyNowText}>BUY NOW</Text>
-          </TouchableOpacity>
+      {/* ── 7. BOTTOM STICKY BAR (Template Exact) ── */}
+      <View style={[styles.bottomStickyBar, { paddingBottom: Math.max(insets.bottom, 16) }]}>
+        <View>
+          <Text style={styles.totalPriceLabel}>Total Price</Text>
+          <Text style={styles.totalPriceValue}>{formattedPrice}</Text>
         </View>
+
+        <TouchableOpacity
+          style={styles.addToCartBtn}
+          onPress={handleAddToCart}
+          activeOpacity={0.88}
+        >
+          <Ionicons name="bag-handle-outline" size={18} color="#FFFFFF" />
+          <Text style={styles.addToCartText}>Add to Cart</Text>
+        </TouchableOpacity>
       </View>
     </View>
   );
@@ -413,158 +270,147 @@ export const ProductDetailsScreen = ({ route, navigation }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: colors.background,
-  },
-  loadingContainer: {
-    flex: 1,
-    backgroundColor: colors.background,
+    backgroundColor: '#FFFFFF',
   },
   scroll: {
     flex: 1,
   },
-  imageGallery: {
-    width: width,
-    height: width * 1.25,
-    backgroundColor: colors.surface,
-    position: 'relative',
+  scrollContent: {
+    paddingHorizontal: 20,
+    paddingTop: 10,
+  },
+  topBar: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 20,
+    paddingBottom: 10,
+    backgroundColor: '#FFFFFF',
+  },
+  circleIconBtn: {
+    width: 42,
+    height: 42,
+    borderRadius: 21,
+    backgroundColor: colors.surfaceMuted,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  headerTitle: {
+    fontFamily: typography.fontSans,
+    fontSize: 16,
+    fontWeight: typography.weightBold,
+    color: colors.textPrimary,
+  },
+
+  // 2. Main Image & Gallery
+  mainImageWrap: {
+    width: '100%',
+    height: 320,
+    borderRadius: 22,
+    overflow: 'hidden',
+    backgroundColor: colors.surfaceMuted,
+    marginBottom: 12,
   },
   mainImage: {
     width: '100%',
     height: '100%',
   },
-  detailsWishlistBtn: {
-    position: 'absolute',
-    top: 16,
-    right: 16,
-    backgroundColor: 'rgba(255, 255, 255, 0.92)',
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    alignItems: 'center',
-    justifyContent: 'center',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.15,
-    shadowRadius: 4,
-    elevation: 4,
-    zIndex: 10,
+  thumbnailsRow: {
+    gap: 10,
+    marginBottom: 18,
   },
-  thumbnailScroll: {
-    position: 'absolute',
-    bottom: 12,
-    left: 12,
-    right: 12,
-    flexDirection: 'row',
-    gap: 8,
-  },
-  thumbnail: {
-    width: 48,
-    height: 48,
-    borderRadius: 4,
-    borderWidth: 1.5,
-    borderColor: 'transparent',
+  thumbnailWrap: {
+    width: 60,
+    height: 60,
+    borderRadius: 14,
     overflow: 'hidden',
-    backgroundColor: colors.cardBg,
+    borderWidth: 2,
+    borderColor: 'transparent',
+    backgroundColor: colors.surfaceMuted,
   },
-  thumbnailActive: {
+  thumbnailWrapActive: {
     borderColor: colors.primary,
   },
-  thumbImage: {
+  thumbnailImg: {
     width: '100%',
     height: '100%',
   },
-  detailsContent: {
-    paddingHorizontal: spacing.screenPadding,
-    paddingTop: 20,
+
+  // 3. Info Section
+  infoSection: {
+    paddingTop: 4,
   },
-  brandTag: {
+  titleRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'flex-start',
+    marginBottom: 14,
+  },
+  categoryOverline: {
     fontFamily: typography.fontSans,
-    fontSize: 10,
-    fontWeight: typography.weightBold,
-    letterSpacing: 2,
-    color: colors.textSecondary,
-    marginBottom: 4,
-    textTransform: 'uppercase',
+    fontSize: 12,
+    color: colors.textMuted,
+    marginBottom: 2,
   },
   productTitle: {
-    fontFamily: typography.fontSerif,
-    fontSize: 24,
+    fontFamily: typography.fontSans,
+    fontSize: 20,
     fontWeight: typography.weightBold,
     color: colors.textPrimary,
-    lineHeight: 30,
-    marginBottom: 8,
   },
-  ratingRow: {
+  ratingBadge: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
-    marginBottom: 12,
+    gap: 3,
+    paddingTop: 4,
   },
   ratingText: {
     fontFamily: typography.fontSans,
-    fontSize: 12,
-    color: colors.textSecondary,
+    fontSize: 13,
+    fontWeight: typography.weightBold,
+    color: colors.textPrimary,
   },
-  priceRow: {
-    flexDirection: 'row',
-    alignItems: 'baseline',
-    gap: 10,
-    marginBottom: 16,
-  },
-  priceValue: {
+
+  // 4. Description
+  sectionHeading: {
     fontFamily: typography.fontSans,
-    fontSize: 22,
+    fontSize: 14,
+    fontWeight: typography.weightBold,
+    color: colors.textPrimary,
+    marginTop: 14,
+    marginBottom: 6,
+  },
+  descriptionText: {
+    fontFamily: typography.fontSans,
+    fontSize: 12.5,
+    color: colors.textSecondary,
+    lineHeight: 18,
+  },
+  readMoreText: {
+    fontFamily: typography.fontSans,
+    fontSize: 12,
     fontWeight: typography.weightBold,
     color: colors.primary,
+    marginTop: 4,
   },
-  taxIncluded: {
-    fontFamily: typography.fontSans,
-    fontSize: 11,
-    color: colors.textMuted,
-  },
-  divider: {
-    height: 1,
-    backgroundColor: colors.borderLight,
-    marginVertical: 14,
-  },
-  sectionBlock: {
-    marginBottom: 20,
-  },
-  sectionBlockHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 10,
-  },
-  blockTitle: {
-    fontFamily: typography.fontSans,
-    fontSize: 11,
-    fontWeight: typography.weightBold,
-    letterSpacing: 1.2,
-    color: colors.textPrimary,
-    marginBottom: 10,
-  },
-  sizeGuideText: {
-    fontFamily: typography.fontSans,
-    fontSize: 11,
-    color: colors.textSecondary,
-    textDecorationLine: 'underline',
-  },
-  sizesRow: {
+
+  // 5. Size Pills
+  sizePillsRow: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    gap: 10,
+    gap: 8,
+    marginTop: 4,
   },
   sizePill: {
-    minWidth: 50,
-    height: 42,
+    minWidth: 44,
+    height: 38,
     paddingHorizontal: 12,
-    borderRadius: 2,
+    borderRadius: 19,
     borderWidth: 1,
     borderColor: colors.border,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: colors.cardBg,
+    backgroundColor: '#FFFFFF',
   },
   sizePillActive: {
     backgroundColor: colors.primary,
@@ -572,225 +418,102 @@ const styles = StyleSheet.create({
   },
   sizePillText: {
     fontFamily: typography.fontSans,
-    fontSize: 12.5,
+    fontSize: 12,
     fontWeight: typography.weightMedium,
     color: colors.textPrimary,
   },
   sizePillTextActive: {
-    color: colors.textInverse,
+    color: '#FFFFFF',
     fontWeight: typography.weightBold,
   },
-  qtyControl: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    borderWidth: 1,
-    borderColor: colors.border,
-    borderRadius: 2,
-    width: 120,
-    height: 40,
+
+  // 6. Colors
+  colorSelectedName: {
+    fontWeight: typography.weightMedium,
+    color: colors.textSecondary,
   },
-  qtyBtn: {
-    flex: 1,
+  colorsRow: {
+    flexDirection: 'row',
+    gap: 12,
+    marginTop: 6,
+  },
+  colorCircle: {
+    width: 34,
+    height: 34,
+    borderRadius: 17,
     alignItems: 'center',
     justifyContent: 'center',
-    height: '100%',
-    backgroundColor: colors.surface,
   },
-  qtyValue: {
-    flex: 1,
-    textAlign: 'center',
-    fontFamily: typography.fontSans,
-    fontSize: 14,
-    fontWeight: typography.weightBold,
-    color: colors.textPrimary,
+  colorCircleActive: {
+    transform: [{ scale: 1.15 }],
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 3,
+    elevation: 3,
   },
-  descriptionText: {
-    fontFamily: typography.fontSans,
-    fontSize: 13,
-    lineHeight: 20,
-    color: colors.textSecondary,
-  },
-  perksList: {
-    backgroundColor: colors.surface,
-    padding: 16,
-    borderRadius: 4,
-    marginVertical: 10,
-    gap: 12,
-  },
-  perkItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 10,
-  },
-  perkText: {
-    fontFamily: typography.fontSans,
-    fontSize: 12,
-    color: colors.textPrimary,
-    fontWeight: typography.weightMedium,
-  },
-  reviewsSection: {
-    marginTop: 20,
-    borderTopWidth: 1,
-    borderTopColor: colors.borderLight,
-    paddingTop: 20,
-  },
-  reviewsHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 16,
-  },
-  reviewsTitle: {
-    fontFamily: typography.fontSerif,
-    fontSize: 18,
-    fontWeight: typography.weightBold,
-    color: colors.textPrimary,
-  },
-  writeReviewBtn: {
-    paddingVertical: 4,
-  },
-  writeReviewText: {
-    fontFamily: typography.fontSans,
-    fontSize: 12,
-    fontWeight: typography.weightBold,
-    color: colors.primary,
-    textDecorationLine: 'underline',
-  },
-  reviewForm: {
-    backgroundColor: colors.surface,
-    padding: 16,
-    borderRadius: 4,
-    marginBottom: 20,
-    borderWidth: 1,
-    borderColor: colors.border,
-  },
-  formTitle: {
-    fontFamily: typography.fontSerif,
-    fontSize: 15,
-    fontWeight: typography.weightBold,
-    color: colors.textPrimary,
-    marginBottom: 12,
-  },
-  formInput: {
-    backgroundColor: colors.cardBg,
-    borderWidth: 1,
-    borderColor: colors.border,
-    borderRadius: 2,
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-    fontFamily: typography.fontSans,
-    fontSize: 13,
-    color: colors.textPrimary,
-    marginBottom: 10,
-  },
-  formTextArea: {
-    height: 80,
-    textAlignVertical: 'top',
-  },
-  starSelectRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 10,
-  },
-  starSelectLabel: {
-    fontFamily: typography.fontSans,
-    fontSize: 12,
-    color: colors.textSecondary,
-  },
-  starSelectButtons: {
-    flexDirection: 'row',
-  },
-  reviewCard: {
-    backgroundColor: colors.cardBg,
-    padding: 14,
-    borderRadius: 4,
-    borderWidth: 1,
-    borderColor: colors.borderLight,
-    marginBottom: 10,
-  },
-  reviewTop: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 6,
-  },
-  reviewerName: {
-    fontFamily: typography.fontSans,
-    fontSize: 13,
-    fontWeight: typography.weightBold,
-    color: colors.textPrimary,
-  },
-  reviewComment: {
-    fontFamily: typography.fontSans,
-    fontSize: 12.5,
-    color: colors.textSecondary,
-    lineHeight: 18,
-  },
-  noReviewsText: {
-    fontFamily: typography.fontSans,
-    fontSize: 12.5,
-    color: colors.textMuted,
-    fontStyle: 'italic',
-    textAlign: 'center',
-    marginVertical: 14,
-  },
-  bottomBar: {
+
+  // 7. Bottom Sticky Bar
+  bottomStickyBar: {
     position: 'absolute',
     bottom: 0,
     left: 0,
     right: 0,
-    backgroundColor: colors.background,
+    backgroundColor: '#FFFFFF',
     borderTopWidth: 1,
     borderTopColor: colors.borderLight,
-    paddingTop: 10,
-    paddingHorizontal: spacing.screenPadding,
-  },
-  bottomBarContent: {
+    paddingHorizontal: 20,
+    paddingTop: 12,
     flexDirection: 'row',
-    gap: 12,
-  },
-  bottomWishlistBtn: {
-    width: 48,
-    height: 48,
-    borderRadius: 10,
-    borderWidth: 1.5,
-    borderColor: colors.border,
+    justifyContent: 'space-between',
     alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: colors.surface,
   },
-  addCartBtn: {
-    flex: 1,
-    height: 48,
-    borderWidth: 1.5,
-    borderColor: colors.primary,
-    borderRadius: 10,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 6,
-    backgroundColor: colors.surface,
-  },
-  addCartText: {
+  totalPriceLabel: {
     fontFamily: typography.fontSans,
-    fontSize: 12,
-    fontWeight: typography.weightBold,
-    letterSpacing: 1,
-    color: colors.primary,
+    fontSize: 11,
+    color: colors.textMuted,
   },
-  buyNowBtn: {
-    flex: 1,
-    height: 48,
+  totalPriceValue: {
+    fontFamily: typography.fontSans,
+    fontSize: 18,
+    fontWeight: typography.weightBold,
+    color: colors.textPrimary,
+  },
+  addToCartBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
     backgroundColor: colors.primary,
-    borderRadius: 10,
+    paddingHorizontal: 28,
+    paddingVertical: 13,
+    borderRadius: 24,
+    gap: 8,
+  },
+  addToCartText: {
+    fontFamily: typography.fontSans,
+    fontSize: 13,
+    fontWeight: typography.weightBold,
+    color: '#FFFFFF',
+  },
+
+  notFoundContainer: {
+    flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
+    backgroundColor: '#FFFFFF',
   },
-  buyNowText: {
-    fontFamily: typography.fontSans,
-    fontSize: 12,
+  notFoundText: {
+    fontSize: 16,
+    color: colors.textSecondary,
+    marginBottom: 12,
+  },
+  backBtn: {
+    backgroundColor: colors.primary,
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 16,
+  },
+  backBtnText: {
+    color: '#FFFFFF',
     fontWeight: typography.weightBold,
-    letterSpacing: 1,
-    color: colors.textInverse,
   },
 });

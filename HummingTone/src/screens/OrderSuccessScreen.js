@@ -56,7 +56,7 @@ export const OrderSuccessScreen = ({ route, navigation }) => {
           />
           <Button
             title="CONTINUE SHOPPING"
-            onPress={() => navigation.navigate('HomeTab')}
+            onPress={() => navigation.navigate('MainTabs', { screen: 'HomeTab' })}
             variant="outline"
             size="md"
             style={{ width: '100%' }}

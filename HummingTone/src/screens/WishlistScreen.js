@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
   View,
   Text,
@@ -8,100 +8,104 @@ import {
   Image,
   Dimensions,
   StatusBar,
+  ScrollView,
 } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '../components/Icons';
-import { colors } from '../theme/colors';
+import { colors, shadows } from '../theme/colors';
 import { typography, spacing } from '../theme/typography';
-import { Header } from '../components/Header';
-import { Button } from '../components/Button';
 import { useWishlist } from '../context/WishlistContext';
 import { useCart } from '../context/CartContext';
+import { ProductCard } from '../components/ProductCard';
 
 const { width } = Dimensions.get('window');
-const ITEM_WIDTH = (width - (spacing.screenPadding * 2) - spacing.md) / 2;
+const FILTER_TABS = ['All', 'Jacket', 'Shirt', 'Pant', 'T-Shirt', 'Custom'];
 
 export const WishlistScreen = ({ navigation }) => {
-  const { wishlistItems, removeFromWishlist, clearWishlist } = useWishlist();
+  const insets = useSafeAreaInsets();
+  const { wishlistItems, removeFromWishlist } = useWishlist();
   const { addToCart } = useCart();
+  const [activeTab, setActiveTab] = useState('All');
 
-  const handleMoveToBag = (item) => {
-    addToCart(item, null, 1);
-    removeFromWishlist(item.id);
-  };
-
-  const renderItem = ({ item }) => (
-    <View style={styles.card}>
-      <TouchableOpacity
-        onPress={() => navigation.navigate('ProductDetails', { productId: item.id, initialProduct: item })}
-        activeOpacity={0.88}
-        style={styles.imageWrap}
-      >
-        <Image source={{ uri: item.image }} style={styles.image} resizeMode="cover" />
-        <TouchableOpacity
-          style={styles.removeBtn}
-          onPress={() => removeFromWishlist(item.id)}
-          hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
-        >
-          <Ionicons name="close" size={16} color={colors.textPrimary} />
-        </TouchableOpacity>
-      </TouchableOpacity>
-
-      <View style={styles.info}>
-        <Text style={styles.brand}>{item.brand || 'ATELIER COLLECTION'}</Text>
-        <Text style={styles.name} numberOfLines={1}>
-          {item.name}
-        </Text>
-        <Text style={styles.price}>₹{(item.price || 0).toLocaleString('en-IN')}</Text>
-
-        <TouchableOpacity
-          style={styles.addToBagBtn}
-          onPress={() => handleMoveToBag(item)}
-          activeOpacity={0.8}
-        >
-          <Ionicons name="bag-outline" size={14} color={colors.textInverse} />
-          <Text style={styles.addToBagText}>Move to Bag</Text>
-        </TouchableOpacity>
-      </View>
-    </View>
-  );
+  const filteredItems = React.useMemo(() => {
+    if (activeTab === 'All') return wishlistItems;
+    return wishlistItems.filter(
+      (item) =>
+        (item.name || '').toLowerCase().includes(activeTab.toLowerCase()) ||
+        (item.category || '').toLowerCase().includes(activeTab.toLowerCase())
+    );
+  }, [activeTab, wishlistItems]);
 
   return (
     <View style={styles.container}>
-      <StatusBar barStyle="dark-content" backgroundColor={colors.background} />
-      <Header
-        title="Saved Items"
-        showBack={true}
-        rightElement={
-          wishlistItems.length > 0 ? (
-            <TouchableOpacity onPress={clearWishlist} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
-              <Text style={styles.clearAllText}>Clear All</Text>
-            </TouchableOpacity>
-          ) : null
-        }
-      />
+      <StatusBar barStyle="dark-content" backgroundColor="#FFFFFF" />
 
-      {wishlistItems.length === 0 ? (
+      {/* ── 1. HEADER (Template Exact) ── */}
+      <View style={[styles.headerBar, { paddingTop: Math.max(insets.top, 12) }]}>
+        <TouchableOpacity
+          style={styles.backCircleBtn}
+          onPress={() => navigation.goBack()}
+          activeOpacity={0.8}
+        >
+          <Ionicons name="arrow-back" size={20} color={colors.textPrimary} />
+        </TouchableOpacity>
+        <Text style={styles.headerTitle}>My Wishlist</Text>
+        <View style={{ width: 42 }} />
+      </View>
+
+      {/* ── 2. FILTER TABS (Template Exact) ── */}
+      <View style={styles.filterTabsWrap}>
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={styles.filterTabsScroll}
+        >
+          {FILTER_TABS.map((tab) => (
+            <TouchableOpacity
+              key={tab}
+              style={[
+                styles.filterTabPill,
+                activeTab === tab && styles.filterTabPillActive,
+              ]}
+              onPress={() => setActiveTab(tab)}
+              activeOpacity={0.8}
+            >
+              <Text
+                style={[
+                  styles.filterTabPillText,
+                  activeTab === tab && styles.filterTabPillTextActive,
+                ]}
+              >
+                {tab}
+              </Text>
+            </TouchableOpacity>
+          ))}
+        </ScrollView>
+      </View>
+
+      {/* ── 3. WISHLIST GRID OR EMPTY STATE ── */}
+      {filteredItems.length === 0 ? (
         <View style={styles.emptyContainer}>
-          <View style={styles.emptyIconCircle}>
-            <Ionicons name="heart-outline" size={48} color={colors.textMuted} />
-          </View>
-          <Text style={styles.emptyTitle}>YOUR WISHLIST IS EMPTY</Text>
+          <Ionicons name="heart-outline" size={64} color={colors.textMuted} />
+          <Text style={styles.emptyTitle}>Your Wishlist is Empty</Text>
           <Text style={styles.emptySubtitle}>
-            Curate your personal collection of bespoke fragrances, tailored instruments, and luxury apparel.
+            Save your favorite pieces here to easily find and purchase them later.
           </Text>
-          <Button
-            title="Explore Collection"
-            onPress={() => navigation.navigate('ExploreTab')}
+          <TouchableOpacity
             style={styles.exploreBtn}
-          />
+            onPress={() => navigation.navigate('MainTabs', { screen: 'ExploreTab' })}
+            activeOpacity={0.88}
+          >
+            <Text style={styles.exploreBtnText}>Discover Collections</Text>
+          </TouchableOpacity>
         </View>
       ) : (
         <FlatList
-          data={wishlistItems}
+          data={filteredItems}
           keyExtractor={(item) => String(item.id)}
-          renderItem={renderItem}
+          renderItem={({ item }) => <ProductCard product={item} />}
           numColumns={2}
-          contentContainerStyle={styles.listContent}
+          contentContainerStyle={[styles.listContent, { paddingBottom: Math.max(insets.bottom + 20, 30) }]}
           columnWrapperStyle={styles.columnWrapper}
           showsVerticalScrollIndicator={false}
         />
@@ -113,131 +117,95 @@ export const WishlistScreen = ({ navigation }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: colors.background,
+    backgroundColor: '#FFFFFF',
   },
-  clearAllText: {
+  headerBar: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 20,
+    paddingBottom: 10,
+    backgroundColor: '#FFFFFF',
+  },
+  backCircleBtn: {
+    width: 42,
+    height: 42,
+    borderRadius: 21,
+    backgroundColor: colors.surfaceMuted,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  headerTitle: {
+    fontFamily: typography.fontSans,
+    fontSize: 16,
+    fontWeight: typography.weightBold,
+    color: colors.textPrimary,
+  },
+  filterTabsWrap: {
+    paddingVertical: 10,
+  },
+  filterTabsScroll: {
+    paddingHorizontal: 20,
+    gap: 8,
+  },
+  filterTabPill: {
+    paddingHorizontal: 18,
+    paddingVertical: 7,
+    borderRadius: 18,
+    backgroundColor: colors.surfaceMuted,
+  },
+  filterTabPillActive: {
+    backgroundColor: colors.primary,
+  },
+  filterTabPillText: {
     fontFamily: typography.fontSans,
     fontSize: 12,
-    fontWeight: typography.weightSemiBold,
+    fontWeight: typography.weightMedium,
     color: colors.textSecondary,
-    letterSpacing: 0.5,
-    textTransform: 'uppercase',
+  },
+  filterTabPillTextActive: {
+    color: '#FFFFFF',
+    fontWeight: typography.weightBold,
   },
   listContent: {
-    padding: spacing.screenPadding,
-    paddingBottom: 40,
+    paddingHorizontal: 20,
+    paddingTop: 10,
   },
   columnWrapper: {
     justifyContent: 'space-between',
-    marginBottom: spacing.lg,
-  },
-  card: {
-    width: ITEM_WIDTH,
-    backgroundColor: colors.cardBg,
-    borderRadius: 8,
-    overflow: 'hidden',
-    borderWidth: 1,
-    borderColor: colors.borderLight,
-  },
-  imageWrap: {
-    width: '100%',
-    height: ITEM_WIDTH * 1.25,
-    position: 'relative',
-    backgroundColor: colors.surface,
-  },
-  image: {
-    width: '100%',
-    height: '100%',
-  },
-  removeBtn: {
-    position: 'absolute',
-    top: 8,
-    right: 8,
-    backgroundColor: 'rgba(255, 255, 255, 0.9)',
-    width: 26,
-    height: 26,
-    borderRadius: 13,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  info: {
-    padding: spacing.sm,
-  },
-  brand: {
-    fontFamily: typography.fontSans,
-    fontSize: 9,
-    fontWeight: typography.weightBold,
-    letterSpacing: 1,
-    color: colors.textSecondary,
-    textTransform: 'uppercase',
-    marginBottom: 2,
-  },
-  name: {
-    fontFamily: typography.fontSerif,
-    fontSize: 13,
-    fontWeight: typography.weightMedium,
-    color: colors.textPrimary,
-    marginBottom: 4,
-  },
-  price: {
-    fontFamily: typography.fontSans,
-    fontSize: 13.5,
-    fontWeight: typography.weightBold,
-    color: colors.primary,
-    marginBottom: 8,
-  },
-  addToBagBtn: {
-    backgroundColor: colors.primary,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 6,
-    paddingVertical: 8,
-    borderRadius: 4,
-  },
-  addToBagText: {
-    fontFamily: typography.fontSans,
-    fontSize: 11,
-    fontWeight: typography.weightBold,
-    color: colors.textInverse,
-    letterSpacing: 0.5,
-    textTransform: 'uppercase',
   },
   emptyContainer: {
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
-    paddingHorizontal: spacing.xxl,
-  },
-  emptyIconCircle: {
-    width: 88,
-    height: 88,
-    borderRadius: 44,
-    backgroundColor: colors.surface,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: spacing.lg,
+    paddingHorizontal: 32,
   },
   emptyTitle: {
-    fontFamily: typography.fontSerif,
-    fontSize: 16,
+    fontFamily: typography.fontSans,
+    fontSize: 18,
     fontWeight: typography.weightBold,
-    letterSpacing: 1.5,
     color: colors.textPrimary,
-    marginBottom: spacing.sm,
-    textAlign: 'center',
+    marginTop: 14,
+    marginBottom: 6,
   },
   emptySubtitle: {
     fontFamily: typography.fontSans,
-    fontSize: 13,
-    lineHeight: 20,
+    fontSize: 12.5,
     color: colors.textSecondary,
     textAlign: 'center',
-    marginBottom: spacing.xl,
+    lineHeight: 18,
+    marginBottom: 20,
   },
   exploreBtn: {
-    minWidth: 200,
+    backgroundColor: colors.primary,
+    paddingHorizontal: 24,
+    paddingVertical: 12,
+    borderRadius: 24,
+  },
+  exploreBtnText: {
+    color: '#FFFFFF',
+    fontWeight: typography.weightBold,
+    fontFamily: typography.fontSans,
+    fontSize: 13,
   },
 });
-
-export default WishlistScreen;

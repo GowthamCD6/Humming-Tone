@@ -30,7 +30,7 @@ export const Header = ({ title, showBack = false, rightElement = null }) => {
           ) : (
             <TouchableOpacity
               style={styles.logoWrap}
-              onPress={() => navigation.navigate('HomeTab')}
+              onPress={() => navigation.navigate('MainTabs', { screen: 'HomeTab' })}
               activeOpacity={0.8}
             >
               <Text style={styles.logoText}>HUMMING TONE</Text>
@@ -54,7 +54,7 @@ export const Header = ({ title, showBack = false, rightElement = null }) => {
             <View style={styles.rightIcons}>
               <TouchableOpacity
                 style={styles.iconButton}
-                onPress={() => navigation.navigate('ExploreTab')}
+                onPress={() => navigation.navigate('MainTabs', { screen: 'ExploreTab' })}
                 hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
               >
                 <Ionicons name="search-outline" size={21} color={colors.textPrimary} />
@@ -77,7 +77,7 @@ export const Header = ({ title, showBack = false, rightElement = null }) => {
 
               <TouchableOpacity
                 style={styles.cartButton}
-                onPress={() => navigation.navigate('CartTab')}
+                onPress={() => navigation.navigate('MainTabs', { screen: 'CartTab' })}
                 hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
               >
                 <Ionicons name="bag-outline" size={22} color={colors.textPrimary} />

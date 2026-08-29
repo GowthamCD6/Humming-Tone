@@ -7,12 +7,12 @@ import { Ionicons } from './Icons';
 import { useWishlist } from '../context/WishlistContext';
 
 const { width } = Dimensions.get('window');
-const CARD_WIDTH = (width - (spacing.screenPadding * 2) - spacing.sm) / 2;
+const CARD_WIDTH = (width - 48) / 2;
 
 export const ProductCard = ({ product, onPress, style }) => {
   const navigation = useNavigation();
   const { isInWishlist, toggleWishlist } = useWishlist();
-  const isWishlisted = isInWishlist(product.id);
+  const isWishlisted = isInWishlist(product?.id);
 
   const handlePress = () => {
     if (onPress) {
@@ -29,14 +29,15 @@ export const ProductCard = ({ product, onPress, style }) => {
 
   const formattedPrice = `₹${(product.price || 0).toLocaleString('en-IN')}`;
   const originalPrice = product.original_price ? `₹${Number(product.original_price).toLocaleString('en-IN')}` : null;
+  const rating = product.rating || (4.3 + (product.id ? (product.id % 7) * 0.1 : 0.4)).toFixed(1);
 
   return (
     <TouchableOpacity
       style={[styles.card, style]}
       onPress={handlePress}
-      activeOpacity={0.92}
+      activeOpacity={0.9}
     >
-      {/* Image Container */}
+      {/* Product Image Container */}
       <View style={styles.imageContainer}>
         <Image
           source={{ uri: product.image }}
@@ -44,18 +45,7 @@ export const ProductCard = ({ product, onPress, style }) => {
           resizeMode="cover"
         />
 
-        {/* Badge Pill */}
-        {product.isNewArrival ? (
-          <View style={styles.newBadge}>
-            <Text style={styles.newBadgeText}>NEW</Text>
-          </View>
-        ) : product.is_featured ? (
-          <View style={[styles.newBadge, { backgroundColor: colors.goldDark }]}>
-            <Text style={styles.newBadgeText}>FEATURED</Text>
-          </View>
-        ) : null}
-
-        {/* Wishlist Heart Button */}
+        {/* Top-Right Heart Wishlist Button */}
         <TouchableOpacity
           style={styles.wishlistBtn}
           onPress={handleWishlistToggle}
@@ -64,21 +54,27 @@ export const ProductCard = ({ product, onPress, style }) => {
         >
           <Ionicons
             name={isWishlisted ? 'heart' : 'heart-outline'}
-            size={18}
+            size={16}
             color={isWishlisted ? colors.error : colors.textPrimary}
           />
         </TouchableOpacity>
+
+        {/* Rating Tag on Image Bottom-Left */}
+        <View style={styles.ratingBadge}>
+          <Ionicons name="star" size={11} color={colors.star} />
+          <Text style={styles.ratingText}>{rating}</Text>
+        </View>
       </View>
 
-      {/* Product Meta */}
+      {/* Product Meta Details */}
       <View style={styles.metaContainer}>
-        <Text style={styles.category} numberOfLines={1}>
-          {product.category || product.brand || 'HUMMING TONE'}
-        </Text>
-        <Text style={styles.title} numberOfLines={2}>
+        <Text style={styles.title} numberOfLines={1}>
           {product.name}
         </Text>
-        
+        <Text style={styles.category} numberOfLines={1}>
+          {product.category || product.brand || 'Apparel'}
+        </Text>
+
         <View style={styles.priceRow}>
           <Text style={styles.price}>{formattedPrice}</Text>
           {originalPrice && (
@@ -93,18 +89,14 @@ export const ProductCard = ({ product, onPress, style }) => {
 const styles = StyleSheet.create({
   card: {
     width: CARD_WIDTH,
-    marginBottom: spacing.md,
-    backgroundColor: colors.cardBg,
-    borderRadius: 12,
-    overflow: 'hidden',
-    borderWidth: 1,
-    borderColor: colors.borderLight,
-    ...shadows.subtle,
+    marginBottom: 16,
+    backgroundColor: 'transparent',
   },
   imageContainer: {
     width: '100%',
-    height: CARD_WIDTH * 1.32,
-    backgroundColor: colors.surface,
+    height: CARD_WIDTH * 1.28,
+    borderRadius: 18,
+    backgroundColor: colors.surfaceMuted,
     position: 'relative',
     overflow: 'hidden',
   },
@@ -112,26 +104,11 @@ const styles = StyleSheet.create({
     width: '100%',
     height: '100%',
   },
-  newBadge: {
-    position: 'absolute',
-    top: 10,
-    left: 10,
-    backgroundColor: colors.primary,
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 4,
-  },
-  newBadgeText: {
-    color: colors.textInverse,
-    fontSize: 8.5,
-    fontWeight: typography.weightBold,
-    letterSpacing: 1.2,
-  },
   wishlistBtn: {
     position: 'absolute',
     top: 10,
     right: 10,
-    backgroundColor: 'rgba(255, 255, 255, 0.95)',
+    backgroundColor: 'rgba(255, 255, 255, 0.92)',
     width: 32,
     height: 32,
     borderRadius: 16,
@@ -141,29 +118,42 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 3,
-    elevation: 3,
+    elevation: 2,
+  },
+  ratingBadge: {
+    position: 'absolute',
+    bottom: 8,
+    left: 8,
+    backgroundColor: 'rgba(255, 255, 255, 0.94)',
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 3,
+    paddingHorizontal: 6,
+    paddingVertical: 3,
+    borderRadius: 10,
+  },
+  ratingText: {
+    fontFamily: typography.fontSans,
+    fontSize: 10,
+    fontWeight: typography.weightBold,
+    color: colors.textPrimary,
   },
   metaContainer: {
-    padding: 10,
-    backgroundColor: colors.cardBg,
-  },
-  category: {
-    fontSize: 9.5,
-    fontWeight: typography.weightSemiBold,
-    letterSpacing: 1.2,
-    textTransform: 'uppercase',
-    color: colors.goldDark,
-    marginBottom: 3,
-    fontFamily: typography.fontSans,
+    paddingTop: 8,
+    paddingHorizontal: 2,
   },
   title: {
-    fontSize: 13,
-    fontWeight: typography.weightMedium,
+    fontSize: 13.5,
+    fontWeight: typography.weightBold,
     color: colors.textPrimary,
-    lineHeight: 18,
-    marginBottom: 6,
-    fontFamily: typography.fontSerif,
-    minHeight: 36,
+    fontFamily: typography.fontSans,
+    marginBottom: 2,
+  },
+  category: {
+    fontSize: 11,
+    color: colors.textSecondary,
+    fontFamily: typography.fontSans,
+    marginBottom: 4,
   },
   priceRow: {
     flexDirection: 'row',
@@ -171,13 +161,13 @@ const styles = StyleSheet.create({
     gap: 6,
   },
   price: {
-    fontSize: 14.5,
+    fontSize: 14,
     fontWeight: typography.weightBold,
-    color: colors.primary,
+    color: colors.textPrimary,
     fontFamily: typography.fontSans,
   },
   originalPrice: {
-    fontSize: 12,
+    fontSize: 11.5,
     color: colors.textMuted,
     textDecorationLine: 'line-through',
     fontFamily: typography.fontSans,

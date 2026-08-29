@@ -10,6 +10,7 @@ import {
   Alert,
   StatusBar,
 } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '../components/Icons';
 import { colors } from '../theme/colors';
 import { typography, spacing } from '../theme/typography';
@@ -97,6 +98,7 @@ const SIZES_LIST = [
 ];
 
 export const CustomizeScreen = ({ navigation }) => {
+  const insets = useSafeAreaInsets();
   const { addToCart } = useCart();
 
   const [selectedCategory, setSelectedCategory] = useState(CATEGORIES[0]);
@@ -354,7 +356,7 @@ export const CustomizeScreen = ({ navigation }) => {
           />
         </View>
 
-        <View style={{ height: 40 }} />
+        <View style={{ height: Math.max(insets.bottom + 24, 40) }} />
       </ScrollView>
     </View>
   );

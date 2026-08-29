@@ -196,6 +196,10 @@ export const ProductService = {
     }
   },
 
+  fetchProductById: async (productId) => {
+    return ProductService.fetchProductDetails(productId);
+  },
+
 
   // Fetch Product Reviews
   fetchProductReviews: async (productId) => {
