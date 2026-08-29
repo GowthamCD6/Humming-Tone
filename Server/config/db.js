@@ -35,7 +35,9 @@ const poolConfig = {
   database: process.env.DB_NAME || 'hummingtone',
   waitForConnections: true,
   connectionLimit: 10,
-  queueLimit: 0
+  queueLimit: 0,
+  connectTimeout: 30000,
+  enableKeepAlive: true,
 };
 
 if (sslConfig) {
