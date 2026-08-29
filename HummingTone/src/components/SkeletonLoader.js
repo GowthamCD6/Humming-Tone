@@ -35,9 +35,9 @@ const styles = StyleSheet.create({
   },
   imagePlaceholder: {
     width: '100%',
-    height: CARD_WIDTH * 1.35,
+    height: CARD_WIDTH * 1.05,
     backgroundColor: '#E2E8F0',
-    borderRadius: 2,
+    borderRadius: 18,
     marginBottom: 8,
   },
   textLineSmall: {

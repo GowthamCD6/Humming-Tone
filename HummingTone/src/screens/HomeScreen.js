@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   View,
   Text,
@@ -16,22 +16,62 @@ import { colors, shadows } from '../theme/colors';
 import { typography, spacing } from '../theme/typography';
 import { ProductCard } from '../components/ProductCard';
 import { SkeletonGrid } from '../components/SkeletonLoader';
+import { GarmentIcon } from '../components/GarmentIcons';
 import { ProductService } from '../api/services';
 import { useSiteContent } from '../context/SiteContentContext';
 import { useAuth } from '../context/AuthContext';
 import { SITE_ASSETS } from '../api/siteAssets';
 
 const { width } = Dimensions.get('window');
+const CATEGORY_ITEM_WIDTH = (width - 40 - (3 * 10)) / 4;
 
-// Dynamic Gender Icon Mapper
-const GENDER_ICON_MAP = {
-  Men: 'shirt-outline',
-  Women: 'woman-outline',
-  Children: 'happy-outline',
-  Baby: 'heart-outline',
-  Sports: 'fitness-outline',
-  Customize: 'color-palette-outline',
-};
+const HERO_BANNERS = [
+  {
+    id: 'new-arrivals',
+    title: 'NEW ARRIVALS',
+    description: 'Handcrafted apparel tailored for effortless luxury.',
+    buttonText: 'SHOP NOW',
+    image: require('../assets/new_Arival.png'),
+    routeType: 'category',
+    routeTitle: 'New Arrivals',
+    gender: 'Men',
+    bg: '#ECE3DA',
+    rightOffset: -20,
+    widthPercent: '65%',
+  },
+  {
+    id: 'featured-products',
+    title: 'FEATURED PIECES',
+    description: 'Exclusive artisanal drops crafted to elevate your wardrobe.',
+    buttonText: 'SHOP NOW',
+    image: require('../assets/featuredproduct.png'),
+    routeType: 'category',
+    routeTitle: 'Featured Products',
+    gender: 'Men',
+    bg: '#E8E1D8',
+    rightOffset: -26,
+    widthPercent: '72%',
+  },
+  {
+    id: 'customize-apparel',
+    title: 'CUSTOM STUDIO',
+    description: 'Personalize your premium\nfabrics, colors, and prints.',
+    buttonText: 'DESIGN NOW',
+    image: require('../assets/customize.png'),
+    routeType: 'tab',
+    tabScreen: 'CustomizeTab',
+    bg: '#E4DDD5',
+    rightOffset: -22,
+    widthPercent: '68%',
+    heightPercent: '90%',
+  },
+];
+
+const EXTENDED_BANNERS = [
+  ...HERO_BANNERS.map((b, i) => ({ ...b, uniqueKey: `set1-${b.id}-${i}` })),
+  ...HERO_BANNERS.map((b, i) => ({ ...b, uniqueKey: `set2-${b.id}-${i}` })),
+  ...HERO_BANNERS.map((b, i) => ({ ...b, uniqueKey: `set3-${b.id}-${i}` })),
+];
 
 export const HomeScreen = ({ navigation }) => {
   const insets = useSafeAreaInsets();
@@ -44,6 +84,25 @@ export const HomeScreen = ({ navigation }) => {
   const [loadingNewArrivals, setLoadingNewArrivals] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [activeSlide, setActiveSlide] = useState(0);
+
+  const bannerScrollRef = useRef(null);
+  const virtualIndexRef = useRef(HERO_BANNERS.length);
+  const hasInitializedRef = useRef(false);
+
+  // Continuous Seamless Forward-Sliding Loop
+  useEffect(() => {
+    const slideInterval = setInterval(() => {
+      const nextVirtualIndex = virtualIndexRef.current + 1;
+      virtualIndexRef.current = nextVirtualIndex;
+      bannerScrollRef.current?.scrollTo({
+        x: nextVirtualIndex * (width - 40),
+        animated: true,
+      });
+      setActiveSlide(nextVirtualIndex % HERO_BANNERS.length);
+    }, 4500);
+
+    return () => clearInterval(slideInterval);
+  }, []);
 
   const loadData = async () => {
     try {
@@ -72,7 +131,7 @@ export const HomeScreen = ({ navigation }) => {
     loadData();
   };
 
-  const handleGenderPress = (gender) => {
+  const handleCategoryPress = (gender) => {
     if (gender.toLowerCase() === 'customize') {
       navigation.navigate('MainTabs', { screen: 'CustomizeTab' });
     } else {
@@ -143,34 +202,92 @@ export const HomeScreen = ({ navigation }) => {
           </TouchableOpacity>
         </View>
 
-        {/* ── 3. HERO PROMOTIONAL BANNER CARD ── */}
-        <View style={styles.heroPromoCard}>
-          <View style={styles.heroTextSide}>
-            <Text style={styles.heroCardTitle}>New Collection</Text>
-            <Text style={styles.heroCardSub}>
-              Discover handcrafted apparel & custom silhouettes
-            </Text>
-            <TouchableOpacity
-              style={styles.heroShopNowBtn}
-              onPress={() => navigation.navigate('MainTabs', { screen: 'CustomizeTab' })}
-              activeOpacity={0.85}
-            >
-              <Text style={styles.heroShopNowText}>Shop Now</Text>
-            </TouchableOpacity>
-          </View>
+        {/* ── 3. HERO PROMOTIONAL BANNER CAROUSEL ── */}
+        <ScrollView
+          ref={bannerScrollRef}
+          horizontal
+          pagingEnabled
+          showsHorizontalScrollIndicator={false}
+          decelerationRate="fast"
+          snapToInterval={width - 40}
+          snapToAlignment="center"
+          disableIntervalMomentum={true}
+          onLayout={() => {
+            if (!hasInitializedRef.current) {
+              hasInitializedRef.current = true;
+              bannerScrollRef.current?.scrollTo({
+                x: HERO_BANNERS.length * (width - 40),
+                animated: false,
+              });
+            }
+          }}
+          onMomentumScrollEnd={(e) => {
+            const offsetX = e.nativeEvent.contentOffset.x;
+            const slideWidth = width - 40;
+            let vIndex = Math.round(offsetX / slideWidth);
+            const realIndex = ((vIndex % HERO_BANNERS.length) + HERO_BANNERS.length) % HERO_BANNERS.length;
+            setActiveSlide(realIndex);
 
-          <View style={styles.heroImageSide}>
-            <Image
-              source={{ uri: SITE_ASSETS.homeHero }}
-              style={styles.heroModelImg}
-              resizeMode="cover"
-            />
-          </View>
-        </View>
+            // Silent normalization to middle set to ensure continuous infinite forward scroll
+            if (vIndex >= HERO_BANNERS.length * 2) {
+              vIndex = HERO_BANNERS.length + realIndex;
+              bannerScrollRef.current?.scrollTo({ x: vIndex * slideWidth, animated: false });
+            } else if (vIndex < HERO_BANNERS.length) {
+              vIndex = HERO_BANNERS.length + realIndex;
+              bannerScrollRef.current?.scrollTo({ x: vIndex * slideWidth, animated: false });
+            }
+            virtualIndexRef.current = vIndex;
+          }}
+          onScroll={(e) => {
+            const offsetX = e.nativeEvent.contentOffset.x;
+            const slideWidth = width - 40;
+            const vIndex = Math.round(offsetX / slideWidth);
+            const realIndex = ((vIndex % HERO_BANNERS.length) + HERO_BANNERS.length) % HERO_BANNERS.length;
+            if (realIndex !== activeSlide && realIndex >= 0 && realIndex < HERO_BANNERS.length) {
+              setActiveSlide(realIndex);
+            }
+          }}
+          scrollEventThrottle={16}
+          style={styles.bannerScroll}
+        >
+          {EXTENDED_BANNERS.map((banner) => (
+            <View key={banner.uniqueKey} style={[styles.heroPromoCard, { backgroundColor: banner.bg }]}>
+              <View style={styles.heroLeftContent}>
+                <Text style={styles.heroMainTitle} numberOfLines={1}>{banner.title}</Text>
+                <Text style={styles.heroDescription}>
+                  {banner.description}
+                </Text>
+
+                <TouchableOpacity
+                  style={styles.heroShopBtn}
+                  onPress={() => {
+                    if (banner.routeType === 'tab') {
+                      navigation.navigate('MainTabs', { screen: banner.tabScreen });
+                    } else {
+                      navigation.navigate('CategoryProducts', { title: banner.routeTitle, gender: banner.gender });
+                    }
+                  }}
+                  activeOpacity={0.85}
+                >
+                  <Text style={styles.heroShopBtnText}>{banner.buttonText}</Text>
+                </TouchableOpacity>
+              </View>
+
+              {/* Right Sized Model Image */}
+              <View style={[styles.heroRightImageWrap, { right: banner.rightOffset, width: banner.widthPercent, height: banner.heightPercent || '99%' }]}>
+                <Image
+                  source={banner.image}
+                  style={styles.heroModelImage}
+                  resizeMode="contain"
+                />
+              </View>
+            </View>
+          ))}
+        </ScrollView>
 
         {/* Hero Carousel Indicator Dots */}
         <View style={styles.heroDotsRow}>
-          {[0, 1, 2, 3].map((dot) => (
+          {HERO_BANNERS.map((_, dot) => (
             <View
               key={dot}
               style={[
@@ -181,7 +298,7 @@ export const HomeScreen = ({ navigation }) => {
           ))}
         </View>
 
-        {/* ── 4. BACKEND DYNAMIC CATEGORY CIRCLES ── */}
+        {/* ── 4. BACKEND CATEGORY CIRCLES (4 PER ROW) ── */}
         <View style={styles.sectionHeaderRow}>
           <Text style={styles.sectionTitleBold}>Category</Text>
           <TouchableOpacity onPress={() => navigation.navigate('MainTabs', { screen: 'ExploreTab' })}>
@@ -194,22 +311,19 @@ export const HomeScreen = ({ navigation }) => {
           showsHorizontalScrollIndicator={false}
           contentContainerStyle={styles.categoryCirclesScroll}
         >
-          {activeGenders.map((gender) => {
-            const iconName = GENDER_ICON_MAP[gender] || 'grid-outline';
-            return (
-              <TouchableOpacity
-                key={gender}
-                style={styles.categoryCircleItem}
-                onPress={() => handleGenderPress(gender)}
-                activeOpacity={0.8}
-              >
-                <View style={styles.categoryCircle}>
-                  <Ionicons name={iconName} size={24} color={colors.primary} />
-                </View>
-                <Text style={styles.categoryNameText} numberOfLines={1}>{gender}</Text>
-              </TouchableOpacity>
-            );
-          })}
+          {activeGenders.map((gender) => (
+            <TouchableOpacity
+              key={gender}
+              style={[styles.categoryCircleItem, { width: CATEGORY_ITEM_WIDTH }]}
+              onPress={() => handleCategoryPress(gender)}
+              activeOpacity={0.8}
+            >
+              <View style={styles.categoryCircle}>
+                <GarmentIcon type={gender} color={colors.primary} size={26} />
+              </View>
+              <Text style={styles.categoryNameText} numberOfLines={1}>{gender}</Text>
+            </TouchableOpacity>
+          ))}
         </ScrollView>
 
         {/* ── 5. FEATURED PRODUCTS SECTION ── */}
@@ -358,52 +472,70 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
 
-  // 3. Hero Promo Card
-  heroPromoCard: {
-    flexDirection: 'row',
-    backgroundColor: '#EAE1D8',
-    borderRadius: 20,
-    overflow: 'hidden',
-    height: 150,
-    position: 'relative',
-  },
-  heroTextSide: {
-    flex: 1.2,
-    padding: 16,
-    justifyContent: 'center',
-  },
-  heroCardTitle: {
-    fontFamily: typography.fontSans,
-    fontSize: 18,
-    fontWeight: typography.weightBold,
-    color: colors.textPrimary,
+  // 3. Hero Promo Card (Minimalist Luxury)
+  bannerScroll: {
+    width: width - 40,
+    height: 172,
     marginBottom: 4,
   },
-  heroCardSub: {
-    fontFamily: typography.fontSans,
-    fontSize: 11,
-    color: colors.textSecondary,
-    lineHeight: 15,
-    marginBottom: 12,
-  },
-  heroShopNowBtn: {
-    backgroundColor: colors.primary,
-    paddingHorizontal: 16,
-    paddingVertical: 7,
+  heroPromoCard: {
+    width: width - 40,
+    backgroundColor: '#ECE3DA',
     borderRadius: 18,
+    flexDirection: 'row',
+    overflow: 'hidden',
+    height: 172,
+    borderWidth: 1,
+    borderColor: '#E2D8CE',
+  },
+  heroLeftContent: {
+    width: '56%',
+    paddingLeft: 14,
+    paddingRight: 0,
+    paddingVertical: 12,
+    justifyContent: 'center',
+    zIndex: 2,
+  },
+  heroMainTitle: {
+    fontFamily: typography.fontSans,
+    fontSize: 16.5,
+    fontWeight: '900',
+    color: '#1F1A17',
+    letterSpacing: 0.1,
+    marginBottom: 5,
+  },
+  heroDescription: {
+    fontFamily: typography.fontSans,
+    fontSize: 11.5,
+    color: '#6B5E55',
+    lineHeight: 16,
+    marginBottom: 12,
+    fontWeight: typography.weightMedium,
+  },
+  heroShopBtn: {
+    backgroundColor: '#6B4E37',
+    paddingHorizontal: 15,
+    paddingVertical: 7,
+    borderRadius: 8,
     alignSelf: 'flex-start',
   },
-  heroShopNowText: {
+  heroShopBtnText: {
     fontFamily: typography.fontSans,
-    fontSize: 11,
-    fontWeight: typography.weightBold,
+    fontSize: 10.5,
+    fontWeight: '800',
     color: '#FFFFFF',
+    letterSpacing: 0.5,
   },
-  heroImageSide: {
-    flex: 1,
-    height: '100%',
+  heroRightImageWrap: {
+    position: 'absolute',
+    right: -20,
+    bottom: 0,
+    width: '65%',
+    height: '99%',
+    justifyContent: 'flex-end',
+    alignItems: 'flex-end',
   },
-  heroModelImg: {
+  heroModelImage: {
     width: '100%',
     height: '100%',
   },
@@ -419,13 +551,13 @@ const styles = StyleSheet.create({
     width: 6,
     height: 6,
     borderRadius: 3,
-    backgroundColor: colors.border,
+    backgroundColor: '#DDD3C7',
   },
   heroDotActive: {
-    width: 18,
+    width: 14,
     height: 6,
     borderRadius: 3,
-    backgroundColor: colors.primary,
+    backgroundColor: '#6B4E37',
   },
 
   // 4. Category Circles
@@ -449,27 +581,28 @@ const styles = StyleSheet.create({
     color: colors.primary,
   },
   categoryCirclesScroll: {
-    gap: 16,
+    gap: 10,
     paddingBottom: 4,
     marginBottom: 18,
   },
   categoryCircleItem: {
     alignItems: 'center',
-    width: 64,
   },
   categoryCircle: {
-    width: 56,
-    height: 56,
-    borderRadius: 28,
-    backgroundColor: colors.surfaceMuted,
+    width: 58,
+    height: 58,
+    borderRadius: 29,
+    backgroundColor: '#F5EFEB',
+    borderWidth: 1,
+    borderColor: '#EAE1D8',
     alignItems: 'center',
     justifyContent: 'center',
     marginBottom: 6,
   },
   categoryNameText: {
     fontFamily: typography.fontSans,
-    fontSize: 11,
-    fontWeight: typography.weightMedium,
+    fontSize: 11.5,
+    fontWeight: typography.weightSemiBold,
     color: colors.textPrimary,
     textAlign: 'center',
   },

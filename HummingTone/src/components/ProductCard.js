@@ -94,7 +94,7 @@ const styles = StyleSheet.create({
   },
   imageContainer: {
     width: '100%',
-    height: CARD_WIDTH * 1.28,
+    height: CARD_WIDTH * 1.05,
     borderRadius: 18,
     backgroundColor: colors.surfaceMuted,
     position: 'relative',
