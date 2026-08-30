@@ -111,8 +111,12 @@ export const ProfileScreen = ({ navigation }) => {
 
       {/* ── 1. LUXURY TOP APP BAR ── */}
       <View style={[styles.topBar, { paddingTop: topPadding }]}>
-        <View>
-          <Text style={styles.brandTitle}>HUMMING TONE</Text>
+        <View style={styles.brandTitleWrap}>
+          <Image
+            source={require('../assets/title-logo.png')}
+            style={styles.headerTitleLogo}
+            resizeMode="contain"
+          />
           <Text style={styles.brandSub}>MY ATELIER & ACCOUNT</Text>
         </View>
 
@@ -398,7 +402,11 @@ export const ProfileScreen = ({ navigation }) => {
         {/* ── 7. LUXURY BRAND FOOTER ── */}
         <View style={styles.footerWrap}>
           <View style={styles.footerDivider} />
-          <Text style={styles.footerBrandTitle}>HUMMING TONE</Text>
+          <Image
+            source={require('../assets/title-logo.png')}
+            style={styles.footerLogo}
+            resizeMode="contain"
+          />
           <Text style={styles.footerBrandDesc}>Official Mobile Atelier & Storefront</Text>
           <Text style={styles.footerVersion}>Version 2.4.0 • Built with Pride</Text>
         </View>
@@ -490,6 +498,14 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: '#EAE4DC',
   },
+  brandTitleWrap: {
+    justifyContent: 'center',
+  },
+  headerTitleLogo: {
+    width: 140,
+    height: 24,
+    marginBottom: 2,
+  },
   brandTitle: {
     fontFamily: typography.fontSansBold,
     fontSize: 17,
@@ -498,10 +514,9 @@ const styles = StyleSheet.create({
   },
   brandSub: {
     fontFamily: typography.fontSansBold,
-    fontSize: 9.5,
+    fontSize: 9,
     letterSpacing: 1.2,
     color: '#8A7F75',
-    marginTop: 2,
   },
   topBarRight: {
     flexDirection: 'row',
@@ -861,6 +876,11 @@ const styles = StyleSheet.create({
     borderRadius: 1,
     backgroundColor: '#EAE4DC',
     marginBottom: 14,
+  },
+  footerLogo: {
+    width: 150,
+    height: 26,
+    marginBottom: 4,
   },
   footerBrandTitle: {
     fontFamily: typography.fontSansBold,

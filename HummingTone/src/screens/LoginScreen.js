@@ -9,6 +9,7 @@ import {
   KeyboardAvoidingView,
   Platform,
   StatusBar,
+  Image,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '../components/Icons';
@@ -100,7 +101,11 @@ export const LoginScreen = ({ navigation }) => {
         >
           {/* Hero Section */}
           <View style={styles.heroSection}>
-            <Text style={styles.brandTitle}>HUMMING TONE</Text>
+            <Image
+              source={require('../assets/title-logo.png')}
+              style={styles.heroLogo}
+              resizeMode="contain"
+            />
             <Text style={styles.brandSub}>OFFICIAL STORE & APP</Text>
             <Text style={styles.brandTagline}>
               Sign in to manage your orders, saved wishlist items, and express checkout.
@@ -240,6 +245,11 @@ const styles = StyleSheet.create({
   heroSection: {
     alignItems: 'center',
     marginBottom: spacing.xl,
+  },
+  heroLogo: {
+    width: 200,
+    height: 36,
+    marginBottom: 6,
   },
   brandTitle: {
     fontFamily: typography.fontSerif,

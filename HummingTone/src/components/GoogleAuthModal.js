@@ -8,6 +8,7 @@ import {
   ActivityIndicator,
   Alert,
   Platform,
+  Image,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from './Icons';
@@ -81,10 +82,12 @@ export const GoogleAuthModal = ({
             <Ionicons name="close" size={20} color="#6B5E55" />
           </TouchableOpacity>
 
-          {/* Google Icon Badge */}
-          <View style={styles.iconCircle}>
-            <Ionicons name="logo-google" size={32} color="#6B4E37" />
-          </View>
+          {/* Brand Logo */}
+          <Image
+            source={require('../assets/title-logo.png')}
+            style={styles.modalLogo}
+            resizeMode="contain"
+          />
 
           {/* Title & Description */}
           <Text style={styles.modalTitle}>{title}</Text>
@@ -161,6 +164,12 @@ const styles = StyleSheet.create({
     backgroundColor: '#EDE7E0',
     alignItems: 'center',
     justifyContent: 'center',
+  },
+  modalLogo: {
+    width: 170,
+    height: 32,
+    marginTop: 12,
+    marginBottom: 12,
   },
   iconCircle: {
     width: 68,
