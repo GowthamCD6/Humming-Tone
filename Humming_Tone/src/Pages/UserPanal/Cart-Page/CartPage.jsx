@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import './CartPage.css';
 import UserFooter from '../../../components/User-Footer-Card/UserFooter';
 import LocalShippingIcon from '@mui/icons-material/LocalShipping';
