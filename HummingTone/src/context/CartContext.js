@@ -1,13 +1,14 @@
 import React, { createContext, useState, useEffect, useContext } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useSiteContent } from './SiteContentContext';
+import { PromoService } from '../api/services';
 
 const CART_STORAGE_KEY = '@hummingtone_cart_v1';
 const CartContext = createContext();
 
 export const CartProvider = ({ children }) => {
   const [cartItems, setCartItems] = useState([]);
-  const [coupon, setCoupon] = useState(null); // { code, discountPercent, discountAmount }
+  const [coupon, setCoupon] = useState(null); // { id, code, discount_type, discount_value, discount_amount, label }
   const [loading, setLoading] = useState(true);
   const { shippingFee = 0, gstRate = 5 } = useSiteContent() || {};
 
@@ -99,18 +100,41 @@ export const CartProvider = ({ children }) => {
     setCoupon(null);
   };
 
-  // Apply Promo Code
-  const applyCoupon = (code, discountPercent = 10) => {
+  // Current subtotal before discount
+  const subtotal = cartItems.reduce((acc, item) => acc + (item.price * (item.quantity || 1)), 0);
+
+  // Apply Promo Code via Backend API
+  const applyCoupon = async (code) => {
     const upperCode = (code || '').trim().toUpperCase();
-    if (upperCode === 'HUMMING10' || upperCode === 'WELCOME10') {
-      setCoupon({ code: upperCode, discountPercent: 10 });
-      return { success: true, message: '10% atelier promo applied!' };
+    if (!upperCode) {
+      return { success: false, message: 'Please enter a promo code.' };
     }
-    if (upperCode === 'LUXURY20') {
-      setCoupon({ code: upperCode, discountPercent: 20 });
-      return { success: true, message: '20% VIP privilege applied!' };
+
+    try {
+      // 1. Fetch validation from real backend API
+      const res = await PromoService.validatePromo(upperCode, subtotal);
+      if (res && res.success && res.promo) {
+        const p = res.promo;
+        setCoupon({
+          id: p.id,
+          code: p.code,
+          discount_type: p.discount_type || 'percentage',
+          discount_value: Number(p.discount_value),
+          discount_amount: p.discount_amount,
+          label: p.discount_type === 'fixed'
+            ? `₹${p.discount_value} Flat Discount`
+            : `${p.discount_value}% Privilege Discount`,
+        });
+        return { success: true, message: res.message || '🎉 Promo code applied successfully!' };
+      } else if (res && res.message) {
+        return { success: false, message: res.message };
+      }
+    } catch (e) {
+      console.warn('Backend promo validation error:', e);
+      return { success: false, message: 'Unable to validate promo code. Please try again.' };
     }
-    return { success: false, message: 'Invalid promo code' };
+
+    return { success: false, message: 'Invalid or expired promo code.' };
   };
 
   const removeCoupon = () => {
@@ -119,11 +143,19 @@ export const CartProvider = ({ children }) => {
 
   // Calculations
   const cartCount = cartItems.reduce((acc, item) => acc + (item.quantity || 1), 0);
-  const subtotal = cartItems.reduce((acc, item) => acc + (item.price * (item.quantity || 1)), 0);
-  const discountAmount = coupon ? Math.round((subtotal * coupon.discountPercent) / 100) : 0;
+
+  let discountAmount = 0;
+  if (coupon) {
+    if (coupon.discount_type === 'fixed') {
+      discountAmount = Math.min(Number(coupon.discount_value || coupon.discount_amount || 0), subtotal);
+    } else {
+      discountAmount = Math.round((subtotal * Number(coupon.discount_value || 0)) / 100);
+    }
+  }
+
   const discountedSubtotal = Math.max(0, subtotal - discountAmount);
   const gstAmount = Math.round((discountedSubtotal * (gstRate || 5)) / 100);
-  const finalTotal = discountedSubtotal + (shippingFee || 0) + gstAmount;
+  const finalTotal = discountedSubtotal + (shippingFee || 0);
 
   return (
     <CartContext.Provider

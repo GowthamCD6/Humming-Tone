@@ -535,8 +535,8 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   deptPillActive: {
-    backgroundColor: '#1E1B18',
-    borderColor: '#1E1B18',
+    backgroundColor: '#6B4E37',
+    borderColor: '#6B4E37',
   },
   deptPillText: {
     fontFamily: typography.fontSansBold,

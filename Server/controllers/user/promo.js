@@ -58,18 +58,73 @@ exports.use_promo_code = (req, res, next) => {
   }
 };
 
+/**
+ * Validate promo code against database in real-time
+ */
+exports.validate_promo = (req, res, next) => {
+  try {
+    const { code, order_amount } = req.body;
+    if (!code || typeof code !== 'string') {
+      return res.status(400).json({ success: false, message: 'Please enter a promo code.' });
+    }
+    const cleanCode = code.trim().toUpperCase();
+    const amount = Number(order_amount) || 0;
 
-// CREATE TABLE promo_codes (
-//   id INT AUTO_INCREMENT PRIMARY KEY,
-//   code VARCHAR(50) NOT NULL UNIQUE,
-//   discount_type ENUM('percentage','fixed') DEFAULT 'percentage',
-//   discount_value DECIMAL(10,2) NOT NULL,
-//   min_order_amount DECIMAL(10,2) DEFAULT 0.00,
-//   max_discount DECIMAL(10,2),
-//   usage_limit INT,
-//   used_count INT DEFAULT 0,
-//   start_date DATETIME,
-//   end_date DATETIME,
-//   is_active TINYINT(1) DEFAULT 1,
-//   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-// );
+    const sql = "SELECT * FROM promo_codes WHERE UPPER(code) = ? AND is_active = 1 LIMIT 1";
+    db.query(sql, [cleanCode], (err, rows) => {
+      if (err) return next(err);
+      if (!rows || rows.length === 0) {
+        return res.status(404).json({ success: false, message: 'Invalid or expired promo code.' });
+      }
+
+      const promo = rows[0];
+      const today = new Date().toISOString().split('T')[0];
+
+      if (promo.start_date && promo.start_date > today) {
+        return res.status(400).json({ success: false, message: 'This promo code is not active yet.' });
+      }
+      if (promo.end_date && promo.end_date < today) {
+        return res.status(400).json({ success: false, message: 'This promo code has expired.' });
+      }
+      if (promo.usage_limit != null && promo.used_count >= promo.usage_limit) {
+        return res.status(400).json({ success: false, message: 'This promo code has reached its usage limit.' });
+      }
+
+      const minOrder = Number(promo.min_order_amount) || 0;
+      if (amount < minOrder) {
+        return res.status(400).json({
+          success: false,
+          message: `Minimum order amount of ₹${minOrder.toLocaleString('en-IN')} required for this code.`,
+        });
+      }
+
+      let discountAmount = 0;
+      if (promo.discount_type === 'percentage') {
+        discountAmount = (Number(promo.discount_value) / 100) * amount;
+        if (promo.max_discount != null && discountAmount > Number(promo.max_discount)) {
+          discountAmount = Number(promo.max_discount);
+        }
+      } else {
+        discountAmount = Number(promo.discount_value);
+      }
+
+      discountAmount = Math.min(discountAmount, amount);
+
+      return res.json({
+        success: true,
+        message: `Promo code ${promo.code} applied successfully!`,
+        promo: {
+          id: promo.id,
+          code: promo.code,
+          discount_type: promo.discount_type,
+          discount_value: Number(promo.discount_value),
+          discount_amount: Math.round(discountAmount),
+          min_order_amount: minOrder,
+          max_discount: promo.max_discount ? Number(promo.max_discount) : null,
+        },
+      });
+    });
+  } catch (e) {
+    next(e);
+  }
+};

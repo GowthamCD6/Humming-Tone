@@ -267,3 +267,19 @@ export const AdminService = {
   },
 };
 
+export const PromoService = {
+  validatePromo: async (code, orderAmount = 0) => {
+    try {
+      const response = await apiClient.post('/user/validate_promo', {
+        code: code.trim(),
+        order_amount: orderAmount,
+      });
+      return response.data;
+    } catch (error) {
+      const msg = error.response?.data?.message || 'Invalid or expired promo code.';
+      return { success: false, message: msg };
+    }
+  },
+};
+
+

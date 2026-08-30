@@ -9,59 +9,124 @@ import {
   TextInput,
   StatusBar,
   Alert,
+  Platform,
+  ActivityIndicator,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '../components/Icons';
-import { colors, shadows } from '../theme/colors';
-import { typography, spacing } from '../theme/typography';
+import { shadows } from '../theme/colors';
+import { typography } from '../theme/typography';
 import { useCart } from '../context/CartContext';
 
 export const CartScreen = ({ navigation }) => {
   const insets = useSafeAreaInsets();
-  const { cartItems, removeFromCart, updateQuantity, cartSubtotal, clearCart } = useCart();
-  const [promoCode, setPromoCode] = useState('');
-  const [discountApplied, setDiscountApplied] = useState(false);
+  const {
+    cartItems,
+    cartCount,
+    subtotal,
+    discountAmount,
+    discountedSubtotal,
+    coupon,
+    updateQuantity,
+    removeFromCart,
+    clearCart,
+    applyCoupon,
+    removeCoupon,
+  } = useCart();
 
-  const deliveryFee = cartSubtotal > 0 ? (cartSubtotal > 1500 ? 0 : 99) : 0;
-  const discountAmount = discountApplied ? Math.round(cartSubtotal * 0.15) : 0;
-  const totalCost = Math.max(0, cartSubtotal + deliveryFee - discountAmount);
+  const [promoCodeInput, setPromoCodeInput] = useState('');
+  const [couponError, setCouponError] = useState('');
+  const [applyingCoupon, setApplyingCoupon] = useState(false);
 
-  const handleApplyPromo = () => {
-    if (!promoCode.trim()) {
-      Alert.alert('Promo Code', 'Please enter a valid coupon code.');
+  // Total is discounted subtotal with GST and delivery fully included
+  const calculatedTotal = Math.max(0, discountedSubtotal);
+
+  const handleApplyCoupon = async (codeToApply) => {
+    const code = codeToApply || promoCodeInput;
+    if (!code || !code.trim()) {
+      setCouponError('Please enter a valid coupon code.');
       return;
     }
-    if (promoCode.trim().toUpperCase() === 'FIRST50' || promoCode.trim().toUpperCase() === 'HUMMING15') {
-      setDiscountApplied(true);
-      Alert.alert('Coupon Applied', 'You received a 15% discount on your order!');
-    } else {
-      Alert.alert('Invalid Code', 'The code you entered is invalid or expired.');
+    setCouponError('');
+    setApplyingCoupon(true);
+    try {
+      const res = await applyCoupon(code);
+      if (res.success) {
+        setPromoCodeInput('');
+        Alert.alert('Coupon Applied', res.message);
+      } else {
+        setCouponError(res.message);
+      }
+    } catch (e) {
+      setCouponError('Unable to apply promo code. Please try again.');
+    } finally {
+      setApplyingCoupon(false);
     }
   };
 
+  const handleClearBag = () => {
+    if (cartItems.length === 0) return;
+    Alert.alert(
+      'Clear Shopping Bag',
+      'Are you sure you want to remove all pieces from your bag?',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        { text: 'Clear All', style: 'destructive', onPress: () => clearCart() },
+      ]
+    );
+  };
+
+  const topPadding = Math.max(
+    (insets.top || 0) + 10,
+    (StatusBar.currentHeight || 0) + 10,
+    Platform.OS === 'android' ? 32 : 44
+  );
+
   return (
     <View style={styles.container}>
-      <StatusBar barStyle="dark-content" backgroundColor="#FFFFFF" />
+      <StatusBar barStyle="dark-content" backgroundColor="#FAF8F5" translucent={true} />
 
-      {/* ── 1. HEADER (Template Exact) ── */}
-      <View style={[styles.headerBar, { paddingTop: Math.max(insets.top, 12) }]}>
-        <TouchableOpacity
-          style={styles.backCircleBtn}
-          onPress={() => navigation.goBack()}
-          activeOpacity={0.8}
-        >
-          <Ionicons name="arrow-back" size={20} color={colors.textPrimary} />
-        </TouchableOpacity>
-        <Text style={styles.headerTitle}>My Cart</Text>
-        <View style={{ width: 42 }} />
+      {/* ── 1. TOP HEADER ── */}
+      <View style={[styles.headerBar, { paddingTop: topPadding }]}>
+        <View style={styles.headerLeft}>
+          {navigation.canGoBack() ? (
+            <TouchableOpacity
+              style={styles.backCircleBtn}
+              onPress={() => navigation.goBack()}
+              activeOpacity={0.8}
+            >
+              <Ionicons name="arrow-back" size={20} color="#1E1B18" />
+            </TouchableOpacity>
+          ) : null}
+          <View>
+            <Text style={styles.headerTitle}>Shopping Bag</Text>
+            <Text style={styles.headerSubtitle}>
+              {cartCount === 0 ? 'No items selected' : `${cartCount} ${cartCount === 1 ? 'Piece' : 'Pieces'} Selected`}
+            </Text>
+          </View>
+        </View>
+
+        {cartItems.length > 0 && (
+          <TouchableOpacity
+            style={styles.clearBagBtn}
+            onPress={handleClearBag}
+            activeOpacity={0.75}
+          >
+            <Ionicons name="trash-outline" size={16} color="#6B4E37" />
+            <Text style={styles.clearBagText}>Clear</Text>
+          </TouchableOpacity>
+        )}
       </View>
 
       {cartItems.length === 0 ? (
+        /* ── EMPTY STATE ── */
         <View style={styles.emptyContainer}>
-          <Ionicons name="bag-handle-outline" size={64} color={colors.textMuted} />
+          <View style={styles.emptyIconCircle}>
+            <Ionicons name="bag-handle-outline" size={44} color="#8A7F75" />
+          </View>
           <Text style={styles.emptyTitle}>Your Bag is Empty</Text>
           <Text style={styles.emptySubtitle}>
-            Discover our curated bespoke silhouettes and elevate your wardrobe.
+            Explore our handcrafted luxury apparel, oversized street silhouettes, and bespoke atelier pieces.
           </Text>
           <TouchableOpacity
             style={styles.exploreBtn}
@@ -69,111 +134,217 @@ export const CartScreen = ({ navigation }) => {
             activeOpacity={0.88}
           >
             <Text style={styles.exploreBtnText}>Discover Collections</Text>
+            <Ionicons name="arrow-forward" size={15} color="#FFFFFF" />
           </TouchableOpacity>
         </View>
       ) : (
+        /* ── CART ITEMS SCROLL ── */
         <ScrollView
           style={styles.scroll}
-          contentContainerStyle={[styles.scrollContent, { paddingBottom: Math.max(insets.bottom + 40, 50) }]}
+          contentContainerStyle={[
+            styles.scrollContent,
+            { paddingBottom: Math.max((insets.bottom || 0) + 75, 90) },
+          ]}
           showsVerticalScrollIndicator={false}
         >
           {/* ── 2. CART ITEMS LIST ── */}
           <View style={styles.itemsList}>
-            {cartItems.map((item) => (
-              <View key={`${item.id}-${item.selectedSize}`} style={styles.cartCard}>
-                <Image source={{ uri: item.image }} style={styles.itemImg} resizeMode="cover" />
+            {cartItems.map((item) => {
+              const itemKey = item.cartItemId || `${item.id}-${item.size || 'std'}`;
+              return (
+                <View key={itemKey} style={styles.cartCard}>
+                  {/* Thumbnail Image */}
+                  <Image
+                    source={{ uri: item.image }}
+                    style={styles.itemImg}
+                    resizeMode="cover"
+                  />
 
-                <View style={styles.itemDetails}>
-                  <Text style={styles.itemName} numberOfLines={1}>
-                    {item.name}
-                  </Text>
-                  <Text style={styles.itemSize}>Size : {item.selectedSize || 'Standard'}</Text>
-                  <Text style={styles.itemPrice}>₹{(item.price || 0).toLocaleString('en-IN')}</Text>
-                </View>
+                  {/* Details */}
+                  <View style={styles.itemDetails}>
+                    <Text style={styles.itemBrand} numberOfLines={1}>
+                      {item.brand || item.category || 'ATELIER COLLECTION'}
+                    </Text>
 
-                {/* Right Actions: Stepper + Trash */}
-                <View style={styles.rightActions}>
-                  <TouchableOpacity
-                    style={styles.trashBtn}
-                    onPress={() => removeFromCart(item.id, item.selectedSize)}
-                    activeOpacity={0.8}
-                  >
-                    <Ionicons name="trash-outline" size={16} color={colors.error} />
-                  </TouchableOpacity>
+                    <Text style={styles.itemName} numberOfLines={1}>
+                      {item.name}
+                    </Text>
 
-                  <View style={styles.stepperContainer}>
-                    <TouchableOpacity
-                      style={styles.stepperBtn}
-                      onPress={() => updateQuantity(item.id, item.selectedSize, item.quantity - 1)}
-                    >
-                      <Text style={styles.stepperBtnText}>−</Text>
-                    </TouchableOpacity>
-                    <Text style={styles.stepperValue}>{item.quantity}</Text>
-                    <TouchableOpacity
-                      style={styles.stepperBtn}
-                      onPress={() => updateQuantity(item.id, item.selectedSize, item.quantity + 1)}
-                    >
-                      <Text style={styles.stepperBtnText}>+</Text>
-                    </TouchableOpacity>
+                    {/* Variant specs */}
+                    <View style={styles.variantBadgesRow}>
+                      <View style={styles.variantChip}>
+                        <Text style={styles.variantChipText}>
+                          Size: <Text style={{ fontFamily: typography.fontSansBold }}>{item.size || 'Standard'}</Text>
+                        </Text>
+                      </View>
+                      {Boolean(item.color) && (
+                        <View style={styles.variantChip}>
+                          <Text style={styles.variantChipText}>{item.color}</Text>
+                        </View>
+                      )}
+                    </View>
+
+                    {/* Price & Quantity Controls */}
+                    <View style={styles.priceStepperRow}>
+                      <Text style={styles.itemPrice}>
+                        ₹{(item.price || 0).toLocaleString('en-IN')}
+                      </Text>
+
+                      <View style={styles.stepperWrap}>
+                        <TouchableOpacity
+                          style={styles.stepperBtn}
+                          onPress={() => updateQuantity(itemKey, (item.quantity || 1) - 1)}
+                          activeOpacity={0.7}
+                        >
+                          <Ionicons
+                            name={(item.quantity || 1) === 1 ? 'trash-outline' : 'remove'}
+                            size={14}
+                            color={(item.quantity || 1) === 1 ? '#D32F2F' : '#1E1B18'}
+                          />
+                        </TouchableOpacity>
+
+                        <Text style={styles.stepperCount}>{item.quantity || 1}</Text>
+
+                        <TouchableOpacity
+                          style={styles.stepperBtn}
+                          onPress={() => updateQuantity(itemKey, (item.quantity || 1) + 1)}
+                          activeOpacity={0.7}
+                        >
+                          <Ionicons name="add" size={14} color="#1E1B18" />
+                        </TouchableOpacity>
+                      </View>
+                    </View>
                   </View>
                 </View>
+              );
+            })}
+          </View>
+
+          {/* ── 3. PROMO CODE INPUT BOX (Real Backend Sync) ── */}
+          <View style={styles.promoSection}>
+            <Text style={styles.sectionHeaderTitle}>PROMOTIONAL PRIVILEGE</Text>
+
+            {coupon ? (
+              <View style={styles.activeCouponCard}>
+                <View style={styles.activeCouponLeft}>
+                  <View style={styles.activeCouponIcon}>
+                    <Ionicons name="pricetag" size={16} color="#6B4E37" />
+                  </View>
+                  <View>
+                    <Text style={styles.activeCouponCode}>{coupon.code}</Text>
+                    <Text style={styles.activeCouponLabel}>
+                      {coupon.label || `${coupon.discount_value}% Discount Applied`}
+                    </Text>
+                  </View>
+                </View>
+
+                <TouchableOpacity
+                  onPress={removeCoupon}
+                  style={styles.removeCouponBtn}
+                  activeOpacity={0.7}
+                >
+                  <Ionicons name="close-circle" size={20} color="#8A7F75" />
+                </TouchableOpacity>
               </View>
-            ))}
+            ) : (
+              <>
+                <View style={styles.promoInputRow}>
+                  <View style={styles.promoInputWrap}>
+                    <Ionicons name="ticket-outline" size={18} color="#8A7F75" />
+                    <TextInput
+                      style={styles.promoInput}
+                      placeholder="Enter promo code"
+                      placeholderTextColor="#A3998F"
+                      value={promoCodeInput}
+                      onChangeText={(t) => {
+                        setPromoCodeInput(t);
+                        setCouponError('');
+                      }}
+                      autoCapitalize="characters"
+                    />
+                  </View>
+
+                  <TouchableOpacity
+                    style={styles.applyPromoBtn}
+                    onPress={() => handleApplyCoupon()}
+                    activeOpacity={0.85}
+                    disabled={applyingCoupon}
+                  >
+                    {applyingCoupon ? (
+                      <ActivityIndicator size="small" color="#FFFFFF" />
+                    ) : (
+                      <Text style={styles.applyPromoBtnText}>Apply</Text>
+                    )}
+                  </TouchableOpacity>
+                </View>
+
+                {Boolean(couponError) && (
+                  <Text style={styles.couponErrorText}>{couponError}</Text>
+                )}
+              </>
+            )}
           </View>
 
-          {/* ── 3. PROMO CODE INPUT (Template Exact) ── */}
-          <View style={styles.promoBox}>
-            <TextInput
-              style={styles.promoInput}
-              placeholder="Promo Code"
-              placeholderTextColor={colors.textMuted}
-              value={promoCode}
-              onChangeText={setPromoCode}
-              autoCapitalize="characters"
-            />
-            <TouchableOpacity
-              style={styles.applyBtn}
-              onPress={handleApplyPromo}
-              activeOpacity={0.88}
-            >
-              <Text style={styles.applyBtnText}>Apply</Text>
-            </TouchableOpacity>
-          </View>
+          {/* ── 4. ORDER BILL BREAKDOWN ── */}
+          <View style={styles.breakdownCard}>
+            <Text style={styles.sectionHeaderTitle}>PRICE BREAKDOWN</Text>
 
-          {/* ── 4. ORDER SUMMARY (Template Exact) ── */}
-          <View style={styles.summaryBox}>
-            <View style={styles.summaryRow}>
-              <Text style={styles.summaryLabel}>Sub-Total</Text>
-              <Text style={styles.summaryValue}>₹{cartSubtotal.toLocaleString('en-IN')}</Text>
+            <View style={styles.breakdownRow}>
+              <Text style={styles.breakdownLabel}>Bag Subtotal</Text>
+              <Text style={styles.breakdownValue}>₹{subtotal.toLocaleString('en-IN')}</Text>
             </View>
-            <View style={styles.summaryRow}>
-              <Text style={styles.summaryLabel}>Delivery Fee</Text>
-              <Text style={styles.summaryValue}>
-                {deliveryFee === 0 ? 'Free' : `₹${deliveryFee}`}
-              </Text>
-            </View>
-            {discountApplied && (
-              <View style={styles.summaryRow}>
-                <Text style={[styles.summaryLabel, { color: colors.success }]}>Discount (15%)</Text>
-                <Text style={[styles.summaryValue, { color: colors.success }]}>
-                  -₹{discountAmount.toLocaleString('en-IN')}
+
+            {discountAmount > 0 && (
+              <View style={styles.breakdownRow}>
+                <Text style={[styles.breakdownLabel, { color: '#2E7D32' }]}>
+                  Coupon Savings ({coupon?.code})
+                </Text>
+                <Text style={[styles.breakdownValue, { color: '#2E7D32' }]}>
+                  −₹{discountAmount.toLocaleString('en-IN')}
                 </Text>
               </View>
             )}
+
+            <View style={styles.breakdownRow}>
+              <Text style={styles.breakdownLabel}>Taxes & GST</Text>
+              <Text style={[styles.breakdownValue, { color: '#2E7D32', fontFamily: typography.fontSansBold }]}>
+                Included in Price
+              </Text>
+            </View>
+
+            <View style={styles.breakdownRow}>
+              <Text style={styles.breakdownLabel}>Delivery Charges</Text>
+              <Text style={[styles.breakdownValue, { color: '#2E7D32', fontFamily: typography.fontSansBold }]}>
+                FREE
+              </Text>
+            </View>
+
             <View style={styles.divider} />
-            <View style={styles.summaryRow}>
-              <Text style={styles.totalLabel}>Total Cost</Text>
-              <Text style={styles.totalValue}>₹{totalCost.toLocaleString('en-IN')}</Text>
+
+            <View style={styles.totalRow}>
+              <View>
+                <Text style={styles.totalTitle}>Total Amount</Text>
+                <Text style={styles.totalSub}>All prices are inclusive of GST</Text>
+              </View>
+              <Text style={styles.totalAmount}>₹{calculatedTotal.toLocaleString('en-IN')}</Text>
             </View>
           </View>
 
-          {/* ── 5. PROCEED TO CHECKOUT BUTTON (Template Exact) ── */}
+          {/* ── 5. PROCEED TO CHECKOUT ACTION (Solid Black) ── */}
           <TouchableOpacity
             style={styles.checkoutBtn}
             onPress={() => navigation.navigate('Checkout')}
             activeOpacity={0.88}
           >
-            <Text style={styles.checkoutBtnText}>Proceed to Checkout</Text>
+            <View style={styles.checkoutBtnLeft}>
+              <Text style={styles.checkoutBtnText}>Proceed to Checkout</Text>
+              <Text style={styles.checkoutBtnSub}>
+                {cartCount} {cartCount === 1 ? 'Item' : 'Items'} • ₹{calculatedTotal.toLocaleString('en-IN')}
+              </Text>
+            </View>
+            <View style={styles.checkoutBtnArrowCircle}>
+              <Ionicons name="arrow-forward" size={17} color="#1E1B18" />
+            </View>
           </TouchableOpacity>
         </ScrollView>
       )}
@@ -184,238 +355,417 @@ export const CartScreen = ({ navigation }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#FFFFFF',
+    backgroundColor: '#FAF8F5',
   },
   headerBar: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
     paddingHorizontal: 20,
-    paddingBottom: 10,
-    backgroundColor: '#FFFFFF',
+    paddingBottom: 12,
+    backgroundColor: '#FAF8F5',
+    borderBottomWidth: 1,
+    borderBottomColor: '#EAE4DC',
+  },
+  headerLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
   },
   backCircleBtn: {
-    width: 42,
-    height: 42,
-    borderRadius: 21,
-    backgroundColor: colors.surfaceMuted,
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: '#FFFFFF',
+    borderWidth: 1,
+    borderColor: '#EAE4DC',
     alignItems: 'center',
     justifyContent: 'center',
+    ...shadows.card,
   },
   headerTitle: {
-    fontFamily: typography.fontSans,
-    fontSize: 16,
-    fontWeight: typography.weightBold,
-    color: colors.textPrimary,
+    fontFamily: typography.fontSansBold,
+    fontSize: 18,
+    color: '#1E1B18',
   },
+  headerSubtitle: {
+    fontFamily: typography.fontSans,
+    fontSize: 11.5,
+    color: '#8A7F75',
+    marginTop: 1,
+  },
+  clearBagBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    backgroundColor: '#FAF5EE',
+    borderWidth: 1,
+    borderColor: '#E5DCCE',
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderRadius: 14,
+  },
+  clearBagText: {
+    fontFamily: typography.fontSansBold,
+    fontSize: 12,
+    color: '#6B4E37',
+  },
+
+  /* ── EMPTY STATE ── */
+  emptyContainer: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: 36,
+  },
+  emptyIconCircle: {
+    width: 88,
+    height: 88,
+    borderRadius: 44,
+    backgroundColor: '#FAF5EE',
+    borderWidth: 1.5,
+    borderColor: '#E5DCCE',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 16,
+    ...shadows.card,
+  },
+  emptyTitle: {
+    fontFamily: typography.fontSansBold,
+    fontSize: 19,
+    color: '#1E1B18',
+    marginBottom: 6,
+  },
+  emptySubtitle: {
+    fontFamily: typography.fontSans,
+    fontSize: 13,
+    color: '#8A7F75',
+    textAlign: 'center',
+    lineHeight: 19,
+    marginBottom: 24,
+  },
+  exploreBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    backgroundColor: '#6B4E37',
+    paddingHorizontal: 22,
+    paddingVertical: 12,
+    borderRadius: 24,
+    ...shadows.card,
+  },
+  exploreBtnText: {
+    color: '#FFFFFF',
+    fontFamily: typography.fontSansBold,
+    fontSize: 13.5,
+    letterSpacing: 0.3,
+  },
+
+  /* ── SCROLL ── */
   scroll: {
     flex: 1,
   },
   scrollContent: {
     paddingHorizontal: 20,
-    paddingTop: 10,
-  },
-  emptyContainer: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingHorizontal: 32,
-  },
-  emptyTitle: {
-    fontFamily: typography.fontSans,
-    fontSize: 18,
-    fontWeight: typography.weightBold,
-    color: colors.textPrimary,
-    marginTop: 14,
-    marginBottom: 6,
-  },
-  emptySubtitle: {
-    fontFamily: typography.fontSans,
-    fontSize: 12.5,
-    color: colors.textSecondary,
-    textAlign: 'center',
-    lineHeight: 18,
-    marginBottom: 20,
-  },
-  exploreBtn: {
-    backgroundColor: colors.primary,
-    paddingHorizontal: 24,
-    paddingVertical: 12,
-    borderRadius: 24,
-  },
-  exploreBtnText: {
-    color: '#FFFFFF',
-    fontWeight: typography.weightBold,
-    fontFamily: typography.fontSans,
-    fontSize: 13,
+    paddingTop: 14,
   },
 
-  // Cart Items
+  /* ── CART ITEMS ── */
   itemsList: {
-    gap: 14,
-    marginBottom: 18,
+    gap: 12,
+    marginBottom: 16,
   },
   cartCard: {
     flexDirection: 'row',
-    alignItems: 'center',
     backgroundColor: '#FFFFFF',
-    borderRadius: 16,
-    padding: 10,
+    borderRadius: 18,
+    padding: 12,
     borderWidth: 1,
-    borderColor: colors.borderLight,
+    borderColor: '#EAE4DC',
     gap: 12,
+    ...shadows.card,
   },
   itemImg: {
-    width: 70,
-    height: 70,
-    borderRadius: 12,
-    backgroundColor: colors.surfaceMuted,
+    width: 80,
+    height: 94,
+    borderRadius: 14,
+    backgroundColor: '#FAF5EE',
   },
   itemDetails: {
     flex: 1,
+    justifyContent: 'space-between',
+  },
+  itemBrand: {
+    fontFamily: typography.fontSansBold,
+    fontSize: 10,
+    color: '#8A7F75',
+    letterSpacing: 0.6,
   },
   itemName: {
-    fontFamily: typography.fontSans,
-    fontSize: 13.5,
-    fontWeight: typography.weightBold,
-    color: colors.textPrimary,
-    marginBottom: 2,
-  },
-  itemSize: {
-    fontFamily: typography.fontSans,
-    fontSize: 11,
-    color: colors.textMuted,
+    fontFamily: typography.fontSansBold,
+    fontSize: 14,
+    color: '#1E1B18',
+    marginTop: 2,
     marginBottom: 4,
   },
-  itemPrice: {
+  variantBadgesRow: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 6,
+    marginBottom: 8,
+  },
+  variantChip: {
+    backgroundColor: '#FAF5EE',
+    borderWidth: 1,
+    borderColor: '#EAE4DC',
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: 8,
+  },
+  variantChipText: {
     fontFamily: typography.fontSans,
-    fontSize: 13.5,
-    fontWeight: typography.weightBold,
-    color: colors.textPrimary,
+    fontSize: 11,
+    color: '#5C544E',
   },
-  rightActions: {
-    alignItems: 'flex-end',
-    gap: 8,
-  },
-  trashBtn: {
-    width: 28,
-    height: 28,
-    borderRadius: 14,
-    backgroundColor: '#FDECEC',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  stepperContainer: {
+  priceStepperRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: colors.surfaceMuted,
+    justifyContent: 'space-between',
+  },
+  itemPrice: {
+    fontFamily: typography.fontSansBold,
+    fontSize: 15,
+    color: '#1E1B18',
+  },
+  stepperWrap: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#FAF5EE',
+    borderWidth: 1,
+    borderColor: '#EAE4DC',
     borderRadius: 14,
-    paddingHorizontal: 6,
+    paddingHorizontal: 4,
     paddingVertical: 2,
   },
   stepperBtn: {
-    paddingHorizontal: 6,
-    paddingVertical: 2,
-  },
-  stepperBtnText: {
-    fontSize: 14,
-    fontWeight: typography.weightBold,
-    color: colors.textPrimary,
-  },
-  stepperValue: {
-    fontFamily: typography.fontSans,
-    fontSize: 12,
-    fontWeight: typography.weightBold,
-    color: colors.textPrimary,
-    marginHorizontal: 4,
-  },
-
-  // Promo Box
-  promoBox: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: colors.surfaceMuted,
-    borderRadius: 24,
-    paddingLeft: 16,
-    paddingRight: 6,
-    paddingVertical: 5,
-    marginBottom: 18,
-  },
-  promoInput: {
-    flex: 1,
-    fontFamily: typography.fontSans,
-    fontSize: 13,
-    color: colors.textPrimary,
-    paddingVertical: 4,
-  },
-  applyBtn: {
-    backgroundColor: colors.primary,
-    paddingHorizontal: 20,
-    paddingVertical: 9,
-    borderRadius: 20,
-  },
-  applyBtnText: {
-    fontFamily: typography.fontSans,
-    fontSize: 12,
-    fontWeight: typography.weightBold,
-    color: '#FFFFFF',
-  },
-
-  // Summary Box
-  summaryBox: {
-    backgroundColor: '#FFFFFF',
-    borderRadius: 16,
-    padding: 16,
-    borderWidth: 1,
-    borderColor: colors.borderLight,
-    marginBottom: 20,
-  },
-  summaryRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginBottom: 10,
-  },
-  summaryLabel: {
-    fontFamily: typography.fontSans,
-    fontSize: 12.5,
-    color: colors.textSecondary,
-  },
-  summaryValue: {
-    fontFamily: typography.fontSans,
-    fontSize: 12.5,
-    fontWeight: typography.weightMedium,
-    color: colors.textPrimary,
-  },
-  divider: {
-    height: 1,
-    backgroundColor: colors.borderLight,
-    marginVertical: 6,
-  },
-  totalLabel: {
-    fontFamily: typography.fontSans,
-    fontSize: 14,
-    fontWeight: typography.weightBold,
-    color: colors.textPrimary,
-  },
-  totalValue: {
-    fontFamily: typography.fontSans,
-    fontSize: 16,
-    fontWeight: typography.weightBold,
-    color: colors.textPrimary,
-  },
-
-  // Checkout Button
-  checkoutBtn: {
-    backgroundColor: colors.primary,
-    height: 52,
-    borderRadius: 26,
+    width: 26,
+    height: 26,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  checkoutBtnText: {
-    fontFamily: typography.fontSans,
-    fontSize: 14,
-    fontWeight: typography.weightBold,
+  stepperCount: {
+    fontFamily: typography.fontSansBold,
+    fontSize: 13,
+    color: '#1E1B18',
+    paddingHorizontal: 8,
+  },
+
+  /* ── PROMO SECTION ── */
+  promoSection: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 18,
+    padding: 14,
+    borderWidth: 1,
+    borderColor: '#EAE4DC',
+    marginBottom: 14,
+    ...shadows.card,
+  },
+  sectionHeaderTitle: {
+    fontFamily: typography.fontSansBold,
+    fontSize: 11,
+    color: '#8A7F75',
+    letterSpacing: 0.8,
+    marginBottom: 10,
+  },
+  promoInputRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  promoInputWrap: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#FAF8F5',
+    borderWidth: 1,
+    borderColor: '#EAE4DC',
+    borderRadius: 14,
+    paddingHorizontal: 12,
+    height: 42,
+    gap: 8,
+  },
+  promoInput: {
+    flex: 1,
+    fontFamily: typography.fontSansBold,
+    fontSize: 13,
+    color: '#1E1B18',
+    padding: 0,
+  },
+  applyPromoBtn: {
+    backgroundColor: '#6B4E37',
+    paddingHorizontal: 18,
+    height: 42,
+    borderRadius: 14,
+    alignItems: 'center',
+    justifyContent: 'center',
+    minWidth: 70,
+  },
+  applyPromoBtnText: {
     color: '#FFFFFF',
+    fontFamily: typography.fontSansBold,
+    fontSize: 12.5,
+  },
+  couponErrorText: {
+    fontFamily: typography.fontSans,
+    fontSize: 11.5,
+    color: '#D32F2F',
+    marginTop: 6,
+    marginLeft: 4,
+  },
+  suggestedCouponsRow: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 8,
+    marginTop: 10,
+  },
+  suggestPill: {
+    backgroundColor: '#FAF5EE',
+    borderWidth: 1,
+    borderColor: '#E5DCCE',
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderRadius: 10,
+  },
+  suggestPillText: {
+    fontFamily: typography.fontSansBold,
+    fontSize: 11,
+    color: '#6B4E37',
+  },
+  activeCouponCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    backgroundColor: '#FAF5EE',
+    borderWidth: 1.5,
+    borderColor: '#E5DCCE',
+    borderRadius: 14,
+    padding: 12,
+  },
+  activeCouponLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+  },
+  activeCouponIcon: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: '#FFFFFF',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  activeCouponCode: {
+    fontFamily: typography.fontSansBold,
+    fontSize: 13.5,
+    color: '#1E1B18',
+  },
+  activeCouponLabel: {
+    fontFamily: typography.fontSans,
+    fontSize: 11,
+    color: '#6B4E37',
+    marginTop: 1,
+  },
+  removeCouponBtn: {
+    padding: 4,
+  },
+
+  /* ── BREAKDOWN CARD ── */
+  breakdownCard: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 18,
+    padding: 14,
+    borderWidth: 1,
+    borderColor: '#EAE4DC',
+    marginBottom: 16,
+    ...shadows.card,
+  },
+  breakdownRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingVertical: 6,
+  },
+  breakdownLabel: {
+    fontFamily: typography.fontSans,
+    fontSize: 13,
+    color: '#5C544E',
+  },
+  breakdownValue: {
+    fontFamily: typography.fontSansBold,
+    fontSize: 13,
+    color: '#1E1B18',
+  },
+  divider: {
+    height: 1,
+    backgroundColor: '#EAE4DC',
+    marginVertical: 10,
+  },
+  totalRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingTop: 2,
+  },
+  totalTitle: {
+    fontFamily: typography.fontSansBold,
+    fontSize: 15,
+    color: '#1E1B18',
+  },
+  totalSub: {
+    fontFamily: typography.fontSans,
+    fontSize: 11,
+    color: '#8A7F75',
+    marginTop: 1,
+  },
+  totalAmount: {
+    fontFamily: typography.fontSansBold,
+    fontSize: 18,
+    color: '#1E1B18',
+  },
+
+  /* ── CHECKOUT BUTTON (Solid Black in Content Flow) ── */
+  checkoutBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    backgroundColor: '#1E1B18',
+    paddingHorizontal: 20,
+    paddingVertical: 14,
+    borderRadius: 22,
+    ...shadows.card,
+  },
+  checkoutBtnLeft: {
+    flex: 1,
+  },
+  checkoutBtnText: {
+    color: '#FFFFFF',
+    fontFamily: typography.fontSansBold,
+    fontSize: 15,
+    letterSpacing: 0.3,
+  },
+  checkoutBtnSub: {
+    color: '#C4BCB3',
+    fontFamily: typography.fontSans,
+    fontSize: 12,
+    marginTop: 2,
+  },
+  checkoutBtnArrowCircle: {
+    width: 34,
+    height: 34,
+    borderRadius: 17,
+    backgroundColor: '#FFFFFF',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginLeft: 12,
   },
 });

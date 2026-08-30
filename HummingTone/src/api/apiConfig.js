@@ -2,7 +2,7 @@
 // SINGLE CONFIGURATION POINT FOR LOCAL BACKEND IP
 // Change your PC / Wi-Fi IPv4 address here ONCE, and it applies everywhere:
 // ================================================================
-export const DEV_DEVICE_IP = '10.10.71.100'; // <- CHANGE ONLY HERE (or 'localhost' if using adb reverse)
+export const DEV_DEVICE_IP = 'localhost'; // <- Uses adb reverse tcp:5000 tcp:5000 directly
 export const DEV_PORT = 5000;
 export const PROD_API_BASE_URL = 'https://api.hummingtone.com';
 

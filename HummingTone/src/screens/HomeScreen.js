@@ -50,8 +50,9 @@ const HERO_BANNERS = [
     routeTitle: 'Featured Products',
     gender: 'Men',
     bg: '#E8E1D8',
-    rightOffset: -26,
-    widthPercent: '72%',
+    rightOffset: -18,
+    widthPercent: '63%',
+    heightPercent: '90%',
   },
   {
     id: 'customize-apparel',

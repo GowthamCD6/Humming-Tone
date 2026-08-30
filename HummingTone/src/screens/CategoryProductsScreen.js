@@ -30,7 +30,7 @@ const SORT_OPTIONS = [
 ];
 
 const PRICE_RANGES = [
-  { id: 'all', label: 'Any Price' },
+  { id: 'all', label: 'All Prices' },
   { id: 'under_500', label: 'Under ₹500', max: 500 },
   { id: '500_1000', label: '₹500 - ₹1,000', min: 500, max: 1000 },
   { id: '1000_2000', label: '₹1,000 - ₹2,000', min: 1000, max: 2000 },
@@ -42,7 +42,7 @@ export const CategoryProductsScreen = ({ route, navigation }) => {
   const { activeGenders, genderCategories } = useSiteContent();
 
   const {
-    title = 'Catalog Pieces',
+    title = 'Collection Pieces',
     gender: initGender,
     category: initCategory,
     searchQuery: initSearch,
@@ -96,11 +96,11 @@ export const CategoryProductsScreen = ({ route, navigation }) => {
     fetchProductList();
   };
 
-  // Client-side filtering & sorting for search, price ranges, and ratings
+  // Client-side filtering & sorting
   const filteredProducts = useMemo(() => {
     let list = [...products];
 
-    // Search query filter
+    // Search query
     if (searchQuery.trim()) {
       const q = searchQuery.toLowerCase().trim();
       list = list.filter(
@@ -157,19 +157,16 @@ export const CategoryProductsScreen = ({ route, navigation }) => {
     return list;
   }, [products, searchQuery, selectedCategory, selectedPrice, selectedRating, selectedSort]);
 
-  // Active filter count for badge
+  // Active filter count (excluding default page gender)
   const activeFiltersCount = useMemo(() => {
     let count = 0;
-    if (selectedGender && selectedGender !== 'All') count++;
-    if (selectedCategory) count++;
     if (selectedPrice && selectedPrice !== 'all') count++;
     if (selectedRating != null) count++;
     if (searchQuery.trim()) count++;
     return count;
-  }, [selectedGender, selectedCategory, selectedPrice, selectedRating, searchQuery]);
+  }, [selectedPrice, selectedRating, searchQuery]);
 
   const clearAllFilters = () => {
-    setSelectedGender('All');
     setSelectedCategory(null);
     setSelectedPrice('all');
     setSelectedRating(null);
@@ -194,7 +191,7 @@ export const CategoryProductsScreen = ({ route, navigation }) => {
       <StatusBar barStyle="dark-content" backgroundColor="#FAF8F5" />
       <Header title={title} showBack={true} />
 
-      {/* ── 1. SUBCATEGORIES SELECTOR BAR (For the Respective Gender Page) ── */}
+      {/* ── 1. SUBCATEGORY PILL BAR ── */}
       {availableSubcategories.length > 0 && (
         <View style={styles.subCatBarWrap}>
           <ScrollView
@@ -247,10 +244,10 @@ export const CategoryProductsScreen = ({ route, navigation }) => {
         </View>
       )}
 
-      {/* ── 2. CONTROL & SORT BAR ── */}
+      {/* ── 2. METADATA & SORT / FILTER CONTROLS BAR ── */}
       <View style={styles.controlBar}>
         <Text style={styles.countText}>
-          {loading ? 'Discovering pieces...' : `${filteredProducts.length} ${filteredProducts.length === 1 ? 'Piece' : 'Pieces'} Found`}
+          {loading ? 'Curating pieces...' : `${filteredProducts.length} ${filteredProducts.length === 1 ? 'Piece Available' : 'Pieces Available'}`}
         </Text>
 
         <View style={styles.controlButtonsRow}>
@@ -260,7 +257,7 @@ export const CategoryProductsScreen = ({ route, navigation }) => {
             onPress={() => setShowSortDropdown(!showSortDropdown)}
             activeOpacity={0.8}
           >
-            <Ionicons name="swap-vertical" size={15} color="#1E1B18" />
+            <Ionicons name="swap-vertical" size={14} color="#1E1B18" />
             <Text style={styles.sortButtonText}>
               {SORT_OPTIONS.find((s) => s.id === selectedSort)?.label || 'Sort'}
             </Text>
@@ -273,7 +270,7 @@ export const CategoryProductsScreen = ({ route, navigation }) => {
             activeOpacity={0.8}
           >
             <Ionicons
-              name="funnel"
+              name="options-outline"
               size={14}
               color={activeFiltersCount > 0 ? '#FFFFFF' : '#1E1B18'}
             />
@@ -312,62 +309,54 @@ export const CategoryProductsScreen = ({ route, navigation }) => {
         </View>
       )}
 
-      {/* ── 4. ACTIVE FILTER CHIPS (Scrollable) ── */}
+      {/* ── 4. COMPACT ACTIVE FILTER CHIPS (Only if price/search filter active) ── */}
       {activeFiltersCount > 0 && (
-        <ScrollView
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          contentContainerStyle={styles.chipsScroll}
-        >
-          {selectedGender && selectedGender !== 'All' && (
-            <TouchableOpacity
-              style={styles.filterChip}
-              onPress={() => setSelectedGender('All')}
-            >
-              <Text style={styles.filterChipText}>{selectedGender}</Text>
-              <Ionicons name="close" size={13} color="#6B4E37" />
-            </TouchableOpacity>
-          )}
+        <View style={styles.activeChipsContainer}>
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={styles.activeChipsScroll}
+          >
+            {selectedPrice && selectedPrice !== 'all' && (
+              <TouchableOpacity
+                style={styles.compactChip}
+                onPress={() => setSelectedPrice('all')}
+              >
+                <Text style={styles.compactChipText}>
+                  {PRICE_RANGES.find((r) => r.id === selectedPrice)?.label}
+                </Text>
+                <Ionicons name="close" size={12} color="#6B4E37" />
+              </TouchableOpacity>
+            )}
 
-          {selectedCategory && (
-            <TouchableOpacity
-              style={styles.filterChip}
-              onPress={() => setSelectedCategory(null)}
-            >
-              <Text style={styles.filterChipText}>{selectedCategory}</Text>
-              <Ionicons name="close" size={13} color="#6B4E37" />
-            </TouchableOpacity>
-          )}
+            {selectedRating != null && (
+              <TouchableOpacity
+                style={styles.compactChip}
+                onPress={() => setSelectedRating(null)}
+              >
+                <Text style={styles.compactChipText}>{selectedRating}★ & Above</Text>
+                <Ionicons name="close" size={12} color="#6B4E37" />
+              </TouchableOpacity>
+            )}
 
-          {selectedPrice && selectedPrice !== 'all' && (
-            <TouchableOpacity
-              style={styles.filterChip}
-              onPress={() => setSelectedPrice('all')}
-            >
-              <Text style={styles.filterChipText}>
-                {PRICE_RANGES.find((r) => r.id === selectedPrice)?.label}
-              </Text>
-              <Ionicons name="close" size={13} color="#6B4E37" />
-            </TouchableOpacity>
-          )}
+            {Boolean(searchQuery.trim()) && (
+              <TouchableOpacity
+                style={styles.compactChip}
+                onPress={() => setSearchQuery('')}
+              >
+                <Text style={styles.compactChipText}>"{searchQuery}"</Text>
+                <Ionicons name="close" size={12} color="#6B4E37" />
+              </TouchableOpacity>
+            )}
 
-          {Boolean(searchQuery.trim()) && (
-            <TouchableOpacity
-              style={styles.filterChip}
-              onPress={() => setSearchQuery('')}
-            >
-              <Text style={styles.filterChipText}>"{searchQuery}"</Text>
-              <Ionicons name="close" size={13} color="#6B4E37" />
+            <TouchableOpacity onPress={clearAllFilters} style={styles.compactClearAll}>
+              <Text style={styles.compactClearAllText}>Reset Filters</Text>
             </TouchableOpacity>
-          )}
-
-          <TouchableOpacity onPress={clearAllFilters} style={styles.clearAllChip}>
-            <Text style={styles.clearAllText}>Clear All</Text>
-          </TouchableOpacity>
-        </ScrollView>
+          </ScrollView>
+        </View>
       )}
 
-      {/* ── 5. PRODUCT GRID / LIST ── */}
+      {/* ── 5. PRODUCT GRID ── */}
       <ScrollView
         style={styles.scroll}
         contentContainerStyle={[
@@ -398,17 +387,17 @@ export const CategoryProductsScreen = ({ route, navigation }) => {
           </View>
         ) : (
           <View style={styles.emptyContainer}>
-            <Ionicons name="search-outline" size={48} color="#A3998F" />
-            <Text style={styles.emptyTitle}>No matching pieces found</Text>
+            <Ionicons name="sparkles-outline" size={48} color="#A3998F" />
+            <Text style={styles.emptyTitle}>No matching pieces in this collection</Text>
             <Text style={styles.emptySubtitle}>
-              Try adjusting your active filters or exploring other collections.
+              Try selecting "All Pieces" or adjusting your active filter preferences.
             </Text>
             <TouchableOpacity
               style={styles.resetFiltersBtn}
               onPress={clearAllFilters}
               activeOpacity={0.85}
             >
-              <Text style={styles.resetFiltersBtnText}>Reset All Filters</Text>
+              <Text style={styles.resetFiltersBtnText}>Show All Collection Pieces</Text>
             </TouchableOpacity>
           </View>
         )}
@@ -426,8 +415,8 @@ export const CategoryProductsScreen = ({ route, navigation }) => {
             {/* Modal Header */}
             <View style={styles.modalHeader}>
               <View>
-                <Text style={styles.modalTitle}>Refine Catalog</Text>
-                <Text style={styles.modalSubtitle}>Filter by department, category & price</Text>
+                <Text style={styles.modalTitle}>Refine Collection</Text>
+                <Text style={styles.modalSubtitle}>Filter by category, budget & ratings</Text>
               </View>
               <TouchableOpacity
                 onPress={() => setShowFilterModal(false)}
@@ -437,27 +426,8 @@ export const CategoryProductsScreen = ({ route, navigation }) => {
               </TouchableOpacity>
             </View>
 
-            <ScrollView showsVerticalScrollIndicator={false} style={{ maxHeight: 420 }}>
-              {/* Department Selector */}
-              <Text style={styles.modalSectionTitle}>DEPARTMENT</Text>
-              <View style={styles.modalPillsWrap}>
-                {['All', ...activeGenders].map((gender) => {
-                  const isSelected = selectedGender === gender;
-                  return (
-                    <TouchableOpacity
-                      key={gender}
-                      style={[styles.modalPill, isSelected && styles.modalPillActive]}
-                      onPress={() => setSelectedGender(gender)}
-                    >
-                      <Text style={[styles.modalPillText, isSelected && styles.modalPillTextActive]}>
-                        {gender}
-                      </Text>
-                    </TouchableOpacity>
-                  );
-                })}
-              </View>
-
-              {/* Subcategories (if available) */}
+            <ScrollView showsVerticalScrollIndicator={false} style={{ maxHeight: 380 }}>
+              {/* Category Pills */}
               {availableSubcategories.length > 0 && (
                 <>
                   <Text style={styles.modalSectionTitle}>CATEGORY</Text>
@@ -467,7 +437,7 @@ export const CategoryProductsScreen = ({ route, navigation }) => {
                       onPress={() => setSelectedCategory(null)}
                     >
                       <Text style={[styles.modalPillText, !selectedCategory && styles.modalPillTextActive]}>
-                        All Categories
+                        All Pieces
                       </Text>
                     </TouchableOpacity>
 
@@ -490,7 +460,7 @@ export const CategoryProductsScreen = ({ route, navigation }) => {
               )}
 
               {/* Price Range */}
-              <Text style={styles.modalSectionTitle}>PRICE RANGE</Text>
+              <Text style={styles.modalSectionTitle}>BUDGET</Text>
               <View style={styles.modalPillsWrap}>
                 {PRICE_RANGES.map((price) => {
                   const isSelected = selectedPrice === price.id;
@@ -524,7 +494,7 @@ export const CategoryProductsScreen = ({ route, navigation }) => {
                 onPress={() => setShowFilterModal(false)}
                 activeOpacity={0.85}
               >
-                <Text style={styles.modalApplyBtnText}>Apply ({filteredProducts.length})</Text>
+                <Text style={styles.modalApplyBtnText}>Show Results ({filteredProducts.length})</Text>
               </TouchableOpacity>
             </View>
           </View>
@@ -543,27 +513,27 @@ const styles = StyleSheet.create({
     backgroundColor: '#FAF8F5',
     borderBottomWidth: 1,
     borderBottomColor: '#EAE4DC',
-    paddingVertical: 8,
+    paddingVertical: 10,
   },
   subCatScroll: {
     paddingHorizontal: 20,
     gap: 8,
   },
   subCatHeaderPill: {
-    paddingHorizontal: 15,
-    paddingVertical: 7,
-    borderRadius: 18,
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 20,
     backgroundColor: '#FFFFFF',
     borderWidth: 1,
     borderColor: '#EAE4DC',
   },
   subCatHeaderPillActive: {
-    backgroundColor: '#1E1B18',
-    borderColor: '#1E1B18',
+    backgroundColor: '#6B4E37',
+    borderColor: '#6B4E37',
   },
   subCatHeaderPillText: {
     fontFamily: typography.fontSansBold,
-    fontSize: 12,
+    fontSize: 12.5,
     color: '#5C544E',
   },
   subCatHeaderPillTextActive: {
@@ -574,7 +544,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     paddingHorizontal: 20,
-    paddingVertical: 10,
+    paddingVertical: 12,
     borderBottomWidth: 1,
     borderBottomColor: '#EAE4DC',
     backgroundColor: '#FAF8F5',
@@ -583,6 +553,7 @@ const styles = StyleSheet.create({
     fontFamily: typography.fontSansBold,
     fontSize: 13,
     color: '#5C544E',
+    letterSpacing: 0.2,
   },
   controlButtonsRow: {
     flexDirection: 'row',
@@ -592,11 +563,11 @@ const styles = StyleSheet.create({
   sortButton: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 4,
+    gap: 5,
     backgroundColor: '#FFFFFF',
     borderWidth: 1,
     borderColor: '#EAE4DC',
-    paddingHorizontal: 10,
+    paddingHorizontal: 12,
     paddingVertical: 6,
     borderRadius: 16,
     ...shadows.card,
@@ -609,18 +580,18 @@ const styles = StyleSheet.create({
   filterBtn: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 4,
+    gap: 5,
     backgroundColor: '#FFFFFF',
     borderWidth: 1,
     borderColor: '#EAE4DC',
-    paddingHorizontal: 11,
+    paddingHorizontal: 12,
     paddingVertical: 6,
     borderRadius: 16,
     ...shadows.card,
   },
   filterBtnActive: {
-    backgroundColor: '#1E1B18',
-    borderColor: '#1E1B18',
+    backgroundColor: '#6B4E37',
+    borderColor: '#6B4E37',
   },
   filterBtnText: {
     fontFamily: typography.fontSansBold,
@@ -674,33 +645,40 @@ const styles = StyleSheet.create({
     fontFamily: typography.fontSansBold,
     color: '#6B4E37',
   },
-  chipsScroll: {
-    paddingHorizontal: 20,
+  activeChipsContainer: {
     paddingVertical: 8,
-    gap: 8,
+    borderBottomWidth: 1,
+    borderBottomColor: '#EAE4DC',
+    backgroundColor: '#FAF8F5',
   },
-  filterChip: {
+  activeChipsScroll: {
+    paddingHorizontal: 20,
+    gap: 8,
+    alignItems: 'center',
+  },
+  compactChip: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 6,
+    gap: 5,
     backgroundColor: '#FAF5EE',
     borderWidth: 1,
     borderColor: '#D8CEBF',
     paddingHorizontal: 10,
-    paddingVertical: 5,
+    paddingVertical: 4,
     borderRadius: 14,
+    height: 28,
   },
-  filterChipText: {
+  compactChipText: {
     fontFamily: typography.fontSansBold,
     fontSize: 11.5,
     color: '#6B4E37',
   },
-  clearAllChip: {
+  compactClearAll: {
     paddingHorizontal: 8,
-    paddingVertical: 5,
+    paddingVertical: 4,
     justifyContent: 'center',
   },
-  clearAllText: {
+  compactClearAllText: {
     fontFamily: typography.fontSansBold,
     fontSize: 11.5,
     color: '#A3998F',
@@ -728,6 +706,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: '#1E1B18',
     marginTop: 12,
+    textAlign: 'center',
   },
   emptySubtitle: {
     fontFamily: typography.fontSans,
@@ -739,10 +718,10 @@ const styles = StyleSheet.create({
     lineHeight: 18,
   },
   resetFiltersBtn: {
-    backgroundColor: '#1E1B18',
+    backgroundColor: '#6B4E37',
     paddingHorizontal: 20,
-    paddingVertical: 10,
-    borderRadius: 20,
+    paddingVertical: 11,
+    borderRadius: 22,
   },
   resetFiltersBtnText: {
     color: '#FFFFFF',
@@ -813,8 +792,8 @@ const styles = StyleSheet.create({
     borderColor: '#EAE4DC',
   },
   modalPillActive: {
-    backgroundColor: '#1E1B18',
-    borderColor: '#1E1B18',
+    backgroundColor: '#6B4E37',
+    borderColor: '#6B4E37',
   },
   modalPillText: {
     fontFamily: typography.fontSansBold,
@@ -849,7 +828,7 @@ const styles = StyleSheet.create({
   },
   modalApplyBtn: {
     flex: 2,
-    backgroundColor: '#1E1B18',
+    backgroundColor: '#6B4E37',
     paddingVertical: 12,
     borderRadius: 22,
     alignItems: 'center',
