@@ -1,6 +1,7 @@
 import React from 'react';
-import { View, StyleSheet, Platform } from 'react-native';
+import { View, StyleSheet, Platform, TouchableOpacity } from 'react-native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '../components/Icons';
 import { colors, shadows } from '../theme/colors';
 import { useCart } from '../context/CartContext';
@@ -14,75 +15,93 @@ import { ProfileScreen } from '../screens/ProfileScreen';
 
 const Tab = createBottomTabNavigator();
 
-export const BottomTabNavigator = () => {
+const CustomTabBar = ({ state, descriptors, navigation }) => {
   const { cartCount } = useCart();
+  const insets = useSafeAreaInsets();
+
+  const getIconName = (routeName, isFocused) => {
+    switch (routeName) {
+      case 'HomeTab':
+        return isFocused ? 'home' : 'home-outline';
+      case 'ExploreTab':
+        return isFocused ? 'grid' : 'grid-outline';
+      case 'CustomizeTab':
+        return isFocused ? 'color-palette' : 'color-palette-outline';
+      case 'CartTab':
+        return isFocused ? 'bag-handle' : 'bag-handle-outline';
+      case 'ProfileTab':
+        return isFocused ? 'person' : 'person-outline';
+      default:
+        return 'ellipse-outline';
+    }
+  };
 
   return (
-    <Tab.Navigator
-      screenOptions={({ route }) => ({
-        headerShown: false,
-        tabBarShowLabel: false,
-        tabBarStyle: {
-          position: 'absolute',
-          bottom: Platform.OS === 'ios' ? 24 : 14,
-          left: 20,
-          right: 20,
-          backgroundColor: '#1F1A17',
-          borderRadius: 36,
-          height: 64,
-          borderTopWidth: 0,
-          paddingHorizontal: 8,
-          paddingTop: 0,
-          paddingBottom: 0,
-          elevation: 10,
-          ...shadows.bottomBar,
-        },
-        tabBarItemStyle: {
-          height: 64,
-          alignItems: 'center',
-          justifyContent: 'center',
-          padding: 0,
-          margin: 0,
-        },
-        tabBarIconStyle: {
-          width: '100%',
-          height: '100%',
-          alignItems: 'center',
-          justifyContent: 'center',
-        },
-        tabBarIcon: ({ focused }) => {
-          let iconName;
+    <View
+      style={[
+        styles.tabBarContainer,
+        { bottom: Platform.OS === 'ios' ? Math.max(insets.bottom, 16) : 16 },
+      ]}
+      pointerEvents="box-none"
+    >
+      <View style={styles.tabBarDock}>
+        {state.routes.map((route, index) => {
+          const { options } = descriptors[route.key];
+          const isFocused = state.index === index;
 
-          if (route.name === 'HomeTab') {
-            iconName = focused ? 'home' : 'home-outline';
-          } else if (route.name === 'ExploreTab') {
-            iconName = focused ? 'grid' : 'grid-outline';
-          } else if (route.name === 'CustomizeTab') {
-            iconName = focused ? 'color-palette' : 'color-palette-outline';
-          } else if (route.name === 'CartTab') {
-            iconName = focused ? 'bag-handle' : 'bag-handle-outline';
-          } else if (route.name === 'ProfileTab') {
-            iconName = focused ? 'person' : 'person-outline';
-          }
+          const onPress = () => {
+            const event = navigation.emit({
+              type: 'tabPress',
+              target: route.key,
+              canPreventDefault: true,
+            });
 
-          if (focused) {
-            return (
-              <View style={styles.activePill}>
-                <Ionicons name={iconName} size={21} color="#1F1A17" />
-              </View>
-            );
-          }
+            if (!isFocused && !event.defaultPrevented) {
+              navigation.navigate(route.name);
+            }
+          };
+
+          const iconName = getIconName(route.name, isFocused);
+          const TAB_ICON_SIZE = 22;
 
           return (
-            <View style={styles.inactivePill}>
-              <Ionicons name={iconName} size={22} color="#8A7D75" />
-              {route.name === 'CartTab' && cartCount > 0 && (
-                <View style={styles.tabBadge} />
+            <TouchableOpacity
+              key={route.key}
+              accessibilityRole="button"
+              accessibilityState={isFocused ? { selected: true } : {}}
+              accessibilityLabel={options.tabBarAccessibilityLabel}
+              testID={options.tabBarTestID}
+              onPress={onPress}
+              style={styles.tabButton}
+              activeOpacity={0.85}
+            >
+              {isFocused ? (
+                <View style={styles.activeCircle}>
+                  <Ionicons name={iconName} size={TAB_ICON_SIZE} color="#6B4E37" />
+                </View>
+              ) : (
+                <View style={styles.inactiveIconWrap}>
+                  <Ionicons name={iconName} size={TAB_ICON_SIZE} color="#9E948C" />
+                  {route.name === 'CartTab' && cartCount > 0 && (
+                    <View style={styles.cartDotBadge} />
+                  )}
+                </View>
               )}
-            </View>
+            </TouchableOpacity>
           );
-        },
-      })}
+        })}
+      </View>
+    </View>
+  );
+};
+
+export const BottomTabNavigator = () => {
+  return (
+    <Tab.Navigator
+      tabBar={(props) => <CustomTabBar {...props} />}
+      screenOptions={{
+        headerShown: false,
+      }}
     >
       <Tab.Screen name="HomeTab" component={HomeScreen} />
       <Tab.Screen name="ExploreTab" component={ExploreScreen} />
@@ -94,30 +113,59 @@ export const BottomTabNavigator = () => {
 };
 
 const styles = StyleSheet.create({
-  activePill: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
+  tabBarContainer: {
+    position: 'absolute',
+    left: 20,
+    right: 20,
+    alignItems: 'center',
+    justifyContent: 'center',
+    zIndex: 999,
+  },
+  tabBarDock: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    backgroundColor: '#1E1B18',
+    height: 64,
+    borderRadius: 32,
+    paddingHorizontal: 8,
+    width: '100%',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.25,
+    shadowRadius: 10,
+    elevation: 12,
+  },
+  tabButton: {
+    flex: 1,
+    height: 64,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  activeCircle: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
     backgroundColor: '#FFFFFF',
     alignItems: 'center',
     justifyContent: 'center',
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.15,
+    shadowOpacity: 0.18,
     shadowRadius: 4,
     elevation: 4,
   },
-  inactivePill: {
-    width: 44,
-    height: 44,
+  inactiveIconWrap: {
+    width: 48,
+    height: 48,
     alignItems: 'center',
     justifyContent: 'center',
     position: 'relative',
   },
-  tabBadge: {
+  cartDotBadge: {
     position: 'absolute',
-    top: 8,
-    right: 8,
+    top: 10,
+    right: 10,
     width: 7,
     height: 7,
     borderRadius: 3.5,

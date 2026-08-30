@@ -65,7 +65,7 @@ export const CheckoutScreen = ({ navigation }) => {
       };
 
       const res = await OrderService.createOrder(orderPayload);
-      const generatedOrderId = res.orderId || res.id || `HT-${Math.floor(100000 + Math.random() * 900000)}`;
+      const generatedOrderId = res.orderId || res.id;
 
       clearCart();
 
@@ -77,15 +77,7 @@ export const CheckoutScreen = ({ navigation }) => {
       });
     } catch (e) {
       console.error('Failed to create order:', e);
-      // Even if mock server / offline, allow successful experience
-      const fallbackOrderId = `HT-${Math.floor(100000 + Math.random() * 900000)}`;
-      clearCart();
-      navigation.replace('OrderSuccess', {
-        orderId: fallbackOrderId,
-        customerName: name,
-        totalAmount: finalTotal,
-        shippingAddress: `${address}, ${city}, ${pincode}`,
-      });
+      Alert.alert('Order Placement Failed', e.response?.data?.message || 'Unable to complete order. Please check your connection and try again.');
     } finally {
       setSubmitting(false);
     }

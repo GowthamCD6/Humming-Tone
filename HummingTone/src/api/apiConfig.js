@@ -1,17 +1,23 @@
-import { Platform } from 'react-native';
+// ================================================================
+// SINGLE CONFIGURATION POINT FOR LOCAL BACKEND IP
+// Change your PC / Wi-Fi IPv4 address here ONCE, and it applies everywhere:
+// ================================================================
+export const DEV_DEVICE_IP = '10.10.71.100'; // <- CHANGE ONLY HERE (or 'localhost' if using adb reverse)
+export const DEV_PORT = 5000;
+export const PROD_API_BASE_URL = 'https://api.hummingtone.com';
 
-// When running with `adb reverse tcp:5000 tcp:5000`, 'localhost:5000' works on physical Android devices, emulators, and iOS
-const DEV_HOST = 'localhost'; 
-
+// Automatically construct base API URL from DEV_DEVICE_IP and DEV_PORT
 export const getApiBaseUrl = () => {
   if (__DEV__) {
-    return `http://${DEV_HOST}:5000`;
+    const host = DEV_DEVICE_IP || 'localhost';
+    return `http://${host}:${DEV_PORT}`;
   }
-  return 'https://api.hummingtone.com';
+  return PROD_API_BASE_URL;
 };
 
 export const API_BASE_URL = getApiBaseUrl();
 
+// Automatically resolve full image URL using the dynamic API base URL
 export const getImageUrl = (imagePath) => {
   if (!imagePath) {
     return 'https://images.unsplash.com/photo-1521572267360-ee0c2909d518?auto=format&fit=crop&w=800&q=80';
@@ -39,6 +45,8 @@ export const getImageUrl = (imagePath) => {
 };
 
 export default {
+  DEV_DEVICE_IP,
+  DEV_PORT,
   API_BASE_URL,
   getImageUrl,
   getApiBaseUrl,

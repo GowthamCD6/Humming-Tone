@@ -39,32 +39,17 @@ export const OrderTrackingScreen = ({ route }) => {
 
     try {
       setLoading(true);
+      setError('');
       const data = await OrderService.trackOrder(q);
       if (data && (data.order || data.id || data.order_id)) {
         setOrderData(data.order || data);
       } else {
-        // Fallback demo tracking data if testing locally
-        setOrderData({
-          order_id: q,
-          status: 'confirmed',
-          customer_name: 'Valued Patron',
-          items: [{ name: 'Bespoke Italian Poplin Shirt', size: 'M', quantity: 1, price: 2499 }],
-          total_amount: 2499,
-          shipping_address: 'Park Avenue Highline, Suite 402, Mumbai - 400001',
-          created_at: new Date().toISOString(),
-        });
+        setOrderData(null);
+        setError('No order found with this ID or phone number.');
       }
     } catch (e) {
-      // Mock fallback data so UI is always fully interactive
-      setOrderData({
-        order_id: q,
-        status: 'confirmed',
-        customer_name: 'Valued Patron',
-        items: [{ name: 'Atelier Premium Shirt', size: 'M', quantity: 1, price: 2499 }],
-        total_amount: 2499,
-        shipping_address: 'Park Avenue Highline, Suite 402, Mumbai - 400001',
-        created_at: new Date().toISOString(),
-      });
+      setOrderData(null);
+      setError(e.response?.data?.message || 'Unable to find order details. Please check your Order ID.');
     } finally {
       setLoading(false);
     }
