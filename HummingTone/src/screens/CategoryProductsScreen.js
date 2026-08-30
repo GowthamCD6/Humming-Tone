@@ -12,8 +12,8 @@ import {
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '../components/Icons';
-import { colors, shadows } from '../theme/colors';
-import { typography, spacing } from '../theme/typography';
+import { shadows } from '../theme/colors';
+import { typography } from '../theme/typography';
 import { Header } from '../components/Header';
 import { ProductCard } from '../components/ProductCard';
 import { SkeletonGrid } from '../components/SkeletonLoader';
@@ -194,7 +194,60 @@ export const CategoryProductsScreen = ({ route, navigation }) => {
       <StatusBar barStyle="dark-content" backgroundColor="#FAF8F5" />
       <Header title={title} showBack={true} />
 
-      {/* ── 1. CONTROL & SORT BAR ── */}
+      {/* ── 1. SUBCATEGORIES SELECTOR BAR (For the Respective Gender Page) ── */}
+      {availableSubcategories.length > 0 && (
+        <View style={styles.subCatBarWrap}>
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={styles.subCatScroll}
+          >
+            <TouchableOpacity
+              style={[
+                styles.subCatHeaderPill,
+                !selectedCategory && styles.subCatHeaderPillActive,
+              ]}
+              onPress={() => setSelectedCategory(null)}
+              activeOpacity={0.8}
+            >
+              <Text
+                style={[
+                  styles.subCatHeaderPillText,
+                  !selectedCategory && styles.subCatHeaderPillTextActive,
+                ]}
+              >
+                All Pieces
+              </Text>
+            </TouchableOpacity>
+
+            {availableSubcategories.map((cat) => {
+              const isSelected = selectedCategory === cat;
+              return (
+                <TouchableOpacity
+                  key={cat}
+                  style={[
+                    styles.subCatHeaderPill,
+                    isSelected && styles.subCatHeaderPillActive,
+                  ]}
+                  onPress={() => setSelectedCategory(isSelected ? null : cat)}
+                  activeOpacity={0.8}
+                >
+                  <Text
+                    style={[
+                      styles.subCatHeaderPillText,
+                      isSelected && styles.subCatHeaderPillTextActive,
+                    ]}
+                  >
+                    {cat}
+                  </Text>
+                </TouchableOpacity>
+              );
+            })}
+          </ScrollView>
+        </View>
+      )}
+
+      {/* ── 2. CONTROL & SORT BAR ── */}
       <View style={styles.controlBar}>
         <Text style={styles.countText}>
           {loading ? 'Discovering pieces...' : `${filteredProducts.length} ${filteredProducts.length === 1 ? 'Piece' : 'Pieces'} Found`}
@@ -236,7 +289,7 @@ export const CategoryProductsScreen = ({ route, navigation }) => {
         </View>
       </View>
 
-      {/* ── 2. SORT DROPDOWN OVERLAY ── */}
+      {/* ── 3. SORT DROPDOWN OVERLAY ── */}
       {showSortDropdown && (
         <View style={styles.sortDropdown}>
           {SORT_OPTIONS.map((opt) => (
@@ -259,7 +312,7 @@ export const CategoryProductsScreen = ({ route, navigation }) => {
         </View>
       )}
 
-      {/* ── 3. ACTIVE FILTER CHIPS (Scrollable) ── */}
+      {/* ── 4. ACTIVE FILTER CHIPS (Scrollable) ── */}
       {activeFiltersCount > 0 && (
         <ScrollView
           horizontal
@@ -314,12 +367,12 @@ export const CategoryProductsScreen = ({ route, navigation }) => {
         </ScrollView>
       )}
 
-      {/* ── 4. PRODUCT GRID / LIST ── */}
+      {/* ── 5. PRODUCT GRID / LIST ── */}
       <ScrollView
         style={styles.scroll}
         contentContainerStyle={[
           styles.scrollContent,
-          { paddingBottom: Math.max(insets.bottom + 40, 60) },
+          { paddingBottom: Math.max((insets.bottom || 0) + 30, 45) },
         ]}
         showsVerticalScrollIndicator={false}
         refreshControl={
@@ -361,7 +414,7 @@ export const CategoryProductsScreen = ({ route, navigation }) => {
         )}
       </ScrollView>
 
-      {/* ── 5. BOTTOM SHEET FILTER MODAL ── */}
+      {/* ── 6. BOTTOM SHEET FILTER MODAL ── */}
       <Modal
         visible={showFilterModal}
         transparent={true}
@@ -485,6 +538,36 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#FAF8F5',
+  },
+  subCatBarWrap: {
+    backgroundColor: '#FAF8F5',
+    borderBottomWidth: 1,
+    borderBottomColor: '#EAE4DC',
+    paddingVertical: 8,
+  },
+  subCatScroll: {
+    paddingHorizontal: 20,
+    gap: 8,
+  },
+  subCatHeaderPill: {
+    paddingHorizontal: 15,
+    paddingVertical: 7,
+    borderRadius: 18,
+    backgroundColor: '#FFFFFF',
+    borderWidth: 1,
+    borderColor: '#EAE4DC',
+  },
+  subCatHeaderPillActive: {
+    backgroundColor: '#1E1B18',
+    borderColor: '#1E1B18',
+  },
+  subCatHeaderPillText: {
+    fontFamily: typography.fontSansBold,
+    fontSize: 12,
+    color: '#5C544E',
+  },
+  subCatHeaderPillTextActive: {
+    color: '#FFFFFF',
   },
   controlBar: {
     flexDirection: 'row',

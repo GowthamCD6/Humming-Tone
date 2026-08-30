@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Image, Platform } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Image, Platform, StatusBar } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from './Icons';
 import { useNavigation } from '@react-navigation/native';
@@ -14,8 +14,14 @@ export const Header = ({ title, showBack = false, rightElement = null }) => {
   const { cartCount } = useCart();
   const { wishlistCount } = useWishlist();
 
+  const topPadding = Math.max(
+    (insets.top || 0) + 8,
+    (StatusBar.currentHeight || 0) + 8,
+    Platform.OS === 'android' ? 28 : 44
+  );
+
   return (
-    <View style={[styles.container, { paddingTop: Math.max(insets.top, 12) }]}>
+    <View style={[styles.container, { paddingTop: topPadding }]}>
       <View style={styles.content}>
         {/* Left Action / Logo */}
         <View style={styles.left}>
