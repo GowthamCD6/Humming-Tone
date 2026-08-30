@@ -215,19 +215,21 @@ exports.create_order = (req, res, next) => {
                   if (user_id || customer_email) {
                     db.promise().query(
                       `UPDATE users 
-                       SET phone = COALESCE(?, phone), 
-                           address = COALESCE(?, address), 
+                       SET name = COALESCE(NULLIF(?, ''), name),
+                           phone = COALESCE(NULLIF(?, ''), phone), 
+                           address = COALESCE(NULLIF(?, ''), address), 
                            city = COALESCE(?, city), 
                            state = COALESCE(?, state), 
                            pincode = COALESCE(?, pincode) 
-                       WHERE id = ? OR email = ?`,
+                       WHERE id = ? OR LOWER(email) = LOWER(?)`,
                       [
-                        customer_phone || null,
-                        customer_address || null,
-                        city || null,
-                        state || null,
-                        pincode || null,
-                        user_id ? Number(user_id) : -1,
+                        customer_name || "",
+                        customer_phone || "",
+                        customer_address || "",
+                        city || "",
+                        state || "",
+                        pincode || "",
+                        user_id && !isNaN(user_id) ? Number(user_id) : -1,
                         customer_email || ""
                       ]
                     ).catch(e => console.warn("Auto-save user address error:", e.message));
@@ -411,6 +413,30 @@ exports.verify_payment = async (req, res, next) => {
         order.payment_id = razorpay_payment_id;
 
         try {
+          // Auto-save user's latest shipping details to users table on verified payment
+          if (order.customer_email || order.user_id) {
+            db.promise().query(
+              `UPDATE users 
+               SET name = COALESCE(NULLIF(?, ''), name),
+                   phone = COALESCE(NULLIF(?, ''), phone),
+                   address = COALESCE(NULLIF(?, ''), address),
+                   city = COALESCE(NULLIF(?, ''), city),
+                   state = COALESCE(NULLIF(?, ''), state),
+                   pincode = COALESCE(NULLIF(?, ''), pincode)
+               WHERE id = ? OR LOWER(email) = LOWER(?)`,
+              [
+                order.customer_name || "",
+                order.customer_phone || "",
+                order.customer_address || "",
+                order.city || "",
+                order.state || "",
+                order.pincode || "",
+                order.user_id && !isNaN(order.user_id) ? Number(order.user_id) : -1,
+                order.customer_email || ""
+              ]
+            ).catch(e => console.warn("Save address on verify error:", e.message));
+          }
+
           sendOrderConfirmationWhatsApp(order).catch(e => console.error("Verify WA error:", e));
           sendOrderNotification({
             orderNumber: order.order_number,
