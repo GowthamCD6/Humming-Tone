@@ -27,6 +27,7 @@ const adminReturnRoute = require("./routes/admin/return");
 const adminReviewRoute = require("./routes/admin/review");
 const userReviewRoute = require("./routes/user/review");
 const googleAuthRoute = require("./routes/auth/googleAuth");
+const notificationRoute = require("./routes/user/notification");
 const app = express();
 const PORT = process.env.PORT || 5000;
 const path = require('path');
@@ -124,6 +125,7 @@ app.use("/", customizeRoutes);
 app.use("/", userCheckoutRoutes);
 app.use("/", userReviewRoute);
 app.use("/", googleAuthRoute);
+app.use("/", notificationRoute);
 
 // Public Site Assets Endpoint (Cloudinary asset catalog from TiDB)
 app.get("/api/assets", (req, res) => {

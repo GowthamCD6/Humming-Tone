@@ -18,6 +18,7 @@ import { Ionicons } from '../components/Icons';
 import { shadows } from '../theme/colors';
 import { typography } from '../theme/typography';
 import { useSiteContent } from '../context/SiteContentContext';
+import { useNotifications } from '../context/NotificationContext';
 
 const { width } = Dimensions.get('window');
 
@@ -120,6 +121,7 @@ const RATING_FILTER_OPTIONS = [
 export const ExploreScreen = ({ navigation }) => {
   const insets = useSafeAreaInsets();
   const { activeGenders, refreshSiteContent } = useSiteContent();
+  const { unreadCount } = useNotifications();
 
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedGender, setSelectedGender] = useState('All');
@@ -194,6 +196,21 @@ export const ExploreScreen = ({ navigation }) => {
           <Text style={styles.headerTitle}>Categories & Filter</Text>
           <Text style={styles.headerSubtitle}>Curated Apparel & Custom Atelier</Text>
         </View>
+
+        <TouchableOpacity
+          style={styles.notifCircleBtn}
+          onPress={() => navigation.navigate('Notifications')}
+          activeOpacity={0.8}
+        >
+          <Ionicons name="notifications-outline" size={19} color="#1E1B18" />
+          {unreadCount > 0 && (
+            <View style={styles.topNotifBadge}>
+              {unreadCount > 1 ? (
+                <Text style={styles.topNotifBadgeText}>{unreadCount > 9 ? '9+' : unreadCount}</Text>
+              ) : null}
+            </View>
+          )}
+        </TouchableOpacity>
       </View>
 
       {/* ── 2. SEARCH INPUT BAR ── */}
@@ -450,9 +467,44 @@ const styles = StyleSheet.create({
     backgroundColor: '#FAF8F5',
   },
   topBar: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
     paddingHorizontal: 20,
     paddingBottom: 10,
     backgroundColor: '#FAF8F5',
+  },
+  notifCircleBtn: {
+    width: 38,
+    height: 38,
+    borderRadius: 19,
+    backgroundColor: '#FFFFFF',
+    borderWidth: 1,
+    borderColor: '#ECE4DC',
+    alignItems: 'center',
+    justifyContent: 'center',
+    position: 'relative',
+    ...shadows.subtle,
+  },
+  topNotifBadge: {
+    position: 'absolute',
+    top: 4,
+    right: 4,
+    minWidth: 14,
+    height: 14,
+    borderRadius: 7,
+    backgroundColor: '#C53030',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: 2,
+    borderWidth: 1.2,
+    borderColor: '#FFFFFF',
+  },
+  topNotifBadgeText: {
+    fontFamily: typography.fontSansBold,
+    fontSize: 8.5,
+    color: '#FFFFFF',
+    lineHeight: 10,
   },
   headerTitle: {
     fontFamily: typography.fontSansBold,

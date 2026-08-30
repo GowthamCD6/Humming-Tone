@@ -3,6 +3,7 @@ const createError = require("http-errors");
 const crypto = require("crypto");
 const razorpayInstance = require("../../utils/rajorpay.js");
 const { sendOrderConfirmationWhatsApp } = require("../../utils/whatsapp.js");
+const { sendOrderNotification } = require("./notification.js");
 
 exports.create_order = (req, res, next) => {
   db.getConnection((err, connection) => {
@@ -210,6 +211,14 @@ exports.create_order = (req, res, next) => {
                     });
                   }
 
+                  // Trigger order confirmation notification
+                  sendOrderNotification({
+                    orderNumber: order_number,
+                    status: 'confirmed',
+                    amount: total_amount,
+                    customerName: customer_name,
+                  }).catch(e => console.warn('Order notif error:', e.message));
+
                   connection.release();
                   res.status(201).json({
                     success: true,
@@ -381,6 +390,12 @@ exports.verify_payment = async (req, res, next) => {
 
         try {
           sendOrderConfirmationWhatsApp(order).catch(e => console.error("Verify WA error:", e));
+          sendOrderNotification({
+            orderNumber: order.order_number,
+            status: 'confirmed',
+            amount: order.total_amount,
+            customerName: order.customer_name,
+          }).catch(e => console.warn("Order notif error:", e.message));
         } catch (e) {
           console.error("WA error:", e);
         }

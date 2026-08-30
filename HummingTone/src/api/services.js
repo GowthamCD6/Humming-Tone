@@ -282,4 +282,36 @@ export const PromoService = {
   },
 };
 
+export const NotificationService = {
+  fetchNotifications: async () => {
+    try {
+      const response = await apiClient.get('/user/notifications');
+      const data = response.data;
+      if (data && data.notifications) {
+        return {
+          notifications: data.notifications.map((n) => ({
+            ...n,
+            image_url: getImageUrl(n.image_url),
+          })),
+          unreadCount: data.unread_count || 0,
+        };
+      }
+      return { notifications: [], unreadCount: 0 };
+    } catch (error) {
+      console.warn('Error fetching notifications:', error.message);
+      return { notifications: [], unreadCount: 0 };
+    }
+  },
+
+  markAsRead: async (id = null) => {
+    try {
+      const response = await apiClient.post('/user/notifications/mark_read', { id });
+      return response.data;
+    } catch (error) {
+      console.warn('Error marking notifications as read:', error.message);
+      return { success: false };
+    }
+  },
+};
+
 

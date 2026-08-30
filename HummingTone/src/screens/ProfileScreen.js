@@ -18,12 +18,15 @@ import { typography, spacing } from '../theme/typography';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useAuth } from '../context/AuthContext';
 import { useWishlist } from '../context/WishlistContext';
+import { useCart } from '../context/CartContext';
+import { useNotifications } from '../context/NotificationContext';
 import { performGoogleSignIn } from '../services/googleAuth';
 
 export const ProfileScreen = ({ navigation }) => {
   const insets = useSafeAreaInsets();
   const { user, isAuthenticated, login, logout, updateProfile } = useAuth();
   const { wishlistCount } = useWishlist();
+  const { unreadCount } = useNotifications();
   const [googleLoading, setGoogleLoading] = useState(false);
   const [editModalVisible, setEditModalVisible] = useState(false);
   const [editForm, setEditForm] = useState({
@@ -42,17 +45,27 @@ export const ProfileScreen = ({ navigation }) => {
         Alert.alert('Sign In Failed', res.message);
       }
     } catch (e) {
-      Alert.alert('Authentication Error', 'Unable to sign in with Google. Please try again.');
+      Alert.alert('Sign In Error', 'Unable to complete Google sign in.');
     } finally {
       setGoogleLoading(false);
     }
   };
 
   const handleLogout = () => {
-    Alert.alert('Sign Out', 'Are you sure you want to sign out from your Humming Tone account?', [
-      { text: 'Cancel', style: 'cancel' },
-      { text: 'Sign Out', style: 'destructive', onPress: logout },
-    ]);
+    Alert.alert(
+      'Sign Out',
+      'Are you sure you want to sign out from your account?',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Sign Out',
+          style: 'destructive',
+          onPress: async () => {
+            await logout();
+          },
+        },
+      ]
+    );
   };
 
   const handleSaveProfile = async () => {
@@ -104,6 +117,21 @@ export const ProfileScreen = ({ navigation }) => {
         </View>
 
         <View style={styles.topBarRight}>
+          <TouchableOpacity
+            style={styles.notifCircleBtn}
+            onPress={() => navigation.navigate('Notifications')}
+            activeOpacity={0.8}
+          >
+            <Ionicons name="notifications-outline" size={19} color="#1E1B18" />
+            {unreadCount > 0 && (
+              <View style={styles.topNotifBadge}>
+                {unreadCount > 1 ? (
+                  <Text style={styles.topNotifBadgeText}>{unreadCount > 9 ? '9+' : unreadCount}</Text>
+                ) : null}
+              </View>
+            )}
+          </TouchableOpacity>
+
           <View style={styles.statusPill}>
             <View style={[styles.statusDot, { backgroundColor: isAuthenticated ? '#38A169' : '#A3998F' }]} />
             <Text style={styles.statusPillText}>{isAuthenticated ? 'MEMBER' : 'GUEST'}</Text>
@@ -295,16 +323,23 @@ export const ProfileScreen = ({ navigation }) => {
 
             <TouchableOpacity
               style={styles.menuRow}
-              onPress={() => navigation.navigate('MainTabs', { screen: 'CustomizeTab' })}
+              onPress={() => navigation.navigate('Notifications')}
               activeOpacity={0.7}
             >
               <View style={styles.menuIconBg}>
-                <Ionicons name="color-palette-outline" size={19} color="#6B4E37" />
+                <Ionicons name="notifications-outline" size={19} color="#6B4E37" />
               </View>
               <View style={styles.menuTextWrap}>
-                <Text style={styles.menuRowTitle}>Custom Print Studio</Text>
-                <Text style={styles.menuRowSub}>Design custom oversized hoodies & tees</Text>
+                <Text style={styles.menuRowTitle}>Drop Alerts & Notifications</Text>
+                <Text style={styles.menuRowSub}>
+                  {unreadCount > 0 ? `${unreadCount} unread atelier notifications` : 'All drop updates & order alerts'}
+                </Text>
               </View>
+              {unreadCount > 0 && (
+                <View style={[styles.countPill, { backgroundColor: '#C53030' }]}>
+                  <Text style={[styles.countPillText, { color: '#FFFFFF' }]}>{unreadCount}</Text>
+                </View>
+              )}
               <Ionicons name="chevron-forward" size={16} color="#A3998F" />
             </TouchableOpacity>
           </View>
@@ -471,6 +506,39 @@ const styles = StyleSheet.create({
   topBarRight: {
     flexDirection: 'row',
     alignItems: 'center',
+    gap: 8,
+  },
+  notifCircleBtn: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: '#FFFFFF',
+    borderWidth: 1,
+    borderColor: '#ECE4DC',
+    alignItems: 'center',
+    justifyContent: 'center',
+    position: 'relative',
+    ...shadows.subtle,
+  },
+  topNotifBadge: {
+    position: 'absolute',
+    top: 4,
+    right: 4,
+    minWidth: 14,
+    height: 14,
+    borderRadius: 7,
+    backgroundColor: '#C53030',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: 2,
+    borderWidth: 1.2,
+    borderColor: '#FFFFFF',
+  },
+  topNotifBadgeText: {
+    fontFamily: typography.fontSansBold,
+    fontSize: 8.5,
+    color: '#FFFFFF',
+    lineHeight: 10,
   },
   statusPill: {
     flexDirection: 'row',

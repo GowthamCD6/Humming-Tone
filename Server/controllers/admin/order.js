@@ -1,6 +1,7 @@
 const db = require("../../config/db");
 const createError = require("http-errors");
 const { sendOrderStatusUpdateWhatsApp } = require("../../utils/whatsapp");
+const { sendOrderNotification } = require("../user/notification");
 
 exports.getManageOrders = async (req, res) => {
     try {
@@ -150,6 +151,14 @@ exports.updateOrderStatus = async (req, res, next) => {
                     shipping_date: shipping_date !== undefined ? shipping_date : orderRows[0].shipping_date,
                     delivery_date: delivery_date !== undefined ? delivery_date : orderRows[0].delivery_date
                 });
+            }
+            if (orderRows.length > 0) {
+                sendOrderNotification({
+                    orderNumber: orderRows[0].order_number || orderRows[0].id,
+                    status: status,
+                    amount: orderRows[0].total_amount,
+                    customerName: orderRows[0].customer_name,
+                }).catch(e => console.warn("Admin order notif error:", e.message));
             }
         } catch (waErr) {
             console.error("WhatsApp status notification error:", waErr.message);

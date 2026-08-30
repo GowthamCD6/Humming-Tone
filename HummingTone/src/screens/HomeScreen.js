@@ -21,6 +21,7 @@ import { GarmentIcon } from '../components/GarmentIcons';
 import { ProductService } from '../api/services';
 import { useSiteContent } from '../context/SiteContentContext';
 import { useAuth } from '../context/AuthContext';
+import { useNotifications } from '../context/NotificationContext';
 import { SITE_ASSETS } from '../api/siteAssets';
 
 const { width } = Dimensions.get('window');
@@ -79,6 +80,7 @@ export const HomeScreen = ({ navigation }) => {
   const insets = useSafeAreaInsets();
   const { activeGenders, refreshSiteContent } = useSiteContent();
   const { user, isAuthenticated } = useAuth();
+  const { unreadCount } = useNotifications();
 
   const [featuredProducts, setFeaturedProducts] = useState([]);
   const [newArrivals, setNewArrivals] = useState([]);
@@ -176,11 +178,17 @@ export const HomeScreen = ({ navigation }) => {
 
         <TouchableOpacity
           style={styles.notificationBtn}
-          onPress={() => navigation.navigate('Wishlist')}
+          onPress={() => navigation.navigate('Notifications')}
           activeOpacity={0.8}
         >
           <Ionicons name="notifications-outline" size={22} color={colors.textPrimary} />
-          <View style={styles.notifBadge} />
+          {unreadCount > 0 && (
+            <View style={styles.notifBadge}>
+              {unreadCount > 1 ? (
+                <Text style={styles.notifBadgeText}>{unreadCount > 9 ? '9+' : unreadCount}</Text>
+              ) : null}
+            </View>
+          )}
         </TouchableOpacity>
       </View>
 
@@ -442,12 +450,23 @@ const styles = StyleSheet.create({
   },
   notifBadge: {
     position: 'absolute',
-    top: 11,
-    right: 11,
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-    backgroundColor: colors.primary,
+    top: 6,
+    right: 6,
+    minWidth: 16,
+    height: 16,
+    borderRadius: 8,
+    backgroundColor: '#C53030',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: 3,
+    borderWidth: 1.5,
+    borderColor: '#FFFFFF',
+  },
+  notifBadgeText: {
+    fontFamily: typography.fontSansBold,
+    fontSize: 9,
+    color: '#FFFFFF',
+    lineHeight: 11,
   },
 
   // 2. Search Row

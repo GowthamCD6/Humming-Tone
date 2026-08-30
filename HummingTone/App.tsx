@@ -5,6 +5,7 @@ import { AuthProvider } from './src/context/AuthContext';
 import { SiteContentProvider } from './src/context/SiteContentContext';
 import { CartProvider } from './src/context/CartContext';
 import { WishlistProvider } from './src/context/WishlistContext';
+import { NotificationProvider } from './src/context/NotificationContext';
 import { AppNavigator } from './src/navigation/AppNavigator';
 import { colors } from './src/theme/colors';
 
@@ -17,7 +18,9 @@ export default function App(): React.JSX.Element {
           <SiteContentProvider>
             <WishlistProvider>
               <CartProvider>
-                <AppNavigator />
+                <NotificationProvider>
+                  <AppNavigator />
+                </NotificationProvider>
               </CartProvider>
             </WishlistProvider>
           </SiteContentProvider>

@@ -134,6 +134,19 @@ exports.add_product = async (req, res, next) => {
                             connection.commit(err => {
                                 if (err) return rollback(err);
 
+                                // Auto-trigger notification for new arrival or featured drop
+                                const notifTitle = is_featured == '1' ? `✨ Featured Drop: ${name}` : `🔥 New Arrival: ${name}`;
+                                const notifMsg = is_featured == '1'
+                                    ? `A new signature piece has been featured in the Humming Tone collection.`
+                                    : `Explore the newest ${subcategory || 'Atelier'} addition now in limited stock.`;
+                                db.query(
+                                    "INSERT INTO notifications (title, message, type, product_id, image_url, is_read) VALUES (?, ?, ?, ?, ?, 0)",
+                                    [notifTitle, notifMsg, is_featured == '1' ? 'featured_drop' : 'new_arrival', product_id, primary_image],
+                                    (notifErr) => {
+                                        if (notifErr) console.warn("Failed to auto-insert notification:", notifErr.message);
+                                    }
+                                );
+
                                 connection.release();
                                 res.status(201).json({
                                     success: true,

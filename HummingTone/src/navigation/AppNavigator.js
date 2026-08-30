@@ -13,6 +13,7 @@ import { WishlistScreen } from '../screens/WishlistScreen';
 import { LoginScreen } from '../screens/LoginScreen';
 import { SupportScreen } from '../screens/SupportScreen';
 import { ReturnRequestScreen } from '../screens/ReturnRequestScreen';
+import { NotificationScreen } from '../screens/NotificationScreen';
 
 const Stack = createNativeStackNavigator();
 
@@ -29,6 +30,7 @@ export const AppNavigator = () => {
         <Stack.Screen name="CategoryProducts" component={CategoryProductsScreen} />
         <Stack.Screen name="ProductDetails" component={ProductDetailsScreen} />
         <Stack.Screen name="Wishlist" component={WishlistScreen} />
+        <Stack.Screen name="Notifications" component={NotificationScreen} />
         <Stack.Screen name="Login" component={LoginScreen} />
         <Stack.Screen name="Support" component={SupportScreen} />
         <Stack.Screen name="ReturnRequest" component={ReturnRequestScreen} />

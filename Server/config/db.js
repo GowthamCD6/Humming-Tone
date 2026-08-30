@@ -1,7 +1,7 @@
-require("dotenv").config();
+const path = require("path");
+require("dotenv").config({ path: path.join(__dirname, "../.env") });
 const mysql = require("mysql2");
 const fs = require("fs");
-const path = require("path");
 
 // Load TiDB SSL certificate (isrgrootx1.pem) if available or if DB_SSL is enabled / remote host is used
 const sslCertPath = process.env.DB_SSL_CA || path.join(__dirname, "../isrgrootx1.pem");
