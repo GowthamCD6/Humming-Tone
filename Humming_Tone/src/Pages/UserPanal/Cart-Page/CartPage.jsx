@@ -1,9 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import './CartPage.css';
 import UserFooter from '../../../components/User-Footer-Card/UserFooter';
 import LocalShippingIcon from '@mui/icons-material/LocalShipping';
-import { useLocation } from "react-router-dom";
 import { fetchSiteContent, getSiteContent } from '../../../utils/siteContentStore';
 
 const PremiumCart = ({ onCheckout }) => {

@@ -68,11 +68,40 @@ exports.googleUserAuth = async (req, res, next) => {
       };
     }
 
-    // 4. Generate customer user token WITHOUT expiration (so customer login never expires)
+    // 4. Retrieve saved address fields or fallback to latest order
+    let userPhone = user.phone || "";
+    let userAddress = user.address || "";
+    let userCity = user.city || "";
+    let userState = user.state || "";
+    let userPincode = user.pincode || "";
+
+    if (!userAddress || !userPhone) {
+      try {
+        const [pastOrders] = await db.promise().query(
+          `SELECT customer_phone, customer_address, city, state, pincode 
+           FROM orders 
+           WHERE (user_id = ? OR customer_email = ?) 
+             AND customer_address IS NOT NULL AND customer_address != '' 
+           ORDER BY id DESC LIMIT 1`,
+          [user.id, normalizedEmail]
+        );
+        if (pastOrders.length > 0) {
+          const po = pastOrders[0];
+          userPhone = userPhone || po.customer_phone || "";
+          userAddress = userAddress || po.customer_address || "";
+          userCity = userCity || po.city || "";
+          userState = userState || po.state || "";
+          userPincode = userPincode || po.pincode || "";
+        }
+      } catch (err) {
+        console.warn("Error fetching past address:", err.message);
+      }
+    }
+
+    // 5. Generate customer user token WITHOUT expiration
     const token = jwt.sign(
       { id: user.id, email: user.email, name: user.name, role: "user" },
       JWT_SECRET
-      // No expiresIn provided -> token never expires for storefront buyers
     );
 
     return res.status(200).json({
@@ -83,11 +112,85 @@ exports.googleUserAuth = async (req, res, next) => {
         name: user.name,
         email: user.email,
         avatar_url: user.avatar_url,
+        phone: userPhone,
+        address: userAddress,
+        city: userCity,
+        state: userState,
+        pincode: userPincode,
       },
     });
   } catch (error) {
     console.error("Google user auth error:", error);
     return next(createError.Unauthorized(error.message || "Failed to authenticate with Google"));
+  }
+};
+
+/**
+ * Fetch Current Logged-in Customer Profile & Dynamic Address
+ * GET /api/auth/me
+ */
+exports.getUserProfile = async (req, res, next) => {
+  try {
+    const authHeader = req.headers.authorization;
+    if (!authHeader || !authHeader.startsWith("Bearer ")) {
+      return next(createError.Unauthorized("No authentication token provided"));
+    }
+
+    const token = authHeader.split(" ")[1];
+    let decoded;
+    try {
+      decoded = jwt.verify(token, JWT_SECRET);
+    } catch (e) {
+      return next(createError.Unauthorized("Invalid or expired token"));
+    }
+
+    const [rows] = await db.promise().query(
+      "SELECT id, name, email, avatar_url, phone, address, city, state, pincode FROM users WHERE id = ? LIMIT 1",
+      [decoded.id]
+    );
+
+    if (rows.length === 0) {
+      return next(createError.NotFound("User not found"));
+    }
+
+    const user = rows[0];
+
+    // Fallback to recent order address if blank
+    if (!user.address || !user.phone) {
+      const [pastOrders] = await db.promise().query(
+        `SELECT customer_phone, customer_address, city, state, pincode 
+         FROM orders 
+         WHERE (user_id = ? OR customer_email = ?) 
+           AND customer_address IS NOT NULL AND customer_address != '' 
+         ORDER BY id DESC LIMIT 1`,
+        [user.id, user.email]
+      );
+      if (pastOrders.length > 0) {
+        user.phone = user.phone || pastOrders[0].customer_phone || "";
+        user.address = user.address || pastOrders[0].customer_address || "";
+        user.city = user.city || pastOrders[0].city || "";
+        user.state = user.state || pastOrders[0].state || "";
+        user.pincode = user.pincode || pastOrders[0].pincode || "";
+      }
+    }
+
+    return res.status(200).json({
+      success: true,
+      user: {
+        id: user.id,
+        name: user.name,
+        email: user.email,
+        avatar_url: user.avatar_url,
+        phone: user.phone || "",
+        address: user.address || "",
+        city: user.city || "",
+        state: user.state || "",
+        pincode: user.pincode || "",
+      },
+    });
+  } catch (error) {
+    console.error("Get user profile error:", error);
+    next(error);
   }
 };
 

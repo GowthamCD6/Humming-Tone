@@ -24,6 +24,7 @@
     opacity: 0;
     transform: translateY(-20px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);
@@ -31,7 +32,8 @@
 }
 
 .ot-header-icon {
-  display: none; /* Hide header icon to match other page styles */
+  display: none;
+  /* Hide header icon to match other page styles */
 }
 
 .ot-title {
@@ -78,6 +80,7 @@
     opacity: 0;
     transform: translateY(10px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);
@@ -359,8 +362,15 @@
 }
 
 @keyframes otFadeIn {
-  from { opacity: 0; transform: translateY(15px); }
-  to { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(15px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .ot-result-left {
@@ -377,7 +387,8 @@
   box-shadow: 0 4px 24px rgba(0, 0, 0, 0.06);
   border: 1px solid #e8e8e8;
   position: relative;
-  grid-column: 1 / -1; /* Spans across full width above detail columns */
+  grid-column: 1 / -1;
+  /* Spans across full width above detail columns */
 }
 
 .ot-order-card::before {
@@ -422,13 +433,47 @@
   border: 1.5px solid transparent;
 }
 
-.ot-status-pending { background: #fffbeb; color: #b45309; border-color: #fde68a; }
-.ot-status-confirmed { background: #eff6ff; color: #1d4ed8; border-color: #bfdbfe; }
-.ot-status-packed { background: #f0fdf4; color: #15803d; border-color: #bbf7d0; }
-.ot-status-shipped { background: #faf5ff; color: #6b21a8; border-color: #e9d5ff; }
-.ot-status-out_for_delivery { background: #fffbeb; color: #b45309; border-color: #fde68a; }
-.ot-status-delivered { background: #f0fdf4; color: #166534; border-color: #bbf7d0; }
-.ot-status-cancelled { background: #fef2f2; color: #b91c1c; border-color: #fecaca; }
+.ot-status-pending {
+  background: #fffbeb;
+  color: #b45309;
+  border-color: #fde68a;
+}
+
+.ot-status-confirmed {
+  background: #eff6ff;
+  color: #1d4ed8;
+  border-color: #bfdbfe;
+}
+
+.ot-status-packed {
+  background: #f0fdf4;
+  color: #15803d;
+  border-color: #bbf7d0;
+}
+
+.ot-status-shipped {
+  background: #faf5ff;
+  color: #6b21a8;
+  border-color: #e9d5ff;
+}
+
+.ot-status-out_for_delivery {
+  background: #fffbeb;
+  color: #b45309;
+  border-color: #fde68a;
+}
+
+.ot-status-delivered {
+  background: #f0fdf4;
+  color: #166534;
+  border-color: #bbf7d0;
+}
+
+.ot-status-cancelled {
+  background: #fef2f2;
+  color: #b91c1c;
+  border-color: #fecaca;
+}
 
 .ot-order-meta {
   display: grid;
@@ -740,7 +785,8 @@
   display: flex;
   gap: 1.5rem;
   margin-top: 1rem;
-  grid-column: 1 / -1; /* Spans across bottom full-width */
+  grid-column: 1 / -1;
+  /* Spans across bottom full-width */
 }
 
 .ot-back-btn,

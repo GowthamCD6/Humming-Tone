@@ -34,6 +34,7 @@ exports.getManageOrders = async (req, res) => {
                 IFNULL(SUM(oi.quantity), 0) AS total_qty
             FROM orders o
             LEFT JOIN order_items oi ON o.id = oi.order_id
+            WHERE NOT (o.order_status = 'pending' AND (o.payment_status = 'created' OR o.payment_status = 'pending' OR o.payment_status IS NULL))
             GROUP BY o.id
             ORDER BY o.created_at DESC;
         `;
@@ -319,6 +320,8 @@ exports.getExportOrdersData = async (req, res, next) => {
         if (status && status !== 'all') {
             whereClauses.push("LOWER(o.order_status) = LOWER(?)");
             params.push(status);
+        } else {
+            whereClauses.push("NOT (o.order_status = 'pending' AND (o.payment_status = 'created' OR o.payment_status = 'pending' OR o.payment_status IS NULL))");
         }
 
         if (paymentStatus && paymentStatus !== 'all') {

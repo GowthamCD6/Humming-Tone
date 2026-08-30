@@ -14,6 +14,7 @@ import { LoginScreen } from '../screens/LoginScreen';
 import { SupportScreen } from '../screens/SupportScreen';
 import { ReturnRequestScreen } from '../screens/ReturnRequestScreen';
 import { NotificationScreen } from '../screens/NotificationScreen';
+import { SplashScreen } from '../screens/SplashScreen';
 
 const Stack = createNativeStackNavigator();
 
@@ -21,11 +22,17 @@ export const AppNavigator = () => {
   return (
     <NavigationContainer>
       <Stack.Navigator
+        initialRouteName="Splash"
         screenOptions={{
           headerShown: false,
-          animation: 'slide_from_right',
+          animation: 'fade',
         }}
       >
+        <Stack.Screen
+          name="Splash"
+          component={SplashScreen}
+          options={{ animation: 'fade' }}
+        />
         <Stack.Screen name="MainTabs" component={BottomTabNavigator} />
         <Stack.Screen name="CategoryProducts" component={CategoryProductsScreen} />
         <Stack.Screen name="ProductDetails" component={ProductDetailsScreen} />

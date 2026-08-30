@@ -504,8 +504,8 @@ const OrderTracking = () => {
 
             {/* Back button */}
             <div className="ot-result-actions">
-              <button 
-                className="ot-back-btn" 
+              <button
+                className="ot-back-btn"
                 onClick={() => {
                   localStorage.removeItem("ot_order_number");
                   localStorage.removeItem("ot_contact_value");

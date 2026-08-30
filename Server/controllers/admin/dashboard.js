@@ -26,10 +26,11 @@ exports.getDashboardAnalytics = async (req, res, next) => {
           ELSE 0 
         END) AS today_revenue,
         COUNT(CASE WHEN LOWER(order_status) IN ('delivered', 'completed') THEN 1 END) AS completed_orders,
-        COUNT(CASE WHEN LOWER(order_status) IN ('pending', 'confirmed', 'packed', 'shipped', 'out_for_delivery') THEN 1 END) AS pending_orders,
+        COUNT(CASE WHEN LOWER(order_status) IN ('confirmed', 'packed', 'shipped', 'out_for_delivery') THEN 1 END) AS pending_orders,
         COUNT(CASE WHEN LOWER(order_status) = 'cancelled' THEN 1 END) AS cancelled_orders,
         COUNT(DISTINCT customer_email) AS unique_customers
-      FROM orders;
+      FROM orders
+      WHERE NOT (order_status = 'pending' AND (payment_status = 'created' OR payment_status = 'pending' OR payment_status IS NULL));
     `);
 
     // 2. Repeat Customers Count
@@ -40,6 +41,7 @@ exports.getDashboardAnalytics = async (req, res, next) => {
           SELECT customer_email 
           FROM orders 
           WHERE customer_email IS NOT NULL AND customer_email != ''
+            AND NOT (order_status = 'pending' AND (payment_status = 'created' OR payment_status = 'pending' OR payment_status IS NULL))
           GROUP BY customer_email 
           HAVING COUNT(id) >= 2
         ) AS repeat_table;
@@ -76,6 +78,7 @@ exports.getDashboardAnalytics = async (req, res, next) => {
         COUNT(id) AS orders_count
       FROM orders
       WHERE created_at >= DATE_SUB(CURDATE(), INTERVAL 6 DAY)
+        AND NOT (order_status = 'pending' AND (payment_status = 'created' OR payment_status = 'pending' OR payment_status IS NULL))
       GROUP BY DATE(created_at)
       ORDER BY order_date ASC;
     `);
@@ -91,7 +94,8 @@ exports.getDashboardAnalytics = async (req, res, next) => {
           ELSE 0 
         END AS revenue
       FROM orders
-      WHERE created_at >= DATE_SUB(CURDATE(), INTERVAL 28 DAY);
+      WHERE created_at >= DATE_SUB(CURDATE(), INTERVAL 28 DAY)
+        AND NOT (order_status = 'pending' AND (payment_status = 'created' OR payment_status = 'pending' OR payment_status IS NULL));
     `);
 
     // 6. Monthly Revenue (Last 6 Months)
@@ -107,7 +111,8 @@ exports.getDashboardAnalytics = async (req, res, next) => {
         END) AS revenue,
         COUNT(id) AS orders_count
       FROM orders
-      WHERE created_at >= DATE_SUB(CURDATE(), INTERVAL 5 MONTH)
+      WHERE created_at >= DATE_SUB(CURDATE(), INTERVAL 6 MONTH)
+        AND NOT (order_status = 'pending' AND (payment_status = 'created' OR payment_status = 'pending' OR payment_status IS NULL))
       GROUP BY month_iso, month_label
       ORDER BY month_iso ASC;
     `);
@@ -130,6 +135,7 @@ exports.getDashboardAnalytics = async (req, res, next) => {
         LEFT JOIN products p ON p.id = oi.product_id
         WHERE LOWER(o.order_status) != 'cancelled' 
           AND (o.payment_status IS NULL OR LOWER(o.payment_status) != 'failed')
+          AND NOT (o.order_status = 'pending' AND (o.payment_status = 'created' OR o.payment_status = 'pending' OR o.payment_status IS NULL))
         GROUP BY oi.product_id
         ORDER BY revenue DESC, sales DESC
         LIMIT 5;
@@ -152,6 +158,7 @@ exports.getDashboardAnalytics = async (req, res, next) => {
         COUNT(oi.id) AS unique_items_count
       FROM orders o
       LEFT JOIN order_items oi ON o.id = oi.order_id
+      WHERE NOT (o.order_status = 'pending' AND (o.payment_status = 'created' OR o.payment_status = 'pending' OR o.payment_status IS NULL))
       GROUP BY o.id
       ORDER BY o.created_at DESC
       LIMIT 5;

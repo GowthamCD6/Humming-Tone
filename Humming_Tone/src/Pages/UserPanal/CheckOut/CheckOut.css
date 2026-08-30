@@ -150,47 +150,141 @@
     font-size: 0.84rem;
 }
 
-.checkout-express-banner {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    background: linear-gradient(135deg, #f9fafb 0%, #f3f4f6 100%);
+/* Auth Gate Card for Mandatory Google Login */
+.checkout-auth-gate-card {
+    background: #ffffff;
     border: 1px solid #e5e7eb;
-    border-radius: 8px;
-    padding: 18px 22px;
-    margin: 1.5rem 0 2rem 0;
-    gap: 16px;
+    border-radius: 12px;
+    padding: 2.5rem 2rem;
+    text-align: center;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.04);
+    margin: 1.5rem 0;
+}
+
+.checkout-auth-gate-icon {
+    width: 64px;
+    height: 64px;
+    border-radius: 32px;
+    background: #FAF5EE;
+    border: 1.5px solid #EAE2D8;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    color: #704F38;
+    margin-bottom: 1.25rem;
+}
+
+.checkout-auth-gate-title {
+    font-size: 1.35rem;
+    font-weight: 600;
+    color: #1F1A17;
+    margin-bottom: 0.5rem;
+    letter-spacing: -0.01em;
+}
+
+.checkout-auth-gate-desc {
+    font-size: 0.92rem;
+    color: #6b7280;
+    max-width: 480px;
+    margin: 0 auto 1.75rem auto;
+    line-height: 1.55;
+}
+
+.checkout-auth-gate-btn-wrap {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 2rem;
+}
+
+.checkout-auth-perks {
+    display: flex;
+    justify-content: center;
+    gap: 1.5rem;
     flex-wrap: wrap;
+    border-top: 1px solid #f3f4f6;
+    padding-top: 1.5rem;
 }
 
-.express-banner-left {
-    flex: 1;
-    min-width: 240px;
+.checkout-auth-perk-item {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.84rem;
+    color: #4b5563;
+    font-weight: 500;
 }
 
-.express-icon-pill {
+.checkout-auth-perk-item svg {
+    color: #10B981;
+}
+
+.checkout-logged-user-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: #FAF8F5;
+    border: 1px solid #EAE4DC;
+    border-radius: 8px;
+    padding: 12px 18px;
+    margin-bottom: 1.5rem;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.checkout-logged-user-info {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.checkout-logged-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 20px;
+    border: 1.5px solid #704F38;
+    object-fit: cover;
+    background: #FAF5EE;
+    flex-shrink: 0;
+}
+
+.checkout-logged-avatar-initials {
+    width: 40px;
+    height: 40px;
+    border-radius: 20px;
+    background: linear-gradient(135deg, #704F38 0%, #4A3425 100%);
+    color: #FAF8F5;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 0.88rem;
+    letter-spacing: 0.04em;
+    box-shadow: 0 2px 8px rgba(112, 79, 56, 0.25);
+    flex-shrink: 0;
+}
+
+.checkout-logged-user-name {
+    font-weight: 600;
+    font-size: 0.95rem;
+    color: #1F1A17;
+}
+
+.checkout-logged-user-email {
+    font-size: 0.82rem;
+    color: #7D726A;
+}
+
+.checkout-autofill-badge {
     display: inline-flex;
     align-items: center;
     gap: 5px;
-    background: #111827;
-    color: #ffffff;
-    padding: 3px 10px;
+    background: #ECFDF5;
+    color: #059669;
+    border: 1px solid #A7F3D0;
+    padding: 4px 10px;
     border-radius: 12px;
-    font-size: 0.76rem;
+    font-size: 0.78rem;
     font-weight: 600;
-    letter-spacing: 0.04em;
-    margin-bottom: 6px;
-}
-
-.express-banner-desc {
-    font-size: 0.86rem;
-    color: #4b5563;
-    margin: 0;
-    line-height: 1.4;
-}
-
-.express-google-btn {
-    flex-shrink: 0;
 }
 
 /* Form Styles */

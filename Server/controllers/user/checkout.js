@@ -211,6 +211,28 @@ exports.create_order = (req, res, next) => {
                     });
                   }
 
+                  // Auto-update user's saved shipping address in users table
+                  if (user_id || customer_email) {
+                    db.promise().query(
+                      `UPDATE users 
+                       SET phone = COALESCE(?, phone), 
+                           address = COALESCE(?, address), 
+                           city = COALESCE(?, city), 
+                           state = COALESCE(?, state), 
+                           pincode = COALESCE(?, pincode) 
+                       WHERE id = ? OR email = ?`,
+                      [
+                        customer_phone || null,
+                        customer_address || null,
+                        city || null,
+                        state || null,
+                        pincode || null,
+                        user_id ? Number(user_id) : -1,
+                        customer_email || ""
+                      ]
+                    ).catch(e => console.warn("Auto-save user address error:", e.message));
+                  }
+
                   // Trigger order confirmation notification
                   sendOrderNotification({
                     orderNumber: order_number,
@@ -601,7 +623,7 @@ exports.fetch_my_orders = async (req, res, next) => {
                WHERE oi.order_id = o.id
              ) AS items
       FROM orders o
-      WHERE 1=1
+      WHERE NOT (o.order_status = 'pending' AND (o.payment_status = 'created' OR o.payment_status = 'pending' OR o.payment_status IS NULL))
     `;
 
     const params = [];
