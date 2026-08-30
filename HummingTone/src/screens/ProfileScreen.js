@@ -8,23 +8,45 @@ import {
   Alert,
   Modal,
   TextInput,
+  Image,
+  StatusBar,
+  Linking,
 } from 'react-native';
 import { Ionicons } from '../components/Icons';
 import { colors, shadows } from '../theme/colors';
 import { typography, spacing } from '../theme/typography';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { Header } from '../components/Header';
-import { Button } from '../components/Button';
 import { useAuth } from '../context/AuthContext';
 import { useWishlist } from '../context/WishlistContext';
+import { performGoogleSignIn } from '../services/googleAuth';
 
 export const ProfileScreen = ({ navigation }) => {
   const insets = useSafeAreaInsets();
-  const { user, isAuthenticated, logout } = useAuth();
+  const { user, isAuthenticated, login, logout, updateProfile } = useAuth();
   const { wishlistCount } = useWishlist();
+  const [googleLoading, setGoogleLoading] = useState(false);
   const [editModalVisible, setEditModalVisible] = useState(false);
-  const [editName, setEditName] = useState(user?.name || '');
-  const [editPhone, setEditPhone] = useState(user?.phone || '');
+  const [editForm, setEditForm] = useState({
+    name: user?.name || '',
+    phone: user?.phone || '',
+    email: user?.email || '',
+  });
+
+  const handleGoogleLogin = async () => {
+    setGoogleLoading(true);
+    try {
+      const res = await performGoogleSignIn();
+      if (res.success && res.user) {
+        await login(res.user, res.token);
+      } else if (!res.cancelled && res.message) {
+        Alert.alert('Sign In Failed', res.message);
+      }
+    } catch (e) {
+      Alert.alert('Authentication Error', 'Unable to sign in with Google. Please try again.');
+    } finally {
+      setGoogleLoading(false);
+    }
+  };
 
   const handleLogout = () => {
     Alert.alert('Sign Out', 'Are you sure you want to sign out from your Humming Tone account?', [
@@ -33,191 +55,384 @@ export const ProfileScreen = ({ navigation }) => {
     ]);
   };
 
-  const handleSaveProfile = () => {
+  const handleSaveProfile = async () => {
+    if (!editForm.name.trim()) {
+      Alert.alert('Name Required', 'Please enter your name.');
+      return;
+    }
+    if (updateProfile) {
+      await updateProfile({
+        name: editForm.name.trim(),
+        phone: editForm.phone.trim(),
+        email: editForm.email.trim() || user?.email,
+      });
+    }
     setEditModalVisible(false);
-    Alert.alert('Profile Updated', 'Your profile details have been saved.');
+    Alert.alert('Profile Saved', 'Your account details have been updated successfully.');
   };
 
-  const PROFILE_MENU = [
-    {
-      id: 'wishlist',
-      title: 'Saved Items & Wishlist',
-      subtitle: `${wishlistCount} curated items`,
-      icon: 'heart-outline',
-      onPress: () => navigation.navigate('Wishlist'),
-    },
-    {
-      id: 'track',
-      title: 'Track Orders & Shipments',
-      subtitle: 'Real-time delivery status & history',
-      icon: 'location-outline',
-      onPress: () => navigation.navigate('OrderTracking'),
-    },
-    {
-      id: 'returns',
-      title: 'Returns & Exchanges',
-      subtitle: 'Easy 7-day pickup assistance',
-      icon: 'repeat-outline',
-      onPress: () => navigation.navigate('ReturnRequest'),
-    },
-    {
-      id: 'customize',
-      title: 'Customize Apparel',
-      subtitle: 'Create personalized custom garments',
-      icon: 'color-palette-outline',
-      onPress: () => navigation.navigate('MainTabs', { screen: 'CustomizeTab' }),
-    },
-    {
-      id: 'support',
-      title: 'Customer Care & WhatsApp',
-      subtitle: 'Order help & instant support',
-      icon: 'chatbubble-ellipses-outline',
-      onPress: () => navigation.navigate('Support'),
-    },
-  ];
+  const openWhatsAppSupport = () => {
+    const phone = '919876543210';
+    const msg = encodeURIComponent('Hello Humming Tone VIP Concierge, I need assistance with my order.');
+    Linking.openURL(`https://wa.me/${phone}?text=${msg}`).catch(() => {
+      navigation.navigate('Support');
+    });
+  };
+
+  const userInitials = (user?.name || 'Humming Tone')
+    .split(' ')
+    .map((n) => n[0])
+    .join('')
+    .substring(0, 2)
+    .toUpperCase();
+
+  const topPadding = Math.max(
+    (insets.top || 0) + 10,
+    (StatusBar.currentHeight || 0) + 10,
+    Platform.OS === 'android' ? 32 : 44
+  );
 
   return (
     <View style={styles.container}>
-      <Header title="My Account" />
+      <StatusBar barStyle="dark-content" backgroundColor="#FAF8F5" translucent={true} />
+
+      {/* ── 1. LUXURY TOP APP BAR ── */}
+      <View style={[styles.topBar, { paddingTop: topPadding }]}>
+        <View>
+          <Text style={styles.brandTitle}>HUMMING TONE</Text>
+          <Text style={styles.brandSub}>MY ATELIER & ACCOUNT</Text>
+        </View>
+
+        <View style={styles.topBarRight}>
+          <View style={styles.statusPill}>
+            <View style={[styles.statusDot, { backgroundColor: isAuthenticated ? '#38A169' : '#A3998F' }]} />
+            <Text style={styles.statusPillText}>{isAuthenticated ? 'MEMBER' : 'GUEST'}</Text>
+          </View>
+        </View>
+      </View>
 
       <ScrollView
         style={styles.scroll}
-        contentContainerStyle={{ paddingBottom: Math.max(insets.bottom + 80, 90) }}
+        contentContainerStyle={[
+          styles.scrollContent,
+          { paddingBottom: Math.max((insets.bottom || 0) + 95, 115) },
+        ]}
         showsVerticalScrollIndicator={false}
       >
-        {/* User Card */}
-        <View style={styles.userCard}>
-          <View style={styles.avatar}>
-            <Text style={styles.avatarText}>
-              {isAuthenticated ? (user.name || 'U')[0].toUpperCase() : <Ionicons name="person" size={24} color={colors.textInverse} />}
-            </Text>
-          </View>
-
-          <View style={styles.userInfo}>
-            {isAuthenticated ? (
-              <>
-                <Text style={styles.userName}>{user.name}</Text>
-                <Text style={styles.userEmail}>{user.email}</Text>
-                <View style={styles.memberBadgeWrap}>
-                  <Text style={styles.memberBadge}>HUMMING TONE PATRON</Text>
+        {/* ── 2. HERO IDENTITY CARD ── */}
+        {isAuthenticated ? (
+          <View style={styles.memberCard}>
+            {/* Background Texture Accents */}
+            <View style={styles.cardHeaderRow}>
+              <View style={styles.avatarWrap}>
+                {user?.avatar_url ? (
+                  <Image source={{ uri: user.avatar_url }} style={styles.avatarImg} />
+                ) : (
+                  <View style={styles.avatarPlaceholder}>
+                    <Text style={styles.avatarInitials}>{userInitials || 'HT'}</Text>
+                  </View>
+                )}
+                <View style={styles.verifiedCheckBadge}>
+                  <Ionicons name="checkmark-circle" size={14} color="#38A169" />
                 </View>
-              </>
-            ) : (
-              <>
-                <Text style={styles.userName}>Welcome to Humming Tone</Text>
-                <Text style={styles.userEmail}>Sign in to manage orders & saved items</Text>
-              </>
-            )}
-          </View>
-        </View>
-
-        {/* Auth CTA if not logged in */}
-        {!isAuthenticated ? (
-          <View style={styles.authCtaBox}>
-            <Button
-              title="SIGN IN / REGISTER"
-              onPress={() => navigation.navigate('Login')}
-              variant="primary"
-              size="md"
-              style={styles.authBtn}
-            />
-          </View>
-        ) : (
-          <View style={styles.authCtaBox}>
-            <Button
-              title="EDIT PROFILE"
-              onPress={() => {
-                setEditName(user?.name || '');
-                setEditPhone(user?.phone || '');
-                setEditModalVisible(true);
-              }}
-              variant="outline"
-              size="sm"
-              style={styles.editBtn}
-            />
-          </View>
-        )}
-
-        {/* Navigation Menu */}
-        <View style={styles.menuSection}>
-          <Text style={styles.menuHeading}>SERVICES & SETTINGS</Text>
-
-          {PROFILE_MENU.map((item) => (
-            <TouchableOpacity
-              key={item.id}
-              style={styles.menuItem}
-              onPress={item.onPress}
-              activeOpacity={0.7}
-            >
-              <View style={styles.menuIconWrap}>
-                <Ionicons name={item.icon} size={20} color={colors.primary} />
               </View>
 
-              <View style={styles.menuTextWrap}>
-                <Text style={styles.menuTitle}>{item.title}</Text>
-                <Text style={styles.menuSubtitle}>{item.subtitle}</Text>
+              <View style={styles.memberInfo}>
+                <View style={styles.tierPill}>
+                  <Ionicons name="sparkles" size={11} color="#D4AF37" />
+                  <Text style={styles.tierPillText}>PRIVILEGE PATRON</Text>
+                </View>
+                <Text style={styles.userName} numberOfLines={1}>{user?.name || 'Member'}</Text>
+                <Text style={styles.userEmail} numberOfLines={1}>{user?.email || 'member@hummingtone.com'}</Text>
               </View>
 
-              <Ionicons name="chevron-forward" size={16} color={colors.textMuted} />
-            </TouchableOpacity>
-          ))}
-        </View>
-
-        {/* Sign Out Button */}
-        {isAuthenticated && (
-          <TouchableOpacity style={styles.logoutButton} onPress={handleLogout} activeOpacity={0.7}>
-            <Ionicons name="log-out-outline" size={18} color={colors.error} />
-            <Text style={styles.logoutText}>SIGN OUT</Text>
-          </TouchableOpacity>
-        )}
-
-        {/* Footer Brand Info */}
-        <View style={styles.footerBrand}>
-          <Text style={styles.footerBrandName}>HUMMING TONE</Text>
-          <Text style={styles.footerBrandDesc}>Premium Apparel & Custom Print Studio</Text>
-          <Text style={styles.copyrightText}>© 2026 Humming Tone. All Rights Reserved.</Text>
-        </View>
-
-        <View style={{ height: 60 }} />
-      </ScrollView>
-
-      {/* Edit Profile Modal */}
-      <Modal visible={editModalVisible} transparent animationType="slide">
-        <View style={styles.modalBackdrop}>
-          <View style={styles.modalContent}>
-            <View style={styles.modalHeader}>
-              <Text style={styles.modalTitle}>Edit Profile</Text>
-              <TouchableOpacity onPress={() => setEditModalVisible(false)}>
-                <Ionicons name="close" size={22} color={colors.textPrimary} />
+              <TouchableOpacity
+                style={styles.editIconBtn}
+                onPress={() => {
+                  setEditForm({
+                    name: user?.name || '',
+                    phone: user?.phone || '',
+                    email: user?.email || '',
+                  });
+                  setEditModalVisible(true);
+                }}
+                activeOpacity={0.8}
+              >
+                <Ionicons name="pencil" size={15} color="#FAF8F5" />
               </TouchableOpacity>
             </View>
 
-            <Text style={styles.inputLabel}>Full Name</Text>
+            {/* Quick Stats Ribbon */}
+            <View style={styles.statsRibbon}>
+              <TouchableOpacity
+                style={styles.statItem}
+                onPress={() => navigation.navigate('Wishlist')}
+                activeOpacity={0.8}
+              >
+                <Text style={styles.statNumber}>{wishlistCount}</Text>
+                <Text style={styles.statLabel}>SAVED PIECES</Text>
+              </TouchableOpacity>
+
+              <View style={styles.statDivider} />
+
+              <TouchableOpacity
+                style={styles.statItem}
+                onPress={() => navigation.navigate('OrderTracking')}
+                activeOpacity={0.8}
+              >
+                <Ionicons name="cube-outline" size={18} color="#D4AF37" style={{ marginBottom: 2 }} />
+                <Text style={styles.statLabel}>ORDERS</Text>
+              </TouchableOpacity>
+
+              <View style={styles.statDivider} />
+
+              <TouchableOpacity
+                style={styles.statItem}
+                onPress={() => navigation.navigate('MainTabs', { screen: 'CustomizeTab' })}
+                activeOpacity={0.8}
+              >
+                <Ionicons name="color-palette-outline" size={18} color="#D4AF37" style={{ marginBottom: 2 }} />
+                <Text style={styles.statLabel}>STUDIO</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        ) : (
+          /* Guest Welcome Hero */
+          <View style={styles.guestCard}>
+            <View style={styles.guestIconCircle}>
+              <Ionicons name="person-outline" size={28} color="#6B4E37" />
+            </View>
+
+            <Text style={styles.guestTitle}>Welcome to Humming Tone</Text>
+            <Text style={styles.guestSubtitle}>
+              Sign in to manage your orders, track express shipments, save wishlist items, and unlock member privileges.
+            </Text>
+
+            {/* Google Sign-In Action */}
+            <TouchableOpacity
+              style={styles.googleBtn}
+              onPress={handleGoogleLogin}
+              activeOpacity={0.88}
+              disabled={googleLoading}
+            >
+              <View style={styles.googleIconBg}>
+                <Ionicons name="logo-google" size={16} color="#EA4335" />
+              </View>
+              <Text style={styles.googleBtnText}>Continue with Google</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={styles.emailSignInBtn}
+              onPress={() => navigation.navigate('Login')}
+              activeOpacity={0.8}
+            >
+              <Text style={styles.emailSignInBtnText}>Sign In with Email / Phone</Text>
+            </TouchableOpacity>
+          </View>
+        )}
+
+        {/* ── 3. SERVICES & MANAGEMENT SECTION ── */}
+        <View style={styles.sectionWrap}>
+          <Text style={styles.sectionTitle}>ORDERS & SHIPMENTS</Text>
+          <View style={styles.menuContainer}>
+            <TouchableOpacity
+              style={styles.menuRow}
+              onPress={() => navigation.navigate('OrderTracking')}
+              activeOpacity={0.7}
+            >
+              <View style={styles.menuIconBg}>
+                <Ionicons name="location-outline" size={19} color="#6B4E37" />
+              </View>
+              <View style={styles.menuTextWrap}>
+                <Text style={styles.menuRowTitle}>Track Orders & Shipments</Text>
+                <Text style={styles.menuRowSub}>Real-time delivery milestones and tracking IDs</Text>
+              </View>
+              <Ionicons name="chevron-forward" size={16} color="#A3998F" />
+            </TouchableOpacity>
+
+            <View style={styles.menuLineDivider} />
+
+            <TouchableOpacity
+              style={styles.menuRow}
+              onPress={() => navigation.navigate('ReturnRequest')}
+              activeOpacity={0.7}
+            >
+              <View style={styles.menuIconBg}>
+                <Ionicons name="repeat-outline" size={19} color="#6B4E37" />
+              </View>
+              <View style={styles.menuTextWrap}>
+                <Text style={styles.menuRowTitle}>Returns & Exchanges</Text>
+                <Text style={styles.menuRowSub}>Complimentary 7-day doorstep pickup service</Text>
+              </View>
+              <Ionicons name="chevron-forward" size={16} color="#A3998F" />
+            </TouchableOpacity>
+          </View>
+        </View>
+
+        {/* ── 4. ATELIER & CURATIONS ── */}
+        <View style={styles.sectionWrap}>
+          <Text style={styles.sectionTitle}>ATELIER & WARDROBE</Text>
+          <View style={styles.menuContainer}>
+            <TouchableOpacity
+              style={styles.menuRow}
+              onPress={() => navigation.navigate('Wishlist')}
+              activeOpacity={0.7}
+            >
+              <View style={styles.menuIconBg}>
+                <Ionicons name="heart-outline" size={19} color="#6B4E37" />
+              </View>
+              <View style={styles.menuTextWrap}>
+                <Text style={styles.menuRowTitle}>Saved Pieces & Wishlist</Text>
+                <Text style={styles.menuRowSub}>{wishlistCount} curated luxury garments</Text>
+              </View>
+              <View style={styles.countPill}>
+                <Text style={styles.countPillText}>{wishlistCount}</Text>
+              </View>
+              <Ionicons name="chevron-forward" size={16} color="#A3998F" />
+            </TouchableOpacity>
+
+            <View style={styles.menuLineDivider} />
+
+            <TouchableOpacity
+              style={styles.menuRow}
+              onPress={() => navigation.navigate('MainTabs', { screen: 'CustomizeTab' })}
+              activeOpacity={0.7}
+            >
+              <View style={styles.menuIconBg}>
+                <Ionicons name="color-palette-outline" size={19} color="#6B4E37" />
+              </View>
+              <View style={styles.menuTextWrap}>
+                <Text style={styles.menuRowTitle}>Custom Print Studio</Text>
+                <Text style={styles.menuRowSub}>Design custom oversized hoodies & tees</Text>
+              </View>
+              <Ionicons name="chevron-forward" size={16} color="#A3998F" />
+            </TouchableOpacity>
+          </View>
+        </View>
+
+        {/* ── 5. VIP CONCIERGE & SUPPORT ── */}
+        <View style={styles.sectionWrap}>
+          <Text style={styles.sectionTitle}>VIP CONCIERGE & HELP</Text>
+          <View style={styles.menuContainer}>
+            <TouchableOpacity
+              style={styles.menuRow}
+              onPress={openWhatsAppSupport}
+              activeOpacity={0.7}
+            >
+              <View style={[styles.menuIconBg, { backgroundColor: '#E8F5E9' }]}>
+                <Ionicons name="logo-whatsapp" size={19} color="#2E7D32" />
+              </View>
+              <View style={styles.menuTextWrap}>
+                <Text style={styles.menuRowTitle}>WhatsApp Personal Stylist</Text>
+                <Text style={styles.menuRowSub}>Direct instant messaging with our atelier team</Text>
+              </View>
+              <Ionicons name="chevron-forward" size={16} color="#A3998F" />
+            </TouchableOpacity>
+
+            <View style={styles.menuLineDivider} />
+
+            <TouchableOpacity
+              style={styles.menuRow}
+              onPress={() => navigation.navigate('Support')}
+              activeOpacity={0.7}
+            >
+              <View style={styles.menuIconBg}>
+                <Ionicons name="headset-outline" size={19} color="#6B4E37" />
+              </View>
+              <View style={styles.menuTextWrap}>
+                <Text style={styles.menuRowTitle}>Help Center & FAQ</Text>
+                <Text style={styles.menuRowSub}>Shipping policies, size guides, care instructions</Text>
+              </View>
+              <Ionicons name="chevron-forward" size={16} color="#A3998F" />
+            </TouchableOpacity>
+          </View>
+        </View>
+
+        {/* ── 6. SIGN OUT ACTION (When Authenticated) ── */}
+        {isAuthenticated && (
+          <TouchableOpacity
+            style={styles.signOutBtn}
+            onPress={handleLogout}
+            activeOpacity={0.8}
+          >
+            <Ionicons name="log-out-outline" size={18} color="#C53030" />
+            <Text style={styles.signOutBtnText}>Sign Out from Account</Text>
+          </TouchableOpacity>
+        )}
+
+        {/* ── 7. LUXURY BRAND FOOTER ── */}
+        <View style={styles.footerWrap}>
+          <View style={styles.footerDivider} />
+          <Text style={styles.footerBrandTitle}>HUMMING TONE</Text>
+          <Text style={styles.footerBrandDesc}>Official Mobile Atelier & Storefront</Text>
+          <Text style={styles.footerVersion}>Version 2.4.0 • Built with Pride</Text>
+        </View>
+      </ScrollView>
+
+      {/* ── 8. EDIT PROFILE BOTTOM SHEET MODAL ── */}
+      <Modal
+        visible={editModalVisible}
+        transparent={true}
+        animationType="slide"
+        onRequestClose={() => setEditModalVisible(false)}
+      >
+        <View style={styles.modalBackdrop}>
+          <TouchableOpacity
+            style={styles.modalBackdropTouch}
+            activeOpacity={1}
+            onPress={() => setEditModalVisible(false)}
+          />
+          <View style={[styles.modalSheet, { paddingBottom: Math.max(insets.bottom + 16, 24) }]}>
+            <View style={styles.sheetHandleWrap}>
+              <View style={styles.sheetHandle} />
+            </View>
+
+            <View style={styles.modalHeader}>
+              <Text style={styles.modalHeading}>Edit Profile Details</Text>
+              <TouchableOpacity
+                onPress={() => setEditModalVisible(false)}
+                style={styles.modalCloseBtn}
+              >
+                <Ionicons name="close" size={20} color="#1E1B18" />
+              </TouchableOpacity>
+            </View>
+
+            <Text style={styles.inputLabel}>FULL NAME *</Text>
             <TextInput
               style={styles.modalInput}
-              value={editName}
-              onChangeText={setEditName}
-              placeholder="Enter your name"
-              placeholderTextColor={colors.textMuted}
+              value={editForm.name}
+              onChangeText={(t) => setEditForm((prev) => ({ ...prev, name: t }))}
+              placeholder="e.g. Julian Montgomery"
+              placeholderTextColor="#A3998F"
             />
 
-            <Text style={styles.inputLabel}>Phone Number</Text>
+            <Text style={styles.inputLabel}>EMAIL ADDRESS</Text>
+            <TextInput
+              style={[styles.modalInput, { backgroundColor: '#F0EBE4' }]}
+              value={editForm.email}
+              editable={false}
+              placeholder="julian@example.com"
+              placeholderTextColor="#A3998F"
+            />
+
+            <Text style={styles.inputLabel}>PHONE NUMBER (FOR ORDER UPDATES)</Text>
             <TextInput
               style={styles.modalInput}
-              value={editPhone}
-              onChangeText={setEditPhone}
-              placeholder="Enter phone number"
-              placeholderTextColor={colors.textMuted}
+              value={editForm.phone}
+              onChangeText={(t) => setEditForm((prev) => ({ ...prev, phone: t }))}
+              placeholder="10-digit mobile number"
+              placeholderTextColor="#A3998F"
               keyboardType="phone-pad"
             />
 
-            <Button
-              title="SAVE CHANGES"
+            <TouchableOpacity
+              style={styles.saveProfileBtn}
               onPress={handleSaveProfile}
-              variant="primary"
-              size="md"
-              style={{ marginTop: 12 }}
-            />
+              activeOpacity={0.88}
+            >
+              <Ionicons name="checkmark-circle" size={18} color="#FFFFFF" />
+              <Text style={styles.saveProfileBtnText}>Save Account Details</Text>
+            </TouchableOpacity>
           </View>
         </View>
       </Modal>
@@ -228,213 +443,459 @@ export const ProfileScreen = ({ navigation }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: colors.background,
+    backgroundColor: '#FAF8F5',
+  },
+  topBar: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 20,
+    paddingBottom: 14,
+    backgroundColor: '#FAF8F5',
+    borderBottomWidth: 1,
+    borderBottomColor: '#EAE4DC',
+  },
+  brandTitle: {
+    fontFamily: typography.fontSansBold,
+    fontSize: 17,
+    letterSpacing: 2.2,
+    color: '#1E1B18',
+  },
+  brandSub: {
+    fontFamily: typography.fontSansBold,
+    fontSize: 9.5,
+    letterSpacing: 1.2,
+    color: '#8A7F75',
+    marginTop: 2,
+  },
+  topBarRight: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  statusPill: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#EFEAE2',
+    paddingHorizontal: 10,
+    paddingVertical: 4.5,
+    borderRadius: 12,
+    gap: 6,
+  },
+  statusDot: {
+    width: 6,
+    height: 6,
+    borderRadius: 3,
+  },
+  statusPillText: {
+    fontFamily: typography.fontSansBold,
+    fontSize: 10,
+    letterSpacing: 1,
+    color: '#1E1B18',
   },
   scroll: {
     flex: 1,
   },
-  userCard: {
+  scrollContent: {
+    paddingHorizontal: 18,
+    paddingTop: 18,
+  },
+
+  /* ── MEMBER CARD (Authenticated) ── */
+  memberCard: {
+    backgroundColor: '#1E1B18',
+    borderRadius: 20,
+    padding: 20,
+    marginBottom: 24,
+    ...shadows.elevated,
+  },
+  cardHeaderRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    padding: spacing.screenPadding,
-    backgroundColor: colors.surface,
-    borderBottomWidth: 1,
-    borderBottomColor: colors.borderLight,
-    gap: 16,
+    gap: 14,
   },
-  avatar: {
-    width: 60,
-    height: 60,
-    borderRadius: 30,
-    backgroundColor: colors.primary,
+  avatarWrap: {
+    position: 'relative',
+  },
+  avatarImg: {
+    width: 58,
+    height: 58,
+    borderRadius: 29,
+    borderWidth: 2,
+    borderColor: '#D4AF37',
+  },
+  avatarPlaceholder: {
+    width: 58,
+    height: 58,
+    borderRadius: 29,
+    backgroundColor: '#6B4E37',
+    borderWidth: 2,
+    borderColor: '#D4AF37',
     alignItems: 'center',
     justifyContent: 'center',
-    borderWidth: 2,
-    borderColor: colors.gold,
   },
-  avatarText: {
-    fontFamily: typography.fontSans,
-    fontSize: 22,
-    fontWeight: typography.weightBold,
-    color: colors.textInverse,
+  avatarInitials: {
+    fontFamily: typography.fontSansBold,
+    fontSize: 20,
+    color: '#FAF8F5',
   },
-  userInfo: {
+  verifiedCheckBadge: {
+    position: 'absolute',
+    bottom: -2,
+    right: -2,
+    backgroundColor: '#FFFFFF',
+    borderRadius: 8,
+  },
+  memberInfo: {
     flex: 1,
   },
+  tierPill: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: 'rgba(212, 175, 55, 0.15)',
+    paddingHorizontal: 8,
+    paddingVertical: 2.5,
+    borderRadius: 6,
+    alignSelf: 'flex-start',
+    gap: 4,
+    marginBottom: 4,
+  },
+  tierPillText: {
+    fontFamily: typography.fontSansBold,
+    fontSize: 9,
+    letterSpacing: 1,
+    color: '#D4AF37',
+  },
   userName: {
-    fontFamily: typography.fontSerif,
-    fontSize: 18,
-    fontWeight: typography.weightBold,
-    color: colors.textPrimary,
-    marginBottom: 2,
+    fontFamily: typography.fontSansBold,
+    fontSize: 17,
+    color: '#FAF8F5',
+    letterSpacing: 0.2,
   },
   userEmail: {
     fontFamily: typography.fontSans,
-    fontSize: 12.5,
-    color: colors.textSecondary,
-    marginBottom: 4,
+    fontSize: 12,
+    color: '#A3998F',
+    marginTop: 1,
   },
-  memberBadgeWrap: {
-    alignSelf: 'flex-start',
-    backgroundColor: 'rgba(212, 175, 55, 0.12)',
-    paddingHorizontal: 8,
-    paddingVertical: 2,
-    borderRadius: 4,
+  editIconBtn: {
+    width: 34,
+    height: 34,
+    borderRadius: 17,
+    backgroundColor: 'rgba(255, 255, 255, 0.12)',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
-  memberBadge: {
-    fontFamily: typography.fontSans,
-    fontSize: 9,
-    fontWeight: typography.weightBold,
-    letterSpacing: 1.2,
-    color: colors.goldDark,
-  },
-  authCtaBox: {
-    padding: spacing.screenPadding,
-    backgroundColor: colors.surface,
-    borderBottomWidth: 1,
-    borderBottomColor: colors.borderLight,
-  },
-  authBtn: {
-    borderRadius: 8,
-  },
-  editBtn: {
-    borderRadius: 8,
-  },
-  menuSection: {
-    marginTop: spacing.md,
-    backgroundColor: colors.surface,
-    borderTopWidth: 1,
-    borderBottomWidth: 1,
-    borderColor: colors.borderLight,
-    paddingVertical: 8,
-  },
-  menuHeading: {
-    fontFamily: typography.fontSans,
-    fontSize: 10,
-    fontWeight: typography.weightBold,
-    letterSpacing: 1.5,
-    color: colors.goldDark,
-    paddingHorizontal: spacing.screenPadding,
-    paddingVertical: 8,
-  },
-  menuItem: {
+
+  /* Stats Ribbon */
+  statsRibbon: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: spacing.screenPadding,
-    paddingVertical: 14,
-    borderBottomWidth: 1,
-    borderBottomColor: colors.borderLight,
+    justifyContent: 'space-between',
+    backgroundColor: 'rgba(255, 255, 255, 0.06)',
+    borderRadius: 14,
+    marginTop: 18,
+    paddingVertical: 12,
+    paddingHorizontal: 16,
   },
-  menuIconWrap: {
+  statItem: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  statNumber: {
+    fontFamily: typography.fontSansBold,
+    fontSize: 16,
+    color: '#D4AF37',
+    marginBottom: 2,
+  },
+  statLabel: {
+    fontFamily: typography.fontSansBold,
+    fontSize: 9.5,
+    letterSpacing: 1,
+    color: '#D8CEBF',
+  },
+  statDivider: {
+    width: 1,
+    height: 24,
+    backgroundColor: 'rgba(255, 255, 255, 0.12)',
+  },
+
+  /* ── GUEST CARD ── */
+  guestCard: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 20,
+    padding: 22,
+    alignItems: 'center',
+    marginBottom: 24,
+    borderWidth: 1,
+    borderColor: '#ECE4DC',
+    ...shadows.card,
+  },
+  guestIconCircle: {
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+    backgroundColor: '#FAF5EE',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 12,
+  },
+  guestTitle: {
+    fontFamily: typography.fontSansBold,
+    fontSize: 18,
+    color: '#1E1B18',
+    letterSpacing: 0.2,
+    marginBottom: 6,
+  },
+  guestSubtitle: {
+    fontFamily: typography.fontSans,
+    fontSize: 12.5,
+    color: '#7D726A',
+    textAlign: 'center',
+    lineHeight: 18,
+    marginBottom: 18,
+    paddingHorizontal: 8,
+  },
+  googleBtn: {
+    width: '100%',
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#1E1B18',
+    height: 48,
+    borderRadius: 24,
+    gap: 10,
+    ...shadows.card,
+  },
+  googleIconBg: {
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+    backgroundColor: '#FFFFFF',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  googleBtnText: {
+    fontFamily: typography.fontSansBold,
+    fontSize: 13.5,
+    color: '#FFFFFF',
+    letterSpacing: 0.3,
+  },
+  emailSignInBtn: {
+    marginTop: 12,
+    paddingVertical: 8,
+  },
+  emailSignInBtnText: {
+    fontFamily: typography.fontSansBold,
+    fontSize: 12.5,
+    color: '#6B4E37',
+  },
+
+  /* ── SECTIONS & MENU ITEMS ── */
+  sectionWrap: {
+    marginBottom: 20,
+  },
+  sectionTitle: {
+    fontFamily: typography.fontSansBold,
+    fontSize: 10.5,
+    letterSpacing: 1.5,
+    color: '#8A7F75',
+    marginBottom: 8,
+    paddingHorizontal: 4,
+  },
+  menuContainer: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: '#ECE4DC',
+    overflow: 'hidden',
+    ...shadows.subtle,
+  },
+  menuRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 14,
+    paddingHorizontal: 16,
+    gap: 14,
+  },
+  menuIconBg: {
     width: 36,
     height: 36,
     borderRadius: 18,
-    backgroundColor: colors.surface,
-    borderWidth: 1,
-    borderColor: colors.border,
+    backgroundColor: '#FAF5EE',
     alignItems: 'center',
     justifyContent: 'center',
-    marginRight: 14,
   },
   menuTextWrap: {
     flex: 1,
   },
-  menuTitle: {
-    fontFamily: typography.fontSans,
+  menuRowTitle: {
+    fontFamily: typography.fontSansBold,
     fontSize: 13.5,
-    fontWeight: typography.weightMedium,
-    color: colors.textPrimary,
-    marginBottom: 2,
+    color: '#1E1B18',
   },
-  menuSubtitle: {
+  menuRowSub: {
     fontFamily: typography.fontSans,
     fontSize: 11,
-    color: colors.textMuted,
+    color: '#8A7F75',
+    marginTop: 1.5,
   },
-  logoutButton: {
+  menuLineDivider: {
+    height: 1,
+    backgroundColor: '#F3EDE6',
+    marginLeft: 66,
+  },
+  countPill: {
+    backgroundColor: '#FAF5EE',
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: '#EAE2D8',
+    marginRight: 4,
+  },
+  countPillText: {
+    fontFamily: typography.fontSansBold,
+    fontSize: 11,
+    color: '#6B4E37',
+  },
+
+  /* ── SIGN OUT BUTTON ── */
+  signOutBtn: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    gap: 8,
-    marginTop: 24,
-    marginHorizontal: spacing.screenPadding,
-    paddingVertical: 14,
-    backgroundColor: colors.surface,
-    borderRadius: 8,
+    backgroundColor: '#FDF2F2',
+    height: 48,
+    borderRadius: 24,
     borderWidth: 1,
-    borderColor: colors.errorLight,
+    borderColor: '#FBD5D5',
+    gap: 8,
+    marginTop: 8,
+    marginBottom: 24,
   },
-  logoutText: {
-    fontFamily: typography.fontSans,
-    fontSize: 12,
-    fontWeight: typography.weightBold,
-    letterSpacing: 1.2,
-    color: colors.error,
+  signOutBtnText: {
+    fontFamily: typography.fontSansBold,
+    fontSize: 13,
+    color: '#C53030',
+    letterSpacing: 0.4,
   },
-  footerBrand: {
+
+  /* ── FOOTER BRAND ── */
+  footerWrap: {
     alignItems: 'center',
-    marginTop: 36,
-    paddingHorizontal: spacing.screenPadding,
+    paddingTop: 10,
+    paddingBottom: 20,
   },
-  footerBrandName: {
-    fontFamily: typography.fontSerif,
-    fontSize: 15,
-    fontWeight: typography.weightBold,
+  footerDivider: {
+    width: 40,
+    height: 2,
+    borderRadius: 1,
+    backgroundColor: '#EAE4DC',
+    marginBottom: 14,
+  },
+  footerBrandTitle: {
+    fontFamily: typography.fontSansBold,
+    fontSize: 12,
     letterSpacing: 2,
-    color: colors.textPrimary,
-    marginBottom: 4,
+    color: '#6B4E37',
   },
   footerBrandDesc: {
     fontFamily: typography.fontSans,
     fontSize: 11,
-    color: colors.textMuted,
-    marginBottom: 4,
+    color: '#A3998F',
+    marginTop: 2,
   },
-  copyrightText: {
+  footerVersion: {
     fontFamily: typography.fontSans,
-    fontSize: 10,
-    color: colors.textMuted,
+    fontSize: 9.5,
+    color: '#C4B8AD',
+    marginTop: 4,
   },
+
+  /* ── EDIT PROFILE MODAL SHEET ── */
   modalBackdrop: {
     flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.5)',
+    backgroundColor: 'rgba(0, 0, 0, 0.55)',
     justifyContent: 'flex-end',
   },
-  modalContent: {
-    backgroundColor: colors.surface,
-    borderTopLeftRadius: 20,
-    borderTopRightRadius: 20,
-    padding: spacing.screenPadding,
-    paddingBottom: 40,
+  modalBackdropTouch: {
+    flex: 1,
+  },
+  modalSheet: {
+    backgroundColor: '#FAF8F5',
+    borderTopLeftRadius: 26,
+    borderTopRightRadius: 26,
+    paddingHorizontal: 20,
+    paddingTop: 10,
+    ...shadows.elevated,
+  },
+  sheetHandleWrap: {
+    alignItems: 'center',
+    paddingVertical: 6,
+  },
+  sheetHandle: {
+    width: 40,
+    height: 4,
+    borderRadius: 2,
+    backgroundColor: '#D8CEBF',
   },
   modalHeader: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 16,
+    justifyContent: 'space-between',
+    marginBottom: 18,
+    marginTop: 6,
   },
-  modalTitle: {
-    fontFamily: typography.fontSerif,
+  modalHeading: {
+    fontFamily: typography.fontSansBold,
     fontSize: 18,
-    fontWeight: typography.weightBold,
-    color: colors.textPrimary,
+    color: '#1E1B18',
+  },
+  modalCloseBtn: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: '#EDE7E0',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   inputLabel: {
-    fontFamily: typography.fontSans,
-    fontSize: 12,
-    fontWeight: typography.weightMedium,
-    color: colors.textSecondary,
+    fontFamily: typography.fontSansBold,
+    fontSize: 10.5,
+    letterSpacing: 0.8,
+    color: '#7D726A',
     marginBottom: 6,
     marginTop: 10,
   },
   modalInput: {
+    backgroundColor: '#FFFFFF',
     borderWidth: 1,
-    borderColor: colors.border,
-    borderRadius: 8,
-    paddingHorizontal: 12,
-    paddingVertical: 10,
-    fontSize: 14,
-    color: colors.textPrimary,
+    borderColor: '#ECE4DC',
+    borderRadius: 12,
+    paddingHorizontal: 14,
+    paddingVertical: 12,
     fontFamily: typography.fontSans,
+    fontSize: 14,
+    color: '#1E1B18',
+  },
+  saveProfileBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#6B4E37',
+    height: 50,
+    borderRadius: 25,
+    gap: 8,
+    marginTop: 22,
+    ...shadows.card,
+  },
+  saveProfileBtnText: {
+    fontFamily: typography.fontSansBold,
+    fontSize: 14,
+    color: '#FFFFFF',
+    letterSpacing: 0.3,
   },
 });
+
+export default ProfileScreen;

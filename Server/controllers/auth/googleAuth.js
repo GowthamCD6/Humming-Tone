@@ -17,10 +17,15 @@ exports.googleUserAuth = async (req, res, next) => {
       return next(createError.BadRequest("Google credential token is required"));
     }
 
-    // 1. Verify Google ID Token
+    // 1. Verify Google ID Token (support Web and Android clients)
+    const allowedAudiences = [
+      process.env.GOOGLE_CLIENT_ID,
+      process.env.GOOGLE_ANDROID_CLIENT_ID,
+    ].filter(Boolean);
+
     const ticket = await googleClient.verifyIdToken({
       idToken: credential,
-      audience: process.env.GOOGLE_CLIENT_ID,
+      audience: allowedAudiences,
     });
 
     const payload = ticket.getPayload();

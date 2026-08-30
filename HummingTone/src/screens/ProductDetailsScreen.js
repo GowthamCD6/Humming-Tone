@@ -23,12 +23,13 @@ import { useCart } from '../context/CartContext';
 import { useWishlist } from '../context/WishlistContext';
 import { useAuth } from '../context/AuthContext';
 import { ProductService } from '../api/services';
+import { GoogleAuthModal } from '../components/GoogleAuthModal';
 
 const { width } = Dimensions.get('window');
 
 export const ProductDetailsScreen = ({ route, navigation }) => {
   const insets = useSafeAreaInsets();
-  const { user } = useAuth();
+  const { user, isAuthenticated } = useAuth();
   const { productId, initialProduct } = route.params || {};
   
   const [product, setProduct] = useState(initialProduct || null);
@@ -37,6 +38,7 @@ export const ProductDetailsScreen = ({ route, navigation }) => {
   const [selectedVariant, setSelectedVariant] = useState(null);
   const [isExpandedDesc, setIsExpandedDesc] = useState(false);
   const [quantity, setQuantity] = useState(1);
+  const [showGoogleModal, setShowGoogleModal] = useState(false);
 
   // Reviews State
   const [reviews, setReviews] = useState([]);
@@ -177,7 +179,12 @@ export const ProductDetailsScreen = ({ route, navigation }) => {
 
     const sizeToUse = selectedVariant?.size || 'Standard';
     addToCart(product, sizeToUse, quantity, selectedVariant);
-    navigation.navigate('Checkout');
+
+    if (!isAuthenticated) {
+      setShowGoogleModal(true);
+    } else {
+      navigation.navigate('Checkout');
+    }
   };
 
   const handleReviewSubmit = async () => {
@@ -865,6 +872,18 @@ export const ProductDetailsScreen = ({ route, navigation }) => {
           </View>
         </KeyboardAvoidingView>
       </Modal>
+
+      {/* Google Sign-In Gate Modal */}
+      <GoogleAuthModal
+        visible={showGoogleModal}
+        onClose={() => setShowGoogleModal(false)}
+        onSuccess={() => {
+          setShowGoogleModal(false);
+          navigation.navigate('Checkout');
+        }}
+        title="Sign In to Complete Purchase"
+        subtitle="Sign in with your Google account to auto-fill delivery details, track orders, and secure express checkout."
+      />
     </View>
   );
 };

@@ -15,8 +15,8 @@ import { Ionicons } from '../components/Icons';
 import { colors } from '../theme/colors';
 import { typography, spacing } from '../theme/typography';
 import { Header } from '../components/Header';
-import { Button } from '../components/Button';
 import { useAuth } from '../context/AuthContext';
+import { performGoogleSignIn } from '../services/googleAuth';
 
 export const LoginScreen = ({ navigation }) => {
   const insets = useSafeAreaInsets();
@@ -24,9 +24,28 @@ export const LoginScreen = ({ navigation }) => {
   const [email, setEmail] = useState('');
   const [phone, setPhone] = useState('');
   const [loading, setLoading] = useState(false);
+  const [googleLoading, setGoogleLoading] = useState(false);
   const [error, setError] = useState('');
 
   const { login } = useAuth();
+
+  const handleGoogleSignIn = async () => {
+    setError('');
+    setGoogleLoading(true);
+    try {
+      const res = await performGoogleSignIn();
+      if (res.success && res.user) {
+        await login(res.user, res.token);
+        navigation.goBack();
+      } else if (!res.cancelled && res.message) {
+        setError(res.message);
+      }
+    } catch (e) {
+      setError('Unable to complete Google sign in.');
+    } finally {
+      setGoogleLoading(false);
+    }
+  };
 
   const handleSignIn = async () => {
     if (!name.trim() && !email.trim()) {
@@ -98,6 +117,32 @@ export const LoginScreen = ({ navigation }) => {
 
           {/* Customer Sign In Form */}
           <View style={styles.form}>
+            {/* Google Sign-In Button */}
+            <TouchableOpacity
+              style={styles.googleBtn}
+              onPress={handleGoogleSignIn}
+              activeOpacity={0.88}
+              disabled={googleLoading}
+            >
+              {googleLoading ? (
+                <ActivityIndicator size="small" color="#FFFFFF" />
+              ) : (
+                <>
+                  <View style={styles.googleIconCircle}>
+                    <Ionicons name="logo-google" size={16} color="#EA4335" />
+                  </View>
+                  <Text style={styles.googleBtnText}>Continue with Google</Text>
+                </>
+              )}
+            </TouchableOpacity>
+
+            {/* Divider */}
+            <View style={styles.dividerRow}>
+              <View style={styles.dividerLine} />
+              <Text style={styles.dividerText}>OR SIGN IN WITH EMAIL</Text>
+              <View style={styles.dividerLine} />
+            </View>
+
             <View style={styles.inputGroup}>
               <Text style={styles.label}>Full Name</Text>
               <TextInput
@@ -140,12 +185,18 @@ export const LoginScreen = ({ navigation }) => {
               />
             </View>
 
-            <Button
-              title="Sign In to Account"
+            <TouchableOpacity
+              style={styles.signInActionBtn}
               onPress={handleSignIn}
-              loading={loading}
-              style={styles.actionBtn}
-            />
+              activeOpacity={0.88}
+              disabled={loading}
+            >
+              {loading ? (
+                <ActivityIndicator size="small" color="#FFFFFF" />
+              ) : (
+                <Text style={styles.signInActionBtnText}>Sign In to Account</Text>
+              )}
+            </TouchableOpacity>
 
             <TouchableOpacity
               style={styles.guestBtn}
@@ -257,8 +308,59 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: colors.textPrimary,
   },
-  actionBtn: {
+  googleBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#1E1B18',
+    height: 48,
+    borderRadius: 24,
+    gap: 10,
+    marginBottom: spacing.lg,
+  },
+  googleIconCircle: {
+    width: 26,
+    height: 26,
+    borderRadius: 13,
+    backgroundColor: '#FFFFFF',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  googleBtnText: {
+    color: '#FFFFFF',
+    fontFamily: typography.fontSansBold,
+    fontSize: 14,
+    letterSpacing: 0.3,
+  },
+  dividerRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+    marginBottom: spacing.lg,
+  },
+  dividerLine: {
+    flex: 1,
+    height: 1,
+    backgroundColor: colors.borderLight,
+  },
+  dividerText: {
+    fontFamily: typography.fontSansBold,
+    fontSize: 10.5,
+    letterSpacing: 0.8,
+    color: colors.textMuted,
+  },
+  signInActionBtn: {
+    backgroundColor: '#6B4E37',
+    height: 46,
+    borderRadius: 23,
+    alignItems: 'center',
+    justifyContent: 'center',
     marginTop: spacing.sm,
+  },
+  signInActionBtnText: {
+    color: '#FFFFFF',
+    fontFamily: typography.fontSansBold,
+    fontSize: 13.5,
   },
   guestBtn: {
     marginTop: spacing.md,

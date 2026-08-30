@@ -17,6 +17,8 @@ import { Ionicons } from '../components/Icons';
 import { shadows } from '../theme/colors';
 import { typography } from '../theme/typography';
 import { useCart } from '../context/CartContext';
+import { useAuth } from '../context/AuthContext';
+import { GoogleAuthModal } from '../components/GoogleAuthModal';
 
 export const CartScreen = ({ navigation }) => {
   const insets = useSafeAreaInsets();
@@ -33,13 +35,23 @@ export const CartScreen = ({ navigation }) => {
     applyCoupon,
     removeCoupon,
   } = useCart();
+  const { isAuthenticated } = useAuth();
 
   const [promoCodeInput, setPromoCodeInput] = useState('');
   const [couponError, setCouponError] = useState('');
   const [applyingCoupon, setApplyingCoupon] = useState(false);
+  const [showGoogleModal, setShowGoogleModal] = useState(false);
 
   // Total is discounted subtotal with GST and delivery fully included
   const calculatedTotal = Math.max(0, discountedSubtotal);
+
+  const handleProceedCheckout = () => {
+    if (!isAuthenticated) {
+      setShowGoogleModal(true);
+    } else {
+      navigation.navigate('Checkout');
+    }
+  };
 
   const handleApplyCoupon = async (codeToApply) => {
     const code = codeToApply || promoCodeInput;
@@ -143,7 +155,7 @@ export const CartScreen = ({ navigation }) => {
           style={styles.scroll}
           contentContainerStyle={[
             styles.scrollContent,
-            { paddingBottom: Math.max((insets.bottom || 0) + 75, 90) },
+            { paddingBottom: Math.max((insets.bottom || 0) + 95, 115) },
           ]}
           showsVerticalScrollIndicator={false}
         >
@@ -333,7 +345,7 @@ export const CartScreen = ({ navigation }) => {
           {/* ── 5. PROCEED TO CHECKOUT ACTION (Solid Black) ── */}
           <TouchableOpacity
             style={styles.checkoutBtn}
-            onPress={() => navigation.navigate('Checkout')}
+            onPress={handleProceedCheckout}
             activeOpacity={0.88}
           >
             <View style={styles.checkoutBtnLeft}>
@@ -348,6 +360,18 @@ export const CartScreen = ({ navigation }) => {
           </TouchableOpacity>
         </ScrollView>
       )}
+
+      {/* Google Sign-In Gate Modal */}
+      <GoogleAuthModal
+        visible={showGoogleModal}
+        onClose={() => setShowGoogleModal(false)}
+        onSuccess={() => {
+          setShowGoogleModal(false);
+          navigation.navigate('Checkout');
+        }}
+        title="Sign In to Complete Purchase"
+        subtitle="Sign in with your Google account to auto-fill delivery details, track orders, and secure express checkout."
+      />
     </View>
   );
 };
