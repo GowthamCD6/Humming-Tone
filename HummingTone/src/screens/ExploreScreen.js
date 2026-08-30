@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import {
   View,
   Text,
@@ -6,116 +6,196 @@ import {
   ScrollView,
   TextInput,
   TouchableOpacity,
-  Image,
   Dimensions,
   StatusBar,
+  RefreshControl,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useFocusEffect } from '@react-navigation/native';
 import { Ionicons } from '../components/Icons';
-import { colors, shadows } from '../theme/colors';
-import { typography, spacing } from '../theme/typography';
+import { shadows } from '../theme/colors';
+import { typography } from '../theme/typography';
 import { useSiteContent } from '../context/SiteContentContext';
-import { SITE_ASSETS } from '../api/siteAssets';
 
 const { width } = Dimensions.get('window');
-const GRID_ITEM_WIDTH = (width - 52) / 2;
 
-const GENDER_IMAGES = {
-  Men: 'https://images.unsplash.com/photo-1617137984095-74e4e5e3613f?auto=format&fit=crop&w=800&q=80',
-  Women: 'https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?auto=format&fit=crop&w=800&q=80',
-  Children: 'https://images.unsplash.com/photo-1503919545889-aef636e10ad4?auto=format&fit=crop&w=800&q=80',
-  Baby: 'https://images.unsplash.com/photo-1522771930-78848d9293e8?auto=format&fit=crop&w=800&q=80',
-  Sports: 'https://images.unsplash.com/photo-1517838277536-f5f99be501cd?auto=format&fit=crop&w=800&q=80',
-  Customize: SITE_ASSETS.homeHero,
+const DEPARTMENT_THEMES = {
+  Men: {
+    bg: '#F5EFEB',
+    borderColor: '#E6DCCE',
+    accent: '#6B4E37',
+    icon: 'shirt-outline',
+    tagline: 'Tailored Silhouettes, Baggy & Streetwear',
+    badge: 'ATELIER MEN',
+  },
+  Women: {
+    bg: '#F8EFF2',
+    borderColor: '#EBDCE0',
+    accent: '#8C485C',
+    icon: 'sparkles-outline',
+    tagline: 'Contemporary Dresses, Tops & Outerwear',
+    badge: 'COUTURE WOMEN',
+  },
+  Children: {
+    bg: '#EEF4F7',
+    borderColor: '#D8E5EC',
+    accent: '#3E667E',
+    icon: 'happy-outline',
+    tagline: 'Pure Organic Cottons & Everyday Basics',
+    badge: 'KIDS SUITE',
+  },
+  Baby: {
+    bg: '#F9F5EC',
+    borderColor: '#EFE7D5',
+    accent: '#8A7146',
+    icon: 'heart-outline',
+    tagline: 'Ultra-Soft Comfort, Rompers & Bodysuits',
+    badge: 'BABY LUXE',
+  },
+  Sports: {
+    bg: '#EAF0EE',
+    borderColor: '#D3E0DC',
+    accent: '#2F6155',
+    icon: 'fitness-outline',
+    tagline: 'High-Performance Breathable Activewear',
+    badge: 'SPORTS PRO',
+  },
+  Customize: {
+    bg: '#25211D',
+    borderColor: '#3D3630',
+    accent: '#D4AF37',
+    icon: 'color-palette-outline',
+    tagline: 'Design & Print Your Bespoke Apparel',
+    badge: 'CUSTOM STUDIO',
+    isDark: true,
+  },
 };
 
-const SORT_OPTIONS = ['Most Recent', 'Popular', 'Price: Low to High', 'Price: High to Low'];
-const REVIEW_OPTIONS = [
-  { rating: 4.5, stars: 5 },
-  { rating: 4.0, stars: 4 },
-  { rating: 3.5, stars: 3.5 },
-  { rating: 3.0, stars: 3 },
+const SORT_OPTIONS = [
+  { id: 'newest', label: 'Most Recent', icon: 'time-outline' },
+  { id: 'popular', label: 'Popular & Featured', icon: 'flame-outline' },
+  { id: 'price_asc', label: 'Price: Low to High', icon: 'trending-down-outline' },
+  { id: 'price_desc', label: 'Price: High to Low', icon: 'trending-up-outline' },
+];
+
+const PRICE_RANGES = [
+  { id: 'all', label: 'All Prices' },
+  { id: 'under_500', label: 'Under ₹500' },
+  { id: '500_1000', label: '₹500 - ₹1,000' },
+  { id: '1000_2000', label: '₹1,000 - ₹2,000' },
+  { id: 'above_2000', label: 'Above ₹2,000' },
 ];
 
 export const ExploreScreen = ({ navigation }) => {
-  const [searchQuery, setSearchQuery] = useState('');
-  const [selectedGenderTab, setSelectedGenderTab] = useState('All');
-  const [selectedSort, setSelectedSort] = useState('Most Recent');
-  const [selectedRating, setSelectedRating] = useState(4.0);
-  const [expandedGender, setExpandedGender] = useState(null);
-  const { activeGenders, genderCategories } = useSiteContent();
   const insets = useSafeAreaInsets();
+  const { activeGenders, genderCategories, refreshSiteContent } = useSiteContent();
 
-  const handleSearchSubmit = (queryToSearch) => {
-    const q = (queryToSearch || searchQuery).trim();
+  const [searchQuery, setSearchQuery] = useState('');
+  const [selectedGender, setSelectedGender] = useState('All');
+  const [selectedPrice, setSelectedPrice] = useState('all');
+  const [selectedSort, setSelectedSort] = useState('newest');
+  const [refreshing, setRefreshing] = useState(false);
+
+  // Auto-refresh dynamic categories whenever user navigates into Explore tab
+  useFocusEffect(
+    useCallback(() => {
+      refreshSiteContent();
+    }, [])
+  );
+
+  const onRefresh = async () => {
+    setRefreshing(true);
+    await refreshSiteContent();
+    setRefreshing(false);
+  };
+
+  const handleReset = () => {
+    setSearchQuery('');
+    setSelectedGender('All');
+    setSelectedPrice('all');
+    setSelectedSort('newest');
+  };
+
+  const handleSearchSubmit = () => {
+    const q = searchQuery.trim();
     if (q) {
       navigation.navigate('CategoryProducts', {
         title: `Search: "${q}"`,
         searchQuery: q,
+        gender: selectedGender !== 'All' ? selectedGender : undefined,
+        sortBy: selectedSort,
+        priceRange: selectedPrice !== 'all' ? selectedPrice : undefined,
       });
     }
   };
 
-  const handleGenderSelect = (gender) => {
+  const handleDepartmentPress = (gender) => {
     if (gender.toLowerCase() === 'customize') {
       navigation.navigate('MainTabs', { screen: 'CustomizeTab' });
     } else {
       navigation.navigate('CategoryProducts', {
         title: `${gender}'s Collection`,
         gender,
+        sortBy: selectedSort,
+        priceRange: selectedPrice !== 'all' ? selectedPrice : undefined,
       });
     }
   };
 
-  const handleCategorySelect = (gender, categoryName) => {
+  const handleSubCategoryPress = (gender, catName) => {
     navigation.navigate('CategoryProducts', {
-      title: `${categoryName}`,
+      title: `${catName}`,
       gender,
-      category: categoryName,
+      category: catName,
+      sortBy: selectedSort,
+      priceRange: selectedPrice !== 'all' ? selectedPrice : undefined,
     });
   };
 
-  const filteredGenders = selectedGenderTab === 'All'
+  const displayedGenders = selectedGender === 'All'
     ? activeGenders
-    : activeGenders.filter((g) => g.toLowerCase() === selectedGenderTab.toLowerCase());
+    : activeGenders.filter((g) => g.toLowerCase() === selectedGender.toLowerCase());
 
   return (
     <View style={styles.container}>
-      <StatusBar barStyle="dark-content" backgroundColor="#FFFFFF" />
+      <StatusBar barStyle="dark-content" backgroundColor="#FAF8F5" />
 
-      {/* ── 1. TOP HEADER (Template Exact) ── */}
-      <View style={[styles.topBar, { paddingTop: Math.max(insets.top, 12) }]}>
-        <TouchableOpacity
-          style={styles.backCircleBtn}
-          onPress={() => navigation.goBack()}
-          activeOpacity={0.8}
-        >
-          <Ionicons name="arrow-back" size={20} color={colors.textPrimary} />
-        </TouchableOpacity>
-        <Text style={styles.headerTitle}>Filter & Categories</Text>
-        <TouchableOpacity onPress={() => { setSelectedGenderTab('All'); setSelectedSort('Most Recent'); setSearchQuery(''); }}>
-          <Text style={styles.resetText}>Reset</Text>
-        </TouchableOpacity>
+      {/* ── 1. TOP HEADER ── */}
+      <View style={[styles.topBar, { paddingTop: Math.max(insets.top, 14) }]}>
+        <View>
+          <Text style={styles.headerTitle}>Categories & Filter</Text>
+          <Text style={styles.headerSubtitle}>Curated Apparel & Custom Atelier</Text>
+        </View>
+
+        {(selectedGender !== 'All' || selectedPrice !== 'all' || searchQuery.length > 0) ? (
+          <TouchableOpacity onPress={handleReset} style={styles.resetBtn} activeOpacity={0.75}>
+            <Ionicons name="refresh-outline" size={14} color="#6B4E37" />
+            <Text style={styles.resetText}>Reset</Text>
+          </TouchableOpacity>
+        ) : null}
       </View>
 
-      {/* ── 2. SEARCH INPUT BAR (Template Exact) ── */}
+      {/* ── 2. SEARCH INPUT BAR ── */}
       <View style={styles.searchContainer}>
         <View style={styles.searchBar}>
-          <Ionicons name="search-outline" size={20} color={colors.textMuted} />
+          <Ionicons name="search-outline" size={19} color="#8A7F75" />
           <TextInput
             style={styles.searchInput}
-            placeholder="Search categories, hoodies, jackets..."
-            placeholderTextColor={colors.textMuted}
+            placeholder="Search oversized, shirts, jerseys, hoodies..."
+            placeholderTextColor="#A3998F"
             value={searchQuery}
             onChangeText={setSearchQuery}
-            onSubmitEditing={() => handleSearchSubmit()}
+            onSubmitEditing={handleSearchSubmit}
             returnKeyType="search"
           />
-          {searchQuery.length > 0 && (
-            <TouchableOpacity onPress={() => setSearchQuery('')} hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}>
-              <Ionicons name="close-circle" size={18} color={colors.textMuted} />
+          {searchQuery.length > 0 ? (
+            <TouchableOpacity
+              onPress={() => setSearchQuery('')}
+              hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+            >
+              <Ionicons name="close-circle" size={18} color="#8A7F75" />
             </TouchableOpacity>
-          )}
+          ) : null}
         </View>
       </View>
 
@@ -123,169 +203,253 @@ export const ExploreScreen = ({ navigation }) => {
         style={styles.scroll}
         contentContainerStyle={[
           styles.scrollContent,
-          { paddingBottom: Math.max(insets.bottom + 80, 90) },
+          { paddingBottom: Math.max(insets.bottom + 95, 115) },
         ]}
         showsVerticalScrollIndicator={false}
+        refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#6B4E37" />
+        }
       >
-        {/* ── 3. GENDER PILLS SECTION (Template Exact) ── */}
-        <Text style={styles.filterSectionTitle}>Gender</Text>
-        <View style={styles.pillsWrap}>
-          {['All', ...activeGenders].map((tab) => (
-            <TouchableOpacity
-              key={tab}
-              style={[
-                styles.filterPill,
-                selectedGenderTab === tab && styles.filterPillActive,
-              ]}
-              onPress={() => setSelectedGenderTab(tab)}
-              activeOpacity={0.8}
-            >
-              <Text
-                style={[
-                  styles.filterPillText,
-                  selectedGenderTab === tab && styles.filterPillTextActive,
-                ]}
-              >
-                {tab}
-              </Text>
-            </TouchableOpacity>
-          ))}
-        </View>
-
-        {/* ── 4. SORT BY PILLS SECTION (Template Exact) ── */}
-        <Text style={styles.filterSectionTitle}>Sort by</Text>
-        <View style={styles.pillsWrap}>
-          {SORT_OPTIONS.map((sort) => (
-            <TouchableOpacity
-              key={sort}
-              style={[
-                styles.filterPill,
-                selectedSort === sort && styles.filterPillActive,
-              ]}
-              onPress={() => setSelectedSort(sort)}
-              activeOpacity={0.8}
-            >
-              <Text
-                style={[
-                  styles.filterPillText,
-                  selectedSort === sort && styles.filterPillTextActive,
-                ]}
-              >
-                {sort}
-              </Text>
-            </TouchableOpacity>
-          ))}
-        </View>
-
-        {/* ── 5. REVIEWS RATING FILTER (Template Exact) ── */}
-        <Text style={styles.filterSectionTitle}>Reviews</Text>
-        <View style={styles.reviewsList}>
-          {REVIEW_OPTIONS.map((item) => (
-            <TouchableOpacity
-              key={item.rating}
-              style={styles.reviewRow}
-              onPress={() => setSelectedRating(item.rating)}
-              activeOpacity={0.8}
-            >
-              <View style={styles.starsRow}>
-                {[1, 2, 3, 4, 5].map((star) => (
-                  <Ionicons
-                    key={star}
-                    name={star <= Math.floor(item.stars) ? 'star' : star - 0.5 === item.stars ? 'star-half' : 'star-outline'}
-                    size={18}
-                    color={colors.star}
-                  />
-                ))}
-                <Text style={styles.reviewScoreText}>{item.rating.toFixed(1)}</Text>
-              </View>
-              <View style={[styles.radioCircle, selectedRating === item.rating && styles.radioCircleActive]}>
-                {selectedRating === item.rating && <View style={styles.radioDot} />}
-              </View>
-            </TouchableOpacity>
-          ))}
-        </View>
-
-        {/* ── 6. CATEGORY DIRECTORY TILES (Template Exact) ── */}
-        <Text style={styles.filterSectionTitle}>Category Collections</Text>
-        <View style={styles.lookbookGrid}>
-          {filteredGenders.map((gender) => {
-            const categories = genderCategories[gender] || genderCategories[gender.toLowerCase()] || [];
-            const isExpanded = expandedGender === gender;
-            const bgImage = GENDER_IMAGES[gender] || GENDER_IMAGES.Men;
-
-            return (
-              <View key={gender} style={styles.lookbookGridItem}>
+        {/* ── 3. DEPARTMENT TABS (Horizontal Pills) ── */}
+        <View style={styles.sectionBlock}>
+          <Text style={styles.sectionHeading}>DEPARTMENTS</Text>
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={styles.pillsScroll}
+          >
+            {['All', ...activeGenders].map((dept) => {
+              const isSelected = selectedGender === dept;
+              return (
                 <TouchableOpacity
-                  style={styles.categoryTile}
-                  onPress={() => handleGenderSelect(gender)}
-                  activeOpacity={0.88}
+                  key={dept}
+                  style={[
+                    styles.deptPill,
+                    isSelected && styles.deptPillActive,
+                  ]}
+                  onPress={() => setSelectedGender(dept)}
+                  activeOpacity={0.8}
                 >
-                  <Image
-                    source={{ uri: bgImage }}
-                    style={StyleSheet.absoluteFillObject}
-                    resizeMode="cover"
-                  />
-                  <View style={styles.categoryTileOverlay}>
-                    <Text style={styles.categoryTileTitle}>{gender}</Text>
-                    <Text style={styles.categoryTileCount}>
-                      {categories.length > 0 ? `${categories.length} Items` : 'Explore'}
-                    </Text>
+                  <Text
+                    style={[
+                      styles.deptPillText,
+                      isSelected && styles.deptPillTextActive,
+                    ]}
+                  >
+                    {dept}
+                  </Text>
+                </TouchableOpacity>
+              );
+            })}
+          </ScrollView>
+        </View>
 
-                    {categories.length > 0 && (
-                      <TouchableOpacity
-                        style={styles.tileExpandBtn}
-                        onPress={(e) => {
-                          e.stopPropagation();
-                          setExpandedGender(isExpanded ? null : gender);
-                        }}
-                        hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+        {/* ── 4. CATEGORY COLLECTIONS (Rich Luxury Cards) ── */}
+        <View style={styles.sectionBlock}>
+          <View style={styles.sectionHeaderRow}>
+            <Text style={styles.sectionHeading}>COLLECTION CATALOG</Text>
+            <Text style={styles.sectionMeta}>{displayedGenders.length} Departments</Text>
+          </View>
+
+          <View style={styles.cardsGrid}>
+            {displayedGenders.map((gender) => {
+              const theme = DEPARTMENT_THEMES[gender] || DEPARTMENT_THEMES.Men;
+              const categories = genderCategories[gender] || genderCategories[gender.toLowerCase()] || [];
+              const isDark = Boolean(theme.isDark);
+
+              return (
+                <View
+                  key={gender}
+                  style={[
+                    styles.collectionCard,
+                    {
+                      backgroundColor: theme.bg,
+                      borderColor: theme.borderColor,
+                    },
+                  ]}
+                >
+                  {/* Card Main Info */}
+                  <TouchableOpacity
+                    style={styles.cardMainTouch}
+                    onPress={() => handleDepartmentPress(gender)}
+                    activeOpacity={0.85}
+                  >
+                    {/* Top Row: Icon + Badge + Arrow */}
+                    <View style={styles.cardTopRow}>
+                      <View style={styles.cardBadgeWrap}>
+                        <View
+                          style={[
+                            styles.cardIconCircle,
+                            { backgroundColor: isDark ? '#3D3630' : '#FFFFFF' },
+                          ]}
+                        >
+                          <Ionicons name={theme.icon} size={18} color={theme.accent} />
+                        </View>
+                        <Text
+                          style={[
+                            styles.cardBadgeText,
+                            { color: theme.accent },
+                          ]}
+                        >
+                          {theme.badge}
+                        </Text>
+                      </View>
+
+                      <View
+                        style={[
+                          styles.viewAllArrowCircle,
+                          { backgroundColor: isDark ? '#3D3630' : '#FFFFFF' },
+                        ]}
                       >
                         <Ionicons
-                          name={isExpanded ? 'chevron-up' : 'chevron-down'}
-                          size={16}
-                          color="#FFFFFF"
+                          name="arrow-forward"
+                          size={15}
+                          color={isDark ? '#D4AF37' : '#1E1B18'}
                         />
-                      </TouchableOpacity>
-                    )}
-                  </View>
-                </TouchableOpacity>
+                      </View>
+                    </View>
 
-                {/* Subcategory Drawer */}
-                {isExpanded && categories.length > 0 && (
-                  <View style={styles.subCatDrawer}>
-                    <TouchableOpacity
-                      style={styles.subCatAllLink}
-                      onPress={() => handleGenderSelect(gender)}
+                    {/* Title & Tagline */}
+                    <Text
+                      style={[
+                        styles.cardTitle,
+                        { color: isDark ? '#FFFFFF' : '#1E1B18' },
+                      ]}
                     >
-                      <Text style={styles.subCatAllText}>All {gender} Clothing</Text>
-                      <Ionicons name="arrow-forward" size={12} color={colors.primary} />
-                    </TouchableOpacity>
+                      {gender === 'Customize' ? 'Customize Studio' : `${gender}'s Fashion`}
+                    </Text>
 
-                    {categories.map((cat, idx) => (
-                      <TouchableOpacity
-                        key={idx}
-                        style={styles.subCatRow}
-                        onPress={() => handleCategorySelect(gender, cat)}
-                      >
-                        <Text style={styles.subCatRowText}>{cat}</Text>
-                        <Ionicons name="chevron-forward" size={12} color={colors.textMuted} />
-                      </TouchableOpacity>
-                    ))}
-                  </View>
-                )}
-              </View>
-            );
-          })}
+                    <Text
+                      style={[
+                        styles.cardTagline,
+                        { color: isDark ? '#A3998F' : '#6B6259' },
+                      ]}
+                    >
+                      {theme.tagline}
+                    </Text>
+                  </TouchableOpacity>
+
+                  {/* Subcategories Chips (Inside Card) */}
+                  {categories.length > 0 ? (
+                    <View style={styles.subCatSection}>
+                      <View style={styles.subCatHeader}>
+                        <Text style={[styles.subCatTitle, { color: isDark ? '#C7BFB5' : '#8A7F75' }]}>
+                          EXPLORE CATEGORIES ({categories.length})
+                        </Text>
+                      </View>
+
+                      <View style={styles.subCatChipsWrap}>
+                        {categories.map((cat, idx) => (
+                          <TouchableOpacity
+                            key={idx}
+                            style={[
+                              styles.subCatChip,
+                              { backgroundColor: isDark ? '#36302B' : '#FFFFFF', borderColor: isDark ? '#4A423B' : theme.borderColor },
+                            ]}
+                            onPress={() => handleSubCategoryPress(gender, cat)}
+                            activeOpacity={0.75}
+                          >
+                            <Text style={[styles.subCatChipText, { color: isDark ? '#FAF8F5' : '#423B35' }]}>
+                              {cat}
+                            </Text>
+                            <Ionicons
+                              name="chevron-forward"
+                              size={12}
+                              color={theme.accent}
+                              style={{ marginLeft: 3 }}
+                            />
+                          </TouchableOpacity>
+                        ))}
+                      </View>
+                    </View>
+                  ) : null}
+                </View>
+              );
+            })}
+          </View>
         </View>
 
-        {/* ── 7. APPLY FILTER BUTTON (Template Exact) ── */}
-        <TouchableOpacity
-          style={styles.applyFilterBtn}
-          onPress={() => handleGenderSelect(selectedGenderTab === 'All' ? 'Men' : selectedGenderTab)}
-          activeOpacity={0.88}
-        >
-          <Text style={styles.applyFilterBtnText}>Apply Filter</Text>
-        </TouchableOpacity>
+        {/* ── 5. QUICK PRICE FILTERS ── */}
+        <View style={styles.sectionBlock}>
+          <Text style={styles.sectionHeading}>PRICE BUDGET</Text>
+          <View style={styles.pillsWrap}>
+            {PRICE_RANGES.map((price) => {
+              const isSelected = selectedPrice === price.id;
+              return (
+                <TouchableOpacity
+                  key={price.id}
+                  style={[
+                    styles.pricePill,
+                    isSelected && styles.pricePillActive,
+                  ]}
+                  onPress={() => {
+                    const nextPrice = isSelected ? 'all' : price.id;
+                    setSelectedPrice(nextPrice);
+                    navigation.navigate('CategoryProducts', {
+                      title: price.label,
+                      gender: selectedGender !== 'All' ? selectedGender : undefined,
+                      priceRange: nextPrice !== 'all' ? nextPrice : undefined,
+                      sortBy: selectedSort,
+                    });
+                  }}
+                  activeOpacity={0.8}
+                >
+                  <Text
+                    style={[
+                      styles.pricePillText,
+                      isSelected && styles.pricePillTextActive,
+                    ]}
+                  >
+                    {price.label}
+                  </Text>
+                </TouchableOpacity>
+              );
+            })}
+          </View>
+        </View>
+
+        {/* ── 6. SORTING MODES ── */}
+        <View style={styles.sectionBlock}>
+          <Text style={styles.sectionHeading}>DISCOVERY SORTING</Text>
+          <View style={styles.sortGrid}>
+            {SORT_OPTIONS.map((sort) => {
+              const isSelected = selectedSort === sort.id;
+              return (
+                <TouchableOpacity
+                  key={sort.id}
+                  style={[
+                    styles.sortCard,
+                    isSelected && styles.sortCardActive,
+                  ]}
+                  onPress={() => {
+                    setSelectedSort(sort.id);
+                    navigation.navigate('CategoryProducts', {
+                      title: sort.label,
+                      gender: selectedGender !== 'All' ? selectedGender : undefined,
+                      sortBy: sort.id,
+                      priceRange: selectedPrice !== 'all' ? selectedPrice : undefined,
+                    });
+                  }}
+                  activeOpacity={0.8}
+                >
+                  <Ionicons
+                    name={sort.icon}
+                    size={16}
+                    color={isSelected ? '#6B4E37' : '#8A7F75'}
+                  />
+                  <Text
+                    style={[
+                      styles.sortCardText,
+                      isSelected && styles.sortCardTextActive,
+                    ]}
+                  >
+                    {sort.label}
+                  </Text>
+                </TouchableOpacity>
+              );
+            })}
+          </View>
+        </View>
       </ScrollView>
     </View>
   );
@@ -294,7 +458,7 @@ export const ExploreScreen = ({ navigation }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#FFFFFF',
+    backgroundColor: '#FAF8F5',
   },
   topBar: {
     flexDirection: 'row',
@@ -302,46 +466,56 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     paddingHorizontal: 20,
     paddingBottom: 10,
-    backgroundColor: '#FFFFFF',
-  },
-  backCircleBtn: {
-    width: 42,
-    height: 42,
-    borderRadius: 21,
-    backgroundColor: colors.surfaceMuted,
-    alignItems: 'center',
-    justifyContent: 'center',
+    backgroundColor: '#FAF8F5',
   },
   headerTitle: {
+    fontFamily: typography.fontSansBold,
+    fontSize: 20,
+    color: '#1E1B18',
+  },
+  headerSubtitle: {
     fontFamily: typography.fontSans,
-    fontSize: 16,
-    fontWeight: typography.weightBold,
-    color: colors.textPrimary,
+    fontSize: 12,
+    color: '#8A7F75',
+    marginTop: 2,
+  },
+  resetBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    backgroundColor: '#FAF5EE',
+    borderWidth: 1,
+    borderColor: '#E5DCCE',
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderRadius: 14,
   },
   resetText: {
-    fontFamily: typography.fontSans,
-    fontSize: 13,
-    fontWeight: typography.weightSemiBold,
-    color: colors.primary,
+    fontFamily: typography.fontSansBold,
+    fontSize: 12,
+    color: '#6B4E37',
   },
   searchContainer: {
     paddingHorizontal: 20,
-    paddingBottom: 10,
+    paddingBottom: 8,
   },
   searchBar: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: colors.surfaceMuted,
-    borderRadius: 24,
-    paddingHorizontal: 16,
-    height: 48,
-    gap: 10,
+    backgroundColor: '#FFFFFF',
+    borderWidth: 1,
+    borderColor: '#EAE4DC',
+    borderRadius: 22,
+    paddingHorizontal: 14,
+    height: 44,
+    gap: 8,
+    ...shadows.card,
   },
   searchInput: {
     flex: 1,
     fontFamily: typography.fontSans,
     fontSize: 13.5,
-    color: colors.textPrimary,
+    color: '#1E1B18',
     padding: 0,
   },
   scroll: {
@@ -351,169 +525,192 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     paddingTop: 10,
   },
-  filterSectionTitle: {
-    fontFamily: typography.fontSans,
-    fontSize: 14,
-    fontWeight: typography.weightBold,
-    color: colors.textPrimary,
-    marginTop: 14,
+  sectionBlock: {
+    marginBottom: 22,
+  },
+  sectionHeaderRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
     marginBottom: 10,
+  },
+  sectionHeading: {
+    fontFamily: typography.fontSansBold,
+    fontSize: 11.5,
+    color: '#6B6259',
+    letterSpacing: 0.8,
+    marginBottom: 10,
+  },
+  sectionMeta: {
+    fontFamily: typography.fontSans,
+    fontSize: 11.5,
+    color: '#8A7F75',
+  },
+  pillsScroll: {
+    gap: 8,
   },
   pillsWrap: {
     flexDirection: 'row',
     flexWrap: 'wrap',
     gap: 8,
   },
-  filterPill: {
+  deptPill: {
     paddingHorizontal: 18,
-    paddingVertical: 8,
+    paddingVertical: 9,
     borderRadius: 20,
-    backgroundColor: colors.surfaceMuted,
-  },
-  filterPillActive: {
-    backgroundColor: colors.primary,
-  },
-  filterPillText: {
-    fontFamily: typography.fontSans,
-    fontSize: 12,
-    fontWeight: typography.weightMedium,
-    color: colors.textSecondary,
-  },
-  filterPillTextActive: {
-    color: '#FFFFFF',
-    fontWeight: typography.weightBold,
-  },
-  reviewsList: {
-    gap: 10,
-    marginTop: 4,
-  },
-  reviewRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingVertical: 6,
-  },
-  starsRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 4,
-  },
-  reviewScoreText: {
-    fontFamily: typography.fontSans,
-    fontSize: 13,
-    fontWeight: typography.weightBold,
-    color: colors.textPrimary,
-    marginLeft: 8,
-  },
-  radioCircle: {
-    width: 20,
-    height: 20,
-    borderRadius: 10,
+    backgroundColor: '#FFFFFF',
     borderWidth: 1.5,
-    borderColor: colors.border,
+    borderColor: '#EAE4DC',
     alignItems: 'center',
     justifyContent: 'center',
   },
-  radioCircleActive: {
-    borderColor: colors.primary,
+  deptPillActive: {
+    backgroundColor: '#1E1B18',
+    borderColor: '#1E1B18',
   },
-  radioDot: {
-    width: 10,
-    height: 10,
-    borderRadius: 5,
-    backgroundColor: colors.primary,
+  deptPillText: {
+    fontFamily: typography.fontSansBold,
+    fontSize: 13,
+    color: '#5C544E',
   },
-  lookbookGrid: {
+  deptPillTextActive: {
+    color: '#FFFFFF',
+  },
+  cardsGrid: {
+    gap: 14,
+  },
+  collectionCard: {
+    borderRadius: 20,
+    borderWidth: 1.5,
+    padding: 16,
+    ...shadows.card,
+  },
+  cardMainTouch: {
+    marginBottom: 6,
+  },
+  cardTopRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 10,
+  },
+  cardBadgeWrap: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  cardIconCircle: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    alignItems: 'center',
+    justifyContent: 'center',
+    ...shadows.card,
+  },
+  cardBadgeText: {
+    fontFamily: typography.fontSansBold,
+    fontSize: 11,
+    letterSpacing: 0.8,
+  },
+  viewAllArrowCircle: {
+    width: 28,
+    height: 28,
+    borderRadius: 14,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  cardTitle: {
+    fontFamily: typography.fontSansBold,
+    fontSize: 19,
+    letterSpacing: 0.2,
+    marginBottom: 3,
+  },
+  cardTagline: {
+    fontFamily: typography.fontSans,
+    fontSize: 12.5,
+    lineHeight: 18,
+  },
+  subCatSection: {
+    marginTop: 10,
+    paddingTop: 10,
+    borderTopWidth: 1,
+    borderTopColor: 'rgba(0, 0, 0, 0.06)',
+  },
+  subCatHeader: {
+    marginBottom: 8,
+  },
+  subCatTitle: {
+    fontFamily: typography.fontSansBold,
+    fontSize: 10.5,
+    letterSpacing: 0.6,
+  },
+  subCatChipsWrap: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    justifyContent: 'space-between',
-    marginTop: 6,
+    gap: 7,
   },
-  lookbookGridItem: {
-    width: GRID_ITEM_WIDTH,
-    marginBottom: 14,
-  },
-  categoryTile: {
-    width: '100%',
-    height: 160,
-    borderRadius: 16,
-    overflow: 'hidden',
-    position: 'relative',
-    backgroundColor: colors.surfaceMuted,
-  },
-  categoryTileOverlay: {
-    ...StyleSheet.absoluteFillObject,
-    backgroundColor: 'rgba(31, 26, 23, 0.4)',
-    padding: 12,
-    justifyContent: 'flex-end',
-  },
-  categoryTileTitle: {
-    fontFamily: typography.fontSans,
-    fontSize: 15,
-    fontWeight: typography.weightBold,
-    color: '#FFFFFF',
-  },
-  categoryTileCount: {
-    fontFamily: typography.fontSans,
-    fontSize: 10,
-    color: 'rgba(255, 255, 255, 0.85)',
-    marginTop: 2,
-  },
-  tileExpandBtn: {
-    position: 'absolute',
-    top: 10,
-    right: 10,
-    width: 26,
-    height: 26,
-    borderRadius: 13,
-    backgroundColor: 'rgba(0, 0, 0, 0.35)',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  subCatDrawer: {
-    backgroundColor: colors.surfaceMuted,
-    borderRadius: 10,
-    marginTop: 6,
-    padding: 8,
-  },
-  subCatAllLink: {
+  subCatChip: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
     alignItems: 'center',
+    paddingHorizontal: 11,
     paddingVertical: 6,
-    borderBottomWidth: 1,
-    borderBottomColor: colors.borderLight,
-    marginBottom: 4,
+    borderRadius: 12,
+    borderWidth: 1,
   },
-  subCatAllText: {
+  subCatChipText: {
+    fontFamily: typography.fontSansBold,
+    fontSize: 12,
+  },
+  pricePill: {
+    paddingHorizontal: 14,
+    paddingVertical: 8,
+    borderRadius: 16,
+    backgroundColor: '#FFFFFF',
+    borderWidth: 1,
+    borderColor: '#EAE4DC',
+  },
+  pricePillActive: {
+    backgroundColor: '#FAF5EE',
+    borderColor: '#6B4E37',
+  },
+  pricePillText: {
     fontFamily: typography.fontSans,
-    fontSize: 11,
-    fontWeight: typography.weightBold,
-    color: colors.primary,
+    fontSize: 12.5,
+    color: '#5C544E',
   },
-  subCatRow: {
+  pricePillTextActive: {
+    fontFamily: typography.fontSansBold,
+    color: '#6B4E37',
+  },
+  sortGrid: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
+    flexWrap: 'wrap',
+    gap: 8,
+  },
+  sortCard: {
+    flex: 1,
+    minWidth: (width - 56) / 2,
+    flexDirection: 'row',
     alignItems: 'center',
-    paddingVertical: 5,
+    gap: 6,
+    backgroundColor: '#FFFFFF',
+    borderWidth: 1,
+    borderColor: '#EAE4DC',
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    borderRadius: 14,
   },
-  subCatRowText: {
+  sortCardActive: {
+    backgroundColor: '#FAF5EE',
+    borderColor: '#6B4E37',
+  },
+  sortCardText: {
     fontFamily: typography.fontSans,
-    fontSize: 11,
-    color: colors.textSecondary,
+    fontSize: 12,
+    color: '#5C544E',
   },
-  applyFilterBtn: {
-    backgroundColor: colors.primary,
-    height: 52,
-    borderRadius: 26,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginTop: 20,
-  },
-  applyFilterBtnText: {
-    fontFamily: typography.fontSans,
-    fontSize: 14,
-    fontWeight: typography.weightBold,
-    color: '#FFFFFF',
+  sortCardTextActive: {
+    fontFamily: typography.fontSansBold,
+    color: '#6B4E37',
   },
 });

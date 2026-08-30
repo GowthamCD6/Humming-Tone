@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import {
   View,
   Text,
@@ -11,6 +11,7 @@ import {
   StatusBar,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useFocusEffect } from '@react-navigation/native';
 import { Ionicons } from '../components/Icons';
 import { colors, shadows } from '../theme/colors';
 import { typography, spacing } from '../theme/typography';
@@ -124,6 +125,14 @@ export const HomeScreen = ({ navigation }) => {
   useEffect(() => {
     loadData();
   }, []);
+
+  // Auto-refresh latest products & site categories whenever user focuses Home tab
+  useFocusEffect(
+    useCallback(() => {
+      loadData();
+      refreshSiteContent();
+    }, [])
+  );
 
   const onRefresh = () => {
     setRefreshing(true);
