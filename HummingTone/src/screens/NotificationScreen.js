@@ -19,10 +19,6 @@ import { colors, shadows } from '../theme/colors';
 import { typography, spacing } from '../theme/typography';
 import { useNotifications } from '../context/NotificationContext';
 
-if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental) {
-  UIManager.setLayoutAnimationEnabledExperimental(true);
-}
-
 const TYPE_FILTERS = [
   { id: 'all', label: 'All Updates' },
   { id: 'orders', label: 'Orders' },
@@ -569,14 +565,13 @@ const styles = StyleSheet.create({
     ...shadows.subtle,
   },
   cardUnread: {
-    borderColor: '#DFD3C4',
-    backgroundColor: '#FFFDF9',
-    borderLeftWidth: 4,
-    borderLeftColor: '#6B4E37',
+    backgroundColor: '#FFFFFF',
+    borderColor: '#E0D4C5',
+    ...shadows.card,
   },
   cardRead: {
     backgroundColor: '#FAF8F5',
-    opacity: 0.88,
+    borderColor: '#EAE4DC',
   },
   cardHeader: {
     flexDirection: 'row',
@@ -605,10 +600,14 @@ const styles = StyleSheet.create({
   timestamp: {
     fontFamily: typography.fontSans,
     fontSize: 11,
-    color: '#A3998F',
+    color: '#8A7F75',
   },
   markReadBtn: {
-    padding: 2,
+    padding: 3,
+    backgroundColor: '#FAF5EE',
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: '#EAE2D8',
   },
   cardBody: {
     flexDirection: 'row',
@@ -633,7 +632,7 @@ const styles = StyleSheet.create({
   title: {
     fontFamily: typography.fontSansBold,
     fontSize: 13.5,
-    color: '#4A4036',
+    color: '#1E1B18',
     marginBottom: 3,
   },
   titleUnread: {

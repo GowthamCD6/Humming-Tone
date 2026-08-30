@@ -18,6 +18,7 @@ import { Ionicons } from '../components/Icons';
 import { shadows } from '../theme/colors';
 import { typography } from '../theme/typography';
 import { useSiteContent } from '../context/SiteContentContext';
+import { useWishlist } from '../context/WishlistContext';
 import { useNotifications } from '../context/NotificationContext';
 
 const { width } = Dimensions.get('window');
@@ -121,6 +122,7 @@ const RATING_FILTER_OPTIONS = [
 export const ExploreScreen = ({ navigation }) => {
   const insets = useSafeAreaInsets();
   const { activeGenders, refreshSiteContent } = useSiteContent();
+  const { wishlistCount } = useWishlist();
   const { unreadCount } = useNotifications();
 
   const [searchQuery, setSearchQuery] = useState('');
@@ -197,20 +199,33 @@ export const ExploreScreen = ({ navigation }) => {
           <Text style={styles.headerSubtitle}>Curated Apparel & Custom Atelier</Text>
         </View>
 
-        <TouchableOpacity
-          style={styles.notifCircleBtn}
-          onPress={() => navigation.navigate('Notifications')}
-          activeOpacity={0.8}
-        >
-          <Ionicons name="notifications-outline" size={19} color="#1E1B18" />
-          {unreadCount > 0 && (
-            <View style={styles.topNotifBadge}>
-              {unreadCount > 1 ? (
+        <View style={styles.topActionsRow}>
+          <TouchableOpacity
+            style={styles.notifCircleBtn}
+            onPress={() => navigation.navigate('Wishlist')}
+            activeOpacity={0.8}
+          >
+            <Ionicons name="heart-outline" size={19} color="#1E1B18" />
+            {wishlistCount > 0 && (
+              <View style={[styles.topNotifBadge, { backgroundColor: '#6B4E37' }]}>
+                <Text style={styles.topNotifBadgeText}>{wishlistCount > 9 ? '9+' : wishlistCount}</Text>
+              </View>
+            )}
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={styles.notifCircleBtn}
+            onPress={() => navigation.navigate('Notifications')}
+            activeOpacity={0.8}
+          >
+            <Ionicons name="notifications-outline" size={19} color="#1E1B18" />
+            {unreadCount > 0 && (
+              <View style={styles.topNotifBadge}>
                 <Text style={styles.topNotifBadgeText}>{unreadCount > 9 ? '9+' : unreadCount}</Text>
-              ) : null}
-            </View>
-          )}
-        </TouchableOpacity>
+              </View>
+            )}
+          </TouchableOpacity>
+        </View>
       </View>
 
       {/* ── 2. SEARCH INPUT BAR ── */}
@@ -473,6 +488,11 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     paddingBottom: 10,
     backgroundColor: '#FAF8F5',
+  },
+  topActionsRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
   },
   notifCircleBtn: {
     width: 38,

@@ -21,6 +21,7 @@ import { GarmentIcon } from '../components/GarmentIcons';
 import { ProductService } from '../api/services';
 import { useSiteContent } from '../context/SiteContentContext';
 import { useAuth } from '../context/AuthContext';
+import { useWishlist } from '../context/WishlistContext';
 import { useNotifications } from '../context/NotificationContext';
 import { SITE_ASSETS } from '../api/siteAssets';
 
@@ -80,6 +81,7 @@ export const HomeScreen = ({ navigation }) => {
   const insets = useSafeAreaInsets();
   const { activeGenders, refreshSiteContent } = useSiteContent();
   const { user, isAuthenticated } = useAuth();
+  const { wishlistCount } = useWishlist();
   const { unreadCount } = useNotifications();
 
   const [featuredProducts, setFeaturedProducts] = useState([]);
@@ -176,20 +178,33 @@ export const HomeScreen = ({ navigation }) => {
           </TouchableOpacity>
         </View>
 
-        <TouchableOpacity
-          style={styles.notificationBtn}
-          onPress={() => navigation.navigate('Notifications')}
-          activeOpacity={0.8}
-        >
-          <Ionicons name="notifications-outline" size={22} color={colors.textPrimary} />
-          {unreadCount > 0 && (
-            <View style={styles.notifBadge}>
-              {unreadCount > 1 ? (
-                <Text style={styles.notifBadgeText}>{unreadCount > 9 ? '9+' : unreadCount}</Text>
-              ) : null}
-            </View>
-          )}
-        </TouchableOpacity>
+        <View style={styles.topActionsRow}>
+          <TouchableOpacity
+            style={styles.headerIconBtn}
+            onPress={() => navigation.navigate('Wishlist')}
+            activeOpacity={0.8}
+          >
+            <Ionicons name="heart-outline" size={21} color={colors.textPrimary} />
+            {wishlistCount > 0 && (
+              <View style={[styles.badgePill, { backgroundColor: '#6B4E37' }]}>
+                <Text style={styles.badgePillText}>{wishlistCount > 9 ? '9+' : wishlistCount}</Text>
+              </View>
+            )}
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={styles.headerIconBtn}
+            onPress={() => navigation.navigate('Notifications')}
+            activeOpacity={0.8}
+          >
+            <Ionicons name="notifications-outline" size={21} color={colors.textPrimary} />
+            {unreadCount > 0 && (
+              <View style={styles.badgePill}>
+                <Text style={styles.badgePillText}>{unreadCount > 9 ? '9+' : unreadCount}</Text>
+              </View>
+            )}
+          </TouchableOpacity>
+        </View>
       </View>
 
       <ScrollView
@@ -439,34 +454,42 @@ const styles = StyleSheet.create({
   waveEmoji: {
     fontSize: 18,
   },
-  notificationBtn: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
-    backgroundColor: colors.surfaceMuted,
+  topActionsRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  headerIconBtn: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: '#FAF8F5',
+    borderWidth: 1,
+    borderColor: '#ECE4DC',
     alignItems: 'center',
     justifyContent: 'center',
     position: 'relative',
+    ...shadows.subtle,
   },
-  notifBadge: {
+  badgePill: {
     position: 'absolute',
-    top: 6,
-    right: 6,
-    minWidth: 16,
-    height: 16,
-    borderRadius: 8,
+    top: 4,
+    right: 4,
+    minWidth: 15,
+    height: 15,
+    borderRadius: 7.5,
     backgroundColor: '#C53030',
     alignItems: 'center',
     justifyContent: 'center',
-    paddingHorizontal: 3,
-    borderWidth: 1.5,
+    paddingHorizontal: 2.5,
+    borderWidth: 1.2,
     borderColor: '#FFFFFF',
   },
-  notifBadgeText: {
+  badgePillText: {
     fontFamily: typography.fontSansBold,
-    fontSize: 9,
+    fontSize: 8.5,
     color: '#FFFFFF',
-    lineHeight: 11,
+    lineHeight: 10,
   },
 
   // 2. Search Row
