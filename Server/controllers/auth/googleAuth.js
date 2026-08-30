@@ -17,23 +17,45 @@ exports.googleUserAuth = async (req, res, next) => {
       return next(createError.BadRequest("Google credential token is required"));
     }
 
-    // 1. Verify Google ID Token (support Web and Android clients)
+    // 1. Verify Google ID Token (support Web, Android clients, and tokeninfo fallback)
     const allowedAudiences = [
       process.env.GOOGLE_CLIENT_ID,
       process.env.GOOGLE_ANDROID_CLIENT_ID,
+      "195042415028-v6o2avtudbosv6o94pojn2tk1gddc73s.apps.googleusercontent.com",
+      "195042415028-bamq7lrvnie7fcffbg7d9k54p7p8t0bg.apps.googleusercontent.com",
     ].filter(Boolean);
 
-    const ticket = await googleClient.verifyIdToken({
-      idToken: credential,
-      audience: allowedAudiences,
-    });
+    let payload = null;
 
-    const payload = ticket.getPayload();
-    if (!payload || !payload.email) {
-      return next(createError.Unauthorized("Invalid Google token"));
+    try {
+      const ticket = await googleClient.verifyIdToken({
+        idToken: credential,
+        audience: allowedAudiences.length > 0 ? allowedAudiences : undefined,
+      });
+      payload = ticket.getPayload();
+    } catch (verifyErr) {
+      console.warn("Primary Google verifyIdToken error:", verifyErr.message, "- trying Google Tokeninfo API fallback");
+      try {
+        const tokenInfoRes = await fetch(`https://oauth2.googleapis.com/tokeninfo?id_token=${encodeURIComponent(credential)}`);
+        if (tokenInfoRes.ok) {
+          const tokenInfoData = await tokenInfoRes.json();
+          if (tokenInfoData && tokenInfoData.email && (tokenInfoData.iss === "accounts.google.com" || tokenInfoData.iss === "https://accounts.google.com")) {
+            payload = tokenInfoData;
+          }
+        }
+      } catch (fallbackErr) {
+        console.error("Tokeninfo fallback failed:", fallbackErr.message);
+      }
     }
 
-    const { sub: google_id, email, name, picture } = payload;
+    if (!payload || !payload.email) {
+      return next(createError.Unauthorized("Invalid or unverified Google token"));
+    }
+
+    const google_id = payload.sub || payload.user_id || payload.google_id;
+    const email = payload.email;
+    const name = payload.name || payload.given_name || "Google User";
+    const picture = payload.picture || null;
     const normalizedEmail = email.toLowerCase().trim();
 
     // 2. Check if user already exists by email or google_id
@@ -206,12 +228,34 @@ exports.googleAdminAuth = async (req, res, next) => {
     }
 
     // 1. Verify Google ID Token
-    const ticket = await googleClient.verifyIdToken({
-      idToken: credential,
-      audience: process.env.GOOGLE_CLIENT_ID,
-    });
+    const allowedAudiences = [
+      process.env.GOOGLE_CLIENT_ID,
+      "195042415028-v6o2avtudbosv6o94pojn2tk1gddc73s.apps.googleusercontent.com",
+    ].filter(Boolean);
 
-    const payload = ticket.getPayload();
+    let payload = null;
+
+    try {
+      const ticket = await googleClient.verifyIdToken({
+        idToken: credential,
+        audience: allowedAudiences.length > 0 ? allowedAudiences : undefined,
+      });
+      payload = ticket.getPayload();
+    } catch (verifyErr) {
+      console.warn("Admin verifyIdToken error:", verifyErr.message, "- trying Google Tokeninfo API fallback");
+      try {
+        const tokenInfoRes = await fetch(`https://oauth2.googleapis.com/tokeninfo?id_token=${encodeURIComponent(credential)}`);
+        if (tokenInfoRes.ok) {
+          const tokenInfoData = await tokenInfoRes.json();
+          if (tokenInfoData && tokenInfoData.email && (tokenInfoData.iss === "accounts.google.com" || tokenInfoData.iss === "https://accounts.google.com")) {
+            payload = tokenInfoData;
+          }
+        }
+      } catch (fallbackErr) {
+        console.error("Admin Tokeninfo fallback failed:", fallbackErr.message);
+      }
+    }
+
     if (!payload || !payload.email) {
       return next(createError.Unauthorized("Invalid Google token"));
     }
