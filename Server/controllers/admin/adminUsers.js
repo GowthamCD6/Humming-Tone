@@ -143,3 +143,34 @@ exports.updateUserPassword = async (req, res, next) => {
     next(error);
   }
 };
+
+/**
+ * Fetch registered customer users with aggregated order metrics
+ * GET /admin/customers
+ */
+exports.getCustomerUsers = (req, res, next) => {
+  const sql = `
+    SELECT 
+      u.id,
+      u.name,
+      u.email,
+      u.phone,
+      u.avatar_url,
+      u.address,
+      u.city,
+      u.state,
+      u.pincode,
+      u.created_at,
+      COUNT(DISTINCT o.id) AS total_orders,
+      COALESCE(SUM(CASE WHEN o.payment_status = 'captured' OR o.order_status = 'confirmed' OR o.order_status = 'delivered' THEN o.total_amount ELSE 0 END), 0) AS total_spent,
+      MAX(o.created_at) AS last_order_date
+    FROM users u
+    LEFT JOIN orders o ON (o.user_id = u.id OR LOWER(o.customer_email) = LOWER(u.email))
+    GROUP BY u.id, u.name, u.email, u.phone, u.avatar_url, u.address, u.city, u.state, u.pincode, u.created_at
+    ORDER BY total_orders DESC, u.id DESC
+  `;
+  db.query(sql, (err, results) => {
+    if (err) return next(err);
+    res.status(200).json(results || []);
+  });
+};

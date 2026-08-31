@@ -21,8 +21,9 @@ exports.googleUserAuth = async (req, res, next) => {
     const allowedAudiences = [
       process.env.GOOGLE_CLIENT_ID,
       process.env.GOOGLE_ANDROID_CLIENT_ID,
-      "957475387630-utdc491trqgmh8g4he1uju4o0mdpi1b7.apps.googleusercontent.com",
+      "957475387630-hckb2reivrnpg0vmp0p9hnehb0nog7ah.apps.googleusercontent.com",
       "957475387630-482o319uhv8841nk52jnbpkonam01spn.apps.googleusercontent.com",
+      "957475387630-utdc491trqgmh8g4he1uju4o0mdpi1b7.apps.googleusercontent.com",
       "195042415028-v6o2avtudbosv6o94pojn2tk1gddc73s.apps.googleusercontent.com",
       "195042415028-bamq7lrvnie7fcffbg7d9k54p7p8t0bg.apps.googleusercontent.com",
     ].filter(Boolean);
@@ -232,6 +233,7 @@ exports.googleAdminAuth = async (req, res, next) => {
     // 1. Verify Google ID Token
     const allowedAudiences = [
       process.env.GOOGLE_CLIENT_ID,
+      "957475387630-hckb2reivrnpg0vmp0p9hnehb0nog7ah.apps.googleusercontent.com",
       "195042415028-v6o2avtudbosv6o94pojn2tk1gddc73s.apps.googleusercontent.com",
     ].filter(Boolean);
 

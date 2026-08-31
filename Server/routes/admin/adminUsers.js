@@ -10,4 +10,7 @@ router.delete('/admin/users/:id', adminAuth, adminUsersController.deleteAdminUse
 router.put('/admin/change-password', adminAuth, adminUsersController.changePassword);
 router.put('/admin/users/:id/password', adminAuth, adminUsersController.updateUserPassword);
 
+// Customer users route
+router.get('/admin/customers', adminAuth, adminUsersController.getCustomerUsers);
+
 module.exports = router;

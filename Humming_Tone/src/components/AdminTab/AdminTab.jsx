@@ -14,6 +14,7 @@ import AssessmentIcon from '@mui/icons-material/Assessment'
 import MenuIcon from '@mui/icons-material/Menu'
 import CloseIcon from '@mui/icons-material/Close'
 import FileDownloadIcon from '@mui/icons-material/FileDownload'
+import NotificationsActiveIcon from '@mui/icons-material/NotificationsActive'
 import StorefrontIcon from '@mui/icons-material/Storefront'
 import { Outlet, useLocation, useNavigate } from 'react-router-dom'
 import { SITE_ASSETS } from '../../utils/siteAssets'
@@ -42,6 +43,7 @@ const menuSections = [
     title: 'MAIN',
     items: [
       { id: 'dashboard', path: 'dashboard', label: 'Dashboard', Icon: DashboardIcon },
+      { id: 'notifications', path: 'notifications', label: 'Activity & Notifications', Icon: NotificationsActiveIcon },
     ]
   },
   {

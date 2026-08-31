@@ -3,7 +3,7 @@ import { GoogleSignin, statusCodes } from '@react-native-google-signin/google-si
 import apiClient from '../api/client';
 
 // Web Client ID used by Google Play Services to generate the ID token for the backend
-export const GOOGLE_WEB_CLIENT_ID = '957475387630-utdc491trqgmh8g4he1uju4o0mdpi1b7.apps.googleusercontent.com';
+export const GOOGLE_WEB_CLIENT_ID = '957475387630-hckb2reivrnpg0vmp0p9hnehb0nog7ah.apps.googleusercontent.com';
 
 let isConfigured = false;
 

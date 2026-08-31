@@ -90,6 +90,113 @@ exports.create_notification = async (req, res, next) => {
 };
 
 /**
+ * Admin Daily Activity Alerts (Today's Orders, Today's Reviews, Low Stock)
+ * GET /admin/activity_alerts
+ */
+exports.get_admin_activity_alerts = async (req, res, next) => {
+  try {
+    // 1. Fetch Today's Orders (or last 24h)
+    const [todayOrders] = await db.promise().query(`
+      SELECT o.id, o.order_number, o.customer_name, o.customer_email, o.customer_phone,
+             o.total_amount, o.order_status, o.payment_status, o.created_at,
+             (SELECT COUNT(*) FROM order_items WHERE order_id = o.id) as item_count
+      FROM orders o
+      WHERE DATE(o.created_at) = CURDATE()
+         OR o.created_at >= NOW() - INTERVAL 24 HOUR
+      ORDER BY o.created_at DESC
+      LIMIT 50
+    `);
+
+    // 2. Fetch Today's / Recent Customer Reviews (including pending ones)
+    const [recentReviews] = await db.promise().query(`
+      SELECT r.id, r.product_id, r.reviewer_name, r.reviewer_email, r.rating,
+             r.title, r.comment, r.status, r.created_at,
+             p.name as product_name
+      FROM product_reviews r
+      LEFT JOIN products p ON r.product_id = p.id
+      WHERE DATE(r.created_at) = CURDATE()
+         OR r.created_at >= NOW() - INTERVAL 24 HOUR
+         OR r.status = 'pending'
+      ORDER BY r.created_at DESC
+      LIMIT 50
+    `);
+
+    // 3. Low stock inventory alerts
+    const [lowStock] = await db.promise().query(`
+      SELECT pv.id as variant_id, pv.product_id, pv.size, pv.color, pv.stock_quantity,
+             p.name as product_name, p.brand
+      FROM product_variants pv
+      JOIN products p ON pv.product_id = p.id
+      WHERE pv.stock_quantity <= 5 AND p.is_active = 1
+      ORDER BY pv.stock_quantity ASC
+      LIMIT 25
+    `);
+
+    // 4. Counts
+    const todayOrdersCount = todayOrders.length;
+    const pendingReviewsCount = recentReviews.filter(r => r.status === 'pending').length;
+    const lowStockCount = lowStock.length;
+
+    res.status(200).json({
+      success: true,
+      summary: {
+        today_orders_count: todayOrdersCount,
+        pending_reviews_count: pendingReviewsCount,
+        low_stock_count: lowStockCount,
+      },
+      today_orders: todayOrders || [],
+      recent_reviews: recentReviews || [],
+      low_stock: lowStock || [],
+    });
+  } catch (error) {
+    console.error('Error fetching admin activity alerts:', error);
+    next(createError.InternalServerError('Failed to fetch activity alerts'));
+  }
+};
+
+/**
+ * Fetch all notifications for Admin Dashboard management
+ * GET /admin/all_notifications
+ */
+exports.fetch_all_admin_notifications = async (req, res, next) => {
+  try {
+    const [notifications] = await db.promise().query(`
+      SELECT n.*, p.name as product_name
+      FROM notifications n
+      LEFT JOIN products p ON n.product_id = p.id
+      ORDER BY n.created_at DESC
+      LIMIT 100
+    `);
+
+    res.status(200).json({
+      success: true,
+      notifications: notifications || [],
+    });
+  } catch (error) {
+    console.error('Error fetching all admin notifications:', error);
+    next(createError.InternalServerError('Failed to fetch notifications'));
+  }
+};
+
+/**
+ * Delete a notification
+ * DELETE /api/notifications/:id
+ */
+exports.delete_notification = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    await db.promise().query('DELETE FROM notifications WHERE id = ?', [id]);
+    res.status(200).json({
+      success: true,
+      message: 'Notification deleted successfully',
+    });
+  } catch (error) {
+    console.error('Error deleting notification:', error);
+    next(createError.InternalServerError('Failed to delete notification'));
+  }
+};
+
+/**
  * Helper to record order milestone updates as notifications
  */
 exports.sendOrderNotification = async ({ orderNumber, status, amount = 0, customerName = '' }) => {
