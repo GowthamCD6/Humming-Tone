@@ -8,6 +8,7 @@ import { CategoryProductsScreen } from '../screens/CategoryProductsScreen';
 import { ProductDetailsScreen } from '../screens/ProductDetailsScreen';
 import { CheckoutScreen } from '../screens/CheckoutScreen';
 import { OrderSuccessScreen } from '../screens/OrderSuccessScreen';
+import { PaymentFailureScreen } from '../screens/PaymentFailureScreen';
 import { OrderTrackingScreen } from '../screens/OrderTrackingScreen';
 import { WishlistScreen } from '../screens/WishlistScreen';
 import { LoginScreen } from '../screens/LoginScreen';
@@ -45,6 +46,11 @@ export const AppNavigator = () => {
         <Stack.Screen
           name="OrderSuccess"
           component={OrderSuccessScreen}
+          options={{ gestureEnabled: false }}
+        />
+        <Stack.Screen
+          name="PaymentFailure"
+          component={PaymentFailureScreen}
           options={{ gestureEnabled: false }}
         />
         <Stack.Screen name="OrderTracking" component={OrderTrackingScreen} />

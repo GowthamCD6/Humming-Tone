@@ -1,15 +1,17 @@
+import { Platform } from 'react-native';
+
 // ================================================================
 // SINGLE CONFIGURATION POINT FOR LOCAL BACKEND IP
-// Change your PC / Wi-Fi IPv4 address here ONCE, and it applies everywhere:
+// Current Wi-Fi IPv4: 10.150.254.249 | USB adb reverse: localhost
 // ================================================================
-export const DEV_DEVICE_IP = 'localhost'; // <- Uses adb reverse tcp:5000 tcp:5000 directly
+export const DEV_DEVICE_IP = '10.150.254.249';
 export const DEV_PORT = 5000;
 export const PROD_API_BASE_URL = 'https://api.hummingtone.com';
 
 // Automatically construct base API URL from DEV_DEVICE_IP and DEV_PORT
 export const getApiBaseUrl = () => {
   if (__DEV__) {
-    const host = DEV_DEVICE_IP || 'localhost';
+    const host = DEV_DEVICE_IP || '10.150.254.249';
     return `http://${host}:${DEV_PORT}`;
   }
   return PROD_API_BASE_URL;

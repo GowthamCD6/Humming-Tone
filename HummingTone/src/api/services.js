@@ -175,6 +175,17 @@ export const OrderService = {
     return response.data;
   },
 
+  // Verify payment status / signature with backend
+  verifyPayment: async (paymentData) => {
+    try {
+      const response = await apiClient.post('/user/get_payment_status', paymentData);
+      return response.data;
+    } catch (error) {
+      console.warn('Payment verification notice:', error.response?.data || error.message);
+      return { success: false, message: error.message };
+    }
+  },
+
   // Verify promo code
   verifyPromo: async (promoCode) => {
     try {

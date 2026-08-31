@@ -2,9 +2,8 @@ import { Platform } from 'react-native';
 import { GoogleSignin, statusCodes } from '@react-native-google-signin/google-signin';
 import apiClient from '../api/client';
 
-// NOTE: webClientId MUST be the OAuth 2.0 Web Client ID from Google Cloud Console
-// Google Play Services uses this to issue the ID token to authenticate with the backend
-export const GOOGLE_WEB_CLIENT_ID = '195042415028-v6o2avtudbosv6o94pojn2tk1gddc73s.apps.googleusercontent.com';
+// Web Client ID used by Google Play Services to generate the ID token for the backend
+export const GOOGLE_WEB_CLIENT_ID = '957475387630-utdc491trqgmh8g4he1uju4o0mdpi1b7.apps.googleusercontent.com';
 
 let isConfigured = false;
 

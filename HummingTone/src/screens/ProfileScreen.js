@@ -25,6 +25,7 @@ import { performGoogleSignIn } from '../services/googleAuth';
 export const ProfileScreen = ({ navigation }) => {
   const insets = useSafeAreaInsets();
   const { user, isAuthenticated, login, logout, updateProfile } = useAuth();
+  const isMember = Boolean(isAuthenticated && user && user.email !== 'guest@hummingtone.com');
   const { wishlistCount } = useWishlist();
   const { unreadCount } = useNotifications();
   const [googleLoading, setGoogleLoading] = useState(false);
@@ -137,8 +138,8 @@ export const ProfileScreen = ({ navigation }) => {
           </TouchableOpacity>
 
           <View style={styles.statusPill}>
-            <View style={[styles.statusDot, { backgroundColor: isAuthenticated ? '#38A169' : '#A3998F' }]} />
-            <Text style={styles.statusPillText}>{isAuthenticated ? 'MEMBER' : 'GUEST'}</Text>
+            <View style={[styles.statusDot, { backgroundColor: isMember ? '#38A169' : '#A3998F' }]} />
+            <Text style={styles.statusPillText}>{isMember ? 'MEMBER' : 'GUEST'}</Text>
           </View>
         </View>
       </View>
@@ -152,7 +153,7 @@ export const ProfileScreen = ({ navigation }) => {
         showsVerticalScrollIndicator={false}
       >
         {/* ── 2. HERO IDENTITY CARD ── */}
-        {isAuthenticated ? (
+        {isMember ? (
           <View style={styles.memberCard}>
             {/* Background Texture Accents */}
             <View style={styles.cardHeaderRow}>
@@ -388,7 +389,7 @@ export const ProfileScreen = ({ navigation }) => {
         </View>
 
         {/* ── 6. SIGN OUT ACTION (When Authenticated) ── */}
-        {isAuthenticated && (
+        {isMember && (
           <TouchableOpacity
             style={styles.signOutBtn}
             onPress={handleLogout}

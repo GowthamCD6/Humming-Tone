@@ -68,6 +68,53 @@ app.use(cors({
     allowedHeaders: ["Content-Type", "Authorization"]
 }));
 
+app.disable('x-powered-by');
+
+// Security HTTP headers
+app.use((req, res, next) => {
+  res.setHeader('X-Content-Type-Options', 'nosniff');
+  res.setHeader('X-Frame-Options', 'SAMEORIGIN');
+  res.setHeader('X-XSS-Protection', '1; mode=block');
+  res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
+  next();
+});
+
+// In-memory rate limiter for brute-force protection
+const rateLimitStore = new Map();
+const rateLimiter = (windowMs, maxRequests) => (req, res, next) => {
+  const ip = req.ip || req.headers['x-forwarded-for'] || req.socket.remoteAddress || 'unknown';
+  const now = Date.now();
+  const key = `${req.baseUrl || ''}${req.path}-${ip}`;
+
+  const entry = rateLimitStore.get(key) || { count: 0, resetTime: now + windowMs };
+  if (now > entry.resetTime) {
+    entry.count = 0;
+    entry.resetTime = now + windowMs;
+  }
+
+  entry.count += 1;
+  rateLimitStore.set(key, entry);
+
+  // Periodic cleanup
+  if (rateLimitStore.size > 10000) {
+    rateLimitStore.forEach((val, k) => {
+      if (now > val.resetTime) rateLimitStore.delete(k);
+    });
+  }
+
+  if (entry.count > maxRequests) {
+    return res.status(429).json({
+      success: false,
+      message: 'Too many requests. Please slow down and try again.',
+    });
+  }
+  next();
+};
+
+app.use('/admin/auth/login', rateLimiter(60 * 1000, 10));
+app.use('/api/auth/google', rateLimiter(60 * 1000, 30));
+app.use('/user/track_order', rateLimiter(60 * 1000, 30));
+
 app.use(morgan('dev'));
 app.use(cookieParser());
 app.use(
@@ -173,4 +220,4 @@ app.use((error, req, res, next) => {
     });
 });
 
-app.listen(PORT, () => console.log("Server runs on http://localhost:" + PORT));
+app.listen(PORT, '0.0.0.0', () => console.log(`Server runs on http://localhost:${PORT} (0.0.0.0:${PORT})`));

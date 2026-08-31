@@ -34,29 +34,32 @@ exports.create_order = (req, res, next) => {
           items
         } = req.body;
 
-        if (!customer_name || !customer_email || !customer_phone) {
-          throw createError.BadRequest("Customer details are required");
+        if (!customer_name || !customer_email || !customer_phone || customer_email.toLowerCase().includes('guest@')) {
+          throw createError.BadRequest("A valid authenticated customer account is required to place an order");
         }
 
         if (!Array.isArray(items) || items.length === 0) {
           throw createError.BadRequest("Order items are required");
         }
 
-        const allowedSizes = ['XS','S','M','L','XL','XXL','XXXL','4XL','5XL'];
+        const allowedSizes = [
+          'XS','S','M','L','XL','XXL','XXXL','4XL','5XL',
+          'Standard','Free Size','ONESIZE','OS','One Size','Custom',
+          '28','30','32','34','36','38','40','42','44',
+          '6','7','8','9','10','11','12'
+        ];
         let subtotal = 0;
 
         for (const item of items) {
-          const { product_id, quantity, size } = item;
+          const { product_id, quantity, size = 'M' } = item;
 
-          if (!product_id || !quantity || quantity <= 0 || !size) {
+          if (!product_id || !quantity || quantity <= 0) {
             throw createError.BadRequest("Invalid cart item");
           }
 
-          if (!allowedSizes.includes(size)) {
-            throw createError.BadRequest("Invalid size selected");
-          }
+          const cleanSize = (size || 'M').trim();
 
-          const [rows] = await connection.promise().query(
+          let [rows] = await connection.promise().query(
             `
             SELECT 
               v.id   AS variant_id,
@@ -67,20 +70,52 @@ exports.create_order = (req, res, next) => {
             WHERE v.product_id = ? AND v.size = ?
             LIMIT 1
             `,
-            [product_id, size]
+            [product_id, cleanSize]
           );
 
+          // Fallback: If exact size variant not found, check any variant for this product
           if (rows.length === 0) {
-            throw createError.BadRequest("Product variant not found");
+            [rows] = await connection.promise().query(
+              `
+              SELECT 
+                v.id   AS variant_id,
+                v.price,
+                p.name AS product_name
+              FROM product_variants v
+              JOIN products p ON p.id = v.product_id
+              WHERE v.product_id = ?
+              LIMIT 1
+              `,
+              [product_id]
+            );
+          }
+
+          // Fallback 2: Check products table directly
+          if (rows.length === 0) {
+            const [prodRows] = await connection.promise().query(
+              `SELECT id AS product_id, price, name AS product_name FROM products WHERE id = ? LIMIT 1`,
+              [product_id]
+            );
+            if (prodRows.length > 0) {
+              rows = [{
+                variant_id: null,
+                price: Number(prodRows[0].price || 0),
+                product_name: prodRows[0].product_name
+              }];
+            }
+          }
+
+          if (rows.length === 0) {
+            throw createError.BadRequest(`Product #${product_id} not found in catalog`);
           }
 
           const { price, variant_id, product_name } = rows[0];
 
-          subtotal += price * quantity;
+          subtotal += Number(price || 0) * quantity;
 
           // attach verified data
-          item._verified_price = price;
-          item._variant_id = variant_id;
+          item._verified_price = Number(price || 0);
+          item._variant_id = variant_id || null;
           item._product_name = product_name;
         }
 
@@ -244,19 +279,20 @@ exports.create_order = (req, res, next) => {
                   }).catch(e => console.warn('Order notif error:', e.message));
 
                   connection.release();
-                  res.status(201).json({
-                    success: true,
-                    message: "Order created successfully",
-                    data: {
-                      order_id: orderId,
-                      order_number,
-                      razorpay_order_id: razorpayOrder.id,
-                      amount: razorpayOrder.amount,
-                      currency: razorpayOrder.currency,
-                      customer_name:customer_name,
-                      customer_email:customer_email
-                    }
-                  });
+                    res.status(201).json({
+                      success: true,
+                      message: "Order created successfully",
+                      data: {
+                        order_id: orderId,
+                        order_number,
+                        razorpay_order_id: razorpayOrder.id,
+                        amount: razorpayOrder.amount,
+                        currency: razorpayOrder.currency,
+                        key_id: (process.env.RAZORPAY_TEST_API_KEY_ID || process.env.RAZORPAY_KEY_ID || 'rzp_test_RxiHjMose0no0s').trim(),
+                        customer_name: customer_name,
+                        customer_email: customer_email
+                      }
+                    });
                 });
               })
               .catch(err => {
@@ -621,14 +657,15 @@ exports.track_order = async (req, res, next) => {
 
 /**
  * Fetch all orders for a logged-in customer by user_id or email
- * POST /user/my_orders
+ * POST /user/my_orders (Protected by userAuth)
  */
 exports.fetch_my_orders = async (req, res, next) => {
   try {
-    const { email, user_id } = req.body;
+    const userId = req.userId || req.user?.id;
+    const userEmail = req.userEmail || req.user?.email;
 
-    if (!email && !user_id) {
-      return next(createError.BadRequest("Email or User ID is required"));
+    if (!userId && !userEmail) {
+      return next(createError.Unauthorized("Authentication required to view order history"));
     }
 
     let sql = `
@@ -650,20 +687,11 @@ exports.fetch_my_orders = async (req, res, next) => {
              ) AS items
       FROM orders o
       WHERE NOT (o.order_status = 'pending' AND (o.payment_status = 'created' OR o.payment_status = 'pending' OR o.payment_status IS NULL))
+        AND (o.user_id = ? OR o.customer_email = ?)
+      ORDER BY o.created_at DESC LIMIT 50
     `;
 
-    const params = [];
-    if (user_id) {
-      sql += ` AND (o.user_id = ? OR o.customer_email = ?)`;
-      params.push(user_id, email || "");
-    } else {
-      sql += ` AND o.customer_email = ?`;
-      params.push(email);
-    }
-
-    sql += ` ORDER BY o.created_at DESC LIMIT 50`;
-
-    const [rows] = await db.promise().query(sql, params);
+    const [rows] = await db.promise().query(sql, [userId || 0, userEmail || ""]);
 
     return res.status(200).json({
       success: true,

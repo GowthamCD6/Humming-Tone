@@ -221,7 +221,7 @@ const CheckOut = ({ onBack }) => {
   const handleCheckout = async (e) => {
     if (e && e.preventDefault) e.preventDefault();
 
-    if (!customerUser) {
+    if (!customerUser || customerUser.email === 'guest@hummingtone.com') {
       alert("Please sign in with your Google account to proceed with checkout.");
       return;
     }

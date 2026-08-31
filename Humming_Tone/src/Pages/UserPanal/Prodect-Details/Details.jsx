@@ -6,6 +6,7 @@ import UserFooter from "../../../components/User-Footer-Card/UserFooter";
 const demoImage = SITE_ASSETS.demoProduct;
 import AddToCartModal from "./Product-Buying modal/AddToCartModal";
 import ProductReviews from "./ReviewsSection/ProductReviews";
+import AuthModal from "../../../components/AuthModal/AuthModal";
 import "./Details.css";
 import { useNavigate } from "react-router-dom";
 import { API_BASE_URL, getImageUrl } from "../../../utils/apiConfig";
@@ -16,6 +17,7 @@ const ProductDetailPage = () => {
   const [selectedSize, setSelectedSize] = useState(null);
   const [quantity, setQuantity] = useState(1);
   const [activeImageIndex, setActiveImageIndex] = useState(0);
+  const [authModalOpen, setAuthModalOpen] = useState(false);
 
   const [gstRate, setGstRate] = useState(() => {
     const cached = getSiteContent();
@@ -123,6 +125,14 @@ const ProductDetailPage = () => {
 
     localStorage.setItem("cart", JSON.stringify(cart));
     window.dispatchEvent(new Event("cart:updated"));
+
+    const user = JSON.parse(localStorage.getItem("customerUser") || "null");
+    const token = localStorage.getItem("userToken");
+
+    if (!user || !token || user?.email === 'guest@hummingtone.com') {
+      setAuthModalOpen(true);
+      return;
+    }
 
     // Navigate straight to checkout
     navigate("/usertab/checkout");
@@ -429,6 +439,16 @@ const ProductDetailPage = () => {
         isOpen={showCartModal}
         onClose={() => setShowCartModal(false)}
         productData={cartModalData}
+      />
+
+      {/* Google Auth Modal for Buy Now Gate */}
+      <AuthModal
+        isOpen={authModalOpen}
+        onClose={() => setAuthModalOpen(false)}
+        onAuthSuccess={() => {
+          setAuthModalOpen(false);
+          navigate("/usertab/checkout");
+        }}
       />
     </div>
   );

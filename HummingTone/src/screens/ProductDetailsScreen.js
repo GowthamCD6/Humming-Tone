@@ -180,7 +180,7 @@ export const ProductDetailsScreen = ({ route, navigation }) => {
     const sizeToUse = selectedVariant?.size || 'Standard';
     addToCart(product, sizeToUse, quantity, selectedVariant);
 
-    if (!isAuthenticated) {
+    if (!isAuthenticated || !user || user?.email === 'guest@hummingtone.com') {
       setShowGoogleModal(true);
     } else {
       navigation.navigate('Checkout');

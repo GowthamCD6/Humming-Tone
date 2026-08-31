@@ -164,15 +164,15 @@ export const HomeScreen = ({ navigation }) => {
       <View style={[styles.topLocationBar, { paddingTop: Math.max((insets.top || 0) + 14, (StatusBar.currentHeight || 0) + 14, 32) }]}>
         <View style={styles.welcomeContainer}>
           <Text style={styles.welcomeSub}>
-            {isAuthenticated ? 'Welcome back,' : 'Hello, Welcome'}
+            {isAuthenticated && user?.email !== 'guest@hummingtone.com' ? 'Welcome back,' : 'Hello, Welcome'}
           </Text>
           <TouchableOpacity
             style={styles.welcomeUserRow}
-            onPress={() => navigation.navigate(isAuthenticated ? 'MainTabs' : 'Login', { screen: 'ProfileTab' })}
+            onPress={() => navigation.navigate(isAuthenticated && user?.email !== 'guest@hummingtone.com' ? 'MainTabs' : 'Login', { screen: 'ProfileTab' })}
             activeOpacity={0.8}
           >
             <Text style={styles.welcomeUserName} numberOfLines={1}>
-              {isAuthenticated ? (user?.name || 'Patron') : 'Guest'}
+              {isAuthenticated && user?.email !== 'guest@hummingtone.com' ? (user?.name || 'Patron') : 'Guest'}
             </Text>
             <Text style={styles.waveEmoji}> 👋</Text>
           </TouchableOpacity>

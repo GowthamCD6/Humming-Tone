@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "957475387630",
+    "project_id": "hummingtone-45cdb",
+    "storage_bucket": "hummingtone-45cdb.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:957475387630:android:090156fa7cbc62f286dbff",
+        "android_client_info": {
+          "package_name": "com.hummingtone"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAj1uboRVgjvzECTbcLNYfUkmosaZEuRTk"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

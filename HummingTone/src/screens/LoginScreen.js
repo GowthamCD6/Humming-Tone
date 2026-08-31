@@ -73,18 +73,6 @@ export const LoginScreen = ({ navigation }) => {
     }
   };
 
-  const handleGuestContinue = async () => {
-    await login(
-      {
-        name: 'Humming Tone Patron',
-        email: 'guest@hummingtone.com',
-        phone: '',
-      },
-      'guest-token'
-    );
-    navigation.goBack();
-  };
-
   return (
     <View style={styles.container}>
       <StatusBar barStyle="dark-content" backgroundColor={colors.background} />
@@ -108,7 +96,7 @@ export const LoginScreen = ({ navigation }) => {
             />
             <Text style={styles.brandSub}>OFFICIAL STORE & APP</Text>
             <Text style={styles.brandTagline}>
-              Sign in to manage your orders, saved wishlist items, and express checkout.
+              Sign in with your Google account to manage your orders, saved wishlist items, and express checkout.
             </Text>
           </View>
 
@@ -201,14 +189,6 @@ export const LoginScreen = ({ navigation }) => {
               ) : (
                 <Text style={styles.signInActionBtnText}>Sign In to Account</Text>
               )}
-            </TouchableOpacity>
-
-            <TouchableOpacity
-              style={styles.guestBtn}
-              onPress={handleGuestContinue}
-              activeOpacity={0.8}
-            >
-              <Text style={styles.guestBtnText}>Continue as Guest</Text>
             </TouchableOpacity>
           </View>
 
@@ -371,19 +351,6 @@ const styles = StyleSheet.create({
     color: '#FFFFFF',
     fontFamily: typography.fontSansBold,
     fontSize: 13.5,
-  },
-  guestBtn: {
-    marginTop: spacing.md,
-    paddingVertical: 12,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  guestBtnText: {
-    fontFamily: typography.fontSans,
-    fontSize: 13,
-    fontWeight: typography.weightSemiBold,
-    color: colors.textSecondary,
-    letterSpacing: 0.5,
   },
   perksCard: {
     backgroundColor: colors.cardBg,

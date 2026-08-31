@@ -3,6 +3,7 @@ import { Link, useNavigate, useLocation } from 'react-router-dom';
 import './CartPage.css';
 import UserFooter from '../../../components/User-Footer-Card/UserFooter';
 import LocalShippingIcon from '@mui/icons-material/LocalShipping';
+import AuthModal from '../../../components/AuthModal/AuthModal';
 import { fetchSiteContent, getSiteContent } from '../../../utils/siteContentStore';
 
 const PremiumCart = ({ onCheckout }) => {
@@ -42,6 +43,7 @@ const PremiumCart = ({ onCheckout }) => {
   const [alert, setAlert] = useState(null);
   const [removeModal, setRemoveModal] = useState({ show: false, itemId: null, itemName: '' });
   const [clearCartModal, setClearCartModal] = useState(false);
+  const [authModalOpen, setAuthModalOpen] = useState(false);
 
   /* ================= SYNC CART TO LOCALSTORAGE ================= */
   const syncCart = (updatedCart) => {
@@ -119,6 +121,14 @@ const PremiumCart = ({ onCheckout }) => {
   const hasOutOfStock = cartItems.every(item => item.stock === 0);
 
   const handleCheckout = () => {
+    const user = JSON.parse(localStorage.getItem('customerUser') || 'null');
+    const token = localStorage.getItem('userToken');
+
+    if (!user || !token || user?.email === 'guest@hummingtone.com') {
+      setAuthModalOpen(true);
+      return;
+    }
+
     if (onCheckout) onCheckout();
     navigate('/usertab/checkout');
   };
@@ -359,6 +369,16 @@ const PremiumCart = ({ onCheckout }) => {
           </div>
         </div>
       )}
+
+      {/* Auth Modal for Mandatory Google Login */}
+      <AuthModal
+        isOpen={authModalOpen}
+        onClose={() => setAuthModalOpen(false)}
+        onAuthSuccess={() => {
+          setAuthModalOpen(false);
+          navigate('/usertab/checkout');
+        }}
+      />
 
       <UserFooter />
     </>

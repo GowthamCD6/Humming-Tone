@@ -61,13 +61,26 @@ import axios from 'axios';
 import "./App.css";
 
 // --- GLOBAL API INTERCEPTORS ---
-// Automatically inject the JWT token into outgoing admin axios requests
+// Automatically inject the JWT token into outgoing axios requests
 axios.interceptors.request.use(config => {
-  const token = localStorage.getItem('adminToken');
+  const adminToken = localStorage.getItem('adminToken');
+  const userToken = localStorage.getItem('userToken');
   const url = String(config.url || '');
-  const isAdminApi = url.includes('/admin') || url.includes('/api/orders') || url.includes('/api/whatsapp') || url.includes('/api/products');
-  if (token && isAdminApi) {
-    config.headers.Authorization = `Bearer ${token}`;
+  
+  const isAdminApi = url.includes('/admin') || 
+                     url.includes('/api/orders') || 
+                     url.includes('/api/whatsapp') || 
+                     url.includes('/api/products') ||
+                     url.includes('/api/site-content/footer') ||
+                     url.includes('/api/site-content/gender-status') ||
+                     url.includes('/api/site-content/gender-category') ||
+                     url.includes('/api/site-content/customize') ||
+                     url.includes('/api/notifications/create');
+
+  if (adminToken && isAdminApi) {
+    config.headers.Authorization = `Bearer ${adminToken}`;
+  } else if (userToken && !config.headers.Authorization) {
+    config.headers.Authorization = `Bearer ${userToken}`;
   }
   return config;
 });
@@ -89,25 +102,48 @@ axios.interceptors.response.use(
   }
 );
 
-// Automatically inject the JWT token into outgoing admin fetch requests
+// Automatically inject the JWT token into outgoing fetch requests
 const originalFetch = window.fetch;
 window.fetch = async function () {
   let [resource, config] = arguments;
   const urlStr = typeof resource === 'string' ? resource : (resource?.url || '');
-  const isAdminApi = urlStr.includes('/admin') || urlStr.includes('/api/orders') || urlStr.includes('/api/whatsapp') || urlStr.includes('/api/products');
   
-  const token = localStorage.getItem('adminToken');
-  if (token && isAdminApi) {
-    if (!config) config = {};
-    if (!config.headers) config.headers = {};
-    
-    if (config.headers instanceof Headers) {
-      config.headers.set('Authorization', `Bearer ${token}`);
-    } else {
-      config.headers['Authorization'] = `Bearer ${token}`;
+  const isAdminApi = urlStr.includes('/admin') || 
+                     urlStr.includes('/api/orders') || 
+                     urlStr.includes('/api/whatsapp') || 
+                     urlStr.includes('/api/products') ||
+                     urlStr.includes('/api/site-content/footer') ||
+                     urlStr.includes('/api/site-content/gender-status') ||
+                     urlStr.includes('/api/site-content/gender-category') ||
+                     urlStr.includes('/api/site-content/customize') ||
+                     urlStr.includes('/api/notifications/create');
+
+  const adminToken = localStorage.getItem('adminToken');
+  const userToken = localStorage.getItem('userToken');
+
+  if (!config) config = {};
+  if (!config.headers) config.headers = {};
+
+  const hasAuthHeader = config.headers instanceof Headers 
+    ? config.headers.has('Authorization')
+    : Boolean(config.headers['Authorization'] || config.headers['authorization']);
+
+  if (!hasAuthHeader) {
+    if (adminToken && isAdminApi) {
+      if (config.headers instanceof Headers) {
+        config.headers.set('Authorization', `Bearer ${adminToken}`);
+      } else {
+        config.headers['Authorization'] = `Bearer ${adminToken}`;
+      }
+    } else if (userToken) {
+      if (config.headers instanceof Headers) {
+        config.headers.set('Authorization', `Bearer ${userToken}`);
+      } else {
+        config.headers['Authorization'] = `Bearer ${userToken}`;
+      }
     }
   }
-  
+
   const response = await originalFetch(resource, config);
   
   // Auto-logout on 401 ONLY when user is actively inside an admin route (/admin/...)

@@ -35,7 +35,7 @@ export const CartScreen = ({ navigation }) => {
     applyCoupon,
     removeCoupon,
   } = useCart();
-  const { isAuthenticated } = useAuth();
+  const { user, isAuthenticated } = useAuth();
 
   const [promoCodeInput, setPromoCodeInput] = useState('');
   const [couponError, setCouponError] = useState('');
@@ -46,7 +46,7 @@ export const CartScreen = ({ navigation }) => {
   const calculatedTotal = Math.max(0, discountedSubtotal);
 
   const handleProceedCheckout = () => {
-    if (!isAuthenticated) {
+    if (!isAuthenticated || !user || user?.email === 'guest@hummingtone.com') {
       setShowGoogleModal(true);
     } else {
       navigation.navigate('Checkout');
