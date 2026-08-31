@@ -189,21 +189,7 @@ export default function Buyer() {
 
   return (
     <section className="buyer-page-container">
-      {/* 🔹 Top Header / Statistics Bar */}
-      <div className="buyer-header-strip">
-        <div>
-          <h2 className="buyer-title">Customer & Buyer Directory</h2>
-          <p className="buyer-sub">Comprehensive database of registered members, order frequency, and delivery addresses.</p>
-        </div>
-        <div className="buyer-header-actions">
-          <button className="buyer-export-btn" onClick={exportToCSV} disabled={filteredBuyers.length === 0}>
-            <FileDownloadIcon fontSize="small" />
-            <span>Export CSV</span>
-          </button>
-        </div>
-      </div>
-
-      {/* 🔹 Search, Filter & Sorter Toolbar */}
+      {/* 🔹 Search, Filter, Export & Sorter Toolbar */}
       <div className="buyer-toolbar">
         {/* Search */}
         <div className="buyer-search-wrap">
@@ -260,6 +246,17 @@ export default function Buyer() {
             <option value="name-asc">Sort: Name (A-Z)</option>
           </select>
         </div>
+
+        {/* Export CSV Button */}
+        <button
+          className="buyer-export-btn"
+          onClick={exportToCSV}
+          disabled={filteredBuyers.length === 0}
+          title="Download customer list as CSV"
+        >
+          <FileDownloadIcon fontSize="small" />
+          <span>Export CSV</span>
+        </button>
 
         {/* Total Badge */}
         <div className="buyer-count-badge">

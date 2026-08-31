@@ -41,11 +41,14 @@
   color: #ffffff;
   border: none;
   border-radius: 8px;
-  padding: 9px 16px;
+  padding: 0 16px;
+  height: 40px;
+  box-sizing: border-box;
   font-size: 13px;
   font-weight: 600;
   cursor: pointer;
   transition: all 0.2s ease;
+  white-space: nowrap;
 }
 
 .buyer-export-btn:hover:not(:disabled) {

@@ -150,27 +150,7 @@ export default function ManageNotifications() {
 
   return (
     <div className="admin-notif-page">
-      {/* 🔹 Header */}
-      <div className="notif-header-strip">
-        <div>
-          <h2 className="notif-page-title">Notification & Activity Center</h2>
-          <p className="notif-page-sub">
-            Monitor real-time incoming orders & reviews, and broadcast updates to all customer devices.
-          </p>
-        </div>
-        <button
-          className="notif-refresh-btn"
-          onClick={() => {
-            fetchActivityAlerts();
-            fetchBroadcasts();
-          }}
-        >
-          <RefreshIcon fontSize="small" />
-          <span>Refresh Data</span>
-        </button>
-      </div>
-
-      {/* 🔹 Navigation Tabs */}
+      {/* 🔹 Navigation Tabs & Refresh Bar */}
       <div className="notif-tabs-bar">
         <button
           className={`notif-tab-btn ${activeTab === 'activity' ? 'active' : ''}`}
@@ -192,6 +172,20 @@ export default function ManageNotifications() {
           <CampaignIcon fontSize="small" />
           <span>Broadcast to Users</span>
         </button>
+
+        {/* Refresh Data Button */}
+        <button
+          className="notif-refresh-btn"
+          style={{ marginLeft: 'auto', marginBottom: 6 }}
+          onClick={() => {
+            fetchActivityAlerts();
+            fetchBroadcasts();
+          }}
+          title="Refresh real-time data"
+        >
+          <RefreshIcon fontSize="small" />
+          <span>Refresh Data</span>
+        </button>
       </div>
 
       {/* ────────────────────────────────────────────────────────── */}
@@ -201,35 +195,49 @@ export default function ManageNotifications() {
         <div className="activity-container">
           {/* Summary Metric Counters */}
           <div className="activity-metrics-grid">
-            <div className="metric-card orders-card">
-              <div className="metric-ico-wrap">
-                <ShoppingCartIcon />
-              </div>
-              <div className="metric-details">
-                <span className="metric-val">{activityData.summary?.today_orders_count || 0}</span>
-                <span className="metric-lbl">Orders Placed Today</span>
-              </div>
-            </div>
+            {loadingActivity ? (
+              [1, 2, 3].map((idx) => (
+                <div key={idx} className="metric-card metric-skeleton-card">
+                  <div className="notif-skeleton-box notif-skeleton-ico" />
+                  <div className="metric-details" style={{ flex: 1 }}>
+                    <div className="notif-skeleton-box notif-skeleton-val" />
+                    <div className="notif-skeleton-box notif-skeleton-lbl" />
+                  </div>
+                </div>
+              ))
+            ) : (
+              <>
+                <div className="metric-card orders-card">
+                  <div className="metric-ico-wrap">
+                    <ShoppingCartIcon />
+                  </div>
+                  <div className="metric-details">
+                    <span className="metric-val">{activityData.summary?.today_orders_count || 0}</span>
+                    <span className="metric-lbl">Orders Placed Today</span>
+                  </div>
+                </div>
 
-            <div className="metric-card reviews-card">
-              <div className="metric-ico-wrap">
-                <RateReviewIcon />
-              </div>
-              <div className="metric-details">
-                <span className="metric-val">{activityData.summary?.pending_reviews_count || 0}</span>
-                <span className="metric-lbl">Pending Customer Reviews</span>
-              </div>
-            </div>
+                <div className="metric-card reviews-card">
+                  <div className="metric-ico-wrap">
+                    <RateReviewIcon />
+                  </div>
+                  <div className="metric-details">
+                    <span className="metric-val">{activityData.summary?.pending_reviews_count || 0}</span>
+                    <span className="metric-lbl">Pending Customer Reviews</span>
+                  </div>
+                </div>
 
-            <div className="metric-card stock-card">
-              <div className="metric-ico-wrap">
-                <WarningAmberIcon />
-              </div>
-              <div className="metric-details">
-                <span className="metric-val">{activityData.summary?.low_stock_count || 0}</span>
-                <span className="metric-lbl">Low Stock Alerts (≤ 5 items)</span>
-              </div>
-            </div>
+                <div className="metric-card stock-card">
+                  <div className="metric-ico-wrap">
+                    <WarningAmberIcon />
+                  </div>
+                  <div className="metric-details">
+                    <span className="metric-val">{activityData.summary?.low_stock_count || 0}</span>
+                    <span className="metric-lbl">Low Stock Alerts (≤ 5 items)</span>
+                  </div>
+                </div>
+              </>
+            )}
           </div>
 
           <div className="activity-sections-grid">
@@ -251,7 +259,24 @@ export default function ManageNotifications() {
 
               <div className="activity-box-body">
                 {loadingActivity ? (
-                  <p className="loading-text">Loading today's orders...</p>
+                  <div className="activity-skeleton-list">
+                    {[1, 2, 3, 4].map((idx) => (
+                      <div key={idx} className="activity-item-skeleton">
+                        <div className="skel-row-between">
+                          <div className="notif-skeleton-box notif-skeleton-tag" />
+                          <div className="notif-skeleton-box notif-skeleton-pill" />
+                        </div>
+                        <div className="skel-row-between" style={{ marginTop: 8 }}>
+                          <div className="notif-skeleton-box notif-skeleton-name" />
+                          <div className="notif-skeleton-box notif-skeleton-price" />
+                        </div>
+                        <div className="skel-row-between" style={{ marginTop: 8, borderTop: '1px dashed #e2e8f0', paddingTop: 6 }}>
+                          <div className="notif-skeleton-box notif-skeleton-time" />
+                          <div className="notif-skeleton-box notif-skeleton-btn" />
+                        </div>
+                      </div>
+                    ))}
+                  </div>
                 ) : activityData.today_orders?.length === 0 ? (
                   <div className="empty-state-box">
                     <CheckCircleIcon style={{ color: '#16a34a', fontSize: 32 }} />
@@ -307,7 +332,21 @@ export default function ManageNotifications() {
 
               <div className="activity-box-body">
                 {loadingActivity ? (
-                  <p className="loading-text">Loading reviews...</p>
+                  <div className="activity-skeleton-list">
+                    {[1, 2, 3, 4].map((idx) => (
+                      <div key={idx} className="activity-item-skeleton">
+                        <div className="skel-row-between">
+                          <div className="notif-skeleton-box notif-skeleton-prod" />
+                          <div className="notif-skeleton-box notif-skeleton-stars" />
+                        </div>
+                        <div className="notif-skeleton-box notif-skeleton-comment" style={{ marginTop: 8 }} />
+                        <div className="skel-row-between" style={{ marginTop: 8, borderTop: '1px dashed #e2e8f0', paddingTop: 6 }}>
+                          <div className="notif-skeleton-box notif-skeleton-reviewer" />
+                          <div className="notif-skeleton-box notif-skeleton-btn" />
+                        </div>
+                      </div>
+                    ))}
+                  </div>
                 ) : activityData.recent_reviews?.length === 0 ? (
                   <div className="empty-state-box">
                     <CheckCircleIcon style={{ color: '#16a34a', fontSize: 32 }} />
@@ -476,7 +515,22 @@ export default function ManageNotifications() {
               </div>
 
               {loadingBroadcasts ? (
-                <p className="loading-text">Loading broadcast records...</p>
+                <div className="broadcast-skeleton-list">
+                  {[1, 2, 3].map((idx) => (
+                    <div key={idx} className="broadcast-item-skeleton">
+                      <div className="skel-row-between">
+                        <div className="notif-skeleton-box notif-skeleton-tag" />
+                        <div className="notif-skeleton-box notif-skeleton-time" />
+                      </div>
+                      <div className="notif-skeleton-box notif-skeleton-title" style={{ marginTop: 8 }} />
+                      <div className="notif-skeleton-box notif-skeleton-line-long" style={{ marginTop: 6 }} />
+                      <div className="notif-skeleton-box notif-skeleton-line-med" style={{ marginTop: 4 }} />
+                      <div className="skel-row-between" style={{ marginTop: 10, justifyContent: 'flex-end' }}>
+                        <div className="notif-skeleton-box notif-skeleton-btn" />
+                      </div>
+                    </div>
+                  ))}
+                </div>
               ) : broadcasts.length === 0 ? (
                 <div className="empty-history-box">
                   <CampaignIcon style={{ fontSize: 40, color: '#94a3b8', marginBottom: 8 }} />
