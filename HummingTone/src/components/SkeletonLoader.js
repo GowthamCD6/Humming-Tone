@@ -1,10 +1,9 @@
 import React, { useEffect, useRef } from 'react';
 import { View, StyleSheet, Dimensions, Animated } from 'react-native';
-import { spacing } from '../theme/typography';
-import { shadows } from '../theme/colors';
+import { colors } from '../theme/colors';
 
 const { width } = Dimensions.get('window');
-const CARD_WIDTH = (width - (spacing.screenPadding * 2) - 14) / 2;
+const CARD_WIDTH = (width - 48) / 2;
 const CATEGORY_ITEM_WIDTH = (width - 40 - (3 * 10)) / 4;
 
 /**
@@ -38,22 +37,25 @@ export const SkeletonShimmer = ({ style, children }) => {
 
 /**
  * Skeleton Product Card
- * Matches the layout and dimensions of ProductCard.js
+ * Matches the layout and dimensions of ProductCard.js exactly
  */
 export const SkeletonCard = () => (
   <View style={styles.card}>
     {/* Product Image Placeholder */}
     <SkeletonShimmer style={styles.imagePlaceholder}>
+      {/* Top right wishlist heart button placeholder */}
+      <View style={styles.heartSkeleton} />
+      {/* Bottom left rating badge placeholder */}
       <View style={styles.badgeSkeleton} />
     </SkeletonShimmer>
 
     {/* Details Placeholder Lines */}
-    <View style={styles.infoWrap}>
+    <View style={styles.metaContainer}>
       <SkeletonShimmer style={styles.titleLine} />
-      <SkeletonShimmer style={styles.subLine} />
+      <SkeletonShimmer style={styles.categoryLine} />
       <View style={styles.priceRow}>
         <SkeletonShimmer style={styles.priceLine} />
-        <SkeletonShimmer style={styles.heartSkeleton} />
+        <SkeletonShimmer style={styles.originalPriceLine} />
       </View>
     </View>
   </View>
@@ -89,68 +91,73 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     flexWrap: 'wrap',
     justifyContent: 'space-between',
+    width: '100%',
   },
   card: {
     width: CARD_WIDTH,
     marginBottom: 16,
-    backgroundColor: '#FFFFFF',
-    borderRadius: 20,
-    padding: 10,
-    borderWidth: 1,
-    borderColor: '#EAE4DC',
-    ...shadows.card,
+    backgroundColor: 'transparent',
   },
   imagePlaceholder: {
     width: '100%',
-    height: CARD_WIDTH * 1.12,
-    backgroundColor: '#EAE4DC',
-    borderRadius: 15,
+    height: CARD_WIDTH * 1.05,
+    borderRadius: 18,
+    backgroundColor: colors.surfaceMuted || '#F0EBE3',
     overflow: 'hidden',
     position: 'relative',
+  },
+  heartSkeleton: {
+    position: 'absolute',
+    top: 10,
+    right: 10,
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: 'rgba(255, 255, 255, 0.7)',
   },
   badgeSkeleton: {
     position: 'absolute',
     bottom: 8,
     left: 8,
-    width: 44,
+    width: 42,
     height: 18,
     borderRadius: 9,
-    backgroundColor: '#DFD7CE',
+    backgroundColor: 'rgba(255, 255, 255, 0.7)',
   },
-  infoWrap: {
-    paddingTop: 10,
+  metaContainer: {
+    paddingTop: 8,
+    paddingHorizontal: 2,
   },
   titleLine: {
     width: '85%',
-    height: 13,
+    height: 13.5,
     backgroundColor: '#EAE4DC',
     borderRadius: 4,
-    marginBottom: 6,
+    marginBottom: 4,
   },
-  subLine: {
-    width: '55%',
-    height: 10,
+  categoryLine: {
+    width: '50%',
+    height: 10.5,
     backgroundColor: '#F0EBE3',
     borderRadius: 3,
-    marginBottom: 8,
+    marginBottom: 6,
   },
   priceRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-between',
-    marginTop: 2,
+    gap: 6,
   },
   priceLine: {
-    width: '45%',
-    height: 15,
+    width: '42%',
+    height: 14,
     backgroundColor: '#DFD7CE',
     borderRadius: 4,
   },
-  heartSkeleton: {
-    width: 24,
-    height: 24,
-    borderRadius: 12,
+  originalPriceLine: {
+    width: '30%',
+    height: 11.5,
     backgroundColor: '#F0EBE3',
+    borderRadius: 3,
   },
 
   // Category circles row
