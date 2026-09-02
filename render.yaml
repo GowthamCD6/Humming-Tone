@@ -1,0 +1,9 @@
+services:
+  - type: web
+    name: hummingtone-api
+    runtime: node
+    rootDir: Server
+    buildCommand: npm install
+    startCommand: npm start
+    healthCheckPath: /health
+    autoDeploy: true

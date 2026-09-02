@@ -1,7 +1,11 @@
 {
+  "name": "hummingtone-backend",
+  "version": "1.0.0",
   "type": "commonjs",
+  "main": "app.js",
   "scripts": {
-    "start": "nodemon app.js"
+    "start": "node app.js",
+    "dev": "nodemon app.js"
   },
   "dependencies": {
     "bcrypt": "^6.0.0",
