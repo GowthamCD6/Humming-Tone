@@ -3,6 +3,7 @@ import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 import { SITE_ASSETS } from '../../../utils/siteAssets';
 import UserFooter from '../../../components/User-Footer-Card/UserFooter';
 import ProductGridSkeleton from '../../../components/ProductSkeleton/ProductSkeleton';
+import ProductCard from '../../../components/ProductCard/ProductCard';
 import './Home.css';
 import axios from 'axios';
 import { Link, useLocation } from 'react-router-dom';
@@ -65,39 +66,6 @@ const Home = ({ onViewDetails: _onViewDetails = () => {} }) => {
     fetchNewArrivals();
   }, []);
 
-  // Luxury Minimalist Editorial Product Card
-  const LuxuryProductCard = ({ product }) => (
-    <div className="luxury-product-card">
-      <div className="luxury-product-image-container">
-        <img
-          src={product.image}
-          alt={product.name}
-          className="luxury-product-img"
-          onError={(e) => {
-            e.target.onerror = null;
-            e.target.style.opacity = '0.4';
-          }}
-        />
-        <div className="all-products-product-hover-overlay">
-          <Link to={`/usertab/details/${product.id}`} className="all-products-view-details-btn">
-            VIEW DETAILS
-          </Link>
-        </div>
-      </div>
-      <div className="luxury-product-meta">
-        <span className="luxury-product-category">
-          {product.category || product.brand || 'ATELIER COLLECTION'}
-        </span>
-        <h3 className="luxury-product-title">
-          <Link to={`/usertab/details/${product.id}`} className="luxury-product-title-link">
-            {product.name}
-          </Link>
-        </h3>
-        <p className="luxury-product-price">₹{product.price.toLocaleString('en-IN')}</p>
-      </div>
-    </div>
-  );
-
   return (
     <main className="userpanal-homepage home-static-page">
       {/* Hero Section */}
@@ -138,7 +106,7 @@ const Home = ({ onViewDetails: _onViewDetails = () => {} }) => {
         ) : featuredProducts.length > 0 ? (
           <div className="luxury-editorial-grid">
             {featuredProducts.slice(0, 4).map(item => (
-              <LuxuryProductCard key={item.id} product={item} />
+              <ProductCard key={item.id} product={item} />
             ))}
           </div>
         ) : (
@@ -234,7 +202,7 @@ const Home = ({ onViewDetails: _onViewDetails = () => {} }) => {
         ) : newArrivals.length > 0 ? (
           <div className="luxury-editorial-grid">
             {newArrivals.slice(0, 4).map(item => (
-              <LuxuryProductCard key={item.id} product={item} />
+              <ProductCard key={item.id} product={item} />
             ))}
           </div>
         ) : (

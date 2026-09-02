@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import UserFooter from '../../../components/User-Footer-Card/UserFooter';
 import ProductGridSkeleton from '../../../components/ProductSkeleton/ProductSkeleton';
+import ProductCard from '../../../components/ProductCard/ProductCard';
 import './Baby.css';
 import axios from 'axios';
 import { Link, useSearchParams } from 'react-router-dom';
@@ -38,31 +39,6 @@ const Baby = ({ onViewDetails: _onViewDetails = () => {} }) => {
     fetchProducts();
   }, [selectedCategory]);
 
-  // Product Card Component
-  const ProductCard = ({ product }) => (
-    <div className="baby-product-card">
-      <div className="baby-product-image-container">
-        <img 
-          src={product.image} 
-          alt={product.name} 
-          className="baby-product-img"
-          onError={(e) => {
-            e.target.onerror = null;
-            e.target.style.opacity = '0.5';
-          }}
-        />
-        <div className="baby-product-hover-overlay">
-          <Link  className="baby-view-details-btn" to={`/usertab/details/${product.id}`}>VIEW DETAILS</Link>
-        </div>
-      </div>
-      <div className="baby-product-details">
-        <h3 className="baby-product-title">{product.name}</h3>
-        <p className="baby-product-brand">{product.brand || 'HummingTone'}</p>
-        <p className="baby-product-price">₹{product.price.toFixed(2)}</p>
-      </div>
-    </div>
-  );
-
   return (
     <div className="baby-collection-page">
       {/* Products Section - Conditional Rendering */}
@@ -74,7 +50,7 @@ const Baby = ({ onViewDetails: _onViewDetails = () => {} }) => {
             </h2>
             <div className="baby-heading-accent"></div>
           </div>
-          <ProductGridSkeleton count={6} />
+          <ProductGridSkeleton count={8} />
         </div>
       ) : products.length > 0 ? (
         <div className="baby-products-section">
@@ -85,9 +61,9 @@ const Baby = ({ onViewDetails: _onViewDetails = () => {} }) => {
             <div className="baby-heading-accent"></div>
           </div>
           
-          <div className="baby-product-grid">
+          <div className="luxury-editorial-grid baby-product-grid">
             {products.map(product => (
-              <ProductCard key={product.id} product={product} />
+              <ProductCard key={product.id} product={product} fallbackCategory="BABY & TODDLERS" />
             ))}
           </div>
         </div>

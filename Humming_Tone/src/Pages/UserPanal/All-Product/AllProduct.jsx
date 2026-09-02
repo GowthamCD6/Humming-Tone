@@ -1,10 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { SITE_ASSETS } from '../../../utils/siteAssets';
 import UserFooter from '../../../components/User-Footer-Card/UserFooter';
-import LottieLoader from '../../../components/LottieLoader/LottieLoader';
+import ProductGridSkeleton from '../../../components/ProductSkeleton/ProductSkeleton';
+import ProductCard from '../../../components/ProductCard/ProductCard';
 import './AllProduct.css';
-
-const demoImage = SITE_ASSETS.demoProduct;
 import { getGenderOptions } from '../../../utils/siteContentStore';
 import { Link } from 'react-router-dom';
 import { API_BASE_URL, getImageUrl } from '../../../utils/apiConfig';
@@ -82,31 +80,6 @@ const AllProduct = ({ onViewDetails: _onViewDetails = () => {} }) => {
     setProducts(allProducts);
   };
 
-  // Product Card Component
-  const ProductCard = ({ product }) => (
-    <div className="all-products-product-card">
-      <div className="all-products-product-image-container">
-        <img 
-          src={product.image} 
-          alt={product.name} 
-          className="all-products-product-img"
-          onError={(e) => {
-            e.target.onerror = null;
-            e.target.style.opacity = '0.5';
-          }}
-        />
-        <div className="all-products-product-hover-overlay">
-          <Link  className="all-products-view-details-btn" to={`/usertab/details/${product.id}`}>VIEW DETAILS</Link>
-        </div>
-      </div>
-      <div className="all-products-product-details">
-        <h3 className="all-products-product-title">{product.name}</h3>
-        <p className="all-products-product-brand">{product.brand || 'HummingTone'}</p>
-        <p className="all-products-product-price">₹{product.price.toFixed(2)}</p>
-      </div>
-    </div>
-  );
-
   return (
     <div className="all-products-collection-page">
       {/* Header Section */}
@@ -180,13 +153,13 @@ const AllProduct = ({ onViewDetails: _onViewDetails = () => {} }) => {
       {/* Products Section - Conditional Rendering */}
       {loading ? (
         <div className="all-products-products-section">
-          <LottieLoader size={160} message="Loading products..." />
+          <ProductGridSkeleton count={8} />
         </div>
       ) : products.length > 0 ? (
         <div className="all-products-products-section">
-          <div className="all-products-product-grid">
+          <div className="luxury-editorial-grid all-products-product-grid">
             {products.map(product => (
-              <ProductCard key={product.id} product={product} />
+              <ProductCard key={product.id} product={product} fallbackCategory="ATELIER COLLECTION" />
             ))}
           </div>
         </div>

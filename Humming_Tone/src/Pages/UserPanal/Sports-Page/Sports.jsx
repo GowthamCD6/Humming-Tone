@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import UserFooter from '../../../components/User-Footer-Card/UserFooter';
 import ProductGridSkeleton from '../../../components/ProductSkeleton/ProductSkeleton';
+import ProductCard from '../../../components/ProductCard/ProductCard';
 import './Sports.css';
 import axios from 'axios';
 import { Link, useSearchParams } from 'react-router-dom';
@@ -38,31 +39,6 @@ const Sports = ({ onViewDetails: _onViewDetails = () => {} }) => {
     fetchProducts();
   }, [selectedCategory]);
 
-  // Product Card Component
-  const ProductCard = ({ product }) => (
-    <div className="sports-product-card">
-      <div className="sports-product-image-container">
-        <img 
-          src={product.image} 
-          alt={product.name} 
-          className="sports-product-img"
-          onError={(e) => {
-            e.target.onerror = null;
-            e.target.style.opacity = '0.5';
-          }}
-        />
-        <div className="sports-product-hover-overlay">
-          <Link  className="sports-view-details-btn" to={`/usertab/details/${product.id}`}>VIEW DETAILS</Link>
-        </div>
-      </div>
-      <div className="sports-product-details">
-        <h3 className="sports-product-title">{product.name}</h3>
-        <p className="sports-product-brand">{product.brand || 'HummingTone'}</p>
-        <p className="sports-product-price">₹{product.price.toFixed(2)}</p>
-      </div>
-    </div>
-  );
-
   return (
     <div className="sports-collection-page">
       {/* Products Section - Conditional Rendering */}
@@ -74,7 +50,7 @@ const Sports = ({ onViewDetails: _onViewDetails = () => {} }) => {
             </h2>
             <div className="sports-heading-accent"></div>
           </div>
-          <ProductGridSkeleton count={6} />
+          <ProductGridSkeleton count={8} />
         </div>
       ) : products.length > 0 ? (
         <div className="sports-products-section">
@@ -85,9 +61,9 @@ const Sports = ({ onViewDetails: _onViewDetails = () => {} }) => {
             <div className="sports-heading-accent"></div>
           </div>
           
-          <div className="sports-product-grid">
+          <div className="luxury-editorial-grid sports-product-grid">
             {products.map(product => (
-              <ProductCard key={product.id} product={product} />
+              <ProductCard key={product.id} product={product} fallbackCategory="SPORTS PERFORMANCE" />
             ))}
           </div>
         </div>

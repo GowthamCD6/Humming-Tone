@@ -459,17 +459,31 @@
   width: 60px; 
   height: 2px; 
   background: #1a1a1a; 
-  margin: 0 auto 110px; 
+  margin: 0 auto 40px; 
 }
 
 .userpanal-product-details-page .related-grid { 
   display: grid; 
-  grid-template-columns: repeat(3, 1fr); 
-  gap: 3rem; 
+  grid-template-columns: repeat(4, 1fr); 
+  gap: 2rem; 
   margin-bottom: 60px;
-  max-width: 1300px;
+  max-width: 1400px;
   margin-left: auto;
   margin-right: auto;
+}
+
+@media (max-width: 1200px) {
+  .userpanal-product-details-page .related-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 2.5rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .userpanal-product-details-page .related-grid {
+    grid-template-columns: 1fr;
+    gap: 2rem;
+  }
 }
 
 .userpanal-product-details-page .related-card {

@@ -7,6 +7,7 @@ const demoImage = SITE_ASSETS.demoProduct;
 import AddToCartModal from "./Product-Buying modal/AddToCartModal";
 import ProductReviews from "./ReviewsSection/ProductReviews";
 import AuthModal from "../../../components/AuthModal/AuthModal";
+import ProductCard from "../../../components/ProductCard/ProductCard";
 import "./Details.css";
 import { useNavigate } from "react-router-dom";
 import { API_BASE_URL, getImageUrl } from "../../../utils/apiConfig";
@@ -392,44 +393,25 @@ const ProductDetailPage = () => {
         <ProductReviews productId={product.id} productName={product.name} />
 
         {/* ================= YOU MAY ALSO LIKE ================= */}
-        <section className="related-section">
-          <h2 className="related-heading">You May Also Like</h2>
-          <div className="related-divider"></div>
+        {recommendedProducts.length > 0 && (
+          <section className="related-section">
+            <h2 className="related-heading">You May Also Like</h2>
+            <div className="related-divider"></div>
 
-          <div className="related-grid">
-            {recommendedProducts.map((item) => (
-              <div
-                className="related-card"
-                key={item.id}
-                onClick={() =>{
-                  // (window.location.href = `/usertab/details/${item.id}`)
-                  navigate(`/usertab/details/${item.id}`)
-                }}
-              >
-                <div className="related-product-image-container">
-                  <img
-                    src={getImageUrl(item.image_path)}
-                    alt={item.name}
-                  />
-                  <div className="related-product-hover-overlay">
-                    <button className="related-view-details-btn">
-                      VIEW DETAILS
-                    </button>
-                  </div>
-                </div>
-                <div className="related-product-details">
-                  <h3 className="related-product-title">{item.name}</h3>
-                  <p className="related-product-brand">
-                    {item.brand || "HummingTone"}
-                  </p>
-                  <p className="related-product-price">₹{item.price}</p>
-                </div>
-              </div>
-            ))}
-          </div>
+            <div className="luxury-editorial-grid related-grid">
+              {recommendedProducts.map((item) => (
+                <ProductCard key={item.id} product={item} />
+              ))}
+            </div>
 
-          <button className="view-more-products">VIEW MORE ALL-PRODUCTS</button>
-        </section>
+            <button
+              className="view-more-products"
+              onClick={() => navigate('/usertab/all-products')}
+            >
+              VIEW MORE ALL-PRODUCTS
+            </button>
+          </section>
+        )}
       </div>
 
       <UserFooter />

@@ -1,11 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { SITE_ASSETS } from '../../../utils/siteAssets';
 import UserFooter from '../../../components/User-Footer-Card/UserFooter';
 import ProductGridSkeleton from '../../../components/ProductSkeleton/ProductSkeleton';
+import ProductCard from '../../../components/ProductCard/ProductCard';
 import './Women.css';
-
-const demoImage = SITE_ASSETS.demoProduct;
-import { getGenderOptions } from '../../../utils/siteContentStore';
 import axios from 'axios';
 import { Link, useSearchParams } from 'react-router-dom';
 import { API_BASE_URL, getImageUrl } from '../../../utils/apiConfig';
@@ -44,35 +41,6 @@ const Women = ({ onViewDetails: _onViewDetails = () => {} }) => {
     fetchProducts();
   }, [selectedCategory]);
 
-  const ProductCard = ({ product }) => (
-    <div className="women-product-card">
-      <div className="women-product-image-container">
-        <img
-          src={product.image}
-          alt={product.name}
-          className="women-product-img"
-          onError={(e) => {
-            e.target.onerror = null;
-            e.target.style.opacity = '0.5';
-          }}
-        />
-        <div className="women-product-hover-overlay">
-          <Link
-            className="women-view-details-btn"
-            to={`/usertab/details/${product.id}`}
-          >
-            VIEW DETAILS
-          </Link>
-        </div>
-      </div>
-      <div className="women-product-details">
-        <h3 className="women-product-title">{product.name}</h3>
-        <p className="women-product-brand">{product.brand || 'HummingTone'}</p>
-        <p className="women-product-price">₹{product.price.toFixed(2)}</p>
-      </div>
-    </div>
-  );
-
   return (
     <div className="women-collection-page">
       {/* Products Section - Conditional Rendering */}
@@ -84,7 +52,7 @@ const Women = ({ onViewDetails: _onViewDetails = () => {} }) => {
             </h2>
             <div className="women-heading-accent"></div>
           </div>
-          <ProductGridSkeleton count={6} />
+          <ProductGridSkeleton count={8} />
         </div>
       ) : products.length > 0 ? (
         <div className="women-products-section">
@@ -95,9 +63,9 @@ const Women = ({ onViewDetails: _onViewDetails = () => {} }) => {
             <div className="women-heading-accent"></div>
           </div>
 
-          <div className="women-product-grid">
+          <div className="luxury-editorial-grid women-product-grid">
             {products.map(product => (
-              <ProductCard key={product.id} product={product} />
+              <ProductCard key={product.id} product={product} fallbackCategory="WOMEN'S COUTURE" />
             ))}
           </div>
         </div>

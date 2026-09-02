@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import UserFooter from '../../../components/User-Footer-Card/UserFooter';
 import ProductGridSkeleton from '../../../components/ProductSkeleton/ProductSkeleton';
+import ProductCard from '../../../components/ProductCard/ProductCard';
 import './Children\'s.css';
 import axios from 'axios';
 import { Link, useSearchParams } from 'react-router-dom';
@@ -38,31 +39,6 @@ const Children = ({ onViewDetails: _onViewDetails = () => {} }) => {
     fetchProducts();
   }, [selectedCategory]);
 
-  // Product Card Component
-  const ProductCard = ({ product }) => (
-    <div className="childrens-product-card">
-      <div className="childrens-product-image-container">
-        <img 
-          src={product.image} 
-          alt={product.name} 
-          className="childrens-product-img"
-          onError={(e) => {
-            e.target.onerror = null;
-            e.target.style.opacity = '0.5';
-          }}
-        />
-        <div className="childrens-product-hover-overlay">
-          <Link  className="childrens-view-details-btn" to={`/usertab/details/${product.id}`}>VIEW DETAILS</Link>
-        </div>
-      </div>
-      <div className="childrens-product-details">
-        <h3 className="childrens-product-title">{product.name}</h3>
-        <p className="childrens-product-brand">{product.brand || 'HummingTone'}</p>
-        <p className="childrens-product-price">₹{product.price.toFixed(2)}</p>
-      </div>
-    </div>
-  );
-
   return (
     <div className="childrens-collection-page">
       {/* Products Section - Conditional Rendering */}
@@ -74,7 +50,7 @@ const Children = ({ onViewDetails: _onViewDetails = () => {} }) => {
             </h2>
             <div className="childrens-heading-accent"></div>
           </div>
-          <ProductGridSkeleton count={6} />
+          <ProductGridSkeleton count={8} />
         </div>
       ) : products.length > 0 ? (
         <div className="childrens-products-section">
@@ -85,9 +61,9 @@ const Children = ({ onViewDetails: _onViewDetails = () => {} }) => {
             <div className="childrens-heading-accent"></div>
           </div>
           
-          <div className="childrens-product-grid">
+          <div className="luxury-editorial-grid childrens-product-grid">
             {products.map(product => (
-              <ProductCard key={product.id} product={product} />
+              <ProductCard key={product.id} product={product} fallbackCategory="CHILDREN'S SUITE" />
             ))}
           </div>
         </div>

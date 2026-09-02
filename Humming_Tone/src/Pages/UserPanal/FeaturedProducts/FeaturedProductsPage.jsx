@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import UserFooter from '../../../components/User-Footer-Card/UserFooter';
-import LottieLoader from '../../../components/LottieLoader/LottieLoader';
+import ProductGridSkeleton from '../../../components/ProductSkeleton/ProductSkeleton';
+import ProductCard from '../../../components/ProductCard/ProductCard';
 import { Link } from 'react-router-dom';
 import { API_BASE_URL, getImageUrl } from '../../../utils/apiConfig';
 import axios from 'axios';
@@ -34,38 +35,6 @@ const FeaturedProductsPage = () => {
     fetchFeaturedProducts();
   }, []);
 
-  const LuxuryProductCard = ({ product }) => (
-    <div className="luxury-product-card">
-      <div className="luxury-product-image-container">
-        <img
-          src={product.image}
-          alt={product.name}
-          className="luxury-product-img"
-          onError={(e) => {
-            e.target.onerror = null;
-            e.target.style.opacity = '0.4';
-          }}
-        />
-        <div className="all-products-product-hover-overlay">
-          <Link to={`/usertab/details/${product.id}`} className="all-products-view-details-btn">
-            VIEW DETAILS
-          </Link>
-        </div>
-      </div>
-      <div className="luxury-product-meta">
-        <span className="luxury-product-category">
-          {product.category || product.brand || 'FEATURED ATELIER'}
-        </span>
-        <h3 className="luxury-product-title">
-          <Link to={`/usertab/details/${product.id}`} className="luxury-product-title-link">
-            {product.name}
-          </Link>
-        </h3>
-        <p className="luxury-product-price">₹{product.price.toLocaleString('en-IN')}</p>
-      </div>
-    </div>
-  );
-
   return (
     <div className="featured-products-page userpanal-homepage">
       <div className="featured-page-container">
@@ -79,13 +48,11 @@ const FeaturedProductsPage = () => {
         </div>
 
         {loading ? (
-          <div className="featured-page-loader">
-            <LottieLoader size={160} message="Loading featured collection..." />
-          </div>
+          <ProductGridSkeleton count={8} />
         ) : featuredProducts.length > 0 ? (
-          <div className="featured-full-grid">
+          <div className="luxury-editorial-grid featured-full-grid">
             {featuredProducts.map((product) => (
-              <LuxuryProductCard key={product.id} product={product} />
+              <ProductCard key={product.id} product={product} fallbackCategory="FEATURED ATELIER" />
             ))}
           </div>
         ) : (
