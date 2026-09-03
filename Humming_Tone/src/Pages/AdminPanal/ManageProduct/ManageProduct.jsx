@@ -46,7 +46,7 @@ export default function ManageProducts() {
     setToasts((prev) => [...prev, { id, message, type }]);
   };
   const removeToast = (id) => setToasts((prev) => prev.filter((t) => t.id !== id));
-  
+
   // Promo State
   const [showAddPromoModal, setShowAddPromoModal] = useState(false)
   const [newPromo, setNewPromo] = useState({ code: '', type: 'fixed', discount: 0, minOrder: 0, usageLimit: 100 })
@@ -200,20 +200,20 @@ export default function ManageProducts() {
   const filteredProducts = products.filter((p) => {
     const pGender = String(p.gender || '').toLowerCase();
     const fGender = String(filterGender || '').toLowerCase();
-    
-    const genOk = filterGender === 'All' || 
-                  pGender === fGender || 
-                  (fGender === 'baby' && (pGender === 'babies' || pGender === 'baby'));
-                  
-    const catOk = filterCategory === 'All' || 
-                  String(p.category || '').toLowerCase() === String(filterCategory || '').toLowerCase();
+
+    const genOk = filterGender === 'All' ||
+      pGender === fGender ||
+      (fGender === 'baby' && (pGender === 'babies' || pGender === 'baby'));
+
+    const catOk = filterCategory === 'All' ||
+      String(p.category || '').toLowerCase() === String(filterCategory || '').toLowerCase();
 
     const featOk = filterFeatured === 'All' ||
-                   (filterFeatured === 'Featured' && p.is_featured === 1) ||
-                   (filterFeatured === 'Normal' && (!p.is_featured || p.is_featured === 0));
-                  
+      (filterFeatured === 'Featured' && p.is_featured === 1) ||
+      (filterFeatured === 'Normal' && (!p.is_featured || p.is_featured === 0));
+
     const nameOk = String(p.name || '').toLowerCase().includes(searchQuery.toLowerCase());
-    
+
     return genOk && catOk && featOk && nameOk;
   });
 
@@ -242,7 +242,7 @@ export default function ManageProducts() {
     const newFeatured = currentFeatured === 1 ? 0 : 1;
     // Optimistic UI update
     setProducts(prev => prev.map(p => p.id === productId ? { ...p, is_featured: newFeatured } : p));
-    
+
     try {
       const res = await fetch(`${BASE_URL}/admin/toggle_featured/${productId}`, {
         method: 'PATCH',
@@ -264,11 +264,11 @@ export default function ManageProducts() {
     }
   };
 
-  const handleEditProduct = async (p) => { 
-    setEditingProduct({ ...p, is_featured: Number(p.is_featured) === 1 }); 
-    setEditImageFile(null); 
+  const handleEditProduct = async (p) => {
+    setEditingProduct({ ...p, is_featured: Number(p.is_featured) === 1 });
+    setEditImageFile(null);
     setProductSizes([]);
-    setShowEditModal(true); 
+    setShowEditModal(true);
     try {
       const token = localStorage.getItem('adminToken');
       const res = await axios.get(`${BASE_URL}/admin/fetch_variants/${p.id}`, { headers: { Authorization: `Bearer ${token}` } });
@@ -283,7 +283,7 @@ export default function ManageProducts() {
       console.error("Failed to fetch sizes", err);
     }
   }
-  
+
   const handleSaveProduct = async () => {
     const formData = new FormData();
     formData.append('name', editingProduct.name);
@@ -725,16 +725,16 @@ export default function ManageProducts() {
               </div>
               <div className="mp-form-group">
                 <label className="mp-form-label">SKU</label>
-                <input type="text" className="mp-form-input" value={editingProduct.sku} onChange={(e) => setEditingProduct({...editingProduct, sku: e.target.value})} />
+                <input type="text" className="mp-form-input" value={editingProduct.sku} onChange={(e) => setEditingProduct({ ...editingProduct, sku: e.target.value })} />
               </div>
               <div className="mp-form-row">
                 <div className="mp-form-group">
                   <label className="mp-form-label">Price (₹)</label>
-                  <input type="number" className="mp-form-input" value={editingProduct.price} onChange={(e) => setEditingProduct({...editingProduct, price: e.target.value})} />
+                  <input type="number" className="mp-form-input" value={editingProduct.price} onChange={(e) => setEditingProduct({ ...editingProduct, price: e.target.value })} />
                 </div>
                 <div className="mp-form-group">
                   <label className="mp-form-label">Stock</label>
-                  <input type="number" className="mp-form-input" value={editingProduct.stock} onChange={(e) => setEditingProduct({...editingProduct, stock: e.target.value})} />
+                  <input type="number" className="mp-form-input" value={editingProduct.stock} onChange={(e) => setEditingProduct({ ...editingProduct, stock: e.target.value })} />
                 </div>
               </div>
               <div className="mp-form-row">
@@ -743,7 +743,7 @@ export default function ManageProducts() {
                   <select
                     className="mp-form-input"
                     value={editingProduct.category || ''}
-                    onChange={(e) => setEditingProduct({...editingProduct, category: e.target.value})}
+                    onChange={(e) => setEditingProduct({ ...editingProduct, category: e.target.value })}
                   >
                     <option value="">Select Category</option>
                     {editCategoryOptions.map((c, idx) => {
@@ -758,7 +758,7 @@ export default function ManageProducts() {
                 </div>
                 <div className="mp-form-group">
                   <label className="mp-form-label">Gender</label>
-                  <select className="mp-form-input" value={editingProduct.gender} onChange={(e) => setEditingProduct({...editingProduct, gender: e.target.value, category: ''})}>
+                  <select className="mp-form-input" value={editingProduct.gender} onChange={(e) => setEditingProduct({ ...editingProduct, gender: e.target.value, category: '' })}>
                     <option value="">Select Gender</option>
                     {genderOptions.map(g => <option key={g} value={g}>{g}</option>)}
                   </select>
@@ -766,7 +766,7 @@ export default function ManageProducts() {
               </div>
               <div className="mp-form-group">
                 <label className="mp-form-label">Description</label>
-                <textarea className="mp-form-input" rows="3" value={editingProduct.about} onChange={(e) => setEditingProduct({...editingProduct, about: e.target.value})} />
+                <textarea className="mp-form-input" rows="3" value={editingProduct.about} onChange={(e) => setEditingProduct({ ...editingProduct, about: e.target.value })} />
               </div>
               <div className="mp-form-group">
                 <label className="mp-form-label">Sizes Present</label>
@@ -828,29 +828,29 @@ export default function ManageProducts() {
         <div className="mp-panel-body">
           <div className="mp-form-group">
             <label className="mp-form-label">Promo Code</label>
-            <input type="text" className="mp-form-input" value={newPromo.code} onChange={(e) => setNewPromo({...newPromo, code: e.target.value})} />
+            <input type="text" className="mp-form-input" value={newPromo.code} onChange={(e) => setNewPromo({ ...newPromo, code: e.target.value })} />
           </div>
           <div className="mp-form-row">
             <div className="mp-form-group">
               <label className="mp-form-label">Type</label>
-              <select className="mp-form-input" value={newPromo.type} onChange={(e) => setNewPromo({...newPromo, type: e.target.value})}>
+              <select className="mp-form-input" value={newPromo.type} onChange={(e) => setNewPromo({ ...newPromo, type: e.target.value })}>
                 <option value="fixed">Fixed</option>
                 <option value="percentage">Percentage</option>
               </select>
             </div>
             <div className="mp-form-group">
               <label className="mp-form-label">Usage Limit</label>
-              <input type="number" className="mp-form-input" value={newPromo.usageLimit} onChange={(e) => setNewPromo({...newPromo, usageLimit: e.target.value})} placeholder="e.g. 100" />
+              <input type="number" className="mp-form-input" value={newPromo.usageLimit} onChange={(e) => setNewPromo({ ...newPromo, usageLimit: e.target.value })} placeholder="e.g. 100" />
             </div>
           </div>
           <div className="mp-form-row">
             <div className="mp-form-group">
               <label className="mp-form-label">Discount</label>
-              <input type="number" className="mp-form-input" value={newPromo.discount} onChange={(e) => setNewPromo({...newPromo, discount: e.target.value})} />
+              <input type="number" className="mp-form-input" value={newPromo.discount} onChange={(e) => setNewPromo({ ...newPromo, discount: e.target.value })} />
             </div>
             <div className="mp-form-group">
               <label className="mp-form-label">Min Order (₹)</label>
-              <input type="number" className="mp-form-input" value={newPromo.minOrder} onChange={(e) => setNewPromo({...newPromo, minOrder: e.target.value})} />
+              <input type="number" className="mp-form-input" value={newPromo.minOrder} onChange={(e) => setNewPromo({ ...newPromo, minOrder: e.target.value })} />
             </div>
           </div>
         </div>
@@ -876,11 +876,11 @@ export default function ManageProducts() {
             <div className="mp-panel-body">
               <div className="mp-form-group">
                 <label className="mp-form-label">Promo Code</label>
-                <input type="text" className="mp-form-input" value={editingPromo.code} onChange={(e) => setEditingPromo({...editingPromo, code: e.target.value})} />
+                <input type="text" className="mp-form-input" value={editingPromo.code} onChange={(e) => setEditingPromo({ ...editingPromo, code: e.target.value })} />
               </div>
               <div className="mp-form-group">
                 <label className="mp-form-label">Type</label>
-                <select className="mp-form-input" value={editingPromo.discount_type} onChange={(e) => setEditingPromo({...editingPromo, discount_type: e.target.value})}>
+                <select className="mp-form-input" value={editingPromo.discount_type} onChange={(e) => setEditingPromo({ ...editingPromo, discount_type: e.target.value })}>
                   <option value="fixed">Fixed</option>
                   <option value="percentage">Percentage</option>
                 </select>
@@ -888,16 +888,16 @@ export default function ManageProducts() {
               <div className="mp-form-row">
                 <div className="mp-form-group">
                   <label className="mp-form-label">Discount</label>
-                  <input type="number" className="mp-form-input" value={editingPromo.discount_value} onChange={(e) => setEditingPromo({...editingPromo, discount_value: e.target.value})} />
+                  <input type="number" className="mp-form-input" value={editingPromo.discount_value} onChange={(e) => setEditingPromo({ ...editingPromo, discount_value: e.target.value })} />
                 </div>
                 <div className="mp-form-group">
                   <label className="mp-form-label">Min Order (₹)</label>
-                  <input type="number" className="mp-form-input" value={editingPromo.min_order_amount} onChange={(e) => setEditingPromo({...editingPromo, min_order_amount: e.target.value})} />
+                  <input type="number" className="mp-form-input" value={editingPromo.min_order_amount} onChange={(e) => setEditingPromo({ ...editingPromo, min_order_amount: e.target.value })} />
                 </div>
               </div>
               <div className="mp-form-group">
                 <label className="mp-form-label">Status</label>
-                <select className="mp-form-input" value={editingPromo.is_active ? 'true' : 'false'} onChange={(e) => setEditingPromo({...editingPromo, is_active: e.target.value === 'true'})}>
+                <select className="mp-form-input" value={editingPromo.is_active ? 'true' : 'false'} onChange={(e) => setEditingPromo({ ...editingPromo, is_active: e.target.value === 'true' })}>
                   <option value="true">Active</option>
                   <option value="false">Inactive</option>
                 </select>

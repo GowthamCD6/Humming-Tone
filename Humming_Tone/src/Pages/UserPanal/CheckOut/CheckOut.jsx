@@ -286,7 +286,7 @@ const CheckOut = ({ onBack }) => {
       const { razorpay_order_id, amount, currency } = result.data;
 
       const options = {
-        key: RAZORPAY_KEY,
+        key: result?.data?.key_id || RAZORPAY_KEY,
         amount: Number(amount),
         currency,
         order_id: razorpay_order_id,

@@ -207,14 +207,17 @@ const InventoryDashboard = () => {
   }, [allMaterials, activeGender, activeStockFilter]);
 
   const genderTabs = useMemo(() => {
-    const genders = Array.from(
-      new Set(
-        allMaterials
-          .map((item) => (item.gender || '').trim())
-          .filter((g) => Boolean(g) && g !== '-')
-      )
-    );
-    return ['All', ...genders];
+    const map = new Map();
+    allMaterials.forEach((item) => {
+      const raw = (item.gender || '').trim();
+      if (raw && raw !== '-') {
+        const normalized = raw.charAt(0).toUpperCase() + raw.slice(1).toLowerCase();
+        if (!map.has(normalized.toLowerCase())) {
+          map.set(normalized.toLowerCase(), normalized);
+        }
+      }
+    });
+    return ['All', ...Array.from(map.values())];
   }, [allMaterials]);
 
   const tabCounts = useMemo(() => {

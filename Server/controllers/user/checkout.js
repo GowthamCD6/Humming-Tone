@@ -288,7 +288,7 @@ exports.create_order = (req, res, next) => {
                         razorpay_order_id: razorpayOrder.id,
                         amount: razorpayOrder.amount,
                         currency: razorpayOrder.currency,
-                        key_id: (process.env.RAZORPAY_TEST_API_KEY_ID || process.env.RAZORPAY_KEY_ID || 'rzp_test_RxiHjMose0no0s').trim(),
+                        key_id: (process.env.RAZORPAY_KEY_ID || process.env.RAZORPAY_TEST_API_KEY_ID || '').trim(),
                         customer_name: customer_name,
                         customer_email: customer_email
                       }
@@ -426,8 +426,9 @@ exports.verify_payment = async (req, res, next) => {
 
     // Attempt Client Signature Verification if signature was passed from frontend
     if (razorpay_payment_id && razorpay_order_id && razorpay_signature) {
+      const keySecret = (process.env.RAZORPAY_KEY_SECRET || process.env.RAZORPAY_TEST_KEY_SECRET || "").trim();
       const generatedSignature = crypto
-        .createHmac("sha256", process.env.RAZORPAY_KEY_SECRET)
+        .createHmac("sha256", keySecret)
         .update(`${razorpay_order_id}|${razorpay_payment_id}`)
         .digest("hex");
 

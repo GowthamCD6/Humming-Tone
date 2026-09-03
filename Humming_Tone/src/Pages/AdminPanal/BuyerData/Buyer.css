@@ -493,17 +493,45 @@
   border-radius: 4px;
 }
 
-.avatar-col { width: 38px; height: 38px; border-radius: 50%; }
-.name-col { width: 140px; }
-.contact-col { width: 180px; }
-.badge-col { width: 90px; }
-.amount-col { width: 80px; }
-.action-col { width: 70px; margin-left: auto; }
+.avatar-col {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+}
+
+.name-col {
+  width: 140px;
+}
+
+.contact-col {
+  width: 180px;
+}
+
+.badge-col {
+  width: 90px;
+}
+
+.amount-col {
+  width: 80px;
+}
+
+.action-col {
+  width: 70px;
+  margin-left: auto;
+}
 
 @keyframes pulse {
-  0% { opacity: 0.6; }
-  50% { opacity: 1; }
-  100% { opacity: 0.6; }
+  0% {
+    opacity: 0.6;
+  }
+
+  50% {
+    opacity: 1;
+  }
+
+  100% {
+    opacity: 0.6;
+  }
 }
 
 /* Empty Box */
@@ -548,8 +576,15 @@
 }
 
 @keyframes modalIn {
-  from { opacity: 0; transform: scale(0.96) translateY(8px); }
-  to { opacity: 1; transform: scale(1) translateY(0); }
+  from {
+    opacity: 0;
+    transform: scale(0.96) translateY(8px);
+  }
+
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
 }
 
 .buyer-modal-header {

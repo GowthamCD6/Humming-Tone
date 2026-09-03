@@ -183,8 +183,8 @@
   padding: 16px 20px;
   border-bottom: 1px solid var(--inv-border-light);
   background-color: var(--inv-white);
-  flex-wrap: nowrap;
-  overflow-x: auto;
+  flex-wrap: wrap;
+  overflow: visible;
 }
 
 .mp-products-title {
@@ -487,7 +487,9 @@
 }
 
 @media (max-width: 768px) {
-  .mp-card { border-radius: 10px; }
+  .mp-card {
+    border-radius: 10px;
+  }
 
   .mp-card-header {
     padding: 14px 14px 12px;
@@ -840,7 +842,10 @@
 /* --- Modals (Delete Confirmation) --- */
 .mp-modal-overlay {
   position: fixed;
-  top: 0; left: 0; right: 0; bottom: 0;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
   background: rgba(15, 23, 42, 0.4);
   backdrop-filter: blur(2px);
   display: flex;
@@ -858,8 +863,15 @@
 }
 
 @keyframes modalIn {
-  from { opacity: 0; transform: scale(0.95); }
-  to { opacity: 1; transform: scale(1); }
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
 }
 
 .mp-modal-header {
@@ -1025,14 +1037,14 @@
   background-color: white;
   transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   border-radius: 50%;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
 }
 
-.mp-toggle-switch input:checked + .mp-toggle-slider {
+.mp-toggle-switch input:checked+.mp-toggle-slider {
   background-color: #f59e0b;
 }
 
-.mp-toggle-switch input:checked + .mp-toggle-slider:before {
+.mp-toggle-switch input:checked+.mp-toggle-slider:before {
   transform: translateX(20px);
 }
 
@@ -1062,8 +1074,13 @@
   animation: mpToastFadeIn 0.25s ease;
 }
 
-.mp-toast-success { background: #10b981; }
-.mp-toast-error { background: #ef4444; }
+.mp-toast-success {
+  background: #10b981;
+}
+
+.mp-toast-error {
+  background: #ef4444;
+}
 
 .mp-toast-close {
   background: none;
@@ -1076,8 +1093,15 @@
 }
 
 @keyframes mpToastFadeIn {
-  from { opacity: 0; transform: translateY(-10px); }
-  to { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 /* ===== SKELETON SHIMMER ===== */
@@ -1107,7 +1131,11 @@
 }
 
 @keyframes mpShimmer {
-  0% { background-position: 200% 0; }
-  100% { background-position: -200% 0; }
-}
+  0% {
+    background-position: 200% 0;
+  }
 
+  100% {
+    background-position: -200% 0;
+  }
+}

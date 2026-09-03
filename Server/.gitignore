@@ -1,1 +1,17 @@
+# Dependencies
+node_modules/
+
+# Environment Variables & Secrets
+.env
+.env.*
+!.env.example
+*.pem
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+
+# Docker & OS
 Docker/
+.DS_Store

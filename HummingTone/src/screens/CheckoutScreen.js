@@ -96,7 +96,7 @@ export const CheckoutScreen = ({ navigation }) => {
         description: 'Humming Tone Order Payment',
         image: 'https://res.cloudinary.com/agoiw3rz/image/upload/v1/hummingtone/logo',
         currency: orderData.currency || 'INR',
-        key: orderData.key_id || 'rzp_test_RxiHjMose0no0s',
+        key: orderData.key_id,
         amount: orderData.amount,
         name: 'Humming Tone',
         order_id: orderData.razorpay_order_id,
