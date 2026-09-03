@@ -39,9 +39,27 @@ const PremiumCart = ({ onCheckout }) => {
       return [];
     }
   });
+
+  // Listen to live cart changes from other pages/modals
+  useEffect(() => {
+    const handleCartSync = () => {
+      try {
+        setCartItems(JSON.parse(localStorage.getItem('cart')) || []);
+      } catch {
+        setCartItems([]);
+      }
+    };
+    window.addEventListener('cart:updated', handleCartSync);
+    window.addEventListener('storage', handleCartSync);
+    return () => {
+      window.removeEventListener('cart:updated', handleCartSync);
+      window.removeEventListener('storage', handleCartSync);
+    };
+  }, []);
+
   const [instructions, setInstructions] = useState('');
   const [alert, setAlert] = useState(null);
-  const [removeModal, setRemoveModal] = useState({ show: false, itemId: null, itemName: '' });
+  const [removeModal, setRemoveModal] = useState({ show: false, itemKey: null, itemName: '' });
   const [clearCartModal, setClearCartModal] = useState(false);
   const [authModalOpen, setAuthModalOpen] = useState(false);
 
@@ -52,8 +70,12 @@ const PremiumCart = ({ onCheckout }) => {
     window.dispatchEvent(new Event('cart:updated'));
   };
 
-  const updateQuantity = (id, newQuantity) => {
-    const item = cartItems.find(item => item.id === id);
+  const getItemKey = (item) => {
+    return item.cartItemId || `${item.id}-${item.size || 'Standard'}-${item.color || 'Default'}`;
+  };
+
+  const updateQuantity = (itemKey, newQuantity) => {
+    const item = cartItems.find(it => getItemKey(it) === itemKey || `${it.id}-${it.size}` === itemKey || it.id === itemKey);
     if (!item) return;
 
     if (newQuantity > item.stock && item.stock > 0) {
@@ -62,29 +84,38 @@ const PremiumCart = ({ onCheckout }) => {
       return;
     }
 
-    if (newQuantity < 1) return;
+    if (newQuantity < 1) {
+      showRemoveModal(itemKey, item.name);
+      return;
+    }
 
-    const updatedCart = cartItems.map(item =>
-      item.id === id ? { ...item, quantity: newQuantity } : item
-    );
+    const updatedCart = cartItems.map(it => {
+      const match = getItemKey(it) === itemKey || `${it.id}-${it.size}` === itemKey || it.id === itemKey;
+      return match ? { ...it, quantity: newQuantity } : it;
+    });
 
     syncCart(updatedCart);
   };
 
-  const showRemoveModal = (id, name) => {
-    setRemoveModal({ show: true, itemId: id, itemName: name });
+  const showRemoveModal = (itemKey, name) => {
+    setRemoveModal({ show: true, itemKey, itemName: name });
   };
 
   const confirmRemove = () => {
-    const updatedCart = cartItems.filter(item => item.id !== removeModal.itemId);
+    const updatedCart = cartItems.filter(it => {
+      const match = getItemKey(it) === removeModal.itemKey || 
+                    `${it.id}-${it.size}` === removeModal.itemKey ||
+                    String(it.id) === String(removeModal.itemKey);
+      return !match;
+    });
     syncCart(updatedCart);
-    setRemoveModal({ show: false, itemId: null, itemName: '' });
+    setRemoveModal({ show: false, itemKey: null, itemName: '' });
     setAlert({ type: 'success', message: 'Item removed from cart successfully.' });
     setTimeout(() => setAlert(null), 3000);
   };
 
   const cancelRemove = () => {
-    setRemoveModal({ show: false, itemId: null, itemName: '' });
+    setRemoveModal({ show: false, itemKey: null, itemName: '' });
   };
 
   const clearCart = () => {
@@ -103,7 +134,7 @@ const PremiumCart = ({ onCheckout }) => {
   };
 
   const calculateSubtotal = () => {
-    return cartItems.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+    return cartItems.reduce((sum, item) => sum + (Number(item.price || 0) * (Number(item.quantity) || 1)), 0);
   };
 
   const calculateGST = () => {
@@ -187,8 +218,10 @@ const PremiumCart = ({ onCheckout }) => {
         <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '3rem' }}>
           <div>
             <div className="userpanal-cart-items">
-              {cartItems.map(item => (
-                <div key={`${item.id}-${item.size}`} className="userpanal-cart-item">
+              {cartItems.map(item => {
+                const itemKey = getItemKey(item);
+                return (
+                <div key={itemKey} className="userpanal-cart-item">
                   <div className="userpanal-cart-item-main">
                     <div className="userpanal-cart-item-left">
                       <img
@@ -217,12 +250,12 @@ const PremiumCart = ({ onCheckout }) => {
 
                     <div className="userpanal-cart-item-right">
                       <div className="userpanal-cart-item-row userpanal-cart-top-row">
-                        <div className="userpanal-cart-unit-price">₹ {item.price.toFixed(2)}</div>
+                        <div className="userpanal-cart-unit-price">₹ {Number(item.price || 0).toFixed(2)}</div>
                         <div className="userpanal-cart-controls-wrapper">
                           <div className="userpanal-cart-quantity-controls">
                             <button
                               className="userpanal-cart-qty-btn"
-                              onClick={() => updateQuantity(item.id, item.quantity - 1)}
+                              onClick={() => updateQuantity(itemKey, item.quantity - 1)}
                               disabled={item.quantity <= 1}
                             >
                               −
@@ -230,7 +263,7 @@ const PremiumCart = ({ onCheckout }) => {
                             <span className="userpanal-cart-qty-value">{item.quantity}</span>
                             <button
                               className="userpanal-cart-qty-btn"
-                              onClick={() => updateQuantity(item.id, item.quantity + 1)}
+                              onClick={() => updateQuantity(itemKey, item.quantity + 1)}
                               disabled={item.stock > 0 && item.quantity >= item.stock}
                             >
                               +
@@ -244,11 +277,11 @@ const PremiumCart = ({ onCheckout }) => {
 
                       <div className="userpanal-cart-item-row userpanal-cart-bottom-row">
                         <div className="userpanal-cart-total-price">
-                          ₹ {(item.price * item.quantity).toFixed(2)}
+                          ₹ {(Number(item.price || 0) * item.quantity).toFixed(2)}
                         </div>
                         <button
                           className="userpanal-cart-remove-action-btn"
-                          onClick={() => showRemoveModal(item.id, item.name)}
+                          onClick={() => showRemoveModal(itemKey, item.name)}
                         >
                           REMOVE
                         </button>
@@ -256,7 +289,8 @@ const PremiumCart = ({ onCheckout }) => {
                     </div>
                   </div>
                 </div>
-              ))}
+              );
+            })}
             </div>
 
             <div className="userpanal-cart-actions">

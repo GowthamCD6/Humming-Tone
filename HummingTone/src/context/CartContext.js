@@ -35,24 +35,62 @@ export const CartProvider = ({ children }) => {
   // Save cart whenever items change
   const saveCart = async (items) => {
     try {
-      setCartItems(items);
-      await AsyncStorage.setItem(CART_STORAGE_KEY, JSON.stringify(items));
+      const safeItems = Array.isArray(items) ? items : [];
+      setCartItems(safeItems);
+      await AsyncStorage.setItem(CART_STORAGE_KEY, JSON.stringify(safeItems));
     } catch (e) {
       console.error('Failed to save cart to storage', e);
     }
   };
 
-  // Add Item to Cart
-  const addToCart = (product, selectedVariant = null, quantity = 1) => {
-    const cartItemId = `${product.id}-${selectedVariant?.size || 'default'}-${selectedVariant?.color || 'default'}`;
-    const existingIndex = cartItems.findIndex((item) => item.cartItemId === cartItemId);
+  // Add Item to Cart (Flexible parameter support)
+  const addToCart = (product, selectedVariantOrSize = null, quantity = 1, extraVariant = null) => {
+    if (!product) return;
+
+    let size = 'Standard';
+    let color = product.color || 'Default';
+    let price = parseFloat(product.price || 0);
+    let stock = product.stock || product.stock_quantity || 999;
+    let actualQty = 1;
+
+    // Handle flexible signatures: (product, 'M', 1), (product, variantObj, 1), or (product, 'M', 1, variantObj)
+    if (typeof selectedVariantOrSize === 'object' && selectedVariantOrSize !== null) {
+      size = selectedVariantOrSize.size || product.size || 'Standard';
+      color = selectedVariantOrSize.color || product.color || 'Default';
+      if (selectedVariantOrSize.price != null) price = parseFloat(selectedVariantOrSize.price);
+      if (selectedVariantOrSize.stock_quantity != null) stock = selectedVariantOrSize.stock_quantity;
+      if (selectedVariantOrSize.stock != null) stock = selectedVariantOrSize.stock;
+      if (typeof quantity === 'number') actualQty = quantity;
+    } else if (typeof selectedVariantOrSize === 'string') {
+      size = selectedVariantOrSize;
+      if (typeof quantity === 'number') actualQty = quantity;
+      if (extraVariant && typeof extraVariant === 'object') {
+        if (extraVariant.color) color = extraVariant.color;
+        if (extraVariant.price != null) price = parseFloat(extraVariant.price);
+        if (extraVariant.stock_quantity != null) stock = extraVariant.stock_quantity;
+        if (extraVariant.stock != null) stock = extraVariant.stock;
+      }
+    } else if (typeof selectedVariantOrSize === 'number') {
+      actualQty = selectedVariantOrSize;
+    }
+
+    const cartItemId = `${product.id}-${String(size).trim()}-${String(color).trim()}`;
+    const existingIndex = cartItems.findIndex((item) => {
+      if (item.cartItemId && item.cartItemId === cartItemId) return true;
+      if (item.id === product.id && String(item.size).trim().toLowerCase() === String(size).trim().toLowerCase()) return true;
+      return false;
+    });
 
     let updatedCart;
     if (existingIndex > -1) {
       updatedCart = [...cartItems];
-      const newQty = updatedCart[existingIndex].quantity + quantity;
-      const maxStock = selectedVariant?.stock || product.stock || 999;
-      updatedCart[existingIndex].quantity = Math.min(newQty, maxStock);
+      const newQty = (Number(updatedCart[existingIndex].quantity) || 1) + Number(actualQty || 1);
+      updatedCart[existingIndex].quantity = Math.min(newQty, stock);
+      updatedCart[existingIndex].cartItemId = cartItemId;
+      updatedCart[existingIndex].size = size;
+      updatedCart[existingIndex].color = color;
+      updatedCart[existingIndex].price = price;
+      updatedCart[existingIndex].stock = stock;
     } else {
       const newItem = {
         cartItemId,
@@ -60,12 +98,12 @@ export const CartProvider = ({ children }) => {
         name: product.name,
         brand: product.brand || 'ATELIER COLLECTION',
         category: product.category || 'Luxury Collection',
-        price: parseFloat(selectedVariant?.price || product.price),
-        image: product.image || (product.images && product.images[0]),
-        size: selectedVariant?.size || 'Standard',
-        color: selectedVariant?.color || '',
-        stock: selectedVariant?.stock || product.stock || 999,
-        quantity,
+        price,
+        image: product.image || (product.images && (product.images[0]?.image_path || product.images[0])) || null,
+        size,
+        color,
+        stock,
+        quantity: Math.max(1, Number(actualQty || 1)),
       };
       updatedCart = [newItem, ...cartItems];
     }
@@ -73,14 +111,19 @@ export const CartProvider = ({ children }) => {
   };
 
   // Update Quantity
-  const updateQuantity = (cartItemId, newQty) => {
+  const updateQuantity = (cartItemIdOrKey, newQty) => {
     if (newQty <= 0) {
-      removeFromCart(cartItemId);
+      removeFromCart(cartItemIdOrKey);
       return;
     }
     const updated = cartItems.map((item) => {
-      if (item.cartItemId === cartItemId) {
-        const maxStock = item.stock || 999;
+      const isMatch = item.cartItemId === cartItemIdOrKey ||
+                      String(item.id) === String(cartItemIdOrKey) ||
+                      `${item.id}-${item.size || 'std'}` === cartItemIdOrKey ||
+                      `${item.id}-${item.size || 'Standard'}-${item.color || 'Default'}` === cartItemIdOrKey ||
+                      `${item.id}-${item.size || ''}-${item.color || ''}` === cartItemIdOrKey;
+      if (isMatch) {
+        const maxStock = item.stock || item.stock_quantity || 999;
         return { ...item, quantity: Math.min(newQty, maxStock) };
       }
       return item;
@@ -89,8 +132,15 @@ export const CartProvider = ({ children }) => {
   };
 
   // Remove Item
-  const removeFromCart = (cartItemId) => {
-    const filtered = cartItems.filter((item) => item.cartItemId !== cartItemId);
+  const removeFromCart = (cartItemIdOrKey) => {
+    const filtered = cartItems.filter((item) => {
+      const isMatch = item.cartItemId === cartItemIdOrKey ||
+                      String(item.id) === String(cartItemIdOrKey) ||
+                      `${item.id}-${item.size || 'std'}` === cartItemIdOrKey ||
+                      `${item.id}-${item.size || 'Standard'}-${item.color || 'Default'}` === cartItemIdOrKey ||
+                      `${item.id}-${item.size || ''}-${item.color || ''}` === cartItemIdOrKey;
+      return !isMatch;
+    });
     saveCart(filtered);
   };
 
@@ -101,7 +151,7 @@ export const CartProvider = ({ children }) => {
   };
 
   // Current subtotal before discount
-  const subtotal = cartItems.reduce((acc, item) => acc + (item.price * (item.quantity || 1)), 0);
+  const subtotal = cartItems.reduce((acc, item) => acc + (Number(item.price || 0) * (Number(item.quantity) || 1)), 0);
 
   // Apply Promo Code via Backend API
   const applyCoupon = async (code) => {

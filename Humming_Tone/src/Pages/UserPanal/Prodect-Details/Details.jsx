@@ -45,35 +45,56 @@ const ProductDetailPage = () => {
 
   /* ================= CART HELPERS ================= */
   const getCart = () => {
-    return JSON.parse(localStorage.getItem("cart")) || [];
+    try {
+      return JSON.parse(localStorage.getItem("cart")) || [];
+    } catch {
+      return [];
+    }
   };
 
   const _checkIfInCart = (size) => {
     const cart = getCart();
-    return cart.some((item) => item.id === product.id && item.size === size);
+    return cart.some((item) => String(item.id) === String(product?.id) && String(item.size).trim() === String(size).trim());
   };
 
   const addToCart = () => {
-    if (!selectedSize) return;
+    if (!selectedSize || !product) return;
 
-    const variant = sizes.find((v) => v.size === selectedSize);
-
-    const cartItem = {
-      id: product.id,
-      name: product.name,
-      brand: product.brand,
-      price: variant.price,
-      quantity,
-      size: selectedSize,
-      color: product.color || "Default",
-      stock: variant.stock_quantity,
-      image: productImages[0] || getImageUrl(product.image_path),
-    };
+    const variant = sizes.find((v) => v.size === selectedSize) || {};
+    const stock = Number(variant.stock_quantity != null ? variant.stock_quantity : (product.stock_quantity || 999));
+    const price = Number(variant.price != null ? variant.price : product.price);
+    const cartItemId = `${product.id}-${selectedSize}-${product.color || "Default"}`;
 
     const cart = getCart();
-    cart.push(cartItem);
+    const existingIndex = cart.findIndex(
+      (item) => String(item.id) === String(product.id) && String(item.size).trim() === String(selectedSize).trim()
+    );
 
-    localStorage.setItem("cart", JSON.stringify(cart));
+    let updatedCart;
+    if (existingIndex > -1) {
+      updatedCart = [...cart];
+      const newQty = (Number(updatedCart[existingIndex].quantity) || 1) + Number(quantity || 1);
+      updatedCart[existingIndex].quantity = Math.min(newQty, stock);
+      updatedCart[existingIndex].price = price;
+      updatedCart[existingIndex].stock = stock;
+      updatedCart[existingIndex].cartItemId = cartItemId;
+    } else {
+      const cartItem = {
+        cartItemId,
+        id: product.id,
+        name: product.name,
+        brand: product.brand || "ATELIER COLLECTION",
+        price,
+        quantity: Math.max(1, Number(quantity || 1)),
+        size: selectedSize,
+        color: product.color || "Default",
+        stock,
+        image: productImages[0] || getImageUrl(product.image_path),
+      };
+      updatedCart = [...cart, cartItem];
+    }
+
+    localStorage.setItem("cart", JSON.stringify(updatedCart));
     window.dispatchEvent(new Event("cart:updated"));
     setIsInCart(true);
 
@@ -82,15 +103,16 @@ const ProductDetailPage = () => {
       name: product.name,
       size: selectedSize,
       quantity: quantity,
-      price: variant.price,
+      price,
       image: productImages[0] || getImageUrl(product.image_path),
     });
     setShowCartModal(true);
   };
 
   const removeFromCart = () => {
+    if (!product || !selectedSize) return;
     const cart = getCart().filter(
-      (item) => !(item.id === product.id && item.size === selectedSize)
+      (item) => !(String(item.id) === String(product.id) && String(item.size).trim() === String(selectedSize).trim())
     );
 
     localStorage.setItem("cart", JSON.stringify(cart));
