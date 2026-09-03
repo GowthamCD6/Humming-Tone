@@ -145,6 +145,9 @@ app.use('/admin', (req, res, next) => {
   adminAuth(req, res, next);
 });
 
+// Health check endpoint for dynamic auto-discovery
+app.get("/health", (req, res) => res.status(200).json({ status: "ok", service: "humming-tone-api", timestamp: Date.now() }));
+
 // Admin routes
 app.use("/", adminProductRoute);
 app.use("/", adminOrderRoute);

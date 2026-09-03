@@ -1,25 +1,39 @@
 import { Platform } from 'react-native';
 
 // ================================================================
-// SINGLE CONFIGURATION POINT FOR LOCAL BACKEND IP
-// Current Wi-Fi IPv4: 10.150.254.249 | USB adb reverse: localhost
+// DYNAMIC MULTI-HOST AUTO-DISCOVERY CONFIGURATION
+// Auto-detects and connects to whichever IP/port is live
 // ================================================================
-export const DEV_DEVICE_IP = '10.150.254.249';
+export const DEV_DEVICE_IP = '10.10.180.0';
 export const DEV_PORT = 5000;
 export const PROD_API_BASE_URL = 'https://api.hummingtone.com';
 
-// Automatically construct base API URL from DEV_DEVICE_IP and DEV_PORT
-export const getApiBaseUrl = () => {
-  if (__DEV__) {
-    const host = DEV_DEVICE_IP || '10.150.254.249';
-    return `http://${host}:${DEV_PORT}`;
+// Candidate endpoints tested in priority order during development
+export const CANDIDATE_HOSTS = [
+  `http://localhost:${DEV_PORT}`,
+  `http://127.0.0.1:${DEV_PORT}`,
+  `http://10.0.2.2:${DEV_PORT}`,
+  `http://${DEV_DEVICE_IP}:${DEV_PORT}`,
+  `http://192.168.137.1:${DEV_PORT}`,
+  `http://10.150.254.249:${DEV_PORT}`,
+  `http://172.16.0.2:${DEV_PORT}`,
+];
+
+let activeBaseUrl = __DEV__ ? `http://localhost:${DEV_PORT}` : PROD_API_BASE_URL;
+
+export const setActiveApiBaseUrl = (url) => {
+  if (url && typeof url === 'string') {
+    activeBaseUrl = url.replace(/\/+$/, '');
   }
-  return PROD_API_BASE_URL;
 };
 
-export const API_BASE_URL = getApiBaseUrl();
+export const getApiBaseUrl = () => {
+  return activeBaseUrl;
+};
 
-// Automatically resolve full image URL using the dynamic API base URL
+export const API_BASE_URL = activeBaseUrl;
+
+// Automatically resolve full image URL using the active base URL
 export const getImageUrl = (imagePath) => {
   if (!imagePath) {
     return 'https://images.unsplash.com/photo-1521572267360-ee0c2909d518?auto=format&fit=crop&w=800&q=80';
@@ -49,7 +63,9 @@ export const getImageUrl = (imagePath) => {
 export default {
   DEV_DEVICE_IP,
   DEV_PORT,
+  CANDIDATE_HOSTS,
   API_BASE_URL,
   getImageUrl,
   getApiBaseUrl,
+  setActiveApiBaseUrl,
 };
