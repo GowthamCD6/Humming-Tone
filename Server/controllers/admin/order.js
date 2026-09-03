@@ -159,6 +159,8 @@ exports.updateOrderStatus = async (req, res, next) => {
                     status: status,
                     amount: orderRows[0].total_amount,
                     customerName: orderRows[0].customer_name,
+                    userId: orderRows[0].user_id,
+                    customerEmail: orderRows[0].customer_email,
                 }).catch(e => console.warn("Admin order notif error:", e.message));
             }
         } catch (waErr) {

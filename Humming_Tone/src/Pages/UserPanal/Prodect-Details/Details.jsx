@@ -107,25 +107,13 @@ const ProductDetailPage = () => {
       id: product.id,
       name: product.name,
       brand: product.brand,
-      price: variant.price,
+      price: variant?.price || product.price,
       quantity,
       size: selectedSize,
       color: product.color || "Default",
-      stock: variant.stock_quantity,
+      stock: variant?.stock_quantity || 10,
       image: productImages[0] || getImageUrl(product.image_path),
     };
-
-    // Ensure item is in the cart
-    const cart = getCart();
-    const existingIndex = cart.findIndex((item) => item.id === product.id && item.size === selectedSize);
-    if (existingIndex > -1) {
-      cart[existingIndex].quantity = quantity;
-    } else {
-      cart.push(directItem);
-    }
-
-    localStorage.setItem("cart", JSON.stringify(cart));
-    window.dispatchEvent(new Event("cart:updated"));
 
     const user = JSON.parse(localStorage.getItem("customerUser") || "null");
     const token = localStorage.getItem("userToken");
@@ -135,8 +123,8 @@ const ProductDetailPage = () => {
       return;
     }
 
-    // Navigate straight to checkout
-    navigate("/usertab/checkout");
+    // Direct to checkout without adding to permanent cart
+    navigate("/usertab/checkout", { state: { buyNowItem: directItem } });
   };
 
   /* ================= RECOMMENDATIONS ================= */
@@ -429,7 +417,19 @@ const ProductDetailPage = () => {
         onClose={() => setAuthModalOpen(false)}
         onAuthSuccess={() => {
           setAuthModalOpen(false);
-          navigate("/usertab/checkout");
+          const variant = sizes.find((v) => v.size === selectedSize) || {};
+          const directItem = {
+            id: product.id,
+            name: product.name,
+            brand: product.brand,
+            price: variant?.price || product.price,
+            quantity,
+            size: selectedSize,
+            color: product.color || "Default",
+            stock: variant?.stock_quantity || 10,
+            image: productImages[0] || getImageUrl(product.image_path),
+          };
+          navigate("/usertab/checkout", { state: { buyNowItem: directItem } });
         }}
       />
     </div>

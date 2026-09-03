@@ -58,6 +58,13 @@ export default function Buyer() {
         (ordersData || []).forEach((order) => {
           const email = (order.customer_email || '').toLowerCase().trim();
           if (!email) return;
+
+          const isPaid =
+            (Number(order.payment_verified) === 1 || String(order.payment_status).toLowerCase() === 'captured') &&
+            !['cancelled', 'pending'].includes(String(order.order_status || '').toLowerCase());
+
+          if (!isPaid) return;
+
           if (map.has(email)) {
             const existing = map.get(email);
             existing.total_orders = (existing.total_orders || 1) + 1;

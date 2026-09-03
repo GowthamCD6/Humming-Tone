@@ -32,12 +32,15 @@ const poolConfig = {
   port: Number(process.env.DB_PORT) || 4000,
   user: process.env.DB_USER || 'root',
   password: process.env.DB_PASSWORD || '',
-  database: process.env.DB_NAME || 'hummingtone',
+  database: process.env.DB_NAME || 'HummingTone',
   waitForConnections: true,
-  connectionLimit: 10,
+  connectionLimit: 15,
+  maxIdle: 10,
+  idleTimeout: 60000,
   queueLimit: 0,
   connectTimeout: 30000,
   enableKeepAlive: true,
+  keepAliveInitialDelay: 10000,
 };
 
 if (sslConfig) {

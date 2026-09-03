@@ -270,14 +270,6 @@ exports.create_order = (req, res, next) => {
                     ).catch(e => console.warn("Auto-save user address error:", e.message));
                   }
 
-                  // Trigger order confirmation notification
-                  sendOrderNotification({
-                    orderNumber: order_number,
-                    status: 'confirmed',
-                    amount: total_amount,
-                    customerName: customer_name,
-                  }).catch(e => console.warn('Order notif error:', e.message));
-
                   connection.release();
                     res.status(201).json({
                       success: true,
@@ -480,6 +472,8 @@ exports.verify_payment = async (req, res, next) => {
             status: 'confirmed',
             amount: order.total_amount,
             customerName: order.customer_name,
+            userId: order.user_id,
+            customerEmail: order.customer_email,
           }).catch(e => console.warn("Order notif error:", e.message));
         } catch (e) {
           console.error("WA error:", e);

@@ -1,5 +1,5 @@
 import React, { useState, useMemo, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { GoogleLogin } from "@react-oauth/google";
 import {
   UserCheck,
@@ -17,7 +17,11 @@ import { fetchSiteContent, getSiteContent } from "../../../utils/siteContentStor
 
 const CheckOut = ({ onBack }) => {
   const navigate = useNavigate();
+  const location = useLocation();
   const RAZORPAY_KEY = import.meta.env.VITE_RAZORPAY_KEY_ID;
+
+  const buyNowItem = location.state?.buyNowItem;
+  const isBuyNow = Boolean(buyNowItem);
 
   const [shippingFee, setShippingFee] = useState(() => {
     const cached = getSiteContent();
@@ -31,6 +35,9 @@ const CheckOut = ({ onBack }) => {
 
   const [promoCode, setPromoCode] = useState("");
   const [cartItems] = useState(() => {
+    if (buyNowItem) {
+      return Array.isArray(buyNowItem) ? buyNowItem : [buyNowItem];
+    }
     try {
       return JSON.parse(localStorage.getItem("cart")) || [];
     } catch {
@@ -320,9 +327,11 @@ const CheckOut = ({ onBack }) => {
             localStorage.setItem("my_orders", JSON.stringify(existingOrders));
           }
 
-          // clear cart ONLY after payment
-          localStorage.removeItem("cart");
-          window.dispatchEvent(new Event("cart:updated"));
+          // clear general cart ONLY after a general cart checkout (preserve cart on Buy Now)
+          if (!isBuyNow) {
+            localStorage.removeItem("cart");
+            window.dispatchEvent(new Event("cart:updated"));
+          }
 
           navigate("/usertab/payment-success", {
             state: {

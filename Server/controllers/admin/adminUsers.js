@@ -161,9 +161,24 @@ exports.getCustomerUsers = (req, res, next) => {
       u.state,
       u.pincode,
       u.created_at,
-      COUNT(DISTINCT o.id) AS total_orders,
-      COALESCE(SUM(CASE WHEN o.payment_status = 'captured' OR o.order_status = 'confirmed' OR o.order_status = 'delivered' THEN o.total_amount ELSE 0 END), 0) AS total_spent,
-      MAX(o.created_at) AS last_order_date
+      COUNT(DISTINCT CASE 
+        WHEN (o.payment_verified = 1 OR o.payment_status = 'captured') 
+          AND LOWER(o.order_status) NOT IN ('cancelled', 'pending')
+        THEN o.id 
+        ELSE NULL 
+      END) AS total_orders,
+      COALESCE(SUM(CASE 
+        WHEN (o.payment_verified = 1 OR o.payment_status = 'captured') 
+          AND LOWER(o.order_status) NOT IN ('cancelled', 'pending')
+        THEN o.total_amount 
+        ELSE 0 
+      END), 0) AS total_spent,
+      MAX(CASE 
+        WHEN (o.payment_verified = 1 OR o.payment_status = 'captured') 
+          AND LOWER(o.order_status) NOT IN ('cancelled', 'pending')
+        THEN o.created_at 
+        ELSE NULL 
+      END) AS last_order_date
     FROM users u
     LEFT JOIN orders o ON (o.user_id = u.id OR LOWER(o.customer_email) = LOWER(u.email))
     GROUP BY u.id, u.name, u.email, u.phone, u.avatar_url, u.address, u.city, u.state, u.pincode, u.created_at

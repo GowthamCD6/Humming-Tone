@@ -35,6 +35,10 @@ export default function ManageProducts() {
   const [promoCodes, setPromoCodes] = useState([])
   const [editingProduct, setEditingProduct] = useState(null)
   const [editImageFile, setEditImageFile] = useState(null)
+  const [existingSubImages, setExistingSubImages] = useState([])
+  const [newSubImageFiles, setNewSubImageFiles] = useState([])
+  const [removedSubImagePaths, setRemovedSubImagePaths] = useState([])
+  const [isSavingProduct, setIsSavingProduct] = useState(false)
   const [showEditModal, setShowEditModal] = useState(false)
   const [showDeleteModal, setShowDeleteModal] = useState(false)
   const [productToDelete, setProductToDelete] = useState(null)
@@ -267,53 +271,117 @@ export default function ManageProducts() {
   const handleEditProduct = async (p) => {
     setEditingProduct({ ...p, is_featured: Number(p.is_featured) === 1 });
     setEditImageFile(null);
+    setExistingSubImages([]);
+    setNewSubImageFiles([]);
+    setRemovedSubImagePaths([]);
     setProductSizes([]);
     setShowEditModal(true);
     try {
       const token = localStorage.getItem('adminToken');
       const res = await axios.get(`${BASE_URL}/admin/fetch_variants/${p.id}`, { headers: { Authorization: `Bearer ${token}` } });
-      if (res.data && res.data.variants) {
-        let variants = res.data.variants;
-        if (typeof variants === 'string') {
-          try { variants = JSON.parse(variants); } catch { variants = []; }
+      if (res.data) {
+        if (res.data.variants) {
+          let variants = res.data.variants;
+          if (typeof variants === 'string') {
+            try { variants = JSON.parse(variants); } catch { variants = []; }
+          }
+          setProductSizes((variants || []).map(v => v.size).filter(Boolean));
         }
-        setProductSizes((variants || []).map(v => v.size).filter(Boolean));
+
+        if (res.data.images) {
+          let imgs = res.data.images;
+          if (typeof imgs === 'string') {
+            try { imgs = JSON.parse(imgs); } catch { imgs = []; }
+          }
+          const primaryImgPath = p.image || p.primary_image || (imgs || []).find(img => img.is_primary == 1)?.image_path;
+          const subImgs = (imgs || []).filter(img => {
+            if (img.is_primary == 1) return false;
+            if (primaryImgPath && img.image_path === primaryImgPath) return false;
+            return true;
+          });
+          setExistingSubImages(subImgs);
+        }
       }
     } catch (err) {
-      console.error("Failed to fetch sizes", err);
+      console.error("Failed to fetch product details/images", err);
     }
-  }
+  };
+
+  const handleRemoveExistingSubImage = (imgPath) => {
+    setExistingSubImages(prev => prev.filter(img => img.image_path !== imgPath));
+    setRemovedSubImagePaths(prev => [...prev, imgPath]);
+  };
+
+  const handleAddNewSubImages = (e) => {
+    const files = Array.from(e.target.files || []);
+    if (!files.length) return;
+
+    const newEntries = files.map(file => ({
+      file,
+      preview: URL.createObjectURL(file)
+    }));
+
+    setNewSubImageFiles(prev => [...prev, ...newEntries]);
+    e.target.value = '';
+  };
+
+  const handleRemoveNewSubImage = (index) => {
+    setNewSubImageFiles(prev => prev.filter((_, i) => i !== index));
+  };
 
   const handleSaveProduct = async () => {
-    const formData = new FormData();
-    formData.append('name', editingProduct.name);
-    formData.append('sku', editingProduct.sku);
-    formData.append('price', editingProduct.price);
-    formData.append('stock', editingProduct.stock);
-    formData.append('category', editingProduct.category);
-    formData.append('gender', editingProduct.gender);
-    formData.append('about', editingProduct.about || '');
-    formData.append('is_featured', editingProduct.is_featured ? 1 : 0);
-    if (editImageFile) {
-      formData.append('image', editImageFile);
-    }
+    if (!editingProduct) return;
+    setIsSavingProduct(true);
+    try {
+      const formData = new FormData();
+      formData.append('name', editingProduct.name);
+      formData.append('sku', editingProduct.sku);
+      formData.append('price', editingProduct.price);
+      formData.append('stock', editingProduct.stock);
+      formData.append('category', editingProduct.category);
+      formData.append('gender', editingProduct.gender);
+      formData.append('about', editingProduct.about || '');
+      formData.append('is_featured', editingProduct.is_featured ? 1 : 0);
 
-    const token = localStorage.getItem('adminToken');
-    const res = await fetch(`${BASE_URL}/admin/update_product/${editingProduct.id}`, {
-      method: 'PATCH',
-      headers: token ? { 'Authorization': `Bearer ${token}` } : {},
-      body: formData
-    });
-    const data = await res.json();
-    if (data.success) {
-      addToast('Product updated successfully', 'success');
-      setShowEditModal(false);
-      setEditImageFile(null);
-      loadData();
-    } else {
-      addToast(data.message || 'Failed to update product', 'error');
+      if (editImageFile) {
+        formData.append('image', editImageFile);
+      }
+
+      newSubImageFiles.forEach(item => {
+        if (item.file) {
+          formData.append('sub_images', item.file);
+        }
+      });
+
+      if (removedSubImagePaths.length > 0) {
+        formData.append('removed_sub_images', JSON.stringify(removedSubImagePaths));
+      }
+
+      const token = localStorage.getItem('adminToken');
+      const res = await fetch(`${BASE_URL}/admin/update_product/${editingProduct.id}`, {
+        method: 'PATCH',
+        headers: token ? { 'Authorization': `Bearer ${token}` } : {},
+        body: formData
+      });
+      const data = await res.json();
+      if (data.success) {
+        addToast('Product & images updated successfully', 'success');
+        setShowEditModal(false);
+        setEditImageFile(null);
+        setExistingSubImages([]);
+        setNewSubImageFiles([]);
+        setRemovedSubImagePaths([]);
+        loadData();
+      } else {
+        addToast(data.message || 'Failed to update product', 'error');
+      }
+    } catch (err) {
+      console.error("Save product error:", err);
+      addToast('Failed to save product changes', 'error');
+    } finally {
+      setIsSavingProduct(false);
     }
-  }
+  };
 
   const openDeleteModal = (product) => {
     setProductToDelete(product);
@@ -701,9 +769,9 @@ export default function ManageProducts() {
         {editingProduct && (
           <>
             <div className="mp-panel-body">
-              {/* Image Preview & Upload */}
+              {/* Primary Product Photo */}
               <div className="mp-form-group">
-                <label className="mp-form-label">Product Image</label>
+                <label className="mp-form-label">Primary Product Photo</label>
                 <div className="mp-image-edit">
                   <img
                     src={editImageFile ? URL.createObjectURL(editImageFile) : editingProduct.image}
@@ -713,7 +781,7 @@ export default function ManageProducts() {
                   />
                   <label className="mp-btn mp-btn-outline mp-image-btn">
                     <Edit size={14} />
-                    Change Image
+                    Change Primary Image
                     <input
                       type="file"
                       accept="image/jpeg,image/png,image/webp"
@@ -721,6 +789,88 @@ export default function ManageProducts() {
                       onChange={(e) => { if (e.target.files[0]) setEditImageFile(e.target.files[0]); }}
                     />
                   </label>
+                </div>
+              </div>
+
+              {/* Sub Images / Gallery Section */}
+              <div className="mp-form-group">
+                <div className="mp-sub-images-header">
+                  <div>
+                    <label className="mp-form-label" style={{ marginBottom: 2 }}>Sub Images & Gallery</label>
+                    <span className="mp-sub-images-count">
+                      {existingSubImages.length + newSubImageFiles.length} sub image(s) attached
+                    </span>
+                  </div>
+                  <label className="mp-btn mp-btn-outline mp-btn-sm mp-add-sub-btn">
+                    <Plus size={14} />
+                    Add Sub Images
+                    <input
+                      type="file"
+                      multiple
+                      accept="image/jpeg,image/png,image/webp"
+                      style={{ display: 'none' }}
+                      onChange={handleAddNewSubImages}
+                    />
+                  </label>
+                </div>
+
+                <div className="mp-sub-images-grid">
+                  {/* Existing Sub Images */}
+                  {existingSubImages.map((img, idx) => (
+                    <div key={`exist-${idx}`} className="mp-sub-img-card">
+                      <img
+                        src={getImageUrl(img.image_path)}
+                        alt={`Sub ${idx + 1}`}
+                        className="mp-sub-img-thumb"
+                        onError={(e) => { e.target.onerror = null; e.target.style.opacity = '0.3'; }}
+                      />
+                      <button
+                        type="button"
+                        className="mp-sub-img-remove-btn"
+                        onClick={() => handleRemoveExistingSubImage(img.image_path)}
+                        title="Remove Sub Image"
+                      >
+                        <Trash2 size={13} />
+                      </button>
+                    </div>
+                  ))}
+
+                  {/* Newly Staged Sub Images */}
+                  {newSubImageFiles.map((item, idx) => (
+                    <div key={`new-${idx}`} className="mp-sub-img-card mp-sub-img-new">
+                      <img
+                        src={item.preview}
+                        alt={`New Sub ${idx + 1}`}
+                        className="mp-sub-img-thumb"
+                      />
+                      <span className="mp-sub-img-badge">New</span>
+                      <button
+                        type="button"
+                        className="mp-sub-img-remove-btn"
+                        onClick={() => handleRemoveNewSubImage(idx)}
+                        title="Cancel New Image"
+                      >
+                        <X size={13} />
+                      </button>
+                    </div>
+                  ))}
+
+                  {/* Empty state when no sub images */}
+                  {existingSubImages.length === 0 && newSubImageFiles.length === 0 && (
+                    <div className="mp-sub-images-empty">
+                      <p>No sub images attached to this product.</p>
+                      <label className="mp-btn mp-btn-outline mp-btn-sm">
+                        <Plus size={13} /> Upload Angle Shots
+                        <input
+                          type="file"
+                          multiple
+                          accept="image/jpeg,image/png,image/webp"
+                          style={{ display: 'none' }}
+                          onChange={handleAddNewSubImages}
+                        />
+                      </label>
+                    </div>
+                  )}
                 </div>
               </div>
               <div className="mp-form-group">
@@ -810,8 +960,10 @@ export default function ManageProducts() {
               </div>
             </div>
             <div className="mp-panel-footer">
-              <button className="mp-btn mp-btn-outline" onClick={() => setShowEditModal(false)}>Cancel</button>
-              <button className="mp-btn mp-btn-primary" onClick={handleSaveProduct}>Save Changes</button>
+              <button className="mp-btn mp-btn-outline" onClick={() => setShowEditModal(false)} disabled={isSavingProduct}>Cancel</button>
+              <button className="mp-btn mp-btn-primary" onClick={handleSaveProduct} disabled={isSavingProduct}>
+                {isSavingProduct ? 'Saving Changes...' : 'Save Changes'}
+              </button>
             </div>
           </>
         )}

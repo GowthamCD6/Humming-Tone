@@ -178,12 +178,20 @@ export const ProductDetailsScreen = ({ route, navigation }) => {
     }
 
     const sizeToUse = selectedVariant?.size || 'Standard';
-    addToCart(product, sizeToUse, quantity, selectedVariant);
+    const directItem = {
+      product_id: product.id,
+      quantity,
+      size: sizeToUse,
+      color: product.color || 'Default',
+      price: selectedVariant?.price || product.price,
+      name: product.name,
+      image: selectedImage || (product.images && product.images[0]?.image_path) || null,
+    };
 
     if (!isAuthenticated || !user || user?.email === 'guest@hummingtone.com') {
       setShowGoogleModal(true);
     } else {
-      navigation.navigate('Checkout');
+      navigation.navigate('Checkout', { buyNowItem: directItem });
     }
   };
 

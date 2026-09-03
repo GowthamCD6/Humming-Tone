@@ -316,12 +316,32 @@ exports.update_variant = (req, res, next) => {
 exports.update_product = async (req, res, next) => {
     try {
         const { id } = req.params;
-        const { name, sku, price, stock, category, gender, about, is_featured } = req.body;
+        const { name, sku, price, stock, category, gender, about, is_featured, removed_sub_images } = req.body;
 
-        let uploadedImageUrl = null;
-        if (req.file) {
-            const uploadedResult = await uploadStreamToCloudinary(req.file.buffer, "hummingtone/products");
-            uploadedImageUrl = uploadedResult.secure_url;
+        const primaryFile = req.files?.image?.[0] || (req.file ? req.file : null);
+        const subFiles = req.files?.sub_images || [];
+
+        let uploadedPrimaryUrl = null;
+        if (primaryFile) {
+            const uploadedResult = await uploadStreamToCloudinary(primaryFile.buffer, "hummingtone/products");
+            uploadedPrimaryUrl = uploadedResult.secure_url;
+        }
+
+        const uploadedSubUrls = [];
+        for (const file of subFiles) {
+            const resCloud = await uploadStreamToCloudinary(file.buffer, "hummingtone/products");
+            if (resCloud && resCloud.secure_url) {
+                uploadedSubUrls.push(resCloud.secure_url);
+            }
+        }
+
+        let removedImages = [];
+        if (removed_sub_images) {
+            try {
+                removedImages = Array.isArray(removed_sub_images) ? removed_sub_images : JSON.parse(removed_sub_images);
+            } catch {
+                removedImages = [removed_sub_images];
+            }
         }
 
         db.getConnection((err, connection) => {
@@ -387,32 +407,69 @@ exports.update_product = async (req, res, next) => {
                                 err => {
                                     if (err) return rollback(err);
 
-                                    // If a new image was uploaded to Cloudinary, update the primary image
-                                    if (uploadedImageUrl) {
+                                    // Handle Primary Image Update
+                                    function handlePrimaryImage(done) {
+                                        if (!uploadedPrimaryUrl) return done();
+
                                         connection.query(
                                             "UPDATE product_images SET image_path=? WHERE product_id=? AND is_primary=1 LIMIT 1",
-                                            [uploadedImageUrl, id],
+                                            [uploadedPrimaryUrl, id],
                                             (imgErr, imgResult) => {
                                                 if (imgErr) return rollback(imgErr);
                                                 
-                                                // If no primary image row existed, insert one
                                                 if (imgResult.affectedRows === 0) {
                                                     connection.query(
                                                         "INSERT INTO product_images (product_id, image_path, is_primary) VALUES (?, ?, 1)",
-                                                        [id, uploadedImageUrl],
+                                                        [id, uploadedPrimaryUrl],
                                                         (insertErr) => {
                                                             if (insertErr) return rollback(insertErr);
-                                                            commitAndRespond();
+                                                            done();
                                                         }
                                                     );
                                                 } else {
-                                                    commitAndRespond();
+                                                    done();
                                                 }
                                             }
                                         );
-                                    } else {
-                                        commitAndRespond();
                                     }
+
+                                    // Handle Removed Sub Images
+                                    function handleRemovedImages(done) {
+                                        if (!removedImages || removedImages.length === 0) return done();
+
+                                        const placeholders = removedImages.map(() => '?').join(',');
+                                        connection.query(
+                                            `DELETE FROM product_images WHERE product_id = ? AND image_path IN (${placeholders})`,
+                                            [id, ...removedImages],
+                                            (delErr) => {
+                                                if (delErr) console.warn("Sub image delete warning:", delErr.message);
+                                                done();
+                                            }
+                                        );
+                                    }
+
+                                    // Handle Newly Added Sub Images
+                                    function handleNewSubImages(done) {
+                                        if (!uploadedSubUrls || uploadedSubUrls.length === 0) return done();
+
+                                        const values = uploadedSubUrls.map(url => [id, url, 0]);
+                                        connection.query(
+                                            "INSERT INTO product_images (product_id, image_path, is_primary) VALUES ?",
+                                            [values],
+                                            (insErr) => {
+                                                if (insErr) return rollback(insErr);
+                                                done();
+                                            }
+                                        );
+                                    }
+
+                                    handlePrimaryImage(() => {
+                                        handleRemovedImages(() => {
+                                            handleNewSubImages(() => {
+                                                commitAndRespond();
+                                            });
+                                        });
+                                    });
                                 }
                             );
                         }
@@ -438,6 +495,33 @@ exports.update_product = async (req, res, next) => {
                     });
                 }
             });
+        });
+    } catch (error) {
+        next(error);
+    }
+};
+
+// --- DELETE INDIVIDUAL PRODUCT IMAGE ---
+exports.delete_product_image = (req, res, next) => {
+    try {
+        const { product_id, image_path, image_id } = req.body;
+        if (!product_id || (!image_path && !image_id)) {
+            return res.status(400).json({ success: false, message: "product_id and image_path/image_id are required." });
+        }
+
+        let sql = "DELETE FROM product_images WHERE product_id = ? AND ";
+        const params = [product_id];
+        if (image_id) {
+            sql += "id = ?";
+            params.push(image_id);
+        } else {
+            sql += "image_path = ?";
+            params.push(image_path);
+        }
+
+        db.query(sql, params, (err, result) => {
+            if (err) return next(err);
+            res.status(200).json({ success: true, message: "Image removed successfully", affectedRows: result.affectedRows });
         });
     } catch (error) {
         next(error);

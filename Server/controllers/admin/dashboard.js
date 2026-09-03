@@ -11,26 +11,24 @@ exports.getDashboardAnalytics = async (req, res, next) => {
     // 1. Overall Order & Revenue Metrics
     const [revenueRows] = await pool.query(`
       SELECT 
-        COUNT(id) AS total_orders,
+        COUNT(CASE WHEN (payment_verified = 1 OR payment_status = 'captured') AND LOWER(order_status) NOT IN ('cancelled', 'pending') THEN id END) AS total_orders,
         SUM(CASE 
-          WHEN LOWER(order_status) != 'cancelled' 
-               AND (payment_status IS NULL OR LOWER(payment_status) != 'failed')
+          WHEN (payment_verified = 1 OR payment_status = 'captured') AND LOWER(order_status) NOT IN ('cancelled', 'pending')
           THEN total_amount 
           ELSE 0 
         END) AS total_revenue,
         SUM(CASE 
           WHEN DATE(created_at) = CURDATE() 
-               AND LOWER(order_status) != 'cancelled' 
-               AND (payment_status IS NULL OR LOWER(payment_status) != 'failed')
+               AND (payment_verified = 1 OR payment_status = 'captured')
+               AND LOWER(order_status) NOT IN ('cancelled', 'pending')
           THEN total_amount 
           ELSE 0 
         END) AS today_revenue,
         COUNT(CASE WHEN LOWER(order_status) IN ('delivered', 'completed') THEN 1 END) AS completed_orders,
-        COUNT(CASE WHEN LOWER(order_status) IN ('confirmed', 'packed', 'shipped', 'out_for_delivery') THEN 1 END) AS pending_orders,
+        COUNT(CASE WHEN (payment_verified = 1 OR payment_status = 'captured') AND LOWER(order_status) IN ('confirmed', 'packed', 'shipped', 'out_for_delivery') THEN 1 END) AS pending_orders,
         COUNT(CASE WHEN LOWER(order_status) = 'cancelled' THEN 1 END) AS cancelled_orders,
-        COUNT(DISTINCT customer_email) AS unique_customers
-      FROM orders
-      WHERE NOT (order_status = 'pending' AND (payment_status = 'created' OR payment_status = 'pending' OR payment_status IS NULL));
+        COUNT(DISTINCT CASE WHEN (payment_verified = 1 OR payment_status = 'captured') AND LOWER(order_status) NOT IN ('cancelled', 'pending') THEN customer_email END) AS unique_customers
+      FROM orders;
     `);
 
     // 2. Repeat Customers Count
@@ -41,7 +39,8 @@ exports.getDashboardAnalytics = async (req, res, next) => {
           SELECT customer_email 
           FROM orders 
           WHERE customer_email IS NOT NULL AND customer_email != ''
-            AND NOT (order_status = 'pending' AND (payment_status = 'created' OR payment_status = 'pending' OR payment_status IS NULL))
+            AND (payment_verified = 1 OR payment_status = 'captured')
+            AND LOWER(order_status) NOT IN ('cancelled', 'pending')
           GROUP BY customer_email 
           HAVING COUNT(id) >= 2
         ) AS repeat_table;
