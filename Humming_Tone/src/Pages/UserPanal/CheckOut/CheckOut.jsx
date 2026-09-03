@@ -337,6 +337,7 @@ const CheckOut = ({ onBack }) => {
         },
 
         modal: {
+          confirm_close: true,
           ondismiss: function () {
             console.log("Payment popup closed");
 
@@ -359,7 +360,7 @@ const CheckOut = ({ onBack }) => {
                   timestamp: new Date().toISOString(),
                   transactionId: result.data.order_number,
                   amount: Number(amount) / 100,
-                  reason: "Payment was cancelled by the user",
+                  reason: "Payment was cancelled or closed by the user",
                   attemptedPaymentMethod: "Razorpay",
                 },
               },
@@ -369,11 +370,41 @@ const CheckOut = ({ onBack }) => {
       };
 
       if (!window.Razorpay) {
-        alert("Razorpay SDK not loaded");
+        alert("Razorpay payment gateway is currently loading. Please try again in a moment.");
         return;
       }
 
       const razorpay = new window.Razorpay(options);
+
+      razorpay.on("payment.failed", function (response) {
+        console.error("Razorpay Payment Failed:", response.error);
+
+        if (result?.data?.order_number) {
+          fetch(`${API_BASE_URL}/user/cancel_order`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              order_number: result.data.order_number,
+              reason: response.error?.description || "Payment failed at gateway",
+            }),
+          }).catch((e) => console.error("Error cancelling order on failure:", e));
+        }
+
+        navigate("/usertab/payment-failure", {
+          state: {
+            failureData: {
+              errorCode: response.error?.code || "PAYMENT_FAILED",
+              errorMessage: response.error?.description || "Payment failed. Please try again or use another payment method.",
+              timestamp: new Date().toISOString(),
+              transactionId: result.data.order_number,
+              amount: Number(amount) / 100,
+              reason: response.error?.reason || response.error?.description || "Gateway payment decline",
+              attemptedPaymentMethod: response.error?.source || "Razorpay",
+            },
+          },
+        });
+      });
+
       razorpay.open();
     } catch (err) {
       console.error(err);
