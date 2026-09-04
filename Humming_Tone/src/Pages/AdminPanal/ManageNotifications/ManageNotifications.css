@@ -814,3 +814,157 @@
   height: 13px;
 }
 
+/* ========================================================
+   RESPONSIVE MEDIA QUERIES FOR MANAGE NOTIFICATIONS
+   ======================================================== */
+
+/* Large Tablet / Small Desktop (<= 1024px) */
+@media (max-width: 1024px) {
+  .activity-metrics-grid {
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 12px;
+  }
+
+  .metric-card {
+    padding: 14px 16px;
+    gap: 12px;
+  }
+
+  .metric-ico-wrap {
+    width: 42px;
+    height: 42px;
+  }
+
+  .metric-val {
+    font-size: 20px;
+  }
+
+  .broadcast-grid {
+    grid-template-columns: 1fr;
+    gap: 20px;
+  }
+}
+
+/* Tablet Portrait & Mobile (<= 768px) */
+@media (max-width: 768px) {
+  .notif-header-strip {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 14px;
+    margin-bottom: 16px;
+  }
+
+  .notif-refresh-btn {
+    width: 100%;
+    justify-content: center;
+    padding: 10px 16px;
+  }
+
+  .notif-tabs-bar {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    gap: 4px;
+    margin-bottom: 18px;
+    padding-bottom: 2px;
+    scrollbar-width: none; /* Firefox */
+  }
+
+  .notif-tabs-bar::-webkit-scrollbar {
+    display: none; /* Chrome/Safari */
+  }
+
+  .notif-tab-btn {
+    padding: 10px 14px;
+    font-size: 13px;
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+
+  .activity-sections-grid {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+
+  .low-stock-alert-bar {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 14px 16px;
+  }
+
+  .inventory-jump-btn {
+    width: 100%;
+    text-align: center;
+  }
+
+  .broadcast-form-card,
+  .broadcast-history-card {
+    padding: 18px;
+  }
+
+  .form-row-2 {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Small Mobile (<= 480px) */
+@media (max-width: 480px) {
+  .notif-page-title {
+    font-size: 19px;
+  }
+
+  .notif-page-sub {
+    font-size: 12.5px;
+  }
+
+  .activity-metrics-grid {
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+
+  .metric-card {
+    padding: 12px 14px;
+  }
+
+  .activity-box-header {
+    padding: 12px 14px;
+  }
+
+  .activity-box-body {
+    padding: 12px 14px;
+    max-height: 400px;
+  }
+
+  .activity-item-card {
+    padding: 12px;
+  }
+
+  .item-header-row {
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+
+  .item-details-row {
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+
+  .form-card-header {
+    margin-bottom: 14px;
+    padding-bottom: 12px;
+  }
+
+  .form-card-header h3 {
+    font-size: 15px;
+  }
+
+  .broadcast-form-card,
+  .broadcast-history-card {
+    padding: 14px;
+  }
+
+  .history-item {
+    padding: 12px;
+  }
+}
+

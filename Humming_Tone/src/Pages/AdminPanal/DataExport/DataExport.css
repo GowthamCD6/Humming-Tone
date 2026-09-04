@@ -1005,7 +1005,7 @@
   .de-table tbody td[data-label="Action"] { display: flex; align-items: center; }
   .de-table tbody td[data-label="Action"]::before { flex: 1; }
   .de-table tbody td[data-label="Action"] .de-icon-btn { width: 100%; }
-  .de-items-summary { max-width: none; white-space: normal; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; }
+  .de-items-summary { max-width: none; white-space: normal; display: -webkit-box; -webkit-line-clamp: 3; line-clamp: 3; -webkit-box-orient: vertical; }
   .de-nowrap { white-space: normal; }
   .de-table-footer { padding: 12px; align-items: stretch; }
   .de-footer-text { width: 100%; font-size: 12px; }

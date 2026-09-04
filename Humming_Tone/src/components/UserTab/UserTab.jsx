@@ -23,13 +23,12 @@ import HomeOutlinedIcon from "@mui/icons-material/HomeOutlined";
 import SearchIcon from "@mui/icons-material/Search";
 import PersonOutlineIcon from "@mui/icons-material/PersonOutline";
 import NotificationsNoneOutlinedIcon from "@mui/icons-material/NotificationsNoneOutlined";
-import DoneAllIcon from "@mui/icons-material/DoneAll";
-import { Sparkles, Truck, CheckCircle2, AlertCircle, PackageCheck, Tag, Bell } from "lucide-react";
 import { SITE_ASSETS } from "../../utils/siteAssets";
 import "./UserTab.css";
 import { fetchSiteContent } from "../../utils/siteContentStore";
 import { API_BASE_URL, getImageUrl } from "../../utils/apiConfig";
 import AuthModal from "../AuthModal/AuthModal";
+import NotificationModal from "../NotificationModal/NotificationModal";
 
 const logo = SITE_ASSETS.logo;
 
@@ -50,14 +49,13 @@ const UserTab = () => {
   const [cartCount, setCartCount] = useState(0);
   const [authModalOpen, setAuthModalOpen] = useState(false);
   const [userDropdownOpen, setUserDropdownOpen] = useState(false);
-  
+
   // Notification States
   const [notifications, setNotifications] = useState([]);
   const [unreadNotificationCount, setUnreadNotificationCount] = useState(0);
   const [notificationOpen, setNotificationOpen] = useState(false);
   const [loadingNotifications, setLoadingNotifications] = useState(false);
 
-  const notifRef = useRef(null);
   const profileRef = useRef(null);
 
   const [customerUser, setCustomerUser] = useState(() => {
@@ -163,12 +161,9 @@ const UserTab = () => {
     return () => clearInterval(interval);
   }, [customerUser]);
 
-  // Handle Click Outside for notification popover & profile dropdown
+  // Handle Click Outside for user profile dropdown
   useEffect(() => {
     const handleClickOutside = (event) => {
-      if (notifRef.current && !notifRef.current.contains(event.target)) {
-        setNotificationOpen(false);
-      }
       if (profileRef.current && !profileRef.current.contains(event.target)) {
         setUserDropdownOpen(false);
       }
@@ -214,88 +209,6 @@ const UserTab = () => {
     } else if (notif.order_id || notif.type === "order" || notif.type === "order_update") {
       navigate("/usertab/my-orders");
     }
-  };
-
-  const cleanNotificationTitle = (title = "") => {
-    return String(title || "")
-      .replace(/[\u{1F300}-\u{1F9FF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}\u{1F1E6}-\u{1F1FF}]/gu, "")
-      .trim();
-  };
-
-  const renderNotificationIcon = (notif) => {
-    const title = (notif.title || "").toLowerCase();
-    const type = (notif.type || "").toLowerCase();
-
-    if (title.includes("confirm") || title.includes("placed") || title.includes("verified")) {
-      return (
-        <div className="notif-type-icon order confirmed">
-          <CheckCircle2 size={16} />
-        </div>
-      );
-    }
-    if (title.includes("craft") || title.includes("atelier") || title.includes("pack")) {
-      return (
-        <div className="notif-type-icon order crafting">
-          <Sparkles size={16} />
-        </div>
-      );
-    }
-    if (title.includes("ship") || title.includes("transit") || title.includes("dispatch") || title.includes("courier")) {
-      return (
-        <div className="notif-type-icon order transit">
-          <Truck size={16} />
-        </div>
-      );
-    }
-    if (title.includes("deliver")) {
-      return (
-        <div className="notif-type-icon order delivered">
-          <PackageCheck size={16} />
-        </div>
-      );
-    }
-    if (title.includes("cancel") || title.includes("failed")) {
-      return (
-        <div className="notif-type-icon order cancelled">
-          <AlertCircle size={16} />
-        </div>
-      );
-    }
-    if (type === "promo" || title.includes("promo") || title.includes("discount")) {
-      return (
-        <div className="notif-type-icon promo">
-          <Tag size={16} />
-        </div>
-      );
-    }
-    if (type === "product" || type === "new_arrival" || type === "featured_drop" || title.includes("arrival") || title.includes("drop")) {
-      return (
-        <div className="notif-type-icon product">
-          <Sparkles size={16} />
-        </div>
-      );
-    }
-    return (
-      <div className="notif-type-icon announcement">
-        <Bell size={16} />
-      </div>
-    );
-  };
-
-  const getRelativeTime = (dateStr) => {
-    if (!dateStr) return "";
-    const now = new Date();
-    const past = new Date(dateStr);
-    const diffMs = now - past;
-    const diffMins = Math.floor(diffMs / 60000);
-    if (diffMins < 1) return "Just now";
-    if (diffMins < 60) return `${diffMins}m ago`;
-    const diffHours = Math.floor(diffMins / 60);
-    if (diffHours < 24) return `${diffHours}h ago`;
-    const diffDays = Math.floor(diffHours / 24);
-    if (diffDays === 1) return "Yesterday";
-    if (diffDays < 7) return `${diffDays}d ago`;
-    return past.toLocaleDateString("en-IN", { month: "short", day: "numeric" });
   };
 
   useEffect(() => {
@@ -481,110 +394,18 @@ const UserTab = () => {
 
           {/* Right Section - Cart, Notification Bell, User Profile & Hamburger */}
           <div className="user-header-right">
-            {/* Notification Bell Icon & Popover */}
-            <div className="user-notif-menu-wrapper" ref={notifRef}>
-              <div
-                className={`user-notif-icon ${notificationOpen ? "active" : ""}`}
-                onClick={() => setNotificationOpen(!notificationOpen)}
-                title="Notifications"
-                aria-label="View notifications"
-              >
-                <NotificationsNoneOutlinedIcon className="user-notif-bell" />
-                {unreadNotificationCount > 0 && (
-                  <span className="user-notif-badge">
-                    {unreadNotificationCount > 99 ? "99+" : unreadNotificationCount}
-                  </span>
-                )}
-              </div>
-
-              {/* Notification Popover / Mobile Bottom Sheet */}
-              {notificationOpen && (
-                <>
-                  <div
-                    className="notif-mobile-backdrop"
-                    onClick={() => setNotificationOpen(false)}
-                    aria-label="Close notifications backdrop"
-                  />
-                  <div className="user-notif-popover">
-                    <div className="notif-drag-handle-bar">
-                      <div className="notif-drag-handle"></div>
-                    </div>
-                    <div className="user-notif-header">
-                      <div className="notif-header-title-wrap">
-                        <h3 className="notif-header-title">Notifications</h3>
-                        {unreadNotificationCount > 0 && (
-                          <span className="notif-unread-tag">{unreadNotificationCount} new</span>
-                        )}
-                      </div>
-                      <div className="notif-header-actions">
-                        {unreadNotificationCount > 0 && (
-                          <button
-                            className="notif-mark-read-btn"
-                            onClick={handleMarkAllRead}
-                            title="Mark all as read"
-                          >
-                            <DoneAllIcon fontSize="inherit" />
-                            <span>Mark read</span>
-                          </button>
-                        )}
-                        <button
-                          className="notif-close-btn"
-                          onClick={() => setNotificationOpen(false)}
-                          aria-label="Close notifications"
-                        >
-                          <CloseIcon fontSize="small" />
-                        </button>
-                      </div>
-                    </div>
-
-                  <div className="user-notif-body">
-                    {loadingNotifications && notifications.length === 0 ? (
-                      <div className="notif-loading-state">
-                        <div className="notif-spinner"></div>
-                        <span>Checking for notifications...</span>
-                      </div>
-                    ) : notifications.length === 0 ? (
-                      <div className="notif-empty-state">
-                        <div className="notif-empty-icon-box">
-                          <NotificationsNoneOutlinedIcon className="notif-empty-icon" />
-                        </div>
-                        <h4>You're all caught up!</h4>
-                        <p>No new drop alerts or order notifications right now.</p>
-                      </div>
-                    ) : (
-                      <div className="user-notif-list">
-                        {notifications.map((notif) => (
-                          <div
-                            key={notif.id}
-                            className={`user-notif-card ${notif.is_read ? "read" : "unread"} ${notif.type || "general"}`}
-                            onClick={() => handleNotificationClick(notif)}
-                          >
-                            <div className="notif-card-icon-col">
-                              {renderNotificationIcon(notif)}
-                            </div>
-
-                            <div className="notif-card-content">
-                              <div className="notif-card-top">
-                                <h4 className="notif-card-title">{cleanNotificationTitle(notif.title)}</h4>
-                                <span className="notif-card-time">{getRelativeTime(notif.created_at)}</span>
-                              </div>
-                              <p className="notif-card-msg">{notif.message}</p>
-                              {notif.product_name && (
-                                <div className="notif-card-product-pill">
-                                  <span>{notif.product_name}</span>
-                                  {notif.product_price && <strong>₹{notif.product_price}</strong>}
-                                </div>
-                              )}
-                            </div>
-
-                            {!notif.is_read && <span className="notif-unread-dot" />}
-                          </div>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                  </div>
-                </>
+            {/* Notification Bell Icon */}
+            <div
+              className={`user-notif-icon ${notificationOpen ? "active" : ""}`}
+              onClick={() => setNotificationOpen(true)}
+              title="Notifications"
+              aria-label="View notifications"
+            >
+              <NotificationsNoneOutlinedIcon className="user-notif-bell" />
+              {unreadNotificationCount > 0 && (
+                <span className="user-notif-badge">
+                  {unreadNotificationCount > 99 ? "99+" : unreadNotificationCount}
+                </span>
               )}
             </div>
 
@@ -908,6 +729,17 @@ const UserTab = () => {
           <span className="bottom-nav-label">{customerUser ? "Account" : "Sign In"}</span>
         </div>
       </nav>
+
+      {/* Standalone Notification Modal */}
+      <NotificationModal
+        isOpen={notificationOpen}
+        onClose={() => setNotificationOpen(false)}
+        notifications={notifications}
+        unreadCount={unreadNotificationCount}
+        onMarkAllRead={handleMarkAllRead}
+        onNotificationClick={handleNotificationClick}
+        loading={loadingNotifications}
+      />
 
       {/* Dynamic Google Login Modal */}
       <AuthModal
