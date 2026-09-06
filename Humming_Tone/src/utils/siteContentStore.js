@@ -49,6 +49,7 @@ export const defaultSiteContent = {
     materials: [],
     sizes: [],
     galleryDesigns: [],
+    plainTshirts: [],
   },
 };
 

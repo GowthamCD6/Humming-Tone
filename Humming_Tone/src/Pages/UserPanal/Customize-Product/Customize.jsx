@@ -1,1263 +1,1198 @@
-// import React, { useState } from 'react';
-// // import UserFooter from '../../../components/User-Footer-Card/UserFooter';
-// import AddToCartModal from '../Prodect-Details/Product-Buying modal/AddToCartModal';
-// import './customize.css';
+import React, { useState, useEffect, useMemo, useRef } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import AddToCartModal from "../Prodect-Details/Product-Buying modal/AddToCartModal";
+import { fetchSiteContent, getSiteContent } from "../../../utils/siteContentStore";
+import { API_BASE_URL } from "../../../utils/apiConfig";
+import UserFooter from "../../../components/User-Footer-Card/UserFooter";
 
-// const CustomizePage = () => {
-//   const [currentStep, setCurrentStep] = useState(1);
-  
-//   const [selectedType, setSelectedType] = useState(''); 
-//   const [selectedVariant, setSelectedVariant] = useState(''); 
-//   const [selectedColor, setSelectedColor] = useState('');
-//   const [customColor, setCustomColor] = useState('#FFFFFF');
-//   const [selectedMaterial, setSelectedMaterial] = useState('');
-//   const [selectedSize, setSelectedSize] = useState('');
-//   const [designOption, setDesignOption] = useState('');
-//   const [uploadedImage, setUploadedImage] = useState(null);
-//   const [selectedGalleryDesign, setSelectedGalleryDesign] = useState('');
-//   const [customText, setCustomText] = useState('');
+// 2D Plain T-Shirt Canvas with Admin Uploaded Front & Back Static Image Background
+const PlainTShirt2D = ({
+  color = '#FFFFFF',
+  side = 'front',
+  tshirtImage = null,
+  design = null,
+  printableAreaVisible = true,
+}) => {
+  const idPrefix = `tshirt-2d-${side}`;
+  // On the back side, chest pocket placement is not applicable - always use full body back zone
+  const placementMode = side === 'back' ? 'full' : (design?.placementMode || 'chest');
 
-//   const [showCartModal, setShowCartModal] = useState(false);
-//   const [cartModalData, setCartModalData] = useState(null);
+  // Exact coordinates calculated based on the 500x580 visualizer and 1:1 model garment photo:
+  // Model photo: Center of collar is at X = 250, Y ≈ 200.
+  // Model garment torso is slightly shifted to screen-left: center of torso is around X ≈ 238-240.
+  //
+  // 1. CHEST ZONE (Standard Left Chest / Pocket Print):
+  //    In apparel customization, "Left Chest" refers to the wearer's left chest (over the heart,
+  //    which is on the right side from the viewer's perspective: X ≈ 262 to 324).
+  //    Width: 62, Height: 68, CenterX: 293, CenterY: 256.
+  //
+  // 2. FULL BODY ZONE (Torso print - Front & Back):
+  //    Comfortably confined within the t-shirt torso fabric:
+  //    Starts at Y: 228 (below collar), ends at Y: 416 (well above hem and jeans).
+  //    Width: 136 (X: 176 to 312). CenterX: 244, CenterY: 322 (front) / 312 (back).
+  const printArea = placementMode === 'chest' && side === 'front'
+    ? {
+        x: 182,
+        y: 224,
+        width: 62,
+        height: 68,
+        rx: 6,
+        centerX: 213,
+        centerY: 258
+      }
+    : {
+        x: side === 'front' ? 176 : 180,
+        y: side === 'front' ? 228 : 218,
+        width: 136,
+        height: 188,
+        rx: 10,
+        centerX: side === 'front' ? 244 : 250,
+        centerY: side === 'front' ? 322 : 312
+      };
 
-//   // Placeholder Image URL
-//   const placeholderImg = "https://cdn-icons-png.flaticon.com/512/892/892458.png";
+  const isWhiteOrLight = (hex) => {
+    if (!hex || hex === '#FFFFFF' || hex.toLowerCase() === '#fff') return true;
+    const c = hex.replace('#', '');
+    if (c.length !== 6) return false;
+    const r = parseInt(c.substring(0, 2), 16);
+    const g = parseInt(c.substring(2, 4), 16);
+    const b = parseInt(c.substring(4, 6), 16);
+    return (r * 299 + g * 587 + b * 114) / 1000 > 200;
+  };
 
-//   // Product Data
-//   const productCategories = [
-//     { id: 'tshirts', name: 'T-SHIRTS', image: "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?auto=format&fit=crop&w=600&q=80", description: 'Classic cotton essentials', 
-//       variants: [
-//         { id: 'round', name: 'Round Neck', image: null },
-//         { id: 'vneck', name: 'V-Neck', image: null },
-//         { id: 'collar', name: 'Collar/Polo', image: null },
-//         { id: 'henley', name: 'Henley', image: null },
-//         { id: 'scoop', name: 'Scoop Neck', image: null },
-//         { id: 'sleeveless_t', name: 'Sleeveless', image: null },
-//       ]
-//     },
-//     { id: 'hoodies', name: 'HOODIES', image: null, description: 'Cozy & stylish outerwear',
-//       variants: [
-//         { id: 'pullover', name: 'Pullover', image: null },
-//         { id: 'zipup', name: 'Zip-Up', image: null },
-//         { id: 'sleeveless_h', name: 'Sleeveless/Gilet', image: null },
-//         { id: 'oversized', name: 'Oversized', image: null },
-//         { id: 'cropped_h', name: 'Cropped', image: null },
-//         { id: 'crop_hoodie', name: 'Crop Hoodie', image: null },
-//       ]
-//     },
-//     { id: 'sweatshirts', name: 'SWEATSHIRTS', image: null, description: 'Premium crew neck comfort',
-//       variants: [
-//         { id: 'crew', name: 'Crew Neck Standard', image: null },
-//       ]
-//     },
-//     { id: 'sportswear', name: 'SPORTSWEAR', image: null, description: 'High performance gear',
-//       variants: [
-//         { id: 'dryfit', name: 'Dry-fit Jersey T-Shirts', image: null },
-//         { id: 'athletic', name: 'Athletic Tops', image: null },
-//       ]
-//     },
-//   ];
+  const isLight = isWhiteOrLight(color);
 
-//   const colors = [
-//     { id: 'white', name: 'White', hex: '#FFFFFF' },
-//     { id: 'black', name: 'Black', hex: '#000000' },
-//     { id: 'navy', name: 'Navy Blue', hex: '#001F3F' },
-//     { id: 'red', name: 'Red', hex: '#FF4136' },
-//     { id: 'green', name: 'Green', hex: '#2ECC40' },
-//     { id: 'gray', name: 'Gray', hex: '#AAAAAA' },
-//     { id: 'yellow', name: 'Yellow', hex: '#FFDC00' },
-//     { id: 'purple', name: 'Purple', hex: '#B10DC9' },
-//     { id: 'orange', name: 'Orange', hex: '#FF851B' },
-//     { id: 'pink', name: 'Pink', hex: '#F012BE' },
-//     { id: 'brown', name: 'Brown', hex: '#8B4513' },
-//     { id: 'custom', name: 'Custom Color', hex: null },
-//   ];
-
-//   // Materials updated with Image property instead of icon
-//   const materials = [
-//     { id: 'cotton', name: 'Pure Cotton', desc: 'Soft & Breathable', image: null },
-//     { id: 'polyester', name: 'Polyester', desc: 'Durable & Quick-dry', image: null },
-//     { id: 'blend', name: 'Cotton Blend', desc: 'Best of Both', image: null },
-//     { id: 'premium', name: 'Premium Cotton', desc: 'Luxury Feel', image: null },
-//     { id: 'organic', name: 'Organic Cotton', desc: '100% Natural', image: null },
-//     { id: 'bamboo', name: 'Bamboo Fabric', desc: 'Eco-friendly', image: null },
-//   ];
-
-//   const sizes = [
-//     { id: 'XS', name: 'XS', chest: '32-34"', icon: 'looks_one' },
-//     { id: 'S', name: 'S', chest: '35-37"', icon: 'looks_two' },
-//     { id: 'M', name: 'M', chest: '38-40"', icon: 'looks_3' },
-//     { id: 'L', name: 'L', chest: '41-43"', icon: 'looks_4' },
-//     { id: 'XL', name: 'XL', chest: '44-46"', icon: 'looks_5' },
-//     { id: 'XXL', name: 'XXL', chest: '47-49"', icon: 'looks_6' },
-//     { id: '3XL', name: '3XL', chest: '50-52"', icon: 'exposure_plus_1' },
-//   ];
-
-//   const galleryDesigns = [
-//     { id: 'design1', name: 'Abstract Art', image: 'https://images.unsplash.com/photo-1541961017774-22349e4a1262?w=200&h=200&fit=crop', preview: null },
-//     { id: 'design2', name: 'Geometric', image: 'https://images.unsplash.com/photo-1557804506-669a67965ba0?w=200&h=200&fit=crop', preview: null },
-//     { id: 'design3', name: 'Nature', image: 'https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=200&h=200&fit=crop', preview: null },
-//     { id: 'design4', name: 'Typography', image: 'https://images.unsplash.com/photo-1586953208448-b95a79798f07?w=200&h=200&fit=crop', preview: null },
-//     { id: 'design5', name: 'Minimal', image: 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=200&h=200&fit=crop', preview: null },
-//     { id: 'design6', name: 'Vintage', image: 'https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=200&h=200&fit=crop', preview: null },
-//     { id: 'design7', name: 'Sports', image: 'https://images.unsplash.com/photo-1461896836934-ffe607ba8211?w=200&h=200&fit=crop', preview: null },
-//     { id: 'design8', name: 'Music', image: 'https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=200&h=200&fit=crop', preview: null },
-//   ];
-
-//   const handleImageUpload = (e) => {
-//     const file = e.target.files[0];
-//     if (file) {
-//       if (file.size > 5 * 1024 * 1024) {
-//         alert('File size must be less than 5MB');
-//         return;
-//       }
-//       const reader = new FileReader();
-//       reader.onloadend = () => {
-//         setUploadedImage(reader.result);
-//       };
-//       reader.readAsDataURL(file);
-//     }
-//   };
-
-//   const handleColorSelect = (colorId, hex) => {
-//     setSelectedColor(colorId);
-//     if (colorId !== 'custom' && hex) {
-//       setCustomColor(hex);
-//     }
-//   };
-
-//   const canProceedToNext = () => {
-//     switch(currentStep) {
-//       case 1: return selectedType !== '';
-//       case 2: return selectedVariant !== '';
-//       case 3: return selectedColor !== '';
-//       case 4: return selectedMaterial !== '';
-//       case 5: return selectedSize !== '';
-//       case 6: return designOption !== '' && (
-//         (designOption === 'upload' && (uploadedImage || customText)) ||
-//         (designOption === 'gallery' && selectedGalleryDesign)
-//       );
-//       default: return false;
-//     }
-//   };
-
-//   const handleNext = () => {
-//     if (canProceedToNext() && currentStep < 6) {
-//       setCurrentStep(currentStep + 1);
-//     }
-//   };
-
-//   const handleBack = () => {
-//     if (currentStep > 1) {
-//       setCurrentStep(currentStep - 1);
-//     }
-//   };
-
-//   const handleFinish = () => {
-//     const customization = {
-//       type: selectedType,
-//       variant: selectedVariant,
-//       color: selectedColor === 'custom' ? customColor : selectedColor,
-//       material: selectedMaterial,
-//       size: selectedSize,
-//       design: designOption === 'upload' ? uploadedImage || customText : selectedGalleryDesign,
-//     };
-
-//     // Get selected category and variant names
-//     const selectedCategory = productCategories.find(c => c.id === selectedType);
-//     const selectedVariantData = selectedCategory?.variants.find(v => v.id === selectedVariant);
-//     const selectedColorData = colors.find(c => c.id === selectedColor);
-
-//     // Add to cart (you may need to adjust pricing logic)
-//     const customProduct = {
-//       id: `custom-${Date.now()}`,
-//       name: `Custom ${selectedCategory?.name || 'Product'}`,
-//       size: selectedSize,
-//       quantity: 1,
-//       price: 999, // Base price - you can calculate based on selections
-//       image: uploadedImage || selectedGalleryDesign || 'https://via.placeholder.com/400x500?text=Custom+Design'
-//     };
-
-//     // Store in cart
-//     const cart = JSON.parse(localStorage.getItem('cart')) || [];
-//     cart.push(customProduct);
-//     localStorage.setItem('cart', JSON.stringify(cart));
-//     window.dispatchEvent(new Event('cart:updated'));
-
-//     console.log('Customization completed:', customization);
-
-//     // Show modal
-//     setCartModalData(customProduct);
-//     setShowCartModal(true);
-//   };
-
-//   const getCurrentVariants = () => {
-//     const category = productCategories.find(c => c.id === selectedType);
-//     return category ? category.variants : [];
-//   };
-
-//   const addDefaultSrc = (ev) => {
-//     ev.target.src = placeholderImg;
-//   };
-
-//   return (
-//     <div className="customize-page">
-//       <div className="customize-header">
-//         <h1 className="customize-title">Customize Your Product</h1>
-//         <p className="customize-subtitle">Create your unique design in 6 easy steps</p>
-//       </div>
-
-//       <div className="customize-divider"></div>
-
-//       <div className="progress-container">
-//         <div className="progress-steps">
-//           {[1, 2, 3, 4, 5, 6].map((step) => (
-//             <div key={step} className={`progress-step ${currentStep >= step ? 'active' : ''} ${currentStep === step ? 'current' : ''}`}>
-//               <div className="progress-circle">
-//                 <span className="material-icons">
-//                   {currentStep > step ? 'check_circle' : 
-//                    step === 1 ? 'category' : 
-//                    step === 2 ? 'style' : 
-//                    step === 3 ? 'palette' : 
-//                    step === 4 ? 'texture' : 
-//                    step === 5 ? 'straighten' : 'brush'}
-//                 </span>
-//               </div>
-//               <span className="progress-label">
-//                 {step === 1 && 'Type'}
-//                 {step === 2 && 'Variant'}
-//                 {step === 3 && 'Color'}
-//                 {step === 4 && 'Material'}
-//                 {step === 5 && 'Size'}
-//                 {step === 6 && 'Design'}
-//               </span>
-//             </div>
-//           ))}
-//         </div>
-//         <div className="progress-bar">
-//           <div className="progress-fill" style={{ width: `${(currentStep / 6) * 100}%` }}></div>
-//         </div>
-//       </div>
-
-//       <div className="customize-content">
-        
-//         {/* Step 1: Type Selection */}
-//         {currentStep === 1 && (
-//           <div className="step-content">
-//             <h2 className="step-title">Select Product Category</h2>
-//             <div className="options-grid type-grid">
-//               {productCategories.map((type) => (
-//                 <div
-//                   key={type.id}
-//                   className={`option-card ${selectedType === type.id ? 'selected' : ''}`}
-//                   onClick={() => {
-//                     setSelectedType(type.id);
-//                     setSelectedVariant(''); 
-//                   }}
-//                 >
-//                   <div className="option-image-wrapper">
-//                     <img 
-//                       src={type.image || placeholderImg} 
-//                       alt={type.name} 
-//                       onError={addDefaultSrc}
-//                       className="option-card-image"
-//                     />
-//                   </div>
-//                   <div className="option-name">{type.name}</div>
-//                   <div className="option-desc">{type.description}</div>
-//                   {selectedType === type.id && (
-//                     <span className="material-icons check-icon">check_circle</span>
-//                   )}
-//                 </div>
-//               ))}
-//             </div>
-//           </div>
-//         )}
-
-//         {/* Step 2: Variant Selection */}
-//         {currentStep === 2 && (
-//           <div className="step-content">
-//             <h2 className="step-title">Choose Your {selectedType.toUpperCase()} Variant</h2>
-//             <div className="options-grid type-grid">
-//               {getCurrentVariants().map((variant) => (
-//                 <div
-//                   key={variant.id}
-//                   className={`option-card ${selectedVariant === variant.id ? 'selected' : ''}`}
-//                   onClick={() => setSelectedVariant(variant.id)}
-//                 >
-//                   <div className="option-image-wrapper">
-//                     <img 
-//                       src={variant.image || placeholderImg} 
-//                       alt={variant.name} 
-//                       onError={addDefaultSrc}
-//                       className="option-card-image"
-//                     />
-//                   </div>
-//                   <div className="option-name">{variant.name}</div>
-//                   {selectedVariant === variant.id && (
-//                     <span className="material-icons check-icon">check_circle</span>
-//                   )}
-//                 </div>
-//               ))}
-//             </div>
-//           </div>
-//         )}
-
-//         {/* Step 3: Color Selection */}
-//         {currentStep === 3 && (
-//           <div className="step-content">
-//             <h2 className="step-title">Choose Color</h2>
-//             <div className="options-grid color-grid">
-//               {colors.map((color) => (
-//                 <div
-//                   key={color.id}
-//                   className={`option-card color-card ${selectedColor === color.id ? 'selected' : ''}`}
-//                   onClick={() => handleColorSelect(color.id, color.hex)}
-//                 >
-//                   {color.id === 'custom' ? (
-//                     <div className="custom-color-picker">
-//                       <span className="material-icons color-picker-icon">colorize</span>
-//                       <label className="color-picker-label">
-//                         <input
-//                           type="color"
-//                           value={customColor}
-//                           onChange={(e) => {
-//                             setCustomColor(e.target.value);
-//                             setSelectedColor('custom');
-//                           }}
-//                           className="color-picker-input"
-//                         />
-//                       </label>
-//                     </div>
-//                   ) : (
-//                     <div 
-//                       className="color-swatch" 
-//                       style={{ 
-//                         backgroundColor: color.hex,
-//                         border: color.hex === '#FFFFFF' ? '2px solid #e5e5e5' : 'none'
-//                       }}
-//                     ></div>
-//                   )}
-//                   <div className="option-name">{color.name}</div>
-//                   {selectedColor === color.id && color.id !== 'custom' && (
-//                     <span className="material-icons check-icon">check_circle</span>
-//                   )}
-//                   {selectedColor === 'custom' && color.id === 'custom' && (
-//                     <div 
-//                       className="custom-color-preview" 
-//                       style={{ backgroundColor: customColor }}
-//                     ></div>
-//                   )}
-//                 </div>
-//               ))}
-//             </div>
-//           </div>
-//         )}
-
-//         {/* Step 4: Material Selection (Updated to show images) */}
-//         {currentStep === 4 && (
-//           <div className="step-content">
-//             <h2 className="step-title">Select Material</h2>
-//             <div className="options-grid material-grid">
-//               {materials.map((material) => (
-//                 <div
-//                   key={material.id}
-//                   className={`option-card material-card ${selectedMaterial === material.id ? 'selected' : ''}`}
-//                   onClick={() => setSelectedMaterial(material.id)}
-//                 >
-//                   <div className="option-image-wrapper">
-//                     <img 
-//                       src={material.image || placeholderImg} 
-//                       alt={material.name} 
-//                       onError={addDefaultSrc}
-//                       className="option-card-image"
-//                     />
-//                   </div>
-//                   <div className="option-name">{material.name}</div>
-//                   <div className="option-desc">{material.desc}</div>
-//                   {selectedMaterial === material.id && (
-//                     <span className="material-icons check-icon">check_circle</span>
-//                   )}
-//                 </div>
-//               ))}
-//             </div>
-//           </div>
-//         )}
-
-//         {/* Step 5: Size Selection */}
-//         {currentStep === 5 && (
-//           <div className="step-content">
-//             <h2 className="step-title">Choose Size</h2>
-//             <div className="size-guide-note">
-//               <span className="material-icons">info</span>
-//               <span>Hover over size for measurements</span>
-//             </div>
-//             <div className="options-grid size-grid">
-//               {sizes.map((size) => (
-//                 <div
-//                   key={size.id}
-//                   className={`option-card size-card ${selectedSize === size.id ? 'selected' : ''}`}
-//                   onClick={() => setSelectedSize(size.id)}
-//                   title={`Chest: ${size.chest}`}
-//                 >
-//                   <span className="material-icons size-icon">{size.icon}</span>
-//                   <div className="size-label">{size.name}</div>
-//                   <div className="size-measurement">{size.chest}</div>
-//                   {selectedSize === size.id && (
-//                     <span className="material-icons check-icon-small">check_circle</span>
-//                   )}
-//                 </div>
-//               ))}
-//             </div>
-//           </div>
-//         )}
-
-//         {/* Step 6: Design Selection */}
-//         {currentStep === 6 && (
-//           <div className="step-content">
-//             <h2 className="step-title">Add Your Design</h2>
-            
-//             <div className="design-options">
-//               <button
-//                 className={`design-option-btn ${designOption === 'upload' ? 'active' : ''}`}
-//                 onClick={() => setDesignOption('upload')}
-//               >
-//                 <span className="material-icons">file_upload</span>
-//                 Upload Design / Add Text
-//               </button>
-//               <button
-//                 className={`design-option-btn ${designOption === 'gallery' ? 'active' : ''}`}
-//                 onClick={() => setDesignOption('gallery')}
-//               >
-//                 <span className="material-icons">photo_library</span>
-//                 Choose from Gallery
-//               </button>
-//             </div>
-
-//             {designOption === 'upload' && (
-//               <div className="upload-section">
-//                 <div className="upload-area">
-//                   <input
-//                     type="file"
-//                     id="fileUpload"
-//                     accept="image/*"
-//                     onChange={handleImageUpload}
-//                     style={{ display: 'none' }}
-//                   />
-//                   <label htmlFor="fileUpload" className="upload-label">
-//                     {uploadedImage ? (
-//                       <div className="uploaded-image-container">
-//                         <img src={uploadedImage} alt="Uploaded" className="uploaded-preview" />
-//                         <button 
-//                           className="remove-image-btn"
-//                           onClick={(e) => {
-//                             e.preventDefault();
-//                             setUploadedImage(null);
-//                           }}
-//                         >
-//                           <span className="material-icons">close</span>
-//                         </button>
-//                       </div>
-//                     ) : (
-//                       <>
-//                         <span className="material-icons upload-icon">cloud_upload</span>
-//                         <p className="upload-text">Click to upload your design</p>
-//                         <p className="upload-subtext">PNG, JPG, SVG up to 5MB</p>
-//                       </>
-//                     )}
-//                   </label>
-//                 </div>
-
-//                 <div className="text-section">
-//                   <h3 className="text-title">
-//                     <span className="material-icons">text_fields</span>
-//                     Or Add Custom Text
-//                   </h3>
-//                   <textarea
-//                     className="text-input"
-//                     placeholder="Enter your custom text here..."
-//                     value={customText}
-//                     onChange={(e) => setCustomText(e.target.value)}
-//                     rows="4"
-//                   />
-//                 </div>
-//               </div>
-//             )}
-
-//             {designOption === 'gallery' && (
-//               <div className="gallery-section">
-//                 <div className="gallery-grid">
-//                   {galleryDesigns.map((design) => (
-//                     <div
-//                       key={design.id}
-//                       className={`gallery-card ${selectedGalleryDesign === design.id ? 'selected' : ''}`}
-//                       onClick={() => setSelectedGalleryDesign(design.id)}
-//                     >
-//                       <img 
-//                         src={design.image} 
-//                         alt={design.name} 
-//                         className="gallery-preview-image"
-//                         onError={(e) => e.target.src = 'https://via.placeholder.com/200x200?text=Design'}
-//                       />
-//                       <div className="gallery-name">{design.name}</div>
-//                       {selectedGalleryDesign === design.id && (
-//                         <span className="material-icons check-icon">check_circle</span>
-//                       )}
-//                     </div>
-//                   ))}
-//                 </div>
-//               </div>
-//             )}
-//           </div>
-//         )}
-//       </div>
-
-//       <div className="navigation-buttons">
-//         {currentStep > 1 && (
-//           <button className="nav-btn back-btn" onClick={handleBack}>
-//             <span className="material-icons">arrow_back</span>
-//             Back
-//           </button>
-//         )}
-        
-//         {currentStep < 6 ? (
-//           <button 
-//             className={`nav-btn next-btn ${!canProceedToNext() ? 'disabled' : ''}`}
-//             onClick={handleNext}
-//             disabled={!canProceedToNext()}
-//           >
-//             Next
-//             <span className="material-icons">arrow_forward</span>
-//           </button>
-//         ) : (
-//           <button 
-//             className={`nav-btn finish-btn ${!canProceedToNext() ? 'disabled' : ''}`}
-//             onClick={handleFinish}
-//             disabled={!canProceedToNext()}
-//           >
-//             <span className="material-icons">shopping_cart</span>
-//             Finish & Add to Cart
-//           </button>
-//         )}
-//       </div>
-
-//       {/* Add to Cart Modal */}
-//       <AddToCartModal
-//         isOpen={showCartModal}
-//         onClose={() => setShowCartModal(false)}
-//         productData={cartModalData}
-//       />
-//     </div>
-//   );
-// };
-
-// export default CustomizePage;
-
-import React, { useState, useMemo, useRef } from 'react';
-import TShirtSVG from './../../../components/CustomizeT-shirt/TShirtSVG';
-import HoodieSVG from './../../../components/CustomizeT-shirt/HoodieSVG';
-import LongSleeveSVG from './../../../components/CustomizeT-shirt/LongSleeveSVG';
-import PoloShirtSVG from './../../../components/CustomizeT-shirt/PoloSVG';
-import './Customize.css';
-
-// Color options with color codes
-const colorOptions = [
-  { name: 'White', value: '#FFFFFF', textColor: '#333333' },
-  { name: 'Black', value: '#333333', textColor: '#FFFFFF' },
-  { name: 'Red', value: '#FF3B30', textColor: '#FFFFFF' },
-  { name: 'Royal Blue', value: '#007AFF', textColor: '#FFFFFF' },
-  { name: 'Forest Green', value: '#34C759', textColor: '#FFFFFF' },
-  { name: 'Heather Gray', value: '#8E8E93', textColor: '#333333' },
-  { name: 'Navy Blue', value: '#0A2472', textColor: '#FFFFFF' },
-  { name: 'Burgundy', value: '#800020', textColor: '#FFFFFF' },
-  { name: 'Mustard Yellow', value: '#FFCC00', textColor: '#333333' },
-  { name: 'Light Pink', value: '#FFAFCC', textColor: '#333333' }
-];
-
-// Size options with measurements
-const sizeOptions = [
-  { label: 'XS', chest: '34-36"' },
-  { label: 'S', chest: '36-38"' },
-  { label: 'M', chest: '40-42"' },
-  { label: 'L', chest: '42-44"' },
-  { label: 'XL', chest: '46-48"' },
-  { label: 'XXL', chest: '50-52"' }
-];
-
-// Font options
-const fontOptions = [
-  { name: 'Inter', value: 'Inter, sans-serif' },
-  { name: 'Roboto', value: 'Roboto, sans-serif' },
-  { name: 'Open Sans', value: 'Open Sans, sans-serif' },
-  { name: 'Montserrat', value: 'Montserrat, sans-serif' },
-  { name: 'Poppins', value: 'Poppins, sans-serif' },
-  { name: 'Lato', value: 'Lato, sans-serif' },
-  { name: 'Arial', value: 'Arial, sans-serif' },
-  { name: 'Helvetica', value: 'Helvetica, sans-serif' },
-  { name: 'Georgia', value: 'Georgia, serif' },
-  { name: 'Courier New', value: 'Courier New, monospace' }
-];
-
-const TshirtCustomizer = () => {
-  // Product types with detailed specifications
-  const [productTypes] = useState([
-    { 
-      id: 1, 
-      name: 'Classic T-Shirt', 
-      type: 'tshirt', 
-      basePrice: 25, 
-      sleeve: 'Half Sleeve',
-      fabric: '100% Cotton',
-      fit: 'Regular Fit',
-      component: TShirtSVG
-    },
-    { 
-      id: 2, 
-      name: 'Premium Hoodie', 
-      type: 'hoodie', 
-      basePrice: 45, 
-      sleeve: 'Full Sleeve',
-      fabric: 'Cotton Blend',
-      fit: 'Oversized Fit',
-      component: HoodieSVG
-    },
-    { 
-      id: 3, 
-      name: 'Long Sleeve Shirt', 
-      type: 'longsleeve', 
-      basePrice: 32, 
-      sleeve: 'Full Sleeve',
-      fabric: 'Premium Cotton',
-      fit: 'Slim Fit',
-      component: LongSleeveSVG
-    },
-    { 
-      id: 4, 
-      name: 'Polo Shirt', 
-      type: 'polo', 
-      basePrice: 35, 
-      sleeve: 'Half Sleeve',
-      fabric: 'Piqué Cotton',
-      fit: 'Classic Fit',
-      component: PoloShirtSVG
+  // Compute text fill color with auto-contrast for dark garments if text color is dark
+  const resolvedTextColor = (() => {
+    if (!design?.textColor) return isLight ? '#111827' : '#FFFFFF';
+    if (!isLight && (design.textColor === '#111827' || design.textColor === '#000000')) {
+      return '#FFFFFF';
     }
-  ]);
+    return design.textColor;
+  })();
 
-  // State management
-  const [selectedProduct, setSelectedProduct] = useState(1);
-  const [selectedColor, setSelectedColor] = useState('#FFFFFF');
-  const [selectedSize, setSelectedSize] = useState('M');
-  const [designSide, setDesignSide] = useState('front');
-  
-  // Design states
-  const [frontDesign, setFrontDesign] = useState(null);
-  const [backDesign, setBackDesign] = useState(null);
-  const [designType, setDesignType] = useState('text');
-  const [designText, setDesignText] = useState('YOUR DESIGN HERE');
-  const [textColor, setTextColor] = useState('#333333');
-  const [textSize, setTextSize] = useState(24);
-  const [fontFamily, setFontFamily] = useState('Inter');
-  const [isBold, setIsBold] = useState(true);
-  
-  // Upload states
-  const [uploadedImages, setUploadedImages] = useState([]);
-  const [activeImage, setActiveImage] = useState(null);
-  
-  // Refs
-  const fileInputRef = useRef(null);
-
-  // Calculate price
-  const totalPrice = useMemo(() => {
-    const baseProduct = productTypes.find(p => p.id === selectedProduct);
-    let price = baseProduct?.basePrice || 25;
-    
-    // Size premium
-    const sizeLabels = sizeOptions.map(s => s.label);
-    const sizeIndex = sizeLabels.indexOf(selectedSize);
-    const sizePremium = [0, 0, 0, 2, 3, 5];
-    price += sizePremium[sizeIndex] || 0;
-    
-    // Design premium
-    if ((frontDesign || backDesign) && designType === 'image') {
-      price += 8; // Premium for custom images
-    } else if ((frontDesign || backDesign) && designType === 'text') {
-      price += 3; // Small premium for custom text
-    }
-    
-    return price.toFixed(2);
-  }, [productTypes, selectedProduct, selectedSize, frontDesign, backDesign, designType]);
-
-  // Get current product
-  const getCurrentProduct = () => {
-    return productTypes.find(p => p.id === selectedProduct);
-  };
-
-  // Get current design
-  const getCurrentDesign = () => {
-    return designSide === 'front' ? frontDesign : backDesign;
-  };
-
-  // Handle product change
-  const handleProductChange = (productId) => {
-    setSelectedProduct(productId);
-  };
-
-  // Handle color change
-  const handleColorChange = (color) => {
-    setSelectedColor(color);
-    // Auto-adjust text color for contrast
-    const selectedColorObj = colorOptions.find(c => c.value === color);
-    if (selectedColorObj && designType === 'text') {
-      setTextColor(selectedColorObj.textColor);
-    }
-  };
-
-  // Handle size change
-  const handleSizeChange = (size) => {
-    setSelectedSize(size);
-  };
-
-  // Handle design type change
-  const handleDesignTypeChange = (type) => {
-    setDesignType(type);
-    if (type === 'text') {
-      setDesignText('YOUR DESIGN HERE');
-    }
-  };
-
-  // Update text design
-  const updateTextDesign = () => {
-    const design = {
-      type: 'text',
-      content: designText,
-      color: textColor,
-      size: textSize,
-      font: fontFamily,
-      bold: isBold
-    };
-    
-    if (designSide === 'front') {
-      setFrontDesign(design);
-    } else {
-      setBackDesign(design);
-    }
-  };
-
-  // Handle text change
-  const handleTextChange = (text) => {
-    setDesignText(text);
-    updateTextDesign();
-  };
-
-  // Handle text style change
-  const handleTextStyleChange = (property, value) => {
-    switch (property) {
-      case 'color':
-        setTextColor(value);
-        break;
-      case 'size':
-        setTextSize(value);
-        break;
-      case 'font':
-        setFontFamily(value);
-        break;
-      case 'bold':
-        setIsBold(value);
-        break;
-      default:
-        break;
-    }
-    updateTextDesign();
-  };
-
-  // Handle image upload
-  const handleImageUpload = (event) => {
-    const files = Array.from(event.target.files);
-    const newImages = files.map(file => ({
-      id: Date.now() + Math.random(),
-      file,
-      url: URL.createObjectURL(file),
-      name: file.name.replace(/\.[^/.]+$/, ""), // Remove extension
-      size: (file.size / 1024).toFixed(1) + ' KB'
-    }));
-    
-    setUploadedImages(prev => [...prev, ...newImages]);
-    
-    // Auto-select first uploaded image
-    if (newImages.length > 0) {
-      selectUploadedImage(newImages[0].url);
-    }
-  };
-
-  // Select uploaded image
-  const selectUploadedImage = (imageUrl) => {
-    setActiveImage(imageUrl);
-    const design = { 
-      type: 'image', 
-      content: imageUrl,
-      scale: 1,
-      position: { x: 0, y: 0 }
-    };
-    
-    if (designSide === 'front') {
-      setFrontDesign(design);
-    } else {
-      setBackDesign(design);
-    }
-  };
-
-  // Clear current design
-  const clearCurrentDesign = () => {
-    if (designSide === 'front') {
-      setFrontDesign(null);
-    } else {
-      setBackDesign(null);
-    }
-  };
-
-  // Clear all designs
-  const clearAllDesigns = () => {
-    setFrontDesign(null);
-    setBackDesign(null);
-    setDesignText('YOUR DESIGN HERE');
-  };
-
-  // Trigger file upload
-  const triggerFileUpload = () => {
-    fileInputRef.current.click();
-  };
-
-  // Save design
-  const _saveDesign = () => {
-    const design = {
-      id: Date.now(),
-      product: selectedProduct,
-      color: selectedColor,
-      size: selectedSize,
-      frontDesign,
-      backDesign,
-      price: totalPrice,
-      timestamp: new Date().toISOString()
-    };
-    
-    const savedDesigns = JSON.parse(localStorage.getItem('customDesigns') || '[]');
-    savedDesigns.push(design);
-    localStorage.setItem('customDesigns', JSON.stringify(savedDesigns));
-    
-    alert('Design saved successfully! You can access it later from Saved Designs.');
-  };
-
-  // Add to cart
-  const addToCart = () => {
-    const product = getCurrentProduct();
-    const cartItem = {
-      productId: selectedProduct,
-      productName: product.name,
-      color: colorOptions.find(c => c.value === selectedColor)?.name,
-      size: selectedSize,
-      frontDesign: frontDesign ? 'Custom Design' : 'None',
-      backDesign: backDesign ? 'Custom Design' : 'None',
-      designType: designType,
-      price: totalPrice,
-      quantity: 1
-    };
-    
-    // In real app, you would use Redux or Context
-    const cart = JSON.parse(localStorage.getItem('cart') || '[]');
-    cart.push(cartItem);
-    localStorage.setItem('cart', JSON.stringify(cart));
-    
-    alert(`Added to cart: ${cartItem.productName} - $${cartItem.price}`);
-  };
-
-  // Get current Product Component
-  const ProductComponent = getCurrentProduct().component;
+  // Calculate suitable dynamic font size so text fits cleanly within the designated zone
+  const textLength = design?.text ? design.text.trim().length : 0;
+  let dynamicFontSize = design?.fontSize || (placementMode === 'chest' ? 13 : 16);
+  const maxAllowedWidth = printArea.width - (placementMode === 'chest' ? 12 : 20); // safety padding inside print zone
+  if (textLength > (placementMode === 'chest' ? 7 : 10)) {
+    const maxChars = placementMode === 'chest' ? 7 : 10;
+    dynamicFontSize = Math.max(9, Math.floor(dynamicFontSize * (maxChars / textLength)));
+  }
 
   return (
-    <div className="tshirt-customizer">
-      <div className="customizer-header">
-        <h1>T-Shirt Customizer Studio</h1>
-        <p>Design your perfect custom apparel with real-time preview</p>
+    <div className="plain-tshirt-svg-container" style={{ position: 'relative', width: '100%', maxWidth: '500px', margin: '0 auto', aspectRatio: '500 / 580' }}>
+      {/* If admin uploaded a static plain t-shirt photo, display it cleanly in background without artificial padding */}
+      {tshirtImage && (
+        <div style={{
+          position: 'absolute',
+          top: '0',
+          left: '0',
+          right: '0',
+          bottom: '0',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          zIndex: 1,
+          pointerEvents: 'none',
+        }}>
+          <img
+            src={tshirtImage}
+            alt="Plain T-Shirt"
+            style={{
+              width: '100%',
+              height: '100%',
+              objectFit: 'contain',
+              filter: 'drop-shadow(0 14px 28px rgba(0,0,0,0.12))'
+            }}
+          />
+        </div>
+      )}
+
+      <svg
+        viewBox="0 0 500 580"
+        fill="none"
+        xmlns="http://www.w3.org/2000/svg"
+        style={{
+          position: 'relative',
+          zIndex: 2,
+          width: '100%',
+          height: '100%',
+          display: 'block',
+          filter: tshirtImage ? 'none' : 'drop-shadow(0 15px 30px rgba(0,0,0,0.12))'
+        }}
+      >
+        <defs>
+          <linearGradient id={`${idPrefix}-lighting`} x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stopColor="#FFFFFF" stopOpacity={isLight ? 0.45 : 0.15} />
+            <stop offset="45%" stopColor="#FFFFFF" stopOpacity={0.0} />
+            <stop offset="80%" stopColor="#000000" stopOpacity={isLight ? 0.08 : 0.22} />
+            <stop offset="100%" stopColor="#000000" stopOpacity={isLight ? 0.18 : 0.38} />
+          </linearGradient>
+
+          <clipPath id={`${idPrefix}-print-clip`}>
+            <rect
+              x={printArea.x}
+              y={printArea.y}
+              width={printArea.width}
+              height={printArea.height}
+              rx={printArea.rx}
+            />
+          </clipPath>
+        </defs>
+
+        {/* Render fallback vector silhouette when no static image is provided */}
+        {!tshirtImage && (
+          <g id="tshirt-silhouette">
+            <path
+              d="
+                M 188 78
+                C 150 78, 126 94, 94 136
+                L 16 216
+                C 12 222, 14 232, 22 238
+                L 68 274
+                C 74 278, 84 276, 88 268
+                L 124 200
+                L 124 514
+                C 124 520, 130 526, 138 526
+                L 362 526
+                C 370 526, 376 520, 376 514
+                L 376 200
+                L 412 268
+                C 416 276, 426 278, 432 274
+                L 478 238
+                C 486 232, 488 222, 484 216
+                L 406 136
+                C 374 94, 350 78, 312 78
+                Z
+              "
+              fill={color}
+              stroke="#1E293B"
+              strokeWidth="2"
+              strokeLinejoin="round"
+            />
+            <path
+              d="
+                M 188 78
+                C 150 78, 126 94, 94 136
+                L 16 216
+                C 12 222, 14 232, 22 238
+                L 68 274
+                C 74 278, 84 276, 88 268
+                L 124 200
+                L 124 514
+                C 124 520, 130 526, 138 526
+                L 362 526
+                C 370 526, 376 520, 376 514
+                L 376 200
+                L 412 268
+                C 416 276, 426 278, 432 274
+                L 478 238
+                C 486 232, 488 222, 484 216
+                L 406 136
+                C 374 94, 350 78, 312 78
+                Z
+              "
+              fill={`url(#${idPrefix}-lighting)`}
+              pointerEvents="none"
+            />
+          </g>
+        )}
+
+        {/* Printable boundary */}
+        {printableAreaVisible && (
+          <g>
+            <rect
+              x={printArea.x}
+              y={printArea.y}
+              width={printArea.width}
+              height={printArea.height}
+              rx={printArea.rx}
+              fill="rgba(99, 102, 241, 0.03)"
+              stroke="#6366F1"
+              strokeWidth="1.5"
+              strokeDasharray="5 4"
+              opacity="0.75"
+              style={{ pointerEvents: 'none' }}
+            />
+            {/* Zone mode label inside border */}
+            <text
+              x={printArea.x + 6}
+              y={printArea.y + (placementMode === 'chest' ? 11 : 14)}
+              fill="#6366F1"
+              fontSize={placementMode === 'chest' ? "7.5" : "9"}
+              fontWeight="700"
+              letterSpacing="0.5"
+              opacity="0.85"
+              style={{ textTransform: 'uppercase', pointerEvents: 'none' }}
+            >
+              {placementMode === 'chest' ? 'CHEST' : 'FULL BODY PRINT ZONE'}
+            </text>
+          </g>
+        )}
+
+        {/* User customized design layer */}
+        <g id="custom-design-layer" clipPath={`url(#${idPrefix}-print-clip)`}>
+          {design && (
+            <g
+              transform={`translate(${printArea.centerX + (design.posX || 0)}, ${
+                printArea.centerY + (design.posY || 0)
+              }) scale(${design.scale || 1}) rotate(${design.rotation || 0})`}
+            >
+              {design.imageUrl && (
+                <g
+                  transform={
+                    placementMode === 'chest'
+                      ? (design.text ? "translate(-30, -36)" : "translate(-35, -35)")
+                      : (design.text ? "translate(-50, -65)" : "translate(-55, -55)")
+                  }
+                >
+                  <image
+                    href={design.imageUrl}
+                    x="0"
+                    y="0"
+                    width={
+                      placementMode === 'chest'
+                        ? (design.text ? "60" : "70")
+                        : (design.text ? "100" : "110")
+                    }
+                    height={
+                      placementMode === 'chest'
+                        ? (design.text ? "60" : "70")
+                        : (design.text ? "100" : "110")
+                    }
+                    preserveAspectRatio="xMidYMid meet"
+                    style={{ pointerEvents: 'none' }}
+                  />
+                </g>
+              )}
+
+              {design.text && (
+                <text
+                  x="0"
+                  y={
+                    design.imageUrl
+                      ? (placementMode === 'chest' ? "30" : "55")
+                      : "0"
+                  }
+                  textAnchor="middle"
+                  dominantBaseline="middle"
+                  fill={resolvedTextColor}
+                  fontSize={placementMode === 'chest' ? Math.min(dynamicFontSize, 15) : dynamicFontSize}
+                  fontFamily={design.fontFamily || 'Inter, sans-serif'}
+                  fontWeight={design.isBold ? '700' : '500'}
+                  fontStyle={design.isItalic ? 'italic' : 'normal'}
+                  letterSpacing={(design.letterSpacing || 1) + 'px'}
+                  lengthAdjust={textLength > 10 ? "spacingAndGlyphs" : undefined}
+                  textLength={textLength > 10 ? maxAllowedWidth : undefined}
+                  style={{
+                    userSelect: 'none',
+                    filter: 'drop-shadow(0 1px 2px rgba(0,0,0,0.25))',
+                  }}
+                >
+                  {design.text}
+                </text>
+              )}
+            </g>
+          )}
+        </g>
+
+        {/* Side Indicator Badge */}
+        <g transform="translate(195, 545)">
+          <rect x="0" y="0" width="110" height="24" rx="12" fill="#0F172A" opacity="0.85" />
+          <text
+            x="55"
+            y="16"
+            textAnchor="middle"
+            fill="#FFFFFF"
+            fontSize="10"
+            fontWeight="600"
+            letterSpacing="1.5"
+            style={{ textTransform: 'uppercase' }}
+          >
+            {side === 'front' ? 'FRONT VIEW' : 'BACK VIEW'}
+          </text>
+        </g>
+      </svg>
+    </div>
+  );
+};
+
+// MUI Icons
+import CheckIcon from "@mui/icons-material/Check";
+import CloudUploadIcon from "@mui/icons-material/CloudUpload";
+import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
+import FormatBoldIcon from "@mui/icons-material/FormatBold";
+import FormatItalicIcon from "@mui/icons-material/FormatItalic";
+import ShoppingBagOutlinedIcon from "@mui/icons-material/ShoppingBagOutlined";
+import FlashOnIcon from "@mui/icons-material/FlashOn";
+import RestartAltIcon from "@mui/icons-material/RestartAlt";
+import TuneIcon from "@mui/icons-material/Tune";
+import InfoOutlinedIcon from "@mui/icons-material/InfoOutlined";
+
+import "./Customize.css";
+
+// 4 Classic Plain T-Shirt Colors with front and back images as fallback/admin defaults
+const DEFAULT_PLAIN_COLORS = [
+  {
+    id: "white",
+    name: "Pure White",
+    hex: "#FFFFFF",
+    front_image: "https://images.unsplash.com/photo-1521572267360-ee0c2909d518?auto=format&fit=crop&w=800&q=80",
+    back_image: "https://images.unsplash.com/photo-1618354691373-d851c5c3a990?auto=format&fit=crop&w=800&q=80",
+    base_price: 699,
+  },
+  {
+    id: "black",
+    name: "Jet Black",
+    hex: "#18181B",
+    front_image: "https://images.unsplash.com/photo-1503342217505-b0a15ec3261c?auto=format&fit=crop&w=800&q=80",
+    back_image: "https://images.unsplash.com/photo-1583743814966-8936f5b7be1a?auto=format&fit=crop&w=800&q=80",
+    base_price: 699,
+  },
+  {
+    id: "navy",
+    name: "Navy Blue",
+    hex: "#1E293B",
+    front_image: "https://images.unsplash.com/photo-1576566588028-4147f3842f27?auto=format&fit=crop&w=800&q=80",
+    back_image: "https://images.unsplash.com/photo-1618354691438-25bc04584c23?auto=format&fit=crop&w=800&q=80",
+    base_price: 749,
+  },
+  {
+    id: "gray",
+    name: "Heather Gray",
+    hex: "#94A3B8",
+    front_image: "https://images.unsplash.com/photo-1581655353564-df123a1eb820?auto=format&fit=crop&w=800&q=80",
+    back_image: "https://images.unsplash.com/photo-1562157873-818bc0726f68?auto=format&fit=crop&w=800&q=80",
+    base_price: 699,
+  },
+];
+
+const SIZES = [
+  { label: "XS", chest: "34-36\"" },
+  { label: "S", chest: "36-38\"" },
+  { label: "M", chest: "38-40\"" },
+  { label: "L", chest: "40-42\"" },
+  { label: "XL", chest: "42-44\"" },
+  { label: "XXL", chest: "44-46\"" },
+];
+
+const FONTS = [
+  { label: "Inter (Modern)", value: "Inter, sans-serif" },
+  { label: "Playfair (Luxury)", value: "'Playfair Display', serif" },
+  { label: "Montserrat (Clean)", value: "Montserrat, sans-serif" },
+  { label: "Poppins (Rounded)", value: "Poppins, sans-serif" },
+  { label: "Courier (Monospace)", value: "'Courier New', monospace" },
+  { label: "Georgia (Editorial)", value: "Georgia, serif" },
+];
+
+const TEXT_COLORS = [
+  { name: "Pure White", hex: "#FFFFFF" },
+  { name: "Jet Black", hex: "#111827" },
+  { name: "Golden Ochre", hex: "#F59E0B" },
+  { name: "Crimson Red", hex: "#EF4444" },
+  { name: "Royal Navy", hex: "#1D4ED8" },
+  { name: "Emerald", hex: "#10B981" },
+];
+
+const PRESET_GRAPHICS = [
+  {
+    name: "Minimalist Atelier Wave",
+    url: "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=200&q=80",
+  },
+  {
+    name: "Geometric Heritage Seal",
+    url: "https://images.unsplash.com/photo-1579783900882-c0d3dad7b119?auto=format&fit=crop&w=200&q=80",
+  },
+  {
+    name: "Botanical Silhouette",
+    url: "https://images.unsplash.com/photo-1541701494587-cb58502866ab?auto=format&fit=crop&w=200&q=80",
+  },
+];
+
+const BASE_PRICE = 699; // INR
+const PRINT_FEE = 150; // Custom design print fee
+
+const Customize = () => {
+  const navigate = useNavigate();
+  const fileInputRef = useRef(null);
+
+  // Active side: 'front' or 'back'
+  const [activeSide, setActiveSide] = useState("front");
+
+  // Admin plain t-shirt colors
+  const [availableColors, setAvailableColors] = useState(DEFAULT_PLAIN_COLORS);
+  const [selectedColor, setSelectedColor] = useState(DEFAULT_PLAIN_COLORS[0]);
+
+  // Product size & quantity
+  const [selectedSize, setSelectedSize] = useState("M");
+  const [quantity, setQuantity] = useState(1);
+
+  // Customizer tool tab: 'text', 'upload', 'presets'
+  const [toolTab, setToolTab] = useState("text");
+
+  // Separate designs for FRONT and BACK
+  const [frontDesign, setFrontDesign] = useState({
+    placementMode: "chest", // 'chest' or 'full'
+    text: "HUMMING TONE",
+    textColor: "#111827",
+    fontFamily: "Inter, sans-serif",
+    fontSize: 18,
+    isBold: true,
+    isItalic: false,
+    imageUrl: null,
+    scale: 1,
+    posX: 0,
+    posY: 0,
+    rotation: 0,
+  });
+
+  const [backDesign, setBackDesign] = useState({
+    placementMode: "full", // 'chest' or 'full'
+    isBackBlank: true, // option to keep back blank
+    text: "",
+    textColor: "#111827",
+    fontFamily: "Inter, sans-serif",
+    fontSize: 18,
+    isBold: true,
+    isItalic: false,
+    imageUrl: null,
+    scale: 1,
+    posX: 0,
+    posY: 0,
+    rotation: 0,
+  });
+
+  const [showPrintBorder, setShowPrintBorder] = useState(true);
+
+  // Cart Modal State
+  const [showCartModal, setShowCartModal] = useState(false);
+  const [cartModalData, setCartModalData] = useState(null);
+
+  // Load Colors and Static Front & Back Images from Admin Site Content
+  useEffect(() => {
+    const loadSiteColors = async () => {
+      try {
+        const res = await fetch(`${API_BASE_URL}/api/site-content/customize/plain-tshirts`);
+        const data = await res.json();
+        if (data && data.success && Array.isArray(data.tshirts) && data.tshirts.length > 0) {
+          const colors = data.tshirts.map((t) => ({
+            id: t.id,
+            name: t.color_name,
+            hex: t.color_hex || "#FFFFFF",
+            front_image: t.front_image,
+            back_image: t.back_image,
+            base_price: Number(t.base_price || 699),
+          }));
+          setAvailableColors(colors);
+          setSelectedColor(colors[0]);
+          return;
+        }
+
+        // Fallback to fetchSiteContent customize if plain-tshirts is empty
+        const siteData = await fetchSiteContent();
+        if (siteData?.customize?.colors && siteData.customize.colors.length > 0) {
+          const colors = siteData.customize.colors.slice(0, 6).map((c, idx) => ({
+            id: c.id || c.name.toLowerCase().replace(/\s+/g, "_"),
+            name: c.name,
+            hex: c.hex || "#FFFFFF",
+            front_image: DEFAULT_PLAIN_COLORS[idx % DEFAULT_PLAIN_COLORS.length].front_image,
+            back_image: DEFAULT_PLAIN_COLORS[idx % DEFAULT_PLAIN_COLORS.length].back_image,
+            base_price: 699,
+          }));
+          setAvailableColors(colors);
+          setSelectedColor(colors[0]);
+        }
+      } catch (err) {
+        console.warn("Using default plain colors:", err);
+      }
+    };
+    loadSiteColors();
+  }, []);
+
+  // Current active side design accessor
+  const currentDesign = activeSide === "front" ? frontDesign : backDesign;
+  const updateCurrentDesign = (updates) => {
+    if (activeSide === "front") {
+      setFrontDesign((prev) => ({ ...prev, ...updates }));
+    } else {
+      setBackDesign((prev) => ({ ...prev, ...updates }));
+    }
+  };
+
+  // Pricing calculation
+  const hasCustomFront = Boolean(frontDesign.text?.trim() || frontDesign.imageUrl);
+  const hasCustomBack = Boolean(backDesign.text?.trim() || backDesign.imageUrl);
+  const customPrintsCount = (hasCustomFront ? 1 : 0) + (hasCustomBack ? 1 : 0);
+  const unitPrice = BASE_PRICE + customPrintsCount * PRINT_FEE;
+  const totalPrice = unitPrice * quantity;
+
+  // Handle Image Upload
+  const handleImageUpload = (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (!file.type.startsWith("image/")) {
+      alert("Please upload a valid image file (PNG, JPG, SVG)");
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = (uploadEvent) => {
+      updateCurrentDesign({ imageUrl: uploadEvent.target.result });
+    };
+    reader.readAsDataURL(file);
+    e.target.value = "";
+  };
+
+  const removeCurrentImage = () => {
+    updateCurrentDesign({ imageUrl: null });
+  };
+
+  const resetActiveSide = () => {
+    updateCurrentDesign({
+      text: "",
+      imageUrl: null,
+      scale: 1,
+      posX: 0,
+      posY: 0,
+      rotation: 0,
+    });
+  };
+
+  // Construct Cart Item representation
+  const buildCartItem = () => {
+    return {
+      cartItemId: `custom-tshirt-${Date.now()}`,
+      id: "plain-custom-tshirt",
+      name: `Custom Plain Cotton T-Shirt (${selectedColor.name})`,
+      brand: "HUMMING TONE ATELIER",
+      price: unitPrice,
+      quantity,
+      size: selectedSize,
+      color: selectedColor.name,
+      stock: 50,
+      image:
+        selectedColor.front_image ||
+        frontDesign.imageUrl ||
+        "https://images.unsplash.com/photo-1521572267360-ee0c2909d518?auto=format&fit=crop&w=800&q=80",
+      customDetails: {
+        color: selectedColor,
+        front: frontDesign,
+        back: backDesign,
+        totalCustomSides: customPrintsCount,
+      },
+    };
+  };
+
+  // Add to Cart
+  const handleAddToCart = () => {
+    const cartItem = buildCartItem();
+    let currentCart = [];
+    try {
+      currentCart = JSON.parse(localStorage.getItem("cart")) || [];
+    } catch {
+      currentCart = [];
+    }
+
+    const updatedCart = [...currentCart, cartItem];
+    localStorage.setItem("cart", JSON.stringify(updatedCart));
+    window.dispatchEvent(new Event("cart:updated"));
+
+    setCartModalData({
+      name: cartItem.name,
+      size: selectedSize,
+      quantity: quantity,
+      price: unitPrice,
+      image: cartItem.image,
+    });
+    setShowCartModal(true);
+  };
+
+  // Direct Buy Now
+  const handleBuyNow = () => {
+    const cartItem = buildCartItem();
+    const user = JSON.parse(localStorage.getItem("customerUser") || "null");
+    const token = localStorage.getItem("userToken");
+
+    if (!user || !token || user?.email === "guest@hummingtone.com") {
+      alert("Please sign in to proceed with checkout.");
+      return;
+    }
+
+    navigate("/usertab/checkout", { state: { buyNowItem: cartItem } });
+  };
+
+  return (
+    <div className="customize-studio-wrapper">
+      {/* Studio Header Banner */}
+      <div className="studio-topbar">
+        <div className="studio-topbar-inner">
+          <div>
+            <span className="studio-badge">ATELIER STUDIO</span>
+            <h1 className="studio-title">Custom Plain T-Shirt Lab</h1>
+            <p className="studio-subtitle">
+              Configure your bespoke 2D front and back t-shirt with real-time typography, colors, and graphics.
+            </p>
+          </div>
+          <div className="studio-header-price">
+            <span className="price-label">ESTIMATED PRICE</span>
+            <span className="price-amount">₹{totalPrice.toLocaleString()}</span>
+            <span className="price-sub">₹{unitPrice}/pc (incl. GST)</span>
+          </div>
+        </div>
       </div>
 
-      <div className="customizer-grid">
-        {/* Left Column - Product Preview */}
-        <div className="preview-column">
-          <div className="preview-container">
-            <div className="preview-header">
-              <h2>Live Preview</h2>
-              <div className="side-toggle">
+      {/* Studio Main Workspace */}
+      <div className="studio-container">
+        {/* Left Column: 2D Interactive Stage */}
+        <div className="studio-stage-column">
+          <div className="stage-card">
+            {/* View Switcher Controls */}
+            <div className="stage-controls-header">
+              <div className="side-toggle-group">
                 <button
-                  className={`side-btn ${designSide === 'front' ? 'active' : ''}`}
-                  onClick={() => setDesignSide('front')}
+                  type="button"
+                  className={`side-toggle-pill ${activeSide === "front" ? "active" : ""}`}
+                  onClick={() => setActiveSide("front")}
                 >
-                  <span className="btn-icon">👕</span>
-                  Front Design
+                  <span className="pill-dot"></span>
+                  Front View
+                  {hasCustomFront && <span className="side-indicator-dot" title="Custom design present" />}
                 </button>
                 <button
-                  className={`side-btn ${designSide === 'back' ? 'active' : ''}`}
-                  onClick={() => setDesignSide('back')}
+                  type="button"
+                  className={`side-toggle-pill ${activeSide === "back" ? "active" : ""}`}
+                  onClick={() => setActiveSide("back")}
                 >
-                  <span className="btn-icon">👚</span>
-                  Back Design
+                  <span className="pill-dot"></span>
+                  Back View
+                  {hasCustomBack && <span className="side-indicator-dot" title="Custom design present" />}
+                  {activeSide === "back" && !hasCustomBack && <span className="side-blank-badge">Blank</span>}
+                </button>
+              </div>
+
+              <div className="stage-aux-actions">
+                <button
+                  type="button"
+                  className="stage-mini-btn"
+                  title="Toggle printable boundary guide"
+                  onClick={() => setShowPrintBorder(!showPrintBorder)}
+                >
+                  <TuneIcon fontSize="small" />
+                  {showPrintBorder ? "Hide Frame" : "Show Frame"}
+                </button>
+                <button
+                  type="button"
+                  className="stage-mini-btn danger"
+                  title={`Clear ${activeSide} customizations`}
+                  onClick={resetActiveSide}
+                >
+                  <RestartAltIcon fontSize="small" />
+                  Reset Side
                 </button>
               </div>
             </div>
 
-            <div className="product-preview">
-              <div className="preview-wrapper">
-                <ProductComponent
-                  color={selectedColor}
-                  design={getCurrentDesign()}
-                  side={designSide}
+            {/* Print Area Placement Mode Selector (Front side only: Chest vs Full Body) */}
+            {activeSide === "front" ? (
+              <div className="placement-mode-bar">
+                <span className="placement-mode-title">Placement Area:</span>
+                <div className="placement-mode-toggle-group">
+                  <button
+                    type="button"
+                    className={`placement-mode-btn ${currentDesign.placementMode === "chest" ? "active" : ""}`}
+                    onClick={() => updateCurrentDesign({ placementMode: "chest" })}
+                  >
+                    <span className="placement-icon-chest"></span>
+                    Left Chest (Pocket)
+                  </button>
+                  <button
+                    type="button"
+                    className={`placement-mode-btn ${currentDesign.placementMode === "full" ? "active" : ""}`}
+                    onClick={() => updateCurrentDesign({ placementMode: "full" })}
+                  >
+                    <span className="placement-icon-full"></span>
+                    Full Body
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <div className="placement-mode-bar">
+                <span className="placement-mode-title">Placement Area:</span>
+                <span className="placement-mode-fixed-badge">Full Back Print Zone</span>
+              </div>
+            )}
+
+            {/* If Back View is active, show quick 1-click option to keep blank or add design */}
+            {activeSide === "back" && (
+              <div className="back-blank-banner">
+                <div className="back-blank-info">
+                  <span className="back-blank-title">
+                    {hasCustomBack ? "Back side has custom artwork/text" : "Back side is currently Blank"}
+                  </span>
+                  <span className="back-blank-sub">
+                    {hasCustomBack
+                      ? "Standard +₹150 print fee applies for 2-sided custom print."
+                      : "No extra fee for keeping the back side plain and blank."}
+                  </span>
+                </div>
+                {hasCustomBack && (
+                  <button
+                    type="button"
+                    className="btn-keep-blank"
+                    onClick={() => {
+                      resetActiveSide();
+                      updateCurrentDesign({ isBackBlank: true });
+                    }}
+                  >
+                    Keep Back Blank
+                  </button>
+                )}
+              </div>
+            )}
+
+            {/* 2D T-Shirt Visualizer */}
+            <div className="tshirt-visualizer-box">
+              <PlainTShirt2D
+                color={selectedColor.hex}
+                side={activeSide}
+                tshirtImage={activeSide === "front" ? selectedColor.front_image : selectedColor.back_image}
+                design={currentDesign}
+                printableAreaVisible={showPrintBorder}
+              />
+            </div>
+
+            {/* Quick Position & Scale Controls */}
+            <div className="stage-quick-modifiers">
+              <div className="modifier-row">
+                <span className="modifier-label">Scale: {Math.round(currentDesign.scale * 100)}%</span>
+                <input
+                  type="range"
+                  min="0.5"
+                  max="1.8"
+                  step="0.05"
+                  value={currentDesign.scale}
+                  onChange={(e) => updateCurrentDesign({ scale: parseFloat(e.target.value) })}
+                  className="studio-range-slider"
                 />
               </div>
-              
-              <div className="preview-info">
-                <div className="info-row">
-                  <span>Currently Editing:</span>
-                  <strong className="editing-side">{designSide.toUpperCase()} SIDE</strong>
-                </div>
-                <div className="info-row">
-                  <span>Design Type:</span>
-                  <strong>{getCurrentDesign()?.type?.toUpperCase() || 'NONE'}</strong>
-                </div>
+              <div className="modifier-row">
+                <span className="modifier-label">Vertical Position</span>
+                <input
+                  type="range"
+                  min="-80"
+                  max="80"
+                  step="2"
+                  value={currentDesign.posY}
+                  onChange={(e) => updateCurrentDesign({ posY: parseInt(e.target.value) })}
+                  className="studio-range-slider"
+                />
+              </div>
+              <div className="modifier-row">
+                <span className="modifier-label">Horizontal Align</span>
+                <input
+                  type="range"
+                  min="-60"
+                  max="60"
+                  step="2"
+                  value={currentDesign.posX}
+                  onChange={(e) => updateCurrentDesign({ posX: parseInt(e.target.value) })}
+                  className="studio-range-slider"
+                />
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Right Column: Customization Controls & Garment Specs */}
+        <div className="studio-control-column">
+          {/* Section 1: Plain T-Shirt Color Selection */}
+          <div className="studio-panel-card">
+            <div className="panel-card-header">
+              <h3 className="panel-section-title">1. Plain T-Shirt Color</h3>
+              <span className="selected-color-label">{selectedColor.name}</span>
+            </div>
+            <div className="plain-colors-grid">
+              {availableColors.map((col) => (
+                <button
+                  type="button"
+                  key={col.id}
+                  className={`plain-color-swatch-btn ${selectedColor.id === col.id ? "active" : ""}`}
+                  onClick={() => {
+                    setSelectedColor(col);
+                    const isColLight = col.hex ? (col.hex.toLowerCase() === '#ffffff' || col.hex.toLowerCase() === '#fff' || col.name?.toLowerCase().includes('white')) : true;
+                    // Auto-adjust default text color if it matches standard black/white
+                    if (!isColLight) {
+                      setFrontDesign(prev => (prev.textColor === '#111827' ? { ...prev, textColor: '#FFFFFF' } : prev));
+                      setBackDesign(prev => (prev.textColor === '#111827' ? { ...prev, textColor: '#FFFFFF' } : prev));
+                    } else {
+                      setFrontDesign(prev => (prev.textColor === '#FFFFFF' ? { ...prev, textColor: '#111827' } : prev));
+                      setBackDesign(prev => (prev.textColor === '#FFFFFF' ? { ...prev, textColor: '#111827' } : prev));
+                    }
+                  }}
+                  title={col.name}
+                >
+                  <span
+                    className="swatch-circle"
+                    style={{
+                      backgroundColor: col.hex,
+                      border: col.hex.toLowerCase() === "#ffffff" ? "1px solid #CBD5E1" : "none",
+                    }}
+                  >
+                    {selectedColor.id === col.id && (
+                      <CheckIcon
+                        style={{
+                          fontSize: 18,
+                          color: col.hex.toLowerCase() === "#ffffff" ? "#0F172A" : "#FFFFFF",
+                        }}
+                      />
+                    )}
+                  </span>
+                  {col.front_image && (
+                    <img
+                      src={col.front_image}
+                      alt={col.name}
+                      style={{
+                        width: '28px',
+                        height: '28px',
+                        objectFit: 'contain',
+                        borderRadius: '4px',
+                        background: '#f8fafc'
+                      }}
+                    />
+                  )}
+                  <span className="swatch-name">{col.name}</span>
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Section 2: Customization Studio (Front / Back Side Tools) */}
+          <div className="studio-panel-card">
+            <div className="panel-card-header">
+              <h3 className="panel-section-title">
+                2. Customize {activeSide.toUpperCase()} Side
+              </h3>
+              <div className="studio-tabs">
+                <button
+                  type="button"
+                  className={`studio-tab-btn ${toolTab === "text" ? "active" : ""}`}
+                  onClick={() => setToolTab("text")}
+                >
+                  Typography
+                </button>
+                <button
+                  type="button"
+                  className={`studio-tab-btn ${toolTab === "upload" ? "active" : ""}`}
+                  onClick={() => setToolTab("upload")}
+                >
+                  Upload Artwork
+                </button>
+                <button
+                  type="button"
+                  className={`studio-tab-btn ${toolTab === "presets" ? "active" : ""}`}
+                  onClick={() => setToolTab("presets")}
+                >
+                  Motifs
+                </button>
               </div>
             </div>
 
-            {/* Design Controls */}
-            <div className="design-controls-panel">
-              <div className="design-type-selector">
-                <div className="type-tabs">
-                  <button
-                    className={`type-tab ${designType === 'text' ? 'active' : ''}`}
-                    onClick={() => handleDesignTypeChange('text')}
-                  >
-                    Text Design
-                  </button>
-                  <button
-                    className={`type-tab ${designType === 'image' ? 'active' : ''}`}
-                    onClick={() => handleDesignTypeChange('image')}
-                  >
-                    Upload Image
-                  </button>
-                </div>
-              </div>
-
-              {designType === 'text' ? (
-                <div className="text-design-panel">
-                  <div className="text-input-group">
-                    <label htmlFor="designText">Your Text:</label>
+            <div className="tool-body">
+              {/* Tab: Text / Typography */}
+              {toolTab === "text" && (
+                <div className="typography-editor">
+                  <div className="form-group">
+                    <label htmlFor="custom-text-input">Custom Text Message</label>
                     <input
-                      id="designText"
+                      id="custom-text-input"
                       type="text"
-                      value={designText}
-                      onChange={(e) => handleTextChange(e.target.value)}
-                      placeholder="Enter your custom text here"
-                      className="text-input"
-                      maxLength="50"
+                      className="studio-input"
+                      placeholder="e.g. YOUR BRAND OR QUOTE"
+                      value={currentDesign.text}
+                      maxLength={32}
+                      onChange={(e) => updateCurrentDesign({ text: e.target.value })}
                     />
-                    <div className="char-count">{designText.length}/50</div>
                   </div>
 
-                  <div className="text-style-controls">
-                    <div className="style-group">
-                      <label>Text Color</label>
-                      <div className="color-picker-wrapper">
-                        <input
-                          type="color"
-                          value={textColor}
-                          onChange={(e) => handleTextStyleChange('color', e.target.value)}
-                          className="color-picker"
-                        />
-                        <span className="color-value">{textColor}</span>
+                  {/* Placement Area Toggle inside Typography (Front side only) */}
+                  {activeSide === "front" && (
+                    <div className="form-group">
+                      <label>Print Placement Mode</label>
+                      <div className="tab-placement-toggle">
+                        <button
+                          type="button"
+                          className={`tab-placement-chip ${currentDesign.placementMode === "chest" ? "active" : ""}`}
+                          onClick={() => updateCurrentDesign({ placementMode: "chest" })}
+                        >
+                          Left Chest (Pocket)
+                        </button>
+                        <button
+                          type="button"
+                          className={`tab-placement-chip ${currentDesign.placementMode === "full" ? "active" : ""}`}
+                          onClick={() => updateCurrentDesign({ placementMode: "full" })}
+                        >
+                          Full Body (Torso)
+                        </button>
                       </div>
                     </div>
+                  )}
 
-                    <div className="style-group">
-                      <label>Font Size: {textSize}px</label>
-                      <input
-                        type="range"
-                        min="12"
-                        max="48"
-                        value={textSize}
-                        onChange={(e) => handleTextStyleChange('size', parseInt(e.target.value))}
-                        className="size-slider"
-                      />
-                    </div>
-
-                    <div className="style-group">
-                      <label>Font Family</label>
+                  <div className="form-group-row">
+                    <div className="form-group flex-1">
+                      <label>Font Style</label>
                       <select
-                        value={fontFamily}
-                        onChange={(e) => handleTextStyleChange('font', e.target.value)}
-                        className="font-select"
+                        className="studio-select"
+                        value={currentDesign.fontFamily}
+                        onChange={(e) => updateCurrentDesign({ fontFamily: e.target.value })}
                       >
-                        {fontOptions.map(font => (
-                          <option key={font.value} value={font.value}>
-                            {font.name}
+                        {FONTS.map((f) => (
+                          <option key={f.value} value={f.value}>
+                            {f.label}
                           </option>
                         ))}
                       </select>
                     </div>
 
-                    <div className="style-group">
-                      <label className="checkbox-label">
-                        <input
-                          type="checkbox"
-                          checked={isBold}
-                          onChange={(e) => handleTextStyleChange('bold', e.target.checked)}
-                          className="bold-checkbox"
+                    <div className="form-group">
+                      <label>Base Size</label>
+                      <select
+                        className="studio-select"
+                        value={currentDesign.fontSize || 18}
+                        onChange={(e) => updateCurrentDesign({ fontSize: parseInt(e.target.value) })}
+                        style={{ minWidth: "90px" }}
+                      >
+                        <option value={14}>Small (14px)</option>
+                        <option value={18}>Medium (18px)</option>
+                        <option value={22}>Large (22px)</option>
+                        <option value={26}>Extra Large (26px)</option>
+                      </select>
+                    </div>
+
+                    <div className="form-group font-decor-toggles">
+                      <label>Format</label>
+                      <div className="btn-group-toggle">
+                        <button
+                          type="button"
+                          className={`icon-toggle-btn ${currentDesign.isBold ? "active" : ""}`}
+                          onClick={() => updateCurrentDesign({ isBold: !currentDesign.isBold })}
+                          title="Toggle Bold"
+                        >
+                          <FormatBoldIcon fontSize="small" />
+                        </button>
+                        <button
+                          type="button"
+                          className={`icon-toggle-btn ${currentDesign.isItalic ? "active" : ""}`}
+                          onClick={() => updateCurrentDesign({ isItalic: !currentDesign.isItalic })}
+                          title="Toggle Italic"
+                        >
+                          <FormatItalicIcon fontSize="small" />
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="form-group">
+                    <label>Text Color</label>
+                    <div className="text-colors-row">
+                      {TEXT_COLORS.map((tc) => (
+                        <button
+                          type="button"
+                          key={tc.hex}
+                          className={`text-color-swatch ${currentDesign.textColor === tc.hex ? "active" : ""}`}
+                          style={{ backgroundColor: tc.hex }}
+                          onClick={() => updateCurrentDesign({ textColor: tc.hex })}
+                          title={tc.name}
                         />
-                        <span className="checkbox-custom"></span>
-                        Bold Text
-                      </label>
+                      ))}
+                      <input
+                        type="color"
+                        className="color-custom-input"
+                        title="Pick custom hex"
+                        value={currentDesign.textColor}
+                        onChange={(e) => updateCurrentDesign({ textColor: e.target.value })}
+                      />
                     </div>
                   </div>
                 </div>
-              ) : (
-                <div className="image-upload-panel">
+              )}
+
+              {/* Tab: Upload Artwork / Logo */}
+              {toolTab === "upload" && (
+                <div className="artwork-uploader">
+                  {/* Placement Area Toggle inside Upload tab (Front side only) */}
+                  {activeSide === "front" && (
+                    <div className="form-group" style={{ marginBottom: "14px" }}>
+                      <label>Artwork Placement Zone</label>
+                      <div className="tab-placement-toggle">
+                        <button
+                          type="button"
+                          className={`tab-placement-chip ${currentDesign.placementMode === "chest" ? "active" : ""}`}
+                          onClick={() => updateCurrentDesign({ placementMode: "chest" })}
+                        >
+                          Left Chest (Pocket)
+                        </button>
+                        <button
+                          type="button"
+                          className={`tab-placement-chip ${currentDesign.placementMode === "full" ? "active" : ""}`}
+                          onClick={() => updateCurrentDesign({ placementMode: "full" })}
+                        >
+                          Full Body (Torso)
+                        </button>
+                      </div>
+                    </div>
+                  )}
+
                   <input
                     type="file"
                     ref={fileInputRef}
+                    accept="image/png, image/jpeg, image/webp, image/svg+xml"
+                    style={{ display: "none" }}
                     onChange={handleImageUpload}
-                    accept="image/*"
-                    multiple
-                    className="file-input-hidden"
                   />
-                  
-                  <div className="upload-area" onClick={triggerFileUpload}>
-                    <div className="upload-icon">📁</div>
-                    <div className="upload-text">
-                      <strong>Click to upload images</strong>
-                      <p>PNG, JPG, SVG up to 5MB each</p>
-                    </div>
-                    <button className="upload-button">Browse Files</button>
-                  </div>
 
-                  {uploadedImages.length > 0 && (
-                    <div className="uploaded-images-section">
-                      <h4>Your Uploads ({uploadedImages.length})</h4>
-                      <div className="image-grid">
-                        {uploadedImages.map(img => (
-                          <div
-                            key={img.id}
-                            className={`image-thumbnail ${activeImage === img.url ? 'active' : ''}`}
-                            onClick={() => selectUploadedImage(img.url)}
-                          >
-                            <img src={img.url} alt={img.name} className="thumbnail-image" />
-                            <div className="thumbnail-info">
-                              <div className="image-name">{img.name}</div>
-                              <div className="image-size">{img.size}</div>
-                            </div>
-                          </div>
-                        ))}
+                  {currentDesign.imageUrl ? (
+                    <div className="active-artwork-display">
+                      <div className="artwork-preview-thumb">
+                        <img src={currentDesign.imageUrl} alt="Custom Artwork" />
                       </div>
+                      <div className="artwork-meta">
+                        <span className="artwork-title">Custom Graphic Attached</span>
+                        <p className="artwork-desc">
+                          Graphic is applied directly to the {activeSide} printable zone.
+                        </p>
+                        <div className="artwork-actions">
+                          <button
+                            type="button"
+                            className="btn-outline-small"
+                            onClick={() => fileInputRef.current.click()}
+                          >
+                            Replace
+                          </button>
+                          <button
+                            type="button"
+                            className="btn-danger-small"
+                            onClick={removeCurrentImage}
+                          >
+                            <DeleteOutlineIcon fontSize="small" />
+                            Remove
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  ) : (
+                    <div
+                      className="upload-dropzone"
+                      onClick={() => fileInputRef.current.click()}
+                    >
+                      <CloudUploadIcon className="upload-icon" />
+                      <p className="upload-title">Click to browse your design / logo</p>
+                      <span className="upload-hint">Supports PNG, JPG, or SVG with transparent background</span>
                     </div>
                   )}
                 </div>
               )}
 
-              <div className="design-actions">
-                <button className="btn-clear" onClick={clearCurrentDesign}>
-                  Clear {designSide} Design
-                </button>
-                <button className="btn-clear-all" onClick={clearAllDesigns}>
-                  Clear All Designs
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Right Column - Customization Options */}
-        <div className="options-column">
-          {/* Product Selection */}
-          <div className="options-section">
-            <h3 className="section-title">SELECT PRODUCT TYPE</h3>
-            <div className="product-selection-grid">
-              {productTypes.map(product => {
-                const ProductIcon = product.component;
-                return (
-                  <div
-                    key={product.id}
-                    className={`product-selection-card ${selectedProduct === product.id ? 'selected' : ''}`}
-                    onClick={() => handleProductChange(product.id)}
-                  >
-                    <div className="product-icon-container">
-                      <ProductIcon color="#FFFFFF" design={null} side="front" />
-                    </div>
-                    <div className="product-info">
-                      <h4 className="product-name">{product.name}</h4>
-                      <div className="product-price">${product.basePrice}</div>
-                      <div className="product-specs">
-                        <span className="spec">{product.sleeve}</span>
-                        <span className="spec">{product.fabric}</span>
-                        <span className="spec">{product.fit}</span>
+              {/* Tab: Motifs & Gallery Presets */}
+              {toolTab === "presets" && (
+                <div className="presets-selector">
+                  <div className="presets-grid">
+                    {PRESET_GRAPHICS.map((preset, idx) => (
+                      <div
+                        key={idx}
+                        className="preset-item-card"
+                        onClick={() => updateCurrentDesign({ imageUrl: preset.url })}
+                      >
+                        <img src={preset.url} alt={preset.name} />
+                        <span>{preset.name}</span>
                       </div>
-                    </div>
+                    ))}
                   </div>
-                );
-              })}
+                </div>
+              )}
             </div>
           </div>
 
-          {/* Color Selection */}
-          <div className="options-section">
-            <h3 className="section-title">PRODUCT COLOR</h3>
-            <div className="color-selection-grid">
-              {colorOptions.map(color => (
-                <div
-                  key={color.value}
-                  className={`color-option ${selectedColor === color.value ? 'selected' : ''}`}
-                  onClick={() => handleColorChange(color.value)}
-                  title={color.name}
+          {/* Section 3: Sizing & Quantity */}
+          <div className="studio-panel-card">
+            <div className="panel-card-header">
+              <h3 className="panel-section-title">3. Size & Fit</h3>
+              <span className="fabric-spec">100% Ring-Spun Combed Cotton (220 GSM)</span>
+            </div>
+
+            <div className="sizes-selector-grid">
+              {SIZES.map((sz) => (
+                <button
+                  type="button"
+                  key={sz.label}
+                  className={`size-btn ${selectedSize === sz.label ? "active" : ""}`}
+                  onClick={() => setSelectedSize(sz.label)}
                 >
-                  <div
-                    className="color-swatch"
-                    style={{ backgroundColor: color.value }}
-                  />
-                  <span className="color-name">{color.name}</span>
-                </div>
+                  <span className="size-label">{sz.label}</span>
+                  <span className="size-chest">{sz.chest}</span>
+                </button>
               ))}
             </div>
-            <div className="current-selection-display">
-              Selected: <span className="selected-color-name">{colorOptions.find(c => c.value === selectedColor)?.name}</span>
-            </div>
-          </div>
 
-          {/* Size Selection */}
-          <div className="options-section">
-            <h3 className="section-title">SELECT SIZE</h3>
-            <div className="size-selection-grid">
-              {sizeOptions.map(size => (
-                <div
-                  key={size.label}
-                  className={`size-option ${selectedSize === size.label ? 'selected' : ''}`}
-                  onClick={() => handleSizeChange(size.label)}
-                >
-                  <div className="size-label">{size.label}</div>
-                  <div className="size-measurement">{size.chest}</div>
-                </div>
-              ))}
-            </div>
-            <div className="size-guide-link">
-              <a href="#size-guide">View Size Guide →</a>
-            </div>
-          </div>
-
-          {/* Design Layers */}
-          <div className="options-section">
-            <h3 className="section-title">DESIGN LAYERS</h3>
-            <div className="layers-container">
-              <div className="layer-item">
-                <div className="layer-header">
-                  <span className="layer-title">Front Design</span>
-                  <button 
-                    className="layer-edit-btn"
-                    onClick={() => setDesignSide('front')}
+            <div className="quantity-and-summary-row">
+              <div className="quantity-selector">
+                <span className="qty-label">Quantity:</span>
+                <div className="qty-stepper">
+                  <button
+                    type="button"
+                    onClick={() => setQuantity((q) => Math.max(1, q - 1))}
                   >
-                    {frontDesign ? 'Edit' : 'Add Design'}
+                    -
+                  </button>
+                  <span>{quantity}</span>
+                  <button type="button" onClick={() => setQuantity((q) => q + 1)}>
+                    +
                   </button>
                 </div>
-                <div className="layer-content">
-                  {frontDesign ? (
-                    <div className="layer-preview-small">
-                      {frontDesign.type === 'text' ? (
-                        <div className="text-preview" style={{
-                          color: frontDesign.color,
-                          fontSize: '14px',
-                          fontFamily: frontDesign.font,
-                          fontWeight: frontDesign.bold ? 'bold' : 'normal'
-                        }}>
-                          {frontDesign.content}
-                        </div>
-                      ) : (
-                        <img src={frontDesign.content} alt="Front design" className="image-preview" />
-                      )}
-                    </div>
-                  ) : (
-                    <div className="layer-empty">No design added</div>
-                  )}
-                </div>
               </div>
 
-              <div className="layer-item">
-                <div className="layer-header">
-                  <span className="layer-title">Back Design</span>
-                  <button 
-                    className="layer-edit-btn"
-                    onClick={() => setDesignSide('back')}
-                  >
-                    {backDesign ? 'Edit' : 'Add Design'}
-                  </button>
-                </div>
-                <div className="layer-content">
-                  {backDesign ? (
-                    <div className="layer-preview-small">
-                      {backDesign.type === 'text' ? (
-                        <div className="text-preview" style={{
-                          color: backDesign.color,
-                          fontSize: '14px',
-                          fontFamily: backDesign.font,
-                          fontWeight: backDesign.bold ? 'bold' : 'normal'
-                        }}>
-                          {backDesign.content}
-                        </div>
-                      ) : (
-                        <img src={backDesign.content} alt="Back design" className="image-preview" />
-                      )}
-                    </div>
-                  ) : (
-                    <div className="layer-empty">No design added</div>
-                  )}
-                </div>
+              <div className="pricing-breakdown-compact">
+                <span>Base ₹{BASE_PRICE}</span>
+                {customPrintsCount > 0 && (
+                  <span>+ {customPrintsCount} Custom Side{customPrintsCount > 1 ? "s" : ""} (₹{customPrintsCount * PRINT_FEE})</span>
+                )}
               </div>
             </div>
           </div>
 
-          {/* Price Summary */}
-          <div className="options-section price-summary">
-            <h3 className="section-title">PRICE SUMMARY</h3>
-            <div className="price-details">
-              <div className="price-row">
-                <span>Base Price:</span>
-                <span>${getCurrentProduct().basePrice}.00</span>
-              </div>
-              <div className="price-row">
-                <span>Size ({selectedSize}):</span>
-                <span>
-                  ${sizeOptions.find(s => s.label === selectedSize) ? 
-                    ['XS','S','M','L','XL','XXL'].indexOf(selectedSize) > 2 ? 
-                    (['XS','S','M','L','XL','XXL'].indexOf(selectedSize) - 2) * 2 : 0 
-                    : 0}.00
-                </span>
-              </div>
-              <div className="price-row">
-                <span>Custom Design:</span>
-                <span>
-                  ${((frontDesign || backDesign) && designType === 'image') ? '8.00' : 
-                    ((frontDesign || backDesign) && designType === 'text') ? '3.00' : '0.00'}
-                </span>
-              </div>
-              <div className="price-total">
-                <span>TOTAL:</span>
-                <span className="total-amount">${totalPrice}</span>
-              </div>
-            </div>
-          </div>
-
-          {/* Action Buttons */}
-          <div className="action-buttons-section">
-            <button className="btn-add-to-cart" onClick={addToCart}>
-              <span className="btn-icon">🛒</span>
-              Add to Cart - ${totalPrice}
+          {/* Section 4: Checkout Actions */}
+          <div className="studio-action-box">
+            <button
+              type="button"
+              className="studio-btn-primary"
+              onClick={handleAddToCart}
+            >
+              <ShoppingBagOutlinedIcon />
+              Add To Bag • ₹{totalPrice.toLocaleString()}
+            </button>
+            <button
+              type="button"
+              className="studio-btn-secondary"
+              onClick={handleBuyNow}
+            >
+              <FlashOnIcon />
+              Buy Now
             </button>
           </div>
         </div>
       </div>
+
+      {/* Add To Cart Feedback Modal */}
+      <AddToCartModal
+        isOpen={showCartModal}
+        onClose={() => setShowCartModal(false)}
+        productData={cartModalData}
+      />
+
+      <UserFooter />
     </div>
   );
 };
 
-export default TshirtCustomizer;
+export default Customize;

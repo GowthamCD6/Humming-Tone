@@ -119,11 +119,13 @@ app.use(morgan('dev'));
 app.use(cookieParser());
 app.use(
   bodyParser.json({
+    limit: "50mb",
     verify: (req, res, buf) => {
       req.rawBody = buf;
     }
   })
 );
+app.use(bodyParser.urlencoded({ limit: "50mb", extended: true }));
 
 app.use('/uploads', express.static(path.join(__dirname, 'uploads'), {
   setHeaders: (res, path) => {

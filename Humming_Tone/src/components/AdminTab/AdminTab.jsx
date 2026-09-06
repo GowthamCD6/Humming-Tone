@@ -16,6 +16,7 @@ import CloseIcon from '@mui/icons-material/Close'
 import FileDownloadIcon from '@mui/icons-material/FileDownload'
 import NotificationsActiveIcon from '@mui/icons-material/NotificationsActive'
 import StorefrontIcon from '@mui/icons-material/Storefront'
+import CheckroomIcon from '@mui/icons-material/Checkroom'
 import { Outlet, useLocation, useNavigate } from 'react-router-dom'
 import { SITE_ASSETS } from '../../utils/siteAssets'
 import './AdminTab.css'
@@ -51,6 +52,7 @@ const menuSections = [
     items: [
       { id: 'manage-products', path: 'manage-products', label: 'Manage Products', Icon: ShoppingBagIcon },
       { id: 'add-product', path: 'add-product', label: 'Add Product', Icon: AddCircleOutlineIcon },
+      { id: 'customize-tshirts', path: 'customize-tshirts', label: 'Customizer T-Shirts', Icon: CheckroomIcon },
       { id: 'inventory', path: 'inventory', label: 'Inventory Management', Icon: Inventory2Icon },
       { id: 'manage-orders', path: 'manage-orders', label: 'Manage Orders', Icon: ShoppingCartIcon },
       { id: 'manage-reviews', path: 'manage-reviews', label: 'Product Reviews', Icon: RateReviewIcon },
