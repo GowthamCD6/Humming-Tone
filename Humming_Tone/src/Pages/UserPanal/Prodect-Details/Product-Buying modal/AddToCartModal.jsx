@@ -47,8 +47,18 @@ const AddToCartModal = ({ isOpen, onClose, productData }) => {
                 <p className="product-modal-meta-row">
                   Quantity: <span>{productData.quantity}</span>
                 </p>
+                {productData.customDetails?.hasCustomFront && (
+                  <p className="product-modal-meta-row">
+                    Front Print: <span>+₹{productData.customDetails.frontTotal}</span>
+                  </p>
+                )}
+                {productData.customDetails?.hasCustomBack && (
+                  <p className="product-modal-meta-row">
+                    Back Print: <span>+₹{productData.customDetails.backTotal}</span>
+                  </p>
+                )}
                 <p className="product-modal-meta-row">
-                  Price: <span>₹{Number(productData.price).toFixed(2)}</span>
+                  Unit Price: <span>₹{Number(productData.price).toFixed(2)}</span>
                 </p>
               </div>
             </div>

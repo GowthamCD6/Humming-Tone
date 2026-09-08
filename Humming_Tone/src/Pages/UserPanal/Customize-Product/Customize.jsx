@@ -231,10 +231,17 @@ const PlainTShirt2D = ({
       className="plain-tshirt-svg-container"
       style={{
         position: "relative",
-        width: "100%",
-        maxWidth: "500px",
+        width: "auto",
+        height: "100%",
+        maxHeight: "100%",
+        maxWidth: "100%",
         margin: "0 auto",
         aspectRatio: "500 / 580",
+        display: "flex",
+        justifyContent: "center",
+        alignItems: "center",
+        overflow: "hidden",
+        borderRadius: "8px",
       }}
     >
       {/* Real static garment image background if supplied by admin */}
@@ -242,15 +249,14 @@ const PlainTShirt2D = ({
         <div
           style={{
             position: "absolute",
-            top: "0",
-            left: "0",
-            right: "0",
-            bottom: "0",
+            inset: 0,
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
             zIndex: 1,
             pointerEvents: "none",
+            overflow: "hidden",
+            borderRadius: "8px",
           }}
         >
           <img
@@ -260,8 +266,9 @@ const PlainTShirt2D = ({
             style={{
               width: "100%",
               height: "100%",
-              objectFit: "contain",
-              filter: "drop-shadow(0 14px 28px rgba(0,0,0,0.12))",
+              objectFit: "cover",
+              filter: "drop-shadow(0 8px 18px rgba(0,0,0,0.08))",
+              borderRadius: "8px",
             }}
           />
         </div>
@@ -383,25 +390,36 @@ const PlainTShirt2D = ({
               width={printArea.width}
               height={printArea.height}
               rx={printArea.rx}
-              fill="rgba(99, 102, 241, 0.04)"
-              stroke="#6366F1"
+              fill="rgba(79, 70, 229, 0.04)"
+              stroke="#4F46E5"
               strokeWidth="1.5"
               strokeDasharray="5 4"
-              opacity="0.8"
+              opacity="0.85"
               style={{ pointerEvents: "none" }}
             />
-            <text
-              x={printArea.x + 6}
-              y={printArea.y + 13}
-              fill="#6366F1"
-              fontSize="8"
-              fontWeight="700"
-              letterSpacing="0.6"
-              opacity="0.9"
-              style={{ textTransform: "uppercase", pointerEvents: "none" }}
-            >
-              {printArea.label}
-            </text>
+            <g transform={`translate(${printArea.x + 6}, ${printArea.y + 6})`}>
+              <rect
+                x="0"
+                y="0"
+                width={printArea.label.length * 6 + 10}
+                height="14"
+                rx="3"
+                fill="#4F46E5"
+                opacity="0.9"
+              />
+              <text
+                x={(printArea.label.length * 6 + 10) / 2}
+                y="10"
+                textAnchor="middle"
+                fill="#FFFFFF"
+                fontSize="7.5"
+                fontWeight="700"
+                letterSpacing="0.8"
+                style={{ textTransform: "uppercase", pointerEvents: "none" }}
+              >
+                {printArea.label}
+              </text>
+            </g>
           </g>
         )}
 
@@ -511,23 +529,6 @@ const PlainTShirt2D = ({
               )}
             </g>
           )}
-        </g>
-
-        {/* Side Indicator Badge */}
-        <g transform="translate(195, 545)">
-          <rect x="0" y="0" width="110" height="24" rx="12" fill="#0F172A" opacity="0.85" />
-          <text
-            x="55"
-            y="16"
-            textAnchor="middle"
-            fill="#FFFFFF"
-            fontSize="10"
-            fontWeight="600"
-            letterSpacing="1.5"
-            style={{ textTransform: "uppercase" }}
-          >
-            {side === "front" ? "FRONT VIEW" : "BACK VIEW"}
-          </text>
         </g>
       </svg>
     </div>
@@ -861,14 +862,17 @@ const Customize = () => {
   const frontDesignSurcharge = frontDesign.imageUrl ? Number(frontDesign.designPrice || 0) : 0;
   const backDesignSurcharge = backDesign.imageUrl ? Number(backDesign.designPrice || 0) : 0;
 
+  const frontTotal = frontFee + frontDesignSurcharge;
+  const backTotal = backFee + backDesignSurcharge;
+  const totalPrintFees = frontFee + backFee;
+  const totalArtworkSurcharges = frontDesignSurcharge + backDesignSurcharge;
+  const totalCustomizationPrice = frontTotal + backTotal;
+
   const unitPrice =
     baseGarmentPrice +
     materialSurcharge +
     sizeSurcharge +
-    frontFee +
-    backFee +
-    frontDesignSurcharge +
-    backDesignSurcharge;
+    totalCustomizationPrice;
   const totalPrice = unitPrice * quantity;
 
   // Handle Image Upload
@@ -952,9 +956,22 @@ const Customize = () => {
         color: selectedColor,
         material: selectedMaterial,
         size: selectedSize,
+        baseGarmentPrice,
+        materialSurcharge,
+        sizeSurcharge,
         front: frontDesign,
+        frontFee,
+        frontDesignSurcharge,
+        frontTotal,
+        hasCustomFront,
         back: backDesign,
+        backFee,
+        backDesignSurcharge,
+        backTotal,
+        hasCustomBack,
         totalCustomSides: customSidesCount,
+        unitPrice,
+        totalPrice,
       },
     };
   };
@@ -980,6 +997,7 @@ const Customize = () => {
       quantity: quantity,
       price: unitPrice,
       image: cartItem.image,
+      customDetails: cartItem.customDetails,
     });
     setShowCartModal(true);
   };
@@ -1056,7 +1074,7 @@ const Customize = () => {
                   onClick={() => setActiveSide("front")}
                 >
                   <span className="pill-dot"></span>
-                  Front View
+                  <span className="pill-name">Front View</span>
                   {hasCustomFront && <span className="side-indicator-dot" title="Custom front design present" />}
                 </button>
                 <button
@@ -1065,9 +1083,8 @@ const Customize = () => {
                   onClick={() => setActiveSide("back")}
                 >
                   <span className="pill-dot"></span>
-                  Back View
+                  <span className="pill-name">Back View</span>
                   {hasCustomBack && <span className="side-indicator-dot" title="Custom back design present" />}
-                  {activeSide === "back" && !hasCustomBack && <span className="side-blank-badge">Blank</span>}
                 </button>
               </div>
 
@@ -1157,133 +1174,149 @@ const Customize = () => {
             </div>
 
 
-            {/* 2D T-Shirt Visualizer with Clean Loading Skeleton */}
-            <div className="tshirt-visualizer-box">
-              {isLoading ? (
-                <div className="tshirt-skeleton-box">
-                  <div className="skeleton-shimmer"></div>
-                  <div className="skeleton-loader-circle"></div>
-                  <p className="skeleton-text">Loading garment studio...</p>
-                </div>
-              ) : (
-                <PlainTShirt2D
-                  color={selectedColor?.hex || "#FFFFFF"}
-                  side={activeSide}
-                  tshirtImage={
-                    activeSide === "front"
-                      ? selectedColor?.front_image
-                      : selectedColor?.back_image
-                  }
-                  design={currentDesign}
-                  printableAreaVisible={showPrintBorder}
-                  onUpdateDesign={updateCurrentDesign}
-                  isDraggable={true}
-                />
-              )}
-            </div>
-
-            {/* Precision Position, Scale & Alignment Toolbar */}
-            <div className="stage-quick-modifiers">
-              {/* Sliders */}
-              <div className="modifier-row">
-                <span className="modifier-label">Scale: {Math.round((currentDesign.scale || 1) * 100)}%</span>
-                <input
-                  type="range"
-                  min="0.5"
-                  max="1.8"
-                  step="0.05"
-                  value={currentDesign.scale || 1}
-                  onChange={(e) => updateCurrentDesign({ scale: parseFloat(e.target.value) })}
-                  className="studio-range-slider"
-                />
-              </div>
-              <div className="modifier-row">
-                <span className="modifier-label">Rotation: {currentDesign.rotation || 0}°</span>
-                <input
-                  type="range"
-                  min="-180"
-                  max="180"
-                  step="5"
-                  value={currentDesign.rotation || 0}
-                  onChange={(e) => updateCurrentDesign({ rotation: parseInt(e.target.value) })}
-                  className="studio-range-slider"
-                />
+            {/* Main Stage Canvas Row: Image on Left + Control Dock on Right */}
+            <div className="stage-canvas-workspace-row">
+              {/* Left: 2D T-Shirt Visualizer */}
+              <div className="tshirt-visualizer-box">
+                {isLoading ? (
+                  <div className="tshirt-skeleton-box">
+                    <div className="skeleton-shimmer"></div>
+                    <div className="skeleton-loader-circle"></div>
+                    <p className="skeleton-text">Loading garment studio...</p>
+                  </div>
+                ) : (
+                  <PlainTShirt2D
+                    color={selectedColor?.hex || "#FFFFFF"}
+                    side={activeSide}
+                    tshirtImage={
+                      activeSide === "front"
+                        ? selectedColor?.front_image
+                        : selectedColor?.back_image
+                    }
+                    design={currentDesign}
+                    printableAreaVisible={showPrintBorder}
+                    onUpdateDesign={updateCurrentDesign}
+                    isDraggable={true}
+                  />
+                )}
               </div>
 
-              {/* Quick Action Alignment Buttons & Nudge Controls */}
-              <div className="stage-alignment-bar">
-                <div className="align-buttons-group">
-                  <button
-                    type="button"
-                    className="align-tool-btn"
-                    title="Center Horizontally"
-                    onClick={handleCenterHorizontal}
-                  >
-                    Center X
-                  </button>
-                  <button
-                    type="button"
-                    className="align-tool-btn"
-                    title="Center Vertically"
-                    onClick={handleCenterVertical}
-                  >
-                    Center Y
-                  </button>
-                  <button
-                    type="button"
-                    className={`align-tool-btn ${currentDesign.flipH ? "active" : ""}`}
-                    title="Flip Horizontally"
-                    onClick={handleToggleFlipH}
-                  >
-                    <FlipHorizontal size={14} />
-                    Flip
-                  </button>
-                </div>
-
-                {/* Nudge D-Pad */}
-                <div className="nudge-dpad">
-                  <button
-                    type="button"
-                    className="nudge-btn"
-                    title="Nudge Up"
-                    onClick={() => handleNudge(0, -4)}
-                  >
-                    <ChevronUp size={14} />
-                  </button>
-                  <div className="nudge-mid-row">
+              {/* Right: Quick Tools Dock (Center X, Y, Flip & Motion Nudge Pad) */}
+              <div className="stage-side-tools-dock">
+                <div className="stage-side-dock-section">
+                  <span className="stage-side-dock-label">Align & Flip</span>
+                  <div className="dock-actions-stack">
                     <button
                       type="button"
-                      className="nudge-btn"
-                      title="Nudge Left"
-                      onClick={() => handleNudge(-4, 0)}
+                      className="dock-tool-btn"
+                      title="Center Horizontally"
+                      onClick={handleCenterHorizontal}
                     >
-                      <ChevronLeft size={14} />
+                      Center X
                     </button>
                     <button
                       type="button"
-                      className="nudge-btn center"
-                      title="Reset Position"
-                      onClick={() => updateCurrentDesign({ posX: 0, posY: 0, textPosX: 0, textPosY: 0 })}
+                      className="dock-tool-btn"
+                      title="Center Vertically"
+                      onClick={handleCenterVertical}
                     >
-                      •
+                      Center Y
                     </button>
                     <button
                       type="button"
-                      className="nudge-btn"
-                      title="Nudge Right"
-                      onClick={() => handleNudge(4, 0)}
+                      className={`dock-tool-btn ${currentDesign.flipH ? "active" : ""}`}
+                      title="Flip Horizontally"
+                      onClick={handleToggleFlipH}
                     >
-                      <ChevronRight size={14} />
+                      <FlipHorizontal size={13} />
+                      Flip
                     </button>
                   </div>
-                  <button
-                    type="button"
-                    className="nudge-btn"
-                    title="Nudge Down"
-                    onClick={() => handleNudge(0, 4)}
-                  >
-                    <ChevronDown size={14} />
-                  </button>
+                </div>
+
+                <div className="stage-side-dock-section">
+                  <span className="stage-side-dock-label">Nudge</span>
+                  <div className="dock-dpad">
+                    <button
+                      type="button"
+                      className="dock-dpad-btn up"
+                      title="Nudge Up"
+                      onClick={() => handleNudge(0, -4)}
+                    >
+                      <ChevronUp size={14} />
+                    </button>
+                    <div className="dock-dpad-mid">
+                      <button
+                        type="button"
+                        className="dock-dpad-btn left"
+                        title="Nudge Left"
+                        onClick={() => handleNudge(-4, 0)}
+                      >
+                        <ChevronLeft size={14} />
+                      </button>
+                      <button
+                        type="button"
+                        className="dock-dpad-btn center"
+                        title="Reset Position to Center"
+                        onClick={() => updateCurrentDesign({ posX: 0, posY: 0, textPosX: 0, textPosY: 0 })}
+                      >
+                        •
+                      </button>
+                      <button
+                        type="button"
+                        className="dock-dpad-btn right"
+                        title="Nudge Right"
+                        onClick={() => handleNudge(4, 0)}
+                      >
+                        <ChevronRight size={14} />
+                      </button>
+                    </div>
+                    <button
+                      type="button"
+                      className="dock-dpad-btn down"
+                      title="Nudge Down"
+                      onClick={() => handleNudge(0, 4)}
+                    >
+                      <ChevronDown size={14} />
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Precision Position, Scale & Rotation Sliders */}
+            <div className="stage-quick-modifiers">
+              {/* Dual Sliders in One Compact Row */}
+              <div className="modifiers-grid-row">
+                <div className="modifier-col">
+                  <div className="modifier-col-header">
+                    <span className="modifier-label">Scale</span>
+                    <span className="modifier-val-badge">{Math.round((currentDesign.scale || 1) * 100)}%</span>
+                  </div>
+                  <input
+                    type="range"
+                    min="0.5"
+                    max="1.8"
+                    step="0.05"
+                    value={currentDesign.scale || 1}
+                    onChange={(e) => updateCurrentDesign({ scale: parseFloat(e.target.value) })}
+                    className="studio-range-slider"
+                  />
+                </div>
+                <div className="modifier-col">
+                  <div className="modifier-col-header">
+                    <span className="modifier-label">Rotation</span>
+                    <span className="modifier-val-badge">{currentDesign.rotation || 0}°</span>
+                  </div>
+                  <input
+                    type="range"
+                    min="-180"
+                    max="180"
+                    step="5"
+                    value={currentDesign.rotation || 0}
+                    onChange={(e) => updateCurrentDesign({ rotation: parseInt(e.target.value) })}
+                    className="studio-range-slider"
+                  />
                 </div>
               </div>
             </div>
@@ -1398,9 +1431,32 @@ const Customize = () => {
           {/* Section 3: Customization Studio (Front / Back Tools) */}
           <div className="studio-panel-card">
             <div className="panel-card-header">
-              <h3 className="panel-section-title">
-                3. Customize {activeSide.toUpperCase()} Side
-              </h3>
+              <div className="section-title-with-pill">
+                <h3 className="panel-section-title">
+                  3. Customize {activeSide.toUpperCase()} Side
+                </h3>
+                <div className="side-current-cost-pill">
+                  {activeSide === "front" ? (
+                    hasCustomFront ? (
+                      <span>
+                        Front Total: <strong>+₹{frontTotal}</strong>
+                        <small> (Print: ₹{frontFee}{frontDesignSurcharge > 0 ? ` + Motif: ₹${frontDesignSurcharge}` : ""})</small>
+                      </span>
+                    ) : (
+                      <span className="plain-status">Front: Plain Garment (₹0)</span>
+                    )
+                  ) : (
+                    hasCustomBack ? (
+                      <span>
+                        Back Total: <strong>+₹{backTotal}</strong>
+                        <small> (Print: ₹{backFee}{backDesignSurcharge > 0 ? ` + Motif: ₹${backDesignSurcharge}` : ""})</small>
+                      </span>
+                    ) : (
+                      <span className="plain-status">Back: Blank Canvas (₹0)</span>
+                    )
+                  )}
+                </div>
+              </div>
               <div className="studio-tabs">
                 <button
                   type="button"
@@ -1585,11 +1641,16 @@ const Customize = () => {
                         <img src={currentDesign.imageUrl} alt="Active Motif" />
                         <div>
                           <strong>{currentDesign.designName || "Selected Motif"}</strong>
-                          <span className="motif-surcharge-text">
-                            {currentDesign.designPrice > 0
-                              ? `+₹${currentDesign.designPrice} Artwork Surcharge`
-                              : "Included Free"}
-                          </span>
+                          <div className="motif-calc-breakdown-row">
+                            <span className="motif-surcharge-text">
+                              {currentDesign.designPrice > 0
+                                ? `+₹${currentDesign.designPrice} Artwork Surcharge`
+                                : "Free Artwork"}
+                            </span>
+                            <span className="motif-calc-total-pill">
+                              Side Print Addition: +₹{PRINT_FEE + (Number(currentDesign.designPrice) || 0)} (Print: ₹{PRINT_FEE}{currentDesign.designPrice > 0 ? ` + Artwork: ₹${currentDesign.designPrice}` : ""})
+                            </span>
+                          </div>
                         </div>
                       </div>
                       <button
@@ -1763,7 +1824,7 @@ const Customize = () => {
               })}
             </div>
 
-            <div className="quantity-and-summary-row">
+            <div className="quantity-row-simple">
               <div className="quantity-selector">
                 <span className="qty-label">Quantity:</span>
                 <div className="qty-stepper">
@@ -1779,29 +1840,156 @@ const Customize = () => {
                   </button>
                 </div>
               </div>
-
-              {/* Itemized Pricing Breakdown */}
-              <div className="pricing-breakdown-compact">
-                <span>Garment: ₹{baseGarmentPrice}</span>
-                {materialSurcharge > 0 && (
-                  <span>+ Fabric (₹{materialSurcharge})</span>
-                )}
-                {sizeSurcharge > 0 && (
-                  <span>+ Size Surcharge (₹{sizeSurcharge})</span>
-                )}
-                {customSidesCount > 0 && (
-                  <span>
-                    + {customSidesCount} Side{customSidesCount > 1 ? "s" : ""} Print (₹{customSidesCount * PRINT_FEE})
-                  </span>
-                )}
-                {frontDesignSurcharge + backDesignSurcharge > 0 && (
-                  <span>+ Artwork Surcharge (₹{frontDesignSurcharge + backDesignSurcharge})</span>
-                )}
+              <div className="qty-unit-price-preview">
+                <span>Unit Price: <strong>₹{unitPrice}</strong></span>
               </div>
             </div>
           </div>
 
-          {/* Section 5: Checkout Actions */}
+          {/* Section 5: Real-Time Price Calculation & Order Breakdown */}
+          <div className="studio-panel-card calculation-summary-card">
+            <div className="panel-card-header">
+              <div className="calc-header-title-wrap">
+                <Tag size={16} className="calc-header-icon" />
+                <h3 className="panel-section-title">5. Price Calculation & Breakdown</h3>
+              </div>
+              <span className="calc-badge-live">Live Calculation</span>
+            </div>
+
+            <div className="calculation-breakdown-table">
+              {/* 1. Base Garment */}
+              <div className="calc-row">
+                <div className="calc-row-left">
+                  <span className="calc-item-title">1. Base Garment</span>
+                  <span className="calc-item-desc">{selectedColor?.name || "Plain T-Shirt"}</span>
+                </div>
+                <div className="calc-row-price">₹{baseGarmentPrice}</div>
+              </div>
+
+              {/* 2. Fabric Surcharge */}
+              <div className="calc-row">
+                <div className="calc-row-left">
+                  <span className="calc-item-title">2. Fabric Material</span>
+                  <span className="calc-item-desc">{selectedMaterial?.name || "Standard Cotton"}</span>
+                </div>
+                <div className="calc-row-price">
+                  {materialSurcharge > 0 ? (
+                    <span className="calc-added">+₹{materialSurcharge}</span>
+                  ) : (
+                    <span className="calc-free">Included (₹0)</span>
+                  )}
+                </div>
+              </div>
+
+              {/* 3. Size Surcharge */}
+              <div className="calc-row">
+                <div className="calc-row-left">
+                  <span className="calc-item-title">3. Garment Size</span>
+                  <span className="calc-item-desc">Size {selectedSize}</span>
+                </div>
+                <div className="calc-row-price">
+                  {sizeSurcharge > 0 ? (
+                    <span className="calc-added">+₹{sizeSurcharge}</span>
+                  ) : (
+                    <span className="calc-free">Standard (₹0)</span>
+                  )}
+                </div>
+              </div>
+
+              {/* 4. Front Print Customization */}
+              <div className={`calc-row ${hasCustomFront ? "calc-customized-row" : ""}`}>
+                <div className="calc-row-left">
+                  <div className="calc-side-title-row">
+                    <span className="calc-item-title">4. Front Print Customization</span>
+                    {hasCustomFront ? (
+                      <span className="calc-side-status-tag active">Customized</span>
+                    ) : (
+                      <span className="calc-side-status-tag plain">Plain Garment</span>
+                    )}
+                  </div>
+                  {hasCustomFront ? (
+                    <span className="calc-item-desc">
+                      {frontDesign.text ? `Text: "${frontDesign.text}"` : ""}
+                      {frontDesign.text && frontDesign.imageUrl ? " • " : ""}
+                      {frontDesign.imageUrl ? `Artwork: ${frontDesign.designName || "Graphic"}` : ""}
+                      {" "}(Print Fee: ₹{frontFee}{frontDesignSurcharge > 0 ? ` + Motif Surcharge: ₹${frontDesignSurcharge}` : ""})
+                    </span>
+                  ) : (
+                    <span className="calc-item-desc">No print on front side</span>
+                  )}
+                </div>
+                <div className="calc-row-price">
+                  {hasCustomFront ? (
+                    <span className="calc-added-bold">+₹{frontTotal}</span>
+                  ) : (
+                    <span className="calc-free">₹0</span>
+                  )}
+                </div>
+              </div>
+
+              {/* 5. Back Print Customization */}
+              <div className={`calc-row ${hasCustomBack ? "calc-customized-row" : ""}`}>
+                <div className="calc-row-left">
+                  <div className="calc-side-title-row">
+                    <span className="calc-item-title">5. Back Print Customization</span>
+                    {hasCustomBack ? (
+                      <span className="calc-side-status-tag active">Customized</span>
+                    ) : (
+                      <span className="calc-side-status-tag plain">Blank Canvas</span>
+                    )}
+                  </div>
+                  {hasCustomBack ? (
+                    <span className="calc-item-desc">
+                      {backDesign.text ? `Text: "${backDesign.text}"` : ""}
+                      {backDesign.text && backDesign.imageUrl ? " • " : ""}
+                      {backDesign.imageUrl ? `Artwork: ${backDesign.designName || "Graphic"}` : ""}
+                      {" "}(Print Fee: ₹{backFee}{backDesignSurcharge > 0 ? ` + Motif Surcharge: ₹${backDesignSurcharge}` : ""})
+                    </span>
+                  ) : (
+                    <span className="calc-item-desc">No print on back side</span>
+                  )}
+                </div>
+                <div className="calc-row-price">
+                  {hasCustomBack ? (
+                    <span className="calc-added-bold">+₹{backTotal}</span>
+                  ) : (
+                    <span className="calc-free">₹0</span>
+                  )}
+                </div>
+              </div>
+
+              {/* Divider */}
+              <div className="calc-divider" />
+
+              {/* Unit Price Subtotal */}
+              <div className="calc-row calc-subtotal-row">
+                <div className="calc-row-left">
+                  <span className="calc-subtotal-label">Unit Price per Piece</span>
+                </div>
+                <div className="calc-subtotal-price">₹{unitPrice}</div>
+              </div>
+
+              {/* Quantity Stepper */}
+              <div className="calc-row calc-quantity-row">
+                <div className="calc-row-left">
+                  <span className="calc-item-title">Quantity</span>
+                  <span className="calc-item-desc">{quantity} piece{quantity > 1 ? "s" : ""} selected</span>
+                </div>
+                <div className="calc-quantity-summary">× {quantity}</div>
+              </div>
+
+              {/* Final Total */}
+              <div className="calc-total-box">
+                <div className="calc-total-left">
+                  <span className="calc-total-label">FINAL ESTIMATED AMOUNT</span>
+                  <span className="calc-total-sub">Includes all custom print fees, surcharges & taxes</span>
+                </div>
+                <div className="calc-total-amount">₹{totalPrice.toLocaleString()}</div>
+              </div>
+            </div>
+          </div>
+
+          {/* Section 6: Checkout Actions */}
           <div className="studio-action-box">
             <button
               type="button"
@@ -1928,6 +2116,42 @@ const Customize = () => {
                     design={backDesign}
                     printableAreaVisible={false}
                   />
+                </div>
+              </div>
+
+              {/* Atelier Cost Breakdown in Visualizer */}
+              <div className="preview-cost-breakdown">
+                <div className="preview-cost-item">
+                  <span className="pci-label">Base Garment</span>
+                  <span className="pci-val">₹{baseGarmentPrice}</span>
+                </div>
+                {materialSurcharge > 0 && (
+                  <div className="preview-cost-item">
+                    <span className="pci-label">Fabric ({selectedMaterial?.name})</span>
+                    <span className="pci-val">+₹{materialSurcharge}</span>
+                  </div>
+                )}
+                {sizeSurcharge > 0 && (
+                  <div className="preview-cost-item">
+                    <span className="pci-label">Size ({selectedSize})</span>
+                    <span className="pci-val">+₹{sizeSurcharge}</span>
+                  </div>
+                )}
+                <div className="preview-cost-item">
+                  <span className="pci-label">Front Print Customization</span>
+                  <span className={`pci-val ${hasCustomFront ? "pci-custom" : ""}`}>
+                    {hasCustomFront ? `+₹${frontTotal}` : "Plain (₹0)"}
+                  </span>
+                </div>
+                <div className="preview-cost-item">
+                  <span className="pci-label">Back Print Customization</span>
+                  <span className={`pci-val ${hasCustomBack ? "pci-custom" : ""}`}>
+                    {hasCustomBack ? `+₹${backTotal}` : "Blank (₹0)"}
+                  </span>
+                </div>
+                <div className="preview-cost-item pci-total">
+                  <span className="pci-label">Unit Price ({quantity} pc{quantity > 1 ? "s" : ""})</span>
+                  <span className="pci-val">₹{unitPrice} × {quantity} = ₹{totalPrice.toLocaleString()}</span>
                 </div>
               </div>
             </div>

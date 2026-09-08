@@ -639,6 +639,16 @@ const CheckOut = ({ onBack }) => {
                         <div>Quantity: {item.quantity}</div>
                         <div>Size: {item.size}</div>
                         {item.color && <div>Color: {item.color}</div>}
+                        {item.customDetails?.hasCustomFront && (
+                          <div style={{ color: "#059669", fontWeight: 500 }}>
+                            Front Print (+₹{item.customDetails.frontTotal})
+                          </div>
+                        )}
+                        {item.customDetails?.hasCustomBack && (
+                          <div style={{ color: "#059669", fontWeight: 500 }}>
+                            Back Print (+₹{item.customDetails.backTotal})
+                          </div>
+                        )}
                       </div>
                     </div>
                     <div className="userpanal-checkout-order-item-price">

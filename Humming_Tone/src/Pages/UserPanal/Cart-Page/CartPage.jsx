@@ -244,6 +244,26 @@ const PremiumCart = ({ onCheckout }) => {
                           <span>Size: {item.size}</span>
                           <span className="userpanal-cart-meta-separator"></span>
                           <span>Color: {item.color}</span>
+                          {item.customDetails && (
+                            <>
+                              {item.customDetails.hasCustomFront && (
+                                <>
+                                  <span className="userpanal-cart-meta-separator"></span>
+                                  <span style={{ color: '#059669', fontWeight: 500 }}>
+                                    Front Print (+₹{item.customDetails.frontTotal})
+                                  </span>
+                                </>
+                              )}
+                              {item.customDetails.hasCustomBack && (
+                                <>
+                                  <span className="userpanal-cart-meta-separator"></span>
+                                  <span style={{ color: '#059669', fontWeight: 500 }}>
+                                    Back Print (+₹{item.customDetails.backTotal})
+                                  </span>
+                                </>
+                              )}
+                            </>
+                          )}
                         </div>
                       </div>
                     </div>
