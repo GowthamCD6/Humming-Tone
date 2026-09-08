@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useMemo, useRef } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import AddToCartModal from "../Prodect-Details/Product-Buying modal/AddToCartModal";
+import AuthModal from "../../../components/AuthModal/AuthModal";
 import { API_BASE_URL } from "../../../utils/apiConfig";
 import UserFooter from "../../../components/User-Footer-Card/UserFooter";
 
@@ -694,6 +695,7 @@ const Customize = () => {
   const [showPreviewModal, setShowPreviewModal] = useState(false);
   const [showCartModal, setShowCartModal] = useState(false);
   const [cartModalData, setCartModalData] = useState(null);
+  const [authModalOpen, setAuthModalOpen] = useState(false);
 
   // 1. Fetch Plain T-Shirts from Admin API
   useEffect(() => {
@@ -982,17 +984,23 @@ const Customize = () => {
     setShowCartModal(true);
   };
 
-  // Direct Buy Now
+  // Buy Now clicked on main panel: opens preview visualizer modal first per design requirements
   const handleBuyNow = () => {
+    setShowPreviewModal(true);
+  };
+
+  // Confirm and proceed with direct checkout from Preview modal (with Auth gate)
+  const handleConfirmCheckout = () => {
     const cartItem = buildCartItem();
     const user = JSON.parse(localStorage.getItem("customerUser") || "null");
     const token = localStorage.getItem("userToken");
 
     if (!user || !token || user?.email === "guest@hummingtone.com") {
-      alert("Please sign in to proceed with checkout.");
+      setAuthModalOpen(true);
       return;
     }
 
+    setShowPreviewModal(false);
     navigate("/usertab/checkout", { state: { buyNowItem: cartItem } });
   };
 
@@ -1886,13 +1894,14 @@ const Customize = () => {
               <div>
                 <h3 className="studio-modal-title">Garment Atelier Visualizer</h3>
                 <p className="studio-modal-sub">
-                  Inspect your bespoke garment ({selectedColor?.name || "Pure White"}, Size: {selectedSize})
+                  Inspect your bespoke garment ({selectedColor?.name || "Pure White"}, Size: {selectedSize}, Fabric: {selectedMaterial?.name || "Standard Cotton"})
                 </p>
               </div>
               <button
                 type="button"
                 className="studio-modal-close"
                 onClick={() => setShowPreviewModal(false)}
+                title="Close Visualizer"
               >
                 <X size={18} />
               </button>
@@ -1925,23 +1934,56 @@ const Customize = () => {
 
             <div className="preview-modal-footer">
               <div className="preview-summary-text">
-                <strong>₹{totalPrice.toLocaleString()}</strong> for {quantity} pc(s)
+                <span className="preview-summary-price">₹{totalPrice.toLocaleString()}</span>
+                <span className="preview-summary-sub">
+                  for {quantity} pc(s) • Size: {selectedSize} • ₹{unitPrice}/pc
+                </span>
               </div>
-              <button
-                type="button"
-                className="mc-btn mc-btn-primary"
-                onClick={() => {
-                  setShowPreviewModal(false);
-                  handleAddToCart();
-                }}
-              >
-                <ShoppingBagOutlinedIcon />
-                Confirm & Add To Bag
-              </button>
+              <div className="preview-footer-actions">
+                <button
+                  type="button"
+                  className="preview-btn-back"
+                  onClick={() => setShowPreviewModal(false)}
+                >
+                  <ArrowRight size={14} style={{ transform: "rotate(180deg)" }} />
+                  Go Back
+                </button>
+                <button
+                  type="button"
+                  className="preview-btn-cart"
+                  onClick={() => {
+                    setShowPreviewModal(false);
+                    handleAddToCart();
+                  }}
+                >
+                  <ShoppingBagOutlinedIcon fontSize="small" />
+                  Add To Bag
+                </button>
+                <button
+                  type="button"
+                  className="preview-btn-buy"
+                  onClick={handleConfirmCheckout}
+                >
+                  <FlashOnIcon fontSize="small" />
+                  Confirm & Buy Now
+                </button>
+              </div>
             </div>
           </div>
         </div>
       )}
+
+      {/* Auth Modal for Buy Now Login Gate */}
+      <AuthModal
+        isOpen={authModalOpen}
+        onClose={() => setAuthModalOpen(false)}
+        onAuthSuccess={() => {
+          setAuthModalOpen(false);
+          setShowPreviewModal(false);
+          const cartItem = buildCartItem();
+          navigate("/usertab/checkout", { state: { buyNowItem: cartItem } });
+        }}
+      />
 
       {/* Add To Cart Feedback Modal */}
       <AddToCartModal
