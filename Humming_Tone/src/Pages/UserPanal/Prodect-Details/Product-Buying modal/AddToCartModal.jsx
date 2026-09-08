@@ -39,11 +39,16 @@ const AddToCartModal = ({ isOpen, onClose, productData }) => {
                 <p className="product-modal-meta-row">
                   Size: <span>{productData.size}</span>
                 </p>
+                {productData.material && (
+                  <p className="product-modal-meta-row">
+                    Fabric: <span>{productData.material}</span>
+                  </p>
+                )}
                 <p className="product-modal-meta-row">
                   Quantity: <span>{productData.quantity}</span>
                 </p>
                 <p className="product-modal-meta-row">
-                  Price: <span>₹{productData.price.toFixed(2)}</span>
+                  Price: <span>₹{Number(productData.price).toFixed(2)}</span>
                 </p>
               </div>
             </div>

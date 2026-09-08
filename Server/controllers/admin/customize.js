@@ -1,14 +1,27 @@
 const db = require('../../config/db');
 
 // Get full customize configuration (for AdminCystamize and storefront)
-exports.getCustomize = (req, res) => {
+exports.getCustomize = async (req, res) => {
 	console.log('Fetching customize configuration...');
 
-	db.query('SELECT * FROM customize_tshirts ORDER BY display_order ASC, id ASC', (err, tshirts) => {
-		if (err) {
-			console.error('getCustomize error:', err);
-			return res.status(500).json({ error: err.message });
-		}
+	try {
+		const [tshirts, materials, sizes] = await Promise.all([
+			new Promise((resolve, reject) => {
+				db.query('SELECT * FROM customize_tshirts ORDER BY display_order ASC, id ASC', (err, rows) => {
+					if (err) reject(err); else resolve(rows || []);
+				});
+			}),
+			new Promise((resolve, reject) => {
+				db.query('SELECT * FROM customize_materials WHERE is_active = 1 ORDER BY display_order ASC, id ASC', (err, rows) => {
+					if (err) reject(err); else resolve(rows || []);
+				});
+			}),
+			new Promise((resolve, reject) => {
+				db.query('SELECT * FROM customize_sizes WHERE is_active = 1 ORDER BY display_order ASC, id ASC', (err, rows) => {
+					if (err) reject(err); else resolve(rows || []);
+				});
+			})
+		]);
 
 		const plainTshirtsMapped = (tshirts || []).map((t) => ({
 			id: t.id,
@@ -24,24 +37,37 @@ exports.getCustomize = (req, res) => {
 
 		res.json({
 			productCategories: [],
-			colors: plainTshirtsMapped.map(t => ({
+			colors: plainTshirtsMapped.map((t) => ({
 				id: String(t.id),
 				name: t.color_name,
 				hex: t.color_hex
 			})),
-			materials: [],
-			sizes: [
-				{ id: "xs", name: "XS", chest: "34-36\"" },
-				{ id: "s", name: "S", chest: "36-38\"" },
-				{ id: "m", name: "M", chest: "38-40\"" },
-				{ id: "l", name: "L", chest: "40-42\"" },
-				{ id: "xl", name: "XL", chest: "42-44\"" },
-				{ id: "xxl", name: "XXL", chest: "44-46\"" }
-			],
+			materials: (materials || []).map((m) => ({
+				id: m.id,
+				name: m.name,
+				description: m.description,
+				fabric_weight: m.fabric_weight,
+				price_adjustment: Number(m.price_adjustment || 0),
+				display_order: m.display_order,
+				is_active: m.is_active
+			})),
+			sizes: (sizes || []).map((s) => ({
+				id: s.id,
+				name: s.name,
+				chest: s.chest,
+				length: s.length,
+				shoulder: s.shoulder,
+				price_adjustment: Number(s.price_adjustment || 0),
+				display_order: s.display_order,
+				is_active: s.is_active
+			})),
 			galleryDesigns: [],
 			plainTshirts: plainTshirtsMapped
 		});
-	});
+	} catch (err) {
+		console.error('getCustomize error:', err);
+		return res.status(500).json({ error: err.message });
+	}
 };
 
 // Save full customize configuration from AdminCystamize into dedicated tables
@@ -397,5 +423,344 @@ exports.deletePlainTshirt = (req, res) => {
 		res.json({ success: true, message: 'Plain T-Shirt deleted successfully' });
 	});
 };
+
+// ==========================================
+// Preset Designs & Artwork Management
+// ==========================================
+
+exports.getDesigns = (req, res) => {
+	const isAdmin = req.query.admin === 'true';
+	const sql = isAdmin
+		? 'SELECT id, name, category, image_url, price, display_order, is_active FROM customize_designs ORDER BY display_order ASC, id DESC'
+		: 'SELECT id, name, category, image_url, price, display_order, is_active FROM customize_designs WHERE is_active = 1 ORDER BY display_order ASC, id DESC';
+
+	db.query(sql, (err, rows) => {
+		if (err) {
+			console.error('getDesigns error:', err);
+			return res.status(500).json({ success: false, error: err.message });
+		}
+		res.json({ success: true, designs: rows || [] });
+	});
+};
+
+exports.saveDesign = async (req, res) => {
+	try {
+		const { id, name, category = 'General', price = 0, display_order = 0, is_active = 1 } = req.body || {};
+
+		if (!name || !name.trim()) {
+			return res.status(400).json({ success: false, error: 'Design name is required' });
+		}
+
+		let image_url = req.body.image_url || null;
+
+		// Handle direct file upload via Cloudinary
+		if (req.file) {
+			const uploadResult = await uploadStreamToCloudinary(req.file.buffer, 'hummingtone/customize-designs');
+			image_url = uploadResult.secure_url;
+		}
+
+		if (!id && !image_url) {
+			return res.status(400).json({ success: false, error: 'Design artwork image is required' });
+		}
+
+		if (id) {
+			// Update
+			if (!image_url) {
+				const [existing] = await new Promise((resolve, reject) => {
+					db.query('SELECT image_url FROM customize_designs WHERE id = ?', [id], (err, rows) => {
+						if (err) reject(err);
+						else resolve([rows?.[0]]);
+					});
+				});
+				if (existing) {
+					image_url = existing.image_url;
+				}
+			}
+
+			const updateSql = `
+				UPDATE customize_designs 
+				SET name = ?, category = ?, image_url = ?, price = ?, display_order = ?, is_active = ?
+				WHERE id = ?
+			`;
+			db.query(
+				updateSql,
+				[name.trim(), category.trim(), image_url, Number(price || 0), Number(display_order || 0), Number(is_active ?? 1), id],
+				(err) => {
+					if (err) {
+						console.error('saveDesign update error:', err);
+						return res.status(500).json({ success: false, error: err.message });
+					}
+					res.json({ success: true, message: 'Design updated successfully', image_url });
+				}
+			);
+		} else {
+			// Insert
+			const insertSql = `
+				INSERT INTO customize_designs (name, category, image_url, price, display_order, is_active)
+				VALUES (?, ?, ?, ?, ?, ?)
+			`;
+			db.query(
+				insertSql,
+				[name.trim(), category.trim(), image_url, Number(price || 0), Number(display_order || 0), Number(is_active ?? 1)],
+				(err, result) => {
+					if (err) {
+						console.error('saveDesign insert error:', err);
+						return res.status(500).json({ success: false, error: err.message });
+					}
+					res.json({
+						success: true,
+						id: result.insertId,
+						message: 'Design created successfully',
+						image_url
+					});
+				}
+			);
+		}
+	} catch (err) {
+		console.error('saveDesign caught error:', err);
+		res.status(500).json({ success: false, error: err.message || 'Failed to save design' });
+	}
+};
+
+exports.deleteDesign = (req, res) => {
+	const { id } = req.params;
+	if (!id) return res.status(400).json({ success: false, error: 'Design ID required' });
+
+	db.query('DELETE FROM customize_designs WHERE id = ?', [id], (err, result) => {
+		if (err) {
+			console.error('deleteDesign error:', err);
+			return res.status(500).json({ success: false, error: err.message });
+		}
+		if (result.affectedRows === 0) {
+			return res.status(404).json({ success: false, error: 'Design not found' });
+		}
+		res.json({ success: true, message: 'Design deleted successfully' });
+	});
+};
+
+exports.toggleDesignStatus = (req, res) => {
+	const { id } = req.params;
+	const { is_active } = req.body || {};
+
+	if (!id) return res.status(400).json({ success: false, error: 'Design ID required' });
+
+	db.query(
+		'UPDATE customize_designs SET is_active = ? WHERE id = ?',
+		[Number(is_active ? 1 : 0), id],
+		(err) => {
+			if (err) {
+				console.error('toggleDesignStatus error:', err);
+				return res.status(500).json({ success: false, error: err.message });
+			}
+			res.json({ success: true, message: 'Design status updated successfully' });
+		}
+	);
+};
+
+// ==========================================
+// Materials Management
+// ==========================================
+
+exports.getMaterials = (req, res) => {
+	const isAdmin = req.query.admin === 'true';
+	const sql = isAdmin
+		? 'SELECT * FROM customize_materials ORDER BY display_order ASC, id ASC'
+		: 'SELECT * FROM customize_materials WHERE is_active = 1 ORDER BY display_order ASC, id ASC';
+
+	db.query(sql, (err, rows) => {
+		if (err) {
+			console.error('getMaterials error:', err);
+			return res.status(500).json({ success: false, error: err.message });
+		}
+		res.json({ success: true, materials: rows || [] });
+	});
+};
+
+exports.saveMaterial = (req, res) => {
+	try {
+		const { id, name, description = '', fabric_weight = '180 GSM', price_adjustment = 0, display_order = 0, is_active = 1 } = req.body || {};
+
+		if (!name || !name.trim()) {
+			return res.status(400).json({ success: false, error: 'Material name is required' });
+		}
+
+		if (id) {
+			const updateSql = `
+				UPDATE customize_materials
+				SET name = ?, description = ?, fabric_weight = ?, price_adjustment = ?, display_order = ?, is_active = ?
+				WHERE id = ?
+			`;
+			db.query(
+				updateSql,
+				[name.trim(), description.trim(), (fabric_weight || '').trim(), Number(price_adjustment || 0), Number(display_order || 0), Number(is_active ?? 1), id],
+				(err) => {
+					if (err) {
+						console.error('saveMaterial update error:', err);
+						return res.status(500).json({ success: false, error: err.message });
+					}
+					res.json({ success: true, message: 'Material updated successfully' });
+				}
+			);
+		} else {
+			const insertSql = `
+				INSERT INTO customize_materials (name, description, fabric_weight, price_adjustment, display_order, is_active)
+				VALUES (?, ?, ?, ?, ?, ?)
+			`;
+			db.query(
+				insertSql,
+				[name.trim(), description.trim(), (fabric_weight || '').trim(), Number(price_adjustment || 0), Number(display_order || 0), Number(is_active ?? 1)],
+				(err, result) => {
+					if (err) {
+						console.error('saveMaterial insert error:', err);
+						return res.status(500).json({ success: false, error: err.message });
+					}
+					res.json({ success: true, id: result.insertId, message: 'Material created successfully' });
+				}
+			);
+		}
+	} catch (err) {
+		console.error('saveMaterial caught error:', err);
+		res.status(500).json({ success: false, error: err.message || 'Failed to save material' });
+	}
+};
+
+exports.deleteMaterial = (req, res) => {
+	const { id } = req.params;
+	if (!id) return res.status(400).json({ success: false, error: 'Material ID required' });
+
+	db.query('DELETE FROM customize_materials WHERE id = ?', [id], (err, result) => {
+		if (err) {
+			console.error('deleteMaterial error:', err);
+			return res.status(500).json({ success: false, error: err.message });
+		}
+		if (result.affectedRows === 0) {
+			return res.status(404).json({ success: false, error: 'Material not found' });
+		}
+		res.json({ success: true, message: 'Material deleted successfully' });
+	});
+};
+
+exports.toggleMaterialStatus = (req, res) => {
+	const { id } = req.params;
+	const { is_active } = req.body || {};
+
+	if (!id) return res.status(400).json({ success: false, error: 'Material ID required' });
+
+	db.query(
+		'UPDATE customize_materials SET is_active = ? WHERE id = ?',
+		[Number(is_active ? 1 : 0), id],
+		(err) => {
+			if (err) {
+				console.error('toggleMaterialStatus error:', err);
+				return res.status(500).json({ success: false, error: err.message });
+			}
+			res.json({ success: true, message: 'Material status updated successfully' });
+		}
+	);
+};
+
+// ==========================================
+// Sizes Management
+// ==========================================
+
+exports.getSizes = (req, res) => {
+	const isAdmin = req.query.admin === 'true';
+	const sql = isAdmin
+		? 'SELECT * FROM customize_sizes ORDER BY display_order ASC, id ASC'
+		: 'SELECT * FROM customize_sizes WHERE is_active = 1 ORDER BY display_order ASC, id ASC';
+
+	db.query(sql, (err, rows) => {
+		if (err) {
+			console.error('getSizes error:', err);
+			return res.status(500).json({ success: false, error: err.message });
+		}
+		res.json({ success: true, sizes: rows || [] });
+	});
+};
+
+exports.saveSize = (req, res) => {
+	try {
+		const { id, name, chest = '', length = '', shoulder = '', price_adjustment = 0, display_order = 0, is_active = 1 } = req.body || {};
+
+		if (!name || !name.trim()) {
+			return res.status(400).json({ success: false, error: 'Size name/code is required' });
+		}
+
+		if (id) {
+			const updateSql = `
+				UPDATE customize_sizes
+				SET name = ?, chest = ?, length = ?, shoulder = ?, price_adjustment = ?, display_order = ?, is_active = ?
+				WHERE id = ?
+			`;
+			db.query(
+				updateSql,
+				[name.trim().toUpperCase(), (chest || '').trim(), (length || '').trim(), (shoulder || '').trim(), Number(price_adjustment || 0), Number(display_order || 0), Number(is_active ?? 1), id],
+				(err) => {
+					if (err) {
+						console.error('saveSize update error:', err);
+						return res.status(500).json({ success: false, error: err.message });
+					}
+					res.json({ success: true, message: 'Size updated successfully' });
+				}
+			);
+		} else {
+			const insertSql = `
+				INSERT INTO customize_sizes (name, chest, length, shoulder, price_adjustment, display_order, is_active)
+				VALUES (?, ?, ?, ?, ?, ?)
+			`;
+			db.query(
+				insertSql,
+				[name.trim().toUpperCase(), (chest || '').trim(), (length || '').trim(), (shoulder || '').trim(), Number(price_adjustment || 0), Number(display_order || 0), Number(is_active ?? 1)],
+				(err, result) => {
+					if (err) {
+						console.error('saveSize insert error:', err);
+						return res.status(500).json({ success: false, error: err.message });
+					}
+					res.json({ success: true, id: result.insertId, message: 'Size created successfully' });
+				}
+			);
+		}
+	} catch (err) {
+		console.error('saveSize caught error:', err);
+		res.status(500).json({ success: false, error: err.message || 'Failed to save size' });
+	}
+};
+
+exports.deleteSize = (req, res) => {
+	const { id } = req.params;
+	if (!id) return res.status(400).json({ success: false, error: 'Size ID required' });
+
+	db.query('DELETE FROM customize_sizes WHERE id = ?', [id], (err, result) => {
+		if (err) {
+			console.error('deleteSize error:', err);
+			return res.status(500).json({ success: false, error: err.message });
+		}
+		if (result.affectedRows === 0) {
+			return res.status(404).json({ success: false, error: 'Size not found' });
+		}
+		res.json({ success: true, message: 'Size deleted successfully' });
+	});
+};
+
+exports.toggleSizeStatus = (req, res) => {
+	const { id } = req.params;
+	const { is_active } = req.body || {};
+
+	if (!id) return res.status(400).json({ success: false, error: 'Size ID required' });
+
+	db.query(
+		'UPDATE customize_sizes SET is_active = ? WHERE id = ?',
+		[Number(is_active ? 1 : 0), id],
+		(err) => {
+			if (err) {
+				console.error('toggleSizeStatus error:', err);
+				return res.status(500).json({ success: false, error: err.message });
+			}
+			res.json({ success: true, message: 'Size status updated successfully' });
+		}
+	);
+};
+
+
 
 

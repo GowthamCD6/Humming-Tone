@@ -22,4 +22,29 @@ router.post(
 );
 router.delete('/site-content/customize/plain-tshirts/:id', adminAuth, customizeController.deletePlainTshirt);
 
+// Preset Artwork & Motifs / Designs (used by both Admin and Storefront)
+router.get('/site-content/customize/designs', customizeController.getDesigns);
+router.post(
+	'/site-content/customize/designs',
+	adminAuth,
+	upload.single('image'),
+	customizeController.saveDesign
+);
+router.delete('/site-content/customize/designs/:id', adminAuth, customizeController.deleteDesign);
+router.patch('/site-content/customize/designs/:id/status', adminAuth, customizeController.toggleDesignStatus);
+
+// Fabric & Materials Management
+router.get('/site-content/customize/materials', customizeController.getMaterials);
+router.post('/site-content/customize/materials', adminAuth, customizeController.saveMaterial);
+router.delete('/site-content/customize/materials/:id', adminAuth, customizeController.deleteMaterial);
+router.patch('/site-content/customize/materials/:id/status', adminAuth, customizeController.toggleMaterialStatus);
+
+// Sizes & Fit Management
+router.get('/site-content/customize/sizes', customizeController.getSizes);
+router.post('/site-content/customize/sizes', adminAuth, customizeController.saveSize);
+router.delete('/site-content/customize/sizes/:id', adminAuth, customizeController.deleteSize);
+router.patch('/site-content/customize/sizes/:id/status', adminAuth, customizeController.toggleSizeStatus);
+
 module.exports = router;
+
+
