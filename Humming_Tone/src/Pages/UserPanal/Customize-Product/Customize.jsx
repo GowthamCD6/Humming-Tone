@@ -3,6 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import AddToCartModal from "../Prodect-Details/Product-Buying modal/AddToCartModal";
 import AuthModal from "../../../components/AuthModal/AuthModal";
 import { API_BASE_URL } from "../../../utils/apiConfig";
+import { generateCompositeGarmentPreview } from "./garmentPreviewGenerator";
 import UserFooter from "../../../components/User-Footer-Card/UserFooter";
 
 // Lucide & MUI Icons
@@ -875,8 +876,8 @@ const Customize = () => {
     totalCustomizationPrice;
   const totalPrice = unitPrice * quantity;
 
-  // Handle Image Upload
-  const handleImageUpload = (e) => {
+  // Handle Customer Artwork / Logo Upload
+  const handleImageUpload = async (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
@@ -885,15 +886,41 @@ const Customize = () => {
       return;
     }
 
-    const reader = new FileReader();
-    reader.onload = (uploadEvent) => {
-      updateCurrentDesign({
-        imageUrl: uploadEvent.target.result,
-        designName: file.name.replace(/\.[^/.]+$/, ""),
-        designPrice: 0,
+    const localUrl = URL.createObjectURL(file);
+    updateCurrentDesign({
+      imageUrl: localUrl,
+      designName: file.name.replace(/\.[^/.]+$/, ""),
+      designPrice: 0,
+      motifId: null,
+      isUserUpload: true,
+      userUploadUrl: null,
+    });
+
+    const formData = new FormData();
+    formData.append("image", file);
+
+    try {
+      const token = localStorage.getItem("userToken");
+      const res = await fetch(`${API_BASE_URL}/customize/upload-user-design`, {
+        method: "POST",
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
+        body: formData,
       });
-    };
-    reader.readAsDataURL(file);
+
+      if (res.ok) {
+        const data = await res.json();
+        if (data.imageUrl) {
+          updateCurrentDesign({
+            imageUrl: data.imageUrl,
+            userUploadUrl: data.imageUrl,
+            isUserUpload: true,
+          });
+        }
+      }
+    } catch (err) {
+      console.warn("Cloudinary upload fallback:", err);
+    }
+
     e.target.value = "";
   };
 
@@ -902,6 +929,9 @@ const Customize = () => {
       imageUrl: null,
       designName: null,
       designPrice: 0,
+      motifId: null,
+      userUploadUrl: null,
+      isUserUpload: false,
     });
   };
 
@@ -918,6 +948,9 @@ const Customize = () => {
       textPosY: 0,
       rotation: 0,
       flipH: false,
+      motifId: null,
+      userUploadUrl: null,
+      isUserUpload: false,
     });
   };
 
@@ -934,37 +967,83 @@ const Customize = () => {
     });
   };
 
-  // Build Cart Item representation
-  const buildCartItem = () => {
+  // Build Cart Item representation with composite preview data
+  const buildCartItem = (frontPreview = null, backPreview = null) => {
+    const previewImg =
+      frontPreview ||
+      selectedColor?.front_image ||
+      frontDesign.imageUrl ||
+      "https://res.cloudinary.com/agoiw3rz/image/upload/v1788676780/hummingtone/plain-tshirts/odzdmoueowkbb99phqmj.jpg";
+
     return {
       cartItemId: `custom-tshirt-${Date.now()}`,
       id: "plain-custom-tshirt",
+      product_id: "custom-tshirt",
+      is_custom: true,
       name: `Custom Plain T-Shirt (${selectedColor?.name || "Bespoke"} • ${selectedMaterial?.name || "Pure Cotton"})`,
       brand: "HUMMING TONE ATELIER",
       price: unitPrice,
       quantity,
       size: selectedSize,
       color: selectedColor?.name || "Custom",
+      colorHex: selectedColor?.hex || "#FFFFFF",
       material: selectedMaterial?.name || "100% Bio-Washed Combed Cotton",
       fabricWeight: selectedMaterial?.fabric_weight || "180 GSM",
       stock: 50,
-      image:
-        selectedColor?.front_image ||
-        frontDesign.imageUrl ||
-        "https://res.cloudinary.com/agoiw3rz/image/upload/v1788676780/hummingtone/plain-tshirts/odzdmoueowkbb99phqmj.jpg",
+      image: previewImg,
+      custom_preview_image: previewImg,
       customDetails: {
+        garmentType: "tshirt",
         color: selectedColor,
         material: selectedMaterial,
         size: selectedSize,
+        frontPreviewUrl: frontPreview || previewImg,
+        backPreviewUrl: backPreview || null,
         baseGarmentPrice,
         materialSurcharge,
         sizeSurcharge,
         front: frontDesign,
+        frontDesign: {
+          motifId: frontDesign.motifId || null,
+          motifUrl: frontDesign.imageUrl || null,
+          userUploadUrl: frontDesign.userUploadUrl || (frontDesign.isUserUpload ? frontDesign.imageUrl : null),
+          text: frontDesign.text || null,
+          font: frontDesign.font || null,
+          textColor: frontDesign.textColor || null,
+          placement: frontDesign.placementMode || "chest",
+          transforms: {
+            scale: frontDesign.scale || 1,
+            rotation: frontDesign.rotation || 0,
+            flipH: frontDesign.flipH || false,
+            posX: frontDesign.posX || 0,
+            posY: frontDesign.posY || 0,
+            textPosX: frontDesign.textPosX || 0,
+            textPosY: frontDesign.textPosY || 0,
+          },
+        },
         frontFee,
         frontDesignSurcharge,
         frontTotal,
         hasCustomFront,
         back: backDesign,
+        backDesign: {
+          motifId: backDesign.motifId || null,
+          motifUrl: backDesign.imageUrl || null,
+          userUploadUrl: backDesign.userUploadUrl || (backDesign.isUserUpload ? backDesign.imageUrl : null),
+          text: backDesign.text || null,
+          font: backDesign.font || null,
+          textColor: backDesign.textColor || null,
+          placement: backDesign.placementMode || "full",
+          transforms: {
+            scale: backDesign.scale || 1,
+            rotation: backDesign.rotation || 0,
+            flipH: backDesign.flipH || false,
+            posX: backDesign.posX || 0,
+            posY: backDesign.posY || 0,
+            textPosX: backDesign.textPosX || 0,
+            textPosY: backDesign.textPosY || 0,
+          },
+        },
         backFee,
         backDesignSurcharge,
         backTotal,
@@ -977,8 +1056,31 @@ const Customize = () => {
   };
 
   // Add to Cart
-  const handleAddToCart = () => {
-    const cartItem = buildCartItem();
+  const handleAddToCart = async () => {
+    let frontPreview = null;
+    let backPreview = null;
+
+    try {
+      frontPreview = await generateCompositeGarmentPreview({
+        color: selectedColor?.hex || "#FFFFFF",
+        side: "front",
+        garmentImageUrl: selectedColor?.front_image,
+        design: frontDesign,
+      });
+
+      if (hasCustomBack) {
+        backPreview = await generateCompositeGarmentPreview({
+          color: selectedColor?.hex || "#FFFFFF",
+          side: "back",
+          garmentImageUrl: selectedColor?.back_image,
+          design: backDesign,
+        });
+      }
+    } catch (err) {
+      console.warn("Composite preview generation warning:", err);
+    }
+
+    const cartItem = buildCartItem(frontPreview, backPreview);
     let currentCart = [];
     try {
       currentCart = JSON.parse(localStorage.getItem("cart")) || [];
@@ -998,6 +1100,7 @@ const Customize = () => {
       price: unitPrice,
       image: cartItem.image,
       customDetails: cartItem.customDetails,
+      is_custom: true,
     });
     setShowCartModal(true);
   };
@@ -1008,8 +1111,31 @@ const Customize = () => {
   };
 
   // Confirm and proceed with direct checkout from Preview modal (with Auth gate)
-  const handleConfirmCheckout = () => {
-    const cartItem = buildCartItem();
+  const handleConfirmCheckout = async () => {
+    let frontPreview = null;
+    let backPreview = null;
+
+    try {
+      frontPreview = await generateCompositeGarmentPreview({
+        color: selectedColor?.hex || "#FFFFFF",
+        side: "front",
+        garmentImageUrl: selectedColor?.front_image,
+        design: frontDesign,
+      });
+
+      if (hasCustomBack) {
+        backPreview = await generateCompositeGarmentPreview({
+          color: selectedColor?.hex || "#FFFFFF",
+          side: "back",
+          garmentImageUrl: selectedColor?.back_image,
+          design: backDesign,
+        });
+      }
+    } catch (err) {
+      console.warn("Preview error:", err);
+    }
+
+    const cartItem = buildCartItem(frontPreview, backPreview);
     const user = JSON.parse(localStorage.getItem("customerUser") || "null");
     const token = localStorage.getItem("userToken");
 
@@ -1686,6 +1812,9 @@ const Customize = () => {
                                 imageUrl: preset.image_url,
                                 designName: preset.name,
                                 designPrice: price,
+                                motifId: preset.id,
+                                isUserUpload: false,
+                                userUploadUrl: null,
                               })
                             }
                           >

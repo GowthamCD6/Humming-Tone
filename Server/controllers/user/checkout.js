@@ -53,8 +53,29 @@ exports.create_order = (req, res, next) => {
         for (const item of items) {
           const { product_id, quantity, size = 'M' } = item;
 
-          if (!product_id || !quantity || quantity <= 0) {
-            throw createError.BadRequest("Invalid cart item");
+          if (!quantity || quantity <= 0) {
+            throw createError.BadRequest("Invalid cart item quantity");
+          }
+
+          const isCustomItem = Boolean(
+            item.is_custom || 
+            item.customDetails || 
+            (typeof product_id === 'string' && (product_id.includes('custom') || isNaN(Number(product_id)))) ||
+            (product_id === null || product_id === undefined)
+          );
+
+          if (isCustomItem) {
+            const customPrice = Number(item.price || item.unit_price || item.product_price || 499);
+            subtotal += customPrice * quantity;
+            item._verified_price = customPrice;
+            item._variant_id = null;
+            item._product_name = item.name || item.product_name || "Customized T-Shirt";
+            item._is_custom = true;
+            continue;
+          }
+
+          if (!product_id) {
+            throw createError.BadRequest("Invalid cart item product ID");
           }
 
           const cleanSize = (size || 'M').trim();
@@ -208,8 +229,14 @@ exports.create_order = (req, res, next) => {
 
             const orderId = orderResult.insertId;
 
-            const itemPromises = items.map(item =>
-              connection.promise().query(
+            const itemPromises = items.map(async (item) => {
+              const isCustom = Boolean(item._is_custom || item.is_custom || item.customDetails);
+              const customDetailsStr = isCustom ? JSON.stringify(item.customDetails || {}) : null;
+              const previewImage = item.custom_preview_image || item.customDetails?.frontPreviewUrl || item.image || null;
+              const rawPid = Number(item.product_id);
+              const validProductId = (!isNaN(rawPid) && rawPid > 0) ? rawPid : null;
+
+              const [resItem] = await connection.promise().query(
                 `
                 INSERT INTO order_items (
                   order_id,
@@ -219,22 +246,155 @@ exports.create_order = (req, res, next) => {
                   product_price,
                   quantity,
                   size,
-                  color
+                  color,
+                  is_custom,
+                  custom_preview_image,
+                  custom_details
                 )
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                 `,
                 [
                   orderId,
-                  item.product_id,
+                  validProductId,
                   item._variant_id,
                   item._product_name,
                   item._verified_price,
                   item.quantity,
-                  item.size,
-                  item.color || null
+                  item.size || 'M',
+                  item.color || null,
+                  isCustom ? 1 : 0,
+                  previewImage,
+                  customDetailsStr
                 ]
-              )
-            );
+              );
+
+              if (isCustom) {
+                const cd = item.customDetails || {};
+                const front = cd.front || cd.frontDesign || {};
+                const back = cd.back || cd.backDesign || {};
+                await connection.promise().query(
+                  `
+                  INSERT INTO customized_orders (
+                    order_id,
+                    order_number,
+                    user_id,
+                    customer_name,
+                    customer_email,
+                    customer_phone,
+                    customer_address,
+                    city,
+                    state,
+                    pincode,
+                    garment_color_name,
+                    garment_color_hex,
+                    garment_front_image,
+                    garment_back_image,
+                    fabric_name,
+                    fabric_weight,
+                    size,
+                    quantity,
+                    unit_price,
+                    total_price,
+                    has_custom_front,
+                    front_design_type,
+                    front_design_name,
+                    front_image_url,
+                    front_text,
+                    front_font,
+                    front_text_color,
+                    front_placement,
+                    front_scale,
+                    front_rotation,
+                    front_flip_h,
+                    front_pos_x,
+                    front_pos_y,
+                    front_text_pos_x,
+                    front_text_pos_y,
+                    front_preview_url,
+                    front_fee,
+                    has_custom_back,
+                    back_design_type,
+                    back_design_name,
+                    back_image_url,
+                    back_text,
+                    back_font,
+                    back_text_color,
+                    back_placement,
+                    back_scale,
+                    back_rotation,
+                    back_flip_h,
+                    back_pos_x,
+                    back_pos_y,
+                    back_text_pos_x,
+                    back_text_pos_y,
+                    back_preview_url,
+                    back_fee,
+                    custom_details_json,
+                    status
+                  )
+                  VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'pending')
+                  `,
+                  [
+                    orderId,
+                    order_number,
+                    user_id && !isNaN(Number(user_id)) ? Number(user_id) : null,
+                    customer_name,
+                    customer_email,
+                    customer_phone,
+                    customer_address || null,
+                    city || null,
+                    state || null,
+                    pincode || null,
+                    item.color || cd.color?.name || 'Custom',
+                    cd.color?.hex || '#FFFFFF',
+                    cd.color?.front_image || null,
+                    cd.color?.back_image || null,
+                    cd.material?.name || cd.fabric || '100% Bio-Washed Combed Cotton',
+                    cd.fabricWeight || cd.material?.fabric_weight || '180 GSM',
+                    item.size || cd.size || 'M',
+                    item.quantity || 1,
+                    Number(item._verified_price || 499),
+                    Number(item._verified_price * item.quantity),
+                    cd.hasCustomFront ? 1 : (front.imageUrl || front.text ? 1 : 0),
+                    front.isUserUpload ? 'upload' : (front.motifId || front.imageUrl ? 'gallery' : 'none'),
+                    front.designName || null,
+                    front.imageUrl || front.motifUrl || front.userUploadUrl || null,
+                    front.text || null,
+                    front.font || null,
+                    front.textColor || null,
+                    front.placement || front.placementMode || 'chest',
+                    front.transforms?.scale || front.scale || 1,
+                    front.transforms?.rotation || front.rotation || 0,
+                    (front.transforms?.flipH || front.flipH) ? 1 : 0,
+                    front.transforms?.posX || front.posX || 0,
+                    front.transforms?.posY || front.posY || 0,
+                    front.transforms?.textPosX || front.textPosX || 0,
+                    front.transforms?.textPosY || front.textPosY || 0,
+                    cd.frontPreviewUrl || previewImage || null,
+                    Number(cd.frontTotal || cd.frontFee || 0),
+                    cd.hasCustomBack ? 1 : (back.imageUrl || back.text ? 1 : 0),
+                    back.isUserUpload ? 'upload' : (back.motifId || back.imageUrl ? 'gallery' : 'none'),
+                    back.designName || null,
+                    back.imageUrl || back.motifUrl || back.userUploadUrl || null,
+                    back.text || null,
+                    back.font || null,
+                    back.textColor || null,
+                    back.placement || back.placementMode || 'full',
+                    back.transforms?.scale || back.scale || 1,
+                    back.transforms?.rotation || back.rotation || 0,
+                    (back.transforms?.flipH || back.flipH) ? 1 : 0,
+                    back.transforms?.posX || back.posX || 0,
+                    back.transforms?.posY || back.posY || 0,
+                    back.transforms?.textPosX || back.textPosX || 0,
+                    back.transforms?.textPosY || back.textPosY || 0,
+                    cd.backPreviewUrl || null,
+                    Number(cd.backTotal || cd.backFee || 0),
+                    JSON.stringify(cd)
+                  ]
+                );
+              }
+              return resItem;
+            });
 
             Promise.all(itemPromises)
               .then(() => {

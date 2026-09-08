@@ -1,5 +1,6 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
+import CustomGarmentThumb from '../../../../components/CustomGarmentThumb/CustomGarmentThumb';
 import './AddToCartModal.css';
 
 const AddToCartModal = ({ isOpen, onClose, productData }) => {
@@ -29,7 +30,7 @@ const AddToCartModal = ({ isOpen, onClose, productData }) => {
           
           <div className="product-modal-item-info">
             <div className="product-modal-item-image">
-              <img src={productData.image} alt={productData.name} />
+              <CustomGarmentThumb item={productData} size={100} />
             </div>
 
             <div className="product-modal-item-details">

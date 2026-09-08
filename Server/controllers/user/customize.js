@@ -58,3 +58,25 @@ exports.customize_order = async (req, res, next) => {
     next(error);
   }
 };
+
+// Handle customer custom artwork / logo uploads from the Studio
+exports.upload_user_design = async (req, res, next) => {
+  try {
+    if (!req.file) {
+      return next(createError.BadRequest("No design image file provided"));
+    }
+
+    const uploaded = await uploadStreamToCloudinary(req.file.buffer, "hummingtone/user-uploads");
+
+    res.status(200).json({
+      success: true,
+      imageUrl: uploaded.secure_url,
+      originalName: req.file.originalname,
+      size: req.file.size
+    });
+  } catch (err) {
+    console.error("Error uploading customer custom design:", err);
+    next(err);
+  }
+};
+

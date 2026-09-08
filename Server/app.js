@@ -19,6 +19,7 @@ const userReturnRoutes = require("./routes/user/return");
 const customizeRoutes = require("./routes/user/customize");
 const userCheckoutRoutes = require('./routes/user/checkout')
 const adminCustomizeRoutes = require('./routes/admin/customize')
+const adminCustomizeOrdersRoute = require('./routes/admin/customizeOrders');
 const adminInventoryRoutes = require('./routes/admin/inventory')
 const adminAuth = require('./middlewares/adminAuth');
 const adminUsersRoute = require("./routes/admin/adminUsers");
@@ -161,6 +162,12 @@ app.use("/", adminReviewRoute);
 app.use("/api/orders", adminOrderRoute);
 app.use('/', adminInventoryRoutes);
 app.use('/api', adminCustomizeRoutes);
+app.use("/admin", adminCustomizeOrdersRoute);
+app.use("/api/admin", adminCustomizeOrdersRoute);
+app.use("/api/customize-orders", adminCustomizeOrdersRoute);
+app.use("/api/orders/customize", adminCustomizeOrdersRoute);
+app.use("/api", adminCustomizeOrdersRoute);
+app.use("/", adminCustomizeOrdersRoute);
 app.use("/", adminPromoRoute);
 app.use('/api/products', adminAuth, productRoutes);
 app.use("/", adminUsersRoute);

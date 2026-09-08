@@ -64,6 +64,7 @@ exports.getOrderItems = (req,res,next) => {
          SELECT 
            oi.*,
            COALESCE(
+             oi.custom_preview_image,
              (SELECT pi.image_path FROM product_images pi WHERE pi.product_id = oi.product_id AND pi.is_primary = 1 LIMIT 1),
              (SELECT pi.image_path FROM product_images pi WHERE pi.product_id = oi.product_id LIMIT 1)
            ) AS image_path,
@@ -230,6 +231,7 @@ exports.getOrderLabelData = async (req, res, next) => {
                 oi.*,
                 p.sku AS product_sku,
                 COALESCE(
+                  oi.custom_preview_image,
                   (SELECT pi.image_path FROM product_images pi WHERE pi.product_id = oi.product_id AND pi.is_primary = 1 LIMIT 1),
                   (SELECT pi.image_path FROM product_images pi WHERE pi.product_id = oi.product_id LIMIT 1)
                 ) AS image_path
@@ -413,6 +415,7 @@ exports.getExportOrdersData = async (req, res, next) => {
                 (oi.product_price * oi.quantity) AS total_price,
                 p.sku AS product_sku,
                 COALESCE(
+                    oi.custom_preview_image,
                     (SELECT pi.image_path FROM product_images pi WHERE pi.product_id = oi.product_id AND pi.is_primary = 1 LIMIT 1),
                     (SELECT pi.image_path FROM product_images pi WHERE pi.product_id = oi.product_id LIMIT 1),
                     p.image_path

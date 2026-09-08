@@ -58,6 +58,7 @@ import ManageReviews from './Pages/AdminPanal/ManageReviews/ManageReviews.jsx';
 import DataExport from './Pages/AdminPanal/DataExport/DataExport.jsx';
 import ManageNotifications from './Pages/AdminPanal/ManageNotifications/ManageNotifications.jsx';
 import ManageCustomize from './Pages/AdminPanal/ManageCustomize/ManageCustomize.jsx';
+import ManageCustomizeOrders from './Pages/AdminPanal/ManageCustomizeOrders/ManageCustomizeOrders.jsx';
 import axios from 'axios';
 
 import "./App.css";
@@ -255,6 +256,7 @@ export default function App() {
           <Route path="manage-orders" element={<ManageOrder />} />
           <Route path="order/:orderId" element={<OrderDetails />} />
           <Route path="customize-tshirts" element={<ManageCustomize />} />
+          <Route path="customize-orders" element={<ManageCustomizeOrders />} />
           <Route path="site-content" element={<SiteContent />} />
           <Route path="all-products" element={<ProductData />} />
           <Route path="product-buyers" element={<ProductBuyer />} />

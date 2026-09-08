@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import './CartPage.css';
+import CustomGarmentThumb from '../../../components/CustomGarmentThumb/CustomGarmentThumb';
 import UserFooter from '../../../components/User-Footer-Card/UserFooter';
 import LocalShippingIcon from '@mui/icons-material/LocalShipping';
 import AuthModal from '../../../components/AuthModal/AuthModal';
@@ -224,18 +225,11 @@ const PremiumCart = ({ onCheckout }) => {
                 <div key={itemKey} className="userpanal-cart-item">
                   <div className="userpanal-cart-item-main">
                     <div className="userpanal-cart-item-left">
-                      <img
-                        src={item.image}
-                        alt={item.name}
+                      <CustomGarmentThumb
+                        item={item}
+                        size={96}
                         className="userpanal-cart-item-image"
-                        onError={(e) => {
-                          e.target.style.display = 'none';
-                          e.target.nextSibling.style.display = 'flex';
-                        }}
                       />
-                      <div className="userpanal-cart-placeholder-image" style={{ display: 'none' }}>
-                        No Image
-                      </div>
 
                       <div className="userpanal-cart-item-info">
                         <h3 className="userpanal-cart-item-title">{item.name}</h3>

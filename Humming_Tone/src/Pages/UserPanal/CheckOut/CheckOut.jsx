@@ -11,6 +11,7 @@ import {
   RefreshCw,
 } from "lucide-react";
 import "./CheckOut.css";
+import CustomGarmentThumb from "../../../components/CustomGarmentThumb/CustomGarmentThumb";
 import UserFooter from "../../../components/User-Footer-Card/UserFooter";
 import { API_BASE_URL } from "../../../utils/apiConfig";
 import { fetchSiteContent, getSiteContent } from "../../../utils/siteContentStore";
@@ -269,12 +270,25 @@ const CheckOut = ({ onBack }) => {
         shipping,
         user_id: customerUser?.id || null,
 
-        items: cartItems.map((item) => ({
-          product_id: item.id,
-          quantity: item.quantity,
-          size: item.size,
-          color: item.color || null,
-        })),
+        items: cartItems.map((item) => {
+          const isCustom = Boolean(
+            item.is_custom ||
+            item.customDetails ||
+            (typeof item.id === "string" && item.id.includes("custom"))
+          );
+          return {
+            product_id: isCustom ? "custom-tshirt" : item.id,
+            quantity: item.quantity,
+            size: item.size || "M",
+            color: item.color || null,
+            is_custom: isCustom,
+            price: Number(item.price || 0),
+            name: item.name,
+            image: item.image,
+            custom_preview_image: item.customDetails?.frontPreviewUrl || item.custom_preview_image || item.image || null,
+            customDetails: item.customDetails || null,
+          };
+        }),
       };
 
       const res = await fetch(`${API_BASE_URL}/user/create_order`, {
@@ -626,9 +640,9 @@ const CheckOut = ({ onBack }) => {
               <div className="userpanal-checkout-order-items">
                 {cartItems.map((item) => (
                   <div key={item.id} className="userpanal-checkout-order-item">
-                    <img
-                      src={item.image}
-                      alt={item.name}
+                    <CustomGarmentThumb
+                      item={item}
+                      size={64}
                       className="userpanal-checkout-order-item-image"
                     />
                     <div className="userpanal-checkout-order-item-details">
