@@ -45,9 +45,14 @@ const PlainTShirt2D = ({
   tshirtImage = null,
   design = null,
   printableAreaVisible = true,
+  onUpdateDesign = null,
+  isDraggable = true,
 }) => {
   const idPrefix = `tshirt-2d-${side}`;
   const [imgError, setImgError] = useState(false);
+  const svgRef = useRef(null);
+  const [isDragging, setIsDragging] = useState(false);
+  const dragStartRef = useRef(null);
 
   // Reset imgError when tshirtImage or side changes
   useEffect(() => {
@@ -110,6 +115,116 @@ const PlainTShirt2D = ({
 
   const effectiveImage = !imgError && tshirtImage ? tshirtImage : null;
 
+  // Drag & drop handlers for the custom text element
+  const handleTextPointerDown = (e) => {
+    if (!onUpdateDesign || !isDraggable || !design?.text) return;
+    e.preventDefault();
+    e.stopPropagation();
+
+    const svg = svgRef.current;
+    if (!svg) return;
+
+    const pt = svg.createSVGPoint();
+    pt.x = e.clientX;
+    pt.y = e.clientY;
+    const svgP = pt.matrixTransform(svg.getScreenCTM().inverse());
+
+    dragStartRef.current = {
+      startMouseX: svgP.x,
+      startMouseY: svgP.y,
+      initialTextX: design.textPosX || 0,
+      initialTextY: design.textPosY || 0,
+      scale: design.scale || 1,
+      rotation: design.rotation || 0,
+      flipH: design.flipH || false,
+      pointerId: e.pointerId,
+    };
+
+    setIsDragging(true);
+
+    if (e.target && e.target.setPointerCapture) {
+      try {
+        e.target.setPointerCapture(e.pointerId);
+      } catch {}
+    }
+  };
+
+  const handleTextPointerMove = (e) => {
+    if (!dragStartRef.current || !onUpdateDesign) return;
+    e.preventDefault();
+
+    const svg = svgRef.current;
+    if (!svg) return;
+
+    const pt = svg.createSVGPoint();
+    pt.x = e.clientX;
+    pt.y = e.clientY;
+    const svgP = pt.matrixTransform(svg.getScreenCTM().inverse());
+
+    const { startMouseX, startMouseY, initialTextX, initialTextY, scale, rotation, flipH } = dragStartRef.current;
+
+    const deltaX = svgP.x - startMouseX;
+    const deltaY = svgP.y - startMouseY;
+
+    // Apply inverse rotation
+    const rad = ((rotation || 0) * Math.PI) / 180;
+    const cos = Math.cos(rad);
+    const sin = Math.sin(rad);
+
+    const rotDeltaX = deltaX * cos + deltaY * sin;
+    const rotDeltaY = -deltaX * sin + deltaY * cos;
+
+    // Apply inverse scale & flip
+    const scaleX = (scale || 1) * (flipH ? -1 : 1);
+    const scaleY = scale || 1;
+
+    const localDeltaX = rotDeltaX / (scaleX || 1);
+    const localDeltaY = rotDeltaY / (scaleY || 1);
+
+    const newTextX = Math.round(initialTextX + localDeltaX);
+    const newTextY = Math.round(initialTextY + localDeltaY);
+
+    onUpdateDesign({
+      textPosX: newTextX,
+      textPosY: newTextY,
+    });
+  };
+
+  const handleTextPointerUp = (e) => {
+    if (dragStartRef.current) {
+      if (e.target && e.target.releasePointerCapture) {
+        try {
+          e.target.releasePointerCapture(dragStartRef.current.pointerId);
+        } catch {}
+      }
+      dragStartRef.current = null;
+      setIsDragging(false);
+    }
+  };
+
+  useEffect(() => {
+    const onWindowMove = (e) => {
+      if (dragStartRef.current) {
+        handleTextPointerMove(e);
+      }
+    };
+    const onWindowUp = (e) => {
+      if (dragStartRef.current) {
+        handleTextPointerUp(e);
+      }
+    };
+
+    window.addEventListener("pointermove", onWindowMove);
+    window.addEventListener("pointerup", onWindowUp);
+    window.addEventListener("pointercancel", onWindowUp);
+
+    return () => {
+      window.removeEventListener("pointermove", onWindowMove);
+      window.removeEventListener("pointerup", onWindowUp);
+      window.removeEventListener("pointercancel", onWindowUp);
+    };
+  }, [design]);
+
   return (
     <div
       className="plain-tshirt-svg-container"
@@ -152,6 +267,7 @@ const PlainTShirt2D = ({
       )}
 
       <svg
+        ref={svgRef}
         viewBox="0 0 500 580"
         fill="none"
         xmlns="http://www.w3.org/2000/svg"
@@ -325,30 +441,72 @@ const PlainTShirt2D = ({
               )}
 
               {design.text && (
-                <text
-                  x="0"
-                  y={
-                    design.imageUrl
-                      ? (placementMode === "chest" ? "28" : "55")
-                      : "0"
-                  }
-                  textAnchor="middle"
-                  dominantBaseline="middle"
-                  fill={resolvedTextColor}
-                  fontSize={placementMode === "chest" ? Math.min(dynamicFontSize, 15) : dynamicFontSize}
-                  fontFamily={design.fontFamily || "Inter, sans-serif"}
-                  fontWeight={design.isBold ? "700" : "500"}
-                  fontStyle={design.isItalic ? "italic" : "normal"}
-                  letterSpacing={(design.letterSpacing || 1) + "px"}
-                  lengthAdjust={textLength > 10 ? "spacingAndGlyphs" : undefined}
-                  textLength={textLength > 10 ? maxAllowedWidth : undefined}
+                <g
+                  className="interactive-text-drag-group"
+                  transform={`translate(${design.textPosX || 0}, ${design.textPosY || 0})`}
+                  onPointerDown={handleTextPointerDown}
                   style={{
-                    userSelect: "none",
-                    filter: "drop-shadow(0 1px 2px rgba(0,0,0,0.25))",
+                    cursor: isDraggable ? (isDragging ? "grabbing" : "grab") : "default",
+                    touchAction: "none",
                   }}
                 >
-                  {design.text}
-                </text>
+                  {/* Invisible padding hitbox for easy grabbing even with thin fonts */}
+                  <rect
+                    x={-(maxAllowedWidth / 2) - 10}
+                    y={
+                      (design.imageUrl ? (placementMode === "chest" ? 28 : 55) : 0) - (dynamicFontSize || 16) - 6
+                    }
+                    width={maxAllowedWidth + 20}
+                    height={(dynamicFontSize || 16) * 2 + 12}
+                    fill="transparent"
+                    style={{ cursor: isDraggable ? (isDragging ? "grabbing" : "grab") : "default" }}
+                  />
+
+                  {/* Subtle drag outline indicator on hover/drag */}
+                  {isDraggable && (
+                    <rect
+                      x={-(maxAllowedWidth / 2) - 6}
+                      y={
+                        (design.imageUrl ? (placementMode === "chest" ? 28 : 55) : 0) - (dynamicFontSize || 16) - 3
+                      }
+                      width={maxAllowedWidth + 12}
+                      height={(dynamicFontSize || 16) * 2 + 6}
+                      rx="6"
+                      fill="none"
+                      stroke="#4F46E5"
+                      strokeWidth="1.5"
+                      strokeDasharray="4 3"
+                      className={`text-drag-outline ${isDragging ? "is-dragging" : ""}`}
+                      style={{ pointerEvents: "none" }}
+                    />
+                  )}
+
+                  <text
+                    x="0"
+                    y={
+                      design.imageUrl
+                        ? (placementMode === "chest" ? "28" : "55")
+                        : "0"
+                    }
+                    textAnchor="middle"
+                    dominantBaseline="middle"
+                    fill={resolvedTextColor}
+                    fontSize={placementMode === "chest" ? Math.min(dynamicFontSize, 15) : dynamicFontSize}
+                    fontFamily={design.fontFamily || "Inter, sans-serif"}
+                    fontWeight={design.isBold ? "700" : "500"}
+                    fontStyle={design.isItalic ? "italic" : "normal"}
+                    letterSpacing={(design.letterSpacing || 1) + "px"}
+                    lengthAdjust={textLength > 10 ? "spacingAndGlyphs" : undefined}
+                    textLength={textLength > 10 ? maxAllowedWidth : undefined}
+                    style={{
+                      userSelect: "none",
+                      filter: "drop-shadow(0 1px 2px rgba(0,0,0,0.25))",
+                      pointerEvents: "none",
+                    }}
+                  >
+                    {design.text}
+                  </text>
+                </g>
               )}
             </g>
           )}
@@ -501,6 +659,8 @@ const Customize = () => {
     scale: 1,
     posX: 0,
     posY: 0,
+    textPosX: 0,
+    textPosY: 0,
     rotation: 0,
     flipH: false,
   });
@@ -521,6 +681,8 @@ const Customize = () => {
     scale: 1,
     posX: 0,
     posY: 0,
+    textPosX: 0,
+    textPosY: 0,
     rotation: 0,
     flipH: false,
   });
@@ -746,19 +908,23 @@ const Customize = () => {
       scale: 1,
       posX: 0,
       posY: 0,
+      textPosX: 0,
+      textPosY: 0,
       rotation: 0,
       flipH: false,
     });
   };
 
   // Alignment Helper actions
-  const handleCenterHorizontal = () => updateCurrentDesign({ posX: 0 });
-  const handleCenterVertical = () => updateCurrentDesign({ posY: 0 });
+  const handleCenterHorizontal = () => updateCurrentDesign({ posX: 0, textPosX: 0 });
+  const handleCenterVertical = () => updateCurrentDesign({ posY: 0, textPosY: 0 });
   const handleToggleFlipH = () => updateCurrentDesign({ flipH: !currentDesign.flipH });
   const handleNudge = (dx, dy) => {
     updateCurrentDesign({
       posX: Math.max(-80, Math.min(80, (currentDesign.posX || 0) + dx)),
       posY: Math.max(-90, Math.min(90, (currentDesign.posY || 0) + dy)),
+      textPosX: (currentDesign.textPosX || 0) + dx,
+      textPosY: (currentDesign.textPosY || 0) + dy,
     });
   };
 
@@ -855,17 +1021,15 @@ const Customize = () => {
       {/* Studio Header Banner */}
       <div className="studio-topbar">
         <div className="studio-topbar-inner">
-          <div>
-            <span className="studio-badge">ATELIER STUDIO LAB</span>
+          <div className="studio-header-left">
             <h1 className="studio-title">Custom Plain T-Shirt Studio</h1>
-            <p className="studio-subtitle">
-              Configure your bespoke 2D front and back t-shirt with real-time typography, curated artwork motifs, and garment mockups.
-            </p>
           </div>
           <div className="studio-header-price">
             <span className="price-label">ESTIMATED PRICE</span>
-            <span className="price-amount">₹{totalPrice.toLocaleString()}</span>
-            <span className="price-sub">₹{unitPrice}/pc (incl. GST)</span>
+            <div className="price-main-row">
+              <span className="price-amount">₹{totalPrice.toLocaleString()}</span>
+              <span className="price-sub">₹{unitPrice}/pc (incl. GST)</span>
+            </div>
           </div>
         </div>
       </div>
@@ -984,33 +1148,6 @@ const Customize = () => {
               )}
             </div>
 
-            {/* Back Side Blank / Custom Notice Banner */}
-            {activeSide === "back" && (
-              <div className="back-blank-banner">
-                <div className="back-blank-info">
-                  <span className="back-blank-title">
-                    {hasCustomBack ? "Back side has custom design applied" : "Back side is currently Blank"}
-                  </span>
-                  <span className="back-blank-sub">
-                    {hasCustomBack
-                      ? "Standard +₹150 print fee applies for 2-sided custom apparel."
-                      : "No extra fee for keeping the back side plain and minimalist."}
-                  </span>
-                </div>
-                {hasCustomBack && (
-                  <button
-                    type="button"
-                    className="btn-keep-blank"
-                    onClick={() => {
-                      resetActiveSide();
-                      setBackDesign((prev) => ({ ...prev, isBackBlank: true }));
-                    }}
-                  >
-                    Keep Back Blank
-                  </button>
-                )}
-              </div>
-            )}
 
             {/* 2D T-Shirt Visualizer with Clean Loading Skeleton */}
             <div className="tshirt-visualizer-box">
@@ -1031,6 +1168,8 @@ const Customize = () => {
                   }
                   design={currentDesign}
                   printableAreaVisible={showPrintBorder}
+                  onUpdateDesign={updateCurrentDesign}
+                  isDraggable={true}
                 />
               )}
             </div>
@@ -1116,7 +1255,7 @@ const Customize = () => {
                       type="button"
                       className="nudge-btn center"
                       title="Reset Position"
-                      onClick={() => updateCurrentDesign({ posX: 0, posY: 0 })}
+                      onClick={() => updateCurrentDesign({ posX: 0, posY: 0, textPosX: 0, textPosY: 0 })}
                     >
                       •
                     </button>
@@ -1295,6 +1434,9 @@ const Customize = () => {
                       maxLength={36}
                       onChange={(e) => updateCurrentDesign({ text: e.target.value })}
                     />
+                    <div className="text-drag-hint">
+                      <Move size={12} /> Drag & reposition text directly on the t-shirt
+                    </div>
                   </div>
 
                   <div className="form-group-row">
