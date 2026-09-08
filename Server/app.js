@@ -220,7 +220,7 @@ app.use((error, req, res, next) => {
     res.send({
         error: {
             status: error.status || 500,
-            message: error.message
+            message: error.message || 'An internal server error occurred.'
         }
     });
 });

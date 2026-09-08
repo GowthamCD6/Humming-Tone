@@ -27,12 +27,19 @@ if (process.env.DB_SSL === "true" || process.env.TIDB_ENABLE_SSL === "true" || (
   }
 }
 
+const dbHost = process.env.DB_HOST || process.env.TIDB_HOST || 'localhost';
+// Default to port 3306 (TiDB Cloud supports both 4000 and 3306; 3306 is open across networks)
+const dbPort = Number(process.env.DB_PORT || process.env.TIDB_PORT) || 3306;
+const dbUser = process.env.DB_USER || process.env.TIDB_USER || 'root';
+const dbPassword = process.env.DB_PASSWORD || process.env.TIDB_PASSWORD || '';
+const dbName = process.env.DB_NAME || process.env.TIDB_DATABASE || process.env.TIDB_NAME || 'HummingTone';
+
 const poolConfig = {
-  host: process.env.DB_HOST || 'localhost',
-  port: Number(process.env.DB_PORT) || 4000,
-  user: process.env.DB_USER || 'root',
-  password: process.env.DB_PASSWORD || '',
-  database: process.env.DB_NAME || 'HummingTone',
+  host: dbHost,
+  port: dbPort,
+  user: dbUser,
+  password: dbPassword,
+  database: dbName,
   waitForConnections: true,
   connectionLimit: 15,
   maxIdle: 10,
