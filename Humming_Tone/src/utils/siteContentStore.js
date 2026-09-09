@@ -235,11 +235,25 @@ export function resetSiteContent() {
 // Get active gender options
 export function getGenderOptions() {
   const content = getSiteContent();
-  const allGenders = Object.keys(content.genderCategory);
+  const genderCategory = content.genderCategory || {};
   const genderStatus = content.genderStatus || {};
   
-  // Filter to only return active genders
-  return allGenders.filter(gender => genderStatus[gender] !== false);
+  const allCandidateGenders = Array.from(
+    new Set([...Object.keys(genderCategory), ...Object.keys(genderStatus)])
+  );
+
+  const list = allCandidateGenders.length > 0
+    ? allCandidateGenders
+    : ['Men', 'Women', 'Children', 'Baby', 'Sports'];
+
+  // Filter to only return active genders and exclude non-apparel like Customize
+  return list.filter(gender => {
+    if (gender.toLowerCase() === 'customize') return false;
+    if (Object.keys(genderStatus).length > 0) {
+      return genderStatus[gender] === true;
+    }
+    return true;
+  });
 }
 
 // Get category options for a specific gender

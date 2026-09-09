@@ -28,23 +28,22 @@ exports.fetch_products = (req,res,next) => { // api request can be /user/fetch_p
                         LEFT JOIN categories c ON p.category_id = c.id
                         LEFT JOIN product_variants pv 
                         ON pv.product_id = p.id
-                        WHERE p.is_active = 1`;
+                        LEFT JOIN genders g ON LOWER(g.name) = LOWER(p.gender)
+                        WHERE p.is_active = 1
+                          AND (g.is_active IS NULL OR g.is_active = 1)`;
 
       const params = [];
 
       // If a gender is provided, filter by it. Otherwise, fetch all active products.
-      if (gender && gender.trim() !== "") {
-        const allowedGenders = ['men', 'women', 'children', 'babies', 'baby', 'sports'];
+      if (gender && gender.trim() !== "" && gender.toLowerCase() !== "all" && gender.toLowerCase() !== "all gender") {
         const normalizedGender = gender.toLowerCase() === 'baby' ? 'babies' : gender.toLowerCase();
-        if (allowedGenders.includes(gender.toLowerCase())) {
-          fetchSql += ` AND (p.gender = ? OR p.gender = ?)`;
-          params.push(gender.toLowerCase(), normalizedGender);
-        }
+        fetchSql += ` AND (LOWER(p.gender) = LOWER(?) OR LOWER(p.gender) = LOWER(?))`;
+        params.push(gender.trim(), normalizedGender);
       }
 
       // If category is provided, filter by category name or subcategory
       if (category && category.trim() !== "" && category.toLowerCase() !== "all" && category.toLowerCase() !== "all categories") {
-        fetchSql += ` AND (c.name = ? OR p.subcategory = ?)`;
+        fetchSql += ` AND (LOWER(c.name) = LOWER(?) OR LOWER(p.subcategory) = LOWER(?))`;
         params.push(category.trim(), category.trim());
       }
 
@@ -273,15 +272,18 @@ exports.fetch_recommendations = (req, res, next) => {
 exports.fetch_categories = (req, res, next) => {
   try {
     const { gender } = req.query;
-    let sql = `SELECT name AS category FROM categories WHERE 1=1`;
+    let sql = `SELECT c.name AS category 
+               FROM categories c 
+               LEFT JOIN genders g ON LOWER(g.name) = LOWER(c.gender_name)
+               WHERE (g.is_active IS NULL OR g.is_active = 1)`;
     const params = [];
 
     if (gender && gender !== 'All' && gender !== 'All Gender') {
-      sql += ` AND gender_name = ?`;
+      sql += ` AND LOWER(c.gender_name) = LOWER(?)`;
       params.push(gender);
     }
     
-    sql += ` ORDER BY name ASC`;
+    sql += ` GROUP BY c.name ORDER BY c.name ASC`;
 
     db.query(sql, params, (error, result) => {
       if (error) return next(error);
