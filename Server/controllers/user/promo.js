@@ -1,61 +1,12 @@
 const createError = require("http-errors");
 const db = require("../../config/db");
+const { sanitizeIdentifier } = require("../../utils/sanitize");
 
 exports.use_promo_code = (req, res, next) => {
-  try {
-    const { promo_id, order_amount } = req.params;
-
-    if (!promo_id || isNaN(promo_id)) {
-      return next(createError.BadRequest('Invalid promo_id'));
-    }
-    if (!order_amount || isNaN(order_amount)) {
-      return next(createError.BadRequest('Invalid order amount!'));
-    }
-
-    let fetchDetails = "SELECT * FROM promo_codes WHERE id = ? AND is_active = 1";
-    db.query(fetchDetails, [promo_id], (error, result) => {
-      if (error || result.length == 0) {
-        return next(error || createError.NotFound('Requested promo_code does not exist!'));
-      }
-
-      let today = new Date().toISOString().split('T')[0];  // Current date in "YYYY-MM-DD" format
-
-      if (result[0].start_date <= today && today <= result[0].end_date) {
-        let min_order_amount = Number(result[0].min_order_amount);
-        
-        if (order_amount < min_order_amount) {
-          return next(createError.BadRequest('Order amount is lesser than required criteria!'));
-        }
-
-        let discount_amount;
-        if (result[0].discount_type === 'percentage') {
-          discount_amount = (result[0].discount_value / 100) * order_amount;
-        } else {
-          discount_amount = order_amount - result[0].discount_value;
-        }
-
-        let max_discount = result[0].max_discount;
- 
-        if (max_discount !== null && discount_amount > max_discount) {
-          return next(createError.BadRequest('Discount limit exceeded!'));
-        }
-
-        let updateCount = "UPDATE promo_codes SET used_count = used_count + 1 WHERE id = ?";
-        db.query(updateCount, [promo_id], (updateError, updateResult) => {
-          if (updateError || updateResult.affectedRows === 0) {
-            return next(updateError || createError.InternalServerError('Failed to update used count.'));
-          }
-
-          res.send(`Promo code applied successfully! Discount: ${discount_amount.toFixed(2)}`);
-        });
-
-      } else {
-        return next(createError.BadRequest('Promo code expired!'));
-      }
-    });
-  } catch (error) {
-    next(error);
-  }
+  return res.status(403).json({
+    success: false,
+    message: "Direct promo code redemption endpoint is disabled for security. Promo codes are verified and applied atomically during checkout."
+  });
 };
 
 /**
@@ -67,8 +18,11 @@ exports.validate_promo = (req, res, next) => {
     if (!code || typeof code !== 'string') {
       return res.status(400).json({ success: false, message: 'Please enter a promo code.' });
     }
-    const cleanCode = code.trim().toUpperCase();
-    const amount = Number(order_amount) || 0;
+    const cleanCode = sanitizeIdentifier(code, 30).toUpperCase();
+    if (!cleanCode) {
+      return res.status(400).json({ success: false, message: 'Invalid promo code format.' });
+    }
+    const amount = Math.max(0, Number(order_amount) || 0);
 
     const sql = "SELECT * FROM promo_codes WHERE UPPER(code) = ? AND is_active = 1 LIMIT 1";
     db.query(sql, [cleanCode], (err, rows) => {

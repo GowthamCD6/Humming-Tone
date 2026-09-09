@@ -4,7 +4,7 @@ const multer = require("multer");
 // and directly streamed to Cloudinary without writing to ephemeral disk.
 const storage = multer.memoryStorage();
 
-// file filter (only images)
+// file filter (only images with safe extensions)
 const fileFilter = (req, file, cb) => {
   const allowedTypes = [
     "image/jpeg",
@@ -14,10 +14,14 @@ const fileFilter = (req, file, cb) => {
     "image/avif"
   ];
 
-  if (allowedTypes.includes(file.mimetype)) {
+  const allowedExts = /\.(jpe?g|png|webp|avif)$/i;
+  const isMimeOk = allowedTypes.includes(file.mimetype);
+  const isExtOk = allowedExts.test(file.originalname || '');
+
+  if (isMimeOk && isExtOk) {
     cb(null, true);
   } else {
-    cb(new Error("Only image files (JPEG, PNG, WEBP, AVIF) are allowed"), false);
+    cb(new Error("Only valid image files (JPEG, PNG, WEBP, AVIF) under 5MB are allowed"), false);
   }
 };
 
@@ -26,7 +30,7 @@ const upload = multer({
   storage,
   fileFilter,
   limits: {
-    fileSize: 10 * 1024 * 1024 // 10MB per file
+    fileSize: 5 * 1024 * 1024 // 5MB per file max
   }
 });
 

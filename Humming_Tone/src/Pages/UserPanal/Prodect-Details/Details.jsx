@@ -61,7 +61,9 @@ const ProductDetailPage = () => {
     if (!selectedSize || !product) return;
 
     const variant = sizes.find((v) => v.size === selectedSize) || {};
-    const stock = Number(variant.stock_quantity != null ? variant.stock_quantity : (product.stock_quantity || 999));
+    const stock = Number(variant.stock_quantity != null ? variant.stock_quantity : (product.stock_quantity || 0));
+    if (stock <= 0) return;
+
     const price = Number(variant.price != null ? variant.price : product.price);
     const cartItemId = `${product.id}-${selectedSize}-${product.color || "Default"}`;
 
@@ -85,7 +87,7 @@ const ProductDetailPage = () => {
         name: product.name,
         brand: product.brand || "ATELIER COLLECTION",
         price,
-        quantity: Math.max(1, Number(quantity || 1)),
+        quantity: Math.min(Math.max(1, Number(quantity || 1)), stock),
         size: selectedSize,
         color: product.color || "Default",
         stock,
@@ -124,16 +126,18 @@ const ProductDetailPage = () => {
     if (!selectedSize) return;
 
     const variant = sizes.find((v) => v.size === selectedSize);
+    const stock = Number(variant?.stock_quantity != null ? variant.stock_quantity : (product.stock_quantity || 0));
+    if (stock <= 0) return;
 
     const directItem = {
       id: product.id,
       name: product.name,
       brand: product.brand,
       price: variant?.price || product.price,
-      quantity,
+      quantity: Math.min(quantity, stock),
       size: selectedSize,
       color: product.color || "Default",
-      stock: variant?.stock_quantity || 10,
+      stock,
       image: productImages[0] || getImageUrl(product.image_path),
     };
 
@@ -150,23 +154,49 @@ const ProductDetailPage = () => {
   };
 
   /* ================= RECOMMENDATIONS ================= */
-  const fetchRecommendations = async (categoryId) => {
+  const fetchRecommendations = async (categoryId, currentProductId) => {
     try {
+      // Request extra products so after excluding the current product, exactly 4 cards are shown
       const res = await fetch(
-        `${API_BASE_URL}/user/fetch_recommendations?page=1&limit=3`,
+        `${API_BASE_URL}/user/fetch_recommendations?page=1&limit=10`,
         {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
           },
-          body: JSON.stringify({ category_id: categoryId }),
+          body: JSON.stringify({
+            category_id: categoryId,
+            exclude_id: currentProductId,
+            product_id: currentProductId,
+          }),
         }
       );
 
       const data = await res.json();
-      setRecommendedProducts(data.data || []);
+      let list = (data.data || []).filter(
+        (item) => String(item.id) !== String(currentProductId)
+      );
+
+      // If category has fewer than 4 other items, backfill from other active catalog products
+      if (list.length < 4) {
+        try {
+          const allRes = await fetch(`${API_BASE_URL}/user/fetch_products`);
+          const allData = await allRes.json();
+          const allList = Array.isArray(allData) ? allData : allData?.data || [];
+          const moreProducts = allList.filter(
+            (item) =>
+              String(item.id) !== String(currentProductId) &&
+              !list.some((existing) => String(existing.id) === String(item.id))
+          );
+          list = [...list, ...moreProducts];
+        } catch (backfillErr) {
+          console.warn("Backfill recommendations error:", backfillErr);
+        }
+      }
+
+      setRecommendedProducts(list.slice(0, 4));
     } catch (err) {
-      console.error(err);
+      console.error("fetchRecommendations error:", err);
     }
   };
 
@@ -201,7 +231,7 @@ const ProductDetailPage = () => {
         }
 
         if (data.category_id) {
-          fetchRecommendations(data.category_id);
+          fetchRecommendations(data.category_id, data.id);
         }
       } catch (err) {
         console.error(err);
@@ -241,6 +271,16 @@ const ProductDetailPage = () => {
       </div>
     );
   }
+
+  const selectedVariant = sizes.find((s) => s.size === selectedSize) || null;
+  const totalStock = sizes.reduce(
+    (sum, v) => sum + Number(v.stock_quantity || 0),
+    0
+  );
+  const currentStock = selectedVariant
+    ? Number(selectedVariant.stock_quantity || 0)
+    : totalStock;
+  const isOutOfStock = selectedSize ? currentStock <= 0 : totalStock <= 0;
 
   return (
     <div className="userpanal-product-details-page">
@@ -327,63 +367,177 @@ const ProductDetailPage = () => {
               )}
             </div>
 
-            <div className="selection-section">
-              <h3 className="sub-title">Select Size</h3>
-              <div className="size-options">
-                {sizes.map((v) => (
-                  <button
-                    key={v.size}
-                    className={`size-btn ${
-                      selectedSize === v.size ? "selected" : ""
-                    }`}
-                    onClick={() => setSelectedSize(v.size)}
-                  >
-                    <span className="size-name">{v.size}</span>
-                    <span className="stock-tag">
-                      {v.stock_quantity > 0 ? "IN STOCK" : "OUT OF STOCK"}
+            {/* LIVE INVENTORY / STOCK DISPLAY BANNER */}
+            <div className="stock-availability-card">
+              {selectedVariant ? (
+                selectedVariant.stock_quantity > 5 ? (
+                  <div className="stock-badge in-stock">
+                    <span className="stock-pulse-dot green-dot"></span>
+                    <div className="stock-badge-info">
+                      <span className="stock-primary-text">
+                        In Stock: <strong>{selectedVariant.stock_quantity} units available</strong> for Size {selectedSize}
+                      </span>
+                      <span className="stock-secondary-text">
+                        Total store inventory: {totalStock} items across all sizes
+                      </span>
+                    </div>
+                  </div>
+                ) : selectedVariant.stock_quantity > 0 ? (
+                  <div className="stock-badge low-stock">
+                    <span className="stock-pulse-dot amber-dot"></span>
+                    <div className="stock-badge-info">
+                      <span className="stock-primary-text">
+                        <span className="urgency-flame">⚡</span> <strong>Only {selectedVariant.stock_quantity} left in stock</strong> for Size {selectedSize}!
+                      </span>
+                      <span className="stock-secondary-text">
+                        High demand — order now before inventory sells out
+                      </span>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="stock-badge out-of-stock">
+                    <span className="stock-pulse-dot red-dot"></span>
+                    <div className="stock-badge-info">
+                      <span className="stock-primary-text">
+                        <strong>Out of Stock</strong> for Size {selectedSize}
+                      </span>
+                      <span className="stock-secondary-text">
+                        Please select another available size from the store
+                      </span>
+                    </div>
+                  </div>
+                )
+              ) : (
+                <div className="stock-badge store-overview">
+                  <span className="stock-pulse-dot blue-dot"></span>
+                  <div className="stock-badge-info">
+                    <span className="stock-primary-text">
+                      Store Stock: <strong>{totalStock} units available</strong>
                     </span>
-                  </button>
-                ))}
-              </div>
-
-              {selectedSize && (
-                <div className="selected-size-info">
-                  Selected: {selectedSize} - ₹
-                  {sizes.find((s) => s.size === selectedSize)?.price}
+                    <span className="stock-secondary-text">
+                      Select your size below to view exact variant inventory
+                    </span>
+                  </div>
                 </div>
               )}
             </div>
 
             <div className="selection-section">
-              <h3 className="sub-title">Quantity</h3>
+              <div className="section-title-row" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                <h3 className="sub-title">Select Size</h3>
+                <span className="stock-summary-tag">
+                  {totalStock > 0 ? `${totalStock} total in store` : "Out of stock"}
+                </span>
+              </div>
+              <div className="size-options">
+                {sizes.map((v) => {
+                  const stockNum = Number(v.stock_quantity || 0);
+                  const isOut = stockNum <= 0;
+                  const isLow = stockNum > 0 && stockNum <= 5;
+                  return (
+                    <button
+                      key={v.size}
+                      className={`size-btn ${
+                        selectedSize === v.size ? "selected" : ""
+                      } ${isOut ? "out-of-stock" : ""}`}
+                      onClick={() => {
+                        setSelectedSize(v.size);
+                        if (stockNum > 0 && quantity > stockNum) {
+                          setQuantity(stockNum);
+                        } else if (stockNum <= 0) {
+                          setQuantity(1);
+                        }
+                      }}
+                    >
+                      <span className="size-name">{v.size}</span>
+                      <span className={`stock-tag ${isOut ? "out" : isLow ? "low" : "in"}`}>
+                        {isOut
+                          ? "0 in stock"
+                          : isLow
+                          ? `Only ${stockNum} left`
+                          : `${stockNum} in stock`}
+                      </span>
+                    </button>
+                  );
+                })}
+              </div>
+
+              {selectedSize && (
+                <div className="selected-size-info">
+                  <span>Selected: <strong>{selectedSize}</strong> - ₹{sizes.find((s) => s.size === selectedSize)?.price}</span>
+                  <span className="selected-size-stock-note">
+                    {selectedVariant?.stock_quantity > 0
+                      ? `(${selectedVariant.stock_quantity} available)`
+                      : `(Out of stock)`}
+                  </span>
+                </div>
+              )}
+            </div>
+
+            <div className="selection-section">
+              <div className="section-title-row" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
+                <h3 className="sub-title" style={{ margin: 0 }}>Quantity</h3>
+                {selectedVariant && (
+                  <span className="quantity-stock-helper">
+                    {currentStock > 0 ? (
+                      <span>(Available in store: <strong>{currentStock}</strong>)</span>
+                    ) : (
+                      <span style={{ color: '#dc2626', fontWeight: 600 }}>(Currently Sold Out)</span>
+                    )}
+                  </span>
+                )}
+              </div>
               <div className="quantity-ctrl">
-                <button onClick={() => setQuantity(Math.max(1, quantity - 1))}>
+                <button
+                  onClick={() => setQuantity(Math.max(1, quantity - 1))}
+                  disabled={quantity <= 1 || isOutOfStock}
+                  aria-label="Decrease quantity"
+                  style={{ opacity: quantity <= 1 || isOutOfStock ? 0.45 : 1 }}
+                >
                   -
                 </button>
-                <input readOnly value={quantity} />
-                <button onClick={() => setQuantity(quantity + 1)}>+</button>
+                <input readOnly value={isOutOfStock ? 0 : quantity} />
+                <button
+                  onClick={() => {
+                    if (selectedVariant && quantity >= currentStock) return;
+                    setQuantity(quantity + 1);
+                  }}
+                  disabled={isOutOfStock || (selectedVariant && quantity >= currentStock)}
+                  aria-label="Increase quantity"
+                  style={{ opacity: isOutOfStock || (selectedVariant && quantity >= currentStock) ? 0.45 : 1 }}
+                  title={selectedVariant && quantity >= currentStock ? `Maximum stock of ${currentStock} reached` : "Add more"}
+                >
+                  +
+                </button>
               </div>
+              {selectedVariant && quantity >= currentStock && currentStock > 0 && (
+                <p className="max-stock-notice">
+                  Maximum available stock ({currentStock} units) reached.
+                </p>
+              )}
             </div>
 
             <div className="product-action-buttons-group">
               <button
-                className={`cart-submit-btn ${selectedSize ? "enabled" : ""}`}
+                className={`cart-submit-btn ${selectedSize && !isOutOfStock ? "enabled" : "disabled"}`}
                 onClick={isInCart ? removeFromCart : addToCart}
-                disabled={!selectedSize}
+                disabled={!selectedSize || isOutOfStock}
               >
                 {!selectedSize
                   ? "SELECT SIZE TO ADD TO CART"
+                  : isOutOfStock
+                  ? "OUT OF STOCK"
                   : isInCart
                   ? "REMOVE FROM CART"
                   : "ADD TO CART"}
               </button>
 
               <button
-                className={`buy-now-submit-btn ${selectedSize ? "enabled" : ""}`}
+                className={`buy-now-submit-btn ${selectedSize && !isOutOfStock ? "enabled" : "disabled"}`}
                 onClick={handleBuyNow}
-                disabled={!selectedSize}
+                disabled={!selectedSize || isOutOfStock}
               >
-                BUY IT NOW
+                {isOutOfStock ? "OUT OF STOCK" : "BUY IT NOW"}
               </button>
             </div>
 

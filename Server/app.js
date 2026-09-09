@@ -77,6 +77,7 @@ app.use((req, res, next) => {
   res.setHeader('X-Frame-Options', 'SAMEORIGIN');
   res.setHeader('X-XSS-Protection', '1; mode=block');
   res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
+  res.setHeader('Strict-Transport-Security', 'max-age=31536000; includeSubDomains');
   next();
 });
 
@@ -112,9 +113,20 @@ const rateLimiter = (windowMs, maxRequests) => (req, res, next) => {
   next();
 };
 
+// Admin & Auth rate limits
 app.use('/admin/auth/login', rateLimiter(60 * 1000, 10));
 app.use('/api/auth/google', rateLimiter(60 * 1000, 30));
-app.use('/user/track_order', rateLimiter(60 * 1000, 30));
+
+// User Panel Security Rate Limiters
+app.use('/user/create_order', rateLimiter(15 * 60 * 1000, 25)); // Max 25 order submissions per 15 min
+app.use('/user/cancel_order', rateLimiter(15 * 60 * 1000, 25)); // Max 25 cancellation attempts per 15 min
+app.use('/user/track_order', rateLimiter(60 * 1000, 30));      // Max 30 tracking checks per min
+app.use('/user/validate_promo', rateLimiter(5 * 60 * 1000, 30)); // Max 30 promo attempts per 5 min
+app.use('/api/user/validate_promo', rateLimiter(5 * 60 * 1000, 30));
+app.use('/customize/upload-user-design', rateLimiter(10 * 60 * 1000, 20)); // Max 20 uploads per 10 min
+app.use('/user/customize/upload-user-design', rateLimiter(10 * 60 * 1000, 20));
+app.use('/user/return_request', rateLimiter(15 * 60 * 1000, 15)); // Max 15 returns per 15 min
+app.use('/user/products/:id/reviews', rateLimiter(10 * 60 * 1000, 15)); // Max 15 reviews per 10 min
 
 app.use(morgan('dev'));
 app.use(cookieParser());

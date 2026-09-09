@@ -311,4 +311,4 @@ CREATE TABLE IF NOT EXISTS site_assets (
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   INDEX idx_asset_key (asset_key),
   INDEX idx_asset_category (category)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;

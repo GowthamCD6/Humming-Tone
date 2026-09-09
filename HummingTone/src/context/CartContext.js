@@ -91,19 +91,28 @@ export const CartProvider = ({ children }) => {
       updatedCart[existingIndex].color = color;
       updatedCart[existingIndex].price = price;
       updatedCart[existingIndex].stock = stock;
+      if (product.is_custom) {
+        updatedCart[existingIndex].is_custom = true;
+        updatedCart[existingIndex].customDetails = product.customDetails || updatedCart[existingIndex].customDetails;
+        updatedCart[existingIndex].custom_preview_image = product.custom_preview_image || updatedCart[existingIndex].custom_preview_image;
+      }
     } else {
       const newItem = {
         cartItemId,
         id: product.id,
         name: product.name,
-        brand: product.brand || 'ATELIER COLLECTION',
-        category: product.category || 'Luxury Collection',
+        brand: product.brand || (product.is_custom ? 'HUMMING TONE ATELIER' : 'ATELIER COLLECTION'),
+        category: product.category || (product.is_custom ? 'Custom Apparel' : 'Luxury Collection'),
         price,
-        image: product.image || (product.images && (product.images[0]?.image_path || product.images[0])) || null,
+        image: product.custom_preview_image || product.image || (product.images && (product.images[0]?.image_path || product.images[0])) || null,
         size,
         color,
         stock,
         quantity: Math.max(1, Number(actualQty || 1)),
+        is_custom: Boolean(product.is_custom || product.customDetails),
+        customDetails: product.customDetails || null,
+        custom_preview_image: product.custom_preview_image || product.image || null,
+        custom_fabric: product.custom_fabric || product.customDetails?.fabric || null,
       };
       updatedCart = [newItem, ...cartItems];
     }

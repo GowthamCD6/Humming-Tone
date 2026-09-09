@@ -4,6 +4,7 @@ const crypto = require("crypto");
 const razorpayInstance = require("../../utils/rajorpay.js");
 const { sendOrderConfirmationWhatsApp } = require("../../utils/whatsapp.js");
 const { sendOrderNotification } = require("./notification.js");
+const { sanitizeText, validateEmail, validatePhone, sanitizeIdentifier } = require("../../utils/sanitize");
 
 exports.create_order = (req, res, next) => {
   db.getConnection((err, connection) => {
@@ -34,9 +35,37 @@ exports.create_order = (req, res, next) => {
           items
         } = req.body;
 
-        if (!customer_name || !customer_email || !customer_phone || customer_email.toLowerCase().includes('guest@')) {
-          throw createError.BadRequest("A valid authenticated customer account is required to place an order");
+        // Security: Use verified identity from optionalUserAuth token if present.
+        // Reject spoofed user_id from unauthenticated callers.
+        const verifiedUserId = (req.userId && !isNaN(req.userId)) 
+          ? Number(req.userId) 
+          : (user_id && !isNaN(user_id) && req.user ? Number(req.user.id) : null);
+
+        const cleanEmail = validateEmail(customer_email);
+        if (!cleanEmail || cleanEmail.includes('guest@')) {
+          throw createError.BadRequest("A valid customer email address is required to place an order");
         }
+
+        const cleanPhone = validatePhone(customer_phone);
+        if (!cleanPhone) {
+          throw createError.BadRequest("A valid customer contact phone number (7-15 digits) is required");
+        }
+
+        const cleanName = sanitizeText(customer_name, 80);
+        if (!cleanName || cleanName.length < 2) {
+          throw createError.BadRequest("Customer name is required");
+        }
+
+        const cleanAddress = sanitizeText(customer_address, 400);
+        if (!cleanAddress || cleanAddress.length < 5) {
+          throw createError.BadRequest("Customer delivery address is required");
+        }
+
+        const cleanCity = sanitizeText(city, 60);
+        const cleanState = sanitizeText(state, 60);
+        const cleanPincode = sanitizeIdentifier(pincode, 10);
+        const cleanInstructions = sanitizeText(order_instructions, 400);
+        const cleanPromo = sanitizeIdentifier(promo_code, 30);
 
         if (!Array.isArray(items) || items.length === 0) {
           throw createError.BadRequest("Order items are required");
@@ -52,10 +81,12 @@ exports.create_order = (req, res, next) => {
 
         for (const item of items) {
           const { product_id, quantity, size = 'M' } = item;
+          const numQty = parseInt(quantity, 10);
 
-          if (!quantity || quantity <= 0) {
-            throw createError.BadRequest("Invalid cart item quantity");
+          if (isNaN(numQty) || numQty <= 0 || numQty > 50) {
+            throw createError.BadRequest("Item quantity must be between 1 and 50");
           }
+          item.quantity = numQty;
 
           const isCustomItem = Boolean(
             item.is_custom || 
@@ -202,16 +233,16 @@ exports.create_order = (req, res, next) => {
           `,
           [
             order_number,
-            user_id ? Number(user_id) : null,
-            customer_name,
-            customer_email,
-            customer_phone,
-            customer_address,
-            city,
-            state,
-            pincode,
-            order_instructions || null,
-            promo_code || null,
+            verifiedUserId,
+            cleanName,
+            cleanEmail,
+            cleanPhone,
+            cleanAddress,
+            cleanCity,
+            cleanState,
+            cleanPincode,
+            cleanInstructions || null,
+            cleanPromo || null,
             safeDiscount,
             subtotal,
             shipping,
@@ -406,26 +437,25 @@ exports.create_order = (req, res, next) => {
                     });
                   }
 
-                  // Auto-update user's saved shipping address in users table
-                  if (user_id || customer_email) {
+                  // Auto-update user's saved shipping address in users table for verified account
+                  if (verifiedUserId) {
                     db.promise().query(
                       `UPDATE users 
                        SET name = COALESCE(NULLIF(?, ''), name),
                            phone = COALESCE(NULLIF(?, ''), phone), 
                            address = COALESCE(NULLIF(?, ''), address), 
-                           city = COALESCE(?, city), 
-                           state = COALESCE(?, state), 
-                           pincode = COALESCE(?, pincode) 
-                       WHERE id = ? OR LOWER(email) = LOWER(?)`,
+                           city = COALESCE(NULLIF(?, ''), city), 
+                           state = COALESCE(NULLIF(?, ''), state), 
+                           pincode = COALESCE(NULLIF(?, ''), pincode) 
+                       WHERE id = ?`,
                       [
-                        customer_name || "",
-                        customer_phone || "",
-                        customer_address || "",
-                        city || "",
-                        state || "",
-                        pincode || "",
-                        user_id && !isNaN(user_id) ? Number(user_id) : -1,
-                        customer_email || ""
+                        cleanName || "",
+                        cleanPhone || "",
+                        cleanAddress || "",
+                        cleanCity || "",
+                        cleanState || "",
+                        cleanPincode || "",
+                        verifiedUserId
                       ]
                     ).catch(e => console.warn("Auto-save user address error:", e.message));
                   }
@@ -716,18 +746,58 @@ exports.verify_payment = async (req, res, next) => {
 
 exports.cancel_order = async (req, res, next) => {
   try {
-    const { order_number, reason = "Payment was cancelled/closed by user" } = req.body;
+    const { order_number, customer_email, customer_phone, reason = "Payment was cancelled/closed by user" } = req.body;
 
-    if (!order_number || order_number.trim() === "") {
+    const cleanOrderNumber = sanitizeIdentifier(order_number, 50);
+    if (!cleanOrderNumber) {
       return next(createError.BadRequest("Order number is required"));
     }
 
-    // Only update if not already captured/confirmed
+    const userId = req.userId || req.user?.id;
+    const userEmail = (req.userEmail || req.user?.email || '').trim().toLowerCase();
+    const providedEmail = validateEmail(customer_email);
+    const providedPhone = validatePhone(customer_phone);
+
+    // Fetch the order to verify ownership and eligibility
+    const [orderRows] = await db.promise().query(
+      `SELECT id, order_number, user_id, customer_email, customer_phone, order_status, payment_status 
+       FROM orders 
+       WHERE order_number = ? LIMIT 1`,
+      [cleanOrderNumber]
+    );
+
+    if (!orderRows || orderRows.length === 0) {
+      return next(createError.NotFound("Order not found"));
+    }
+
+    const order = orderRows[0];
+
+    // Ownership Verification:
+    // 1. Authenticated user matches order.user_id or order.customer_email
+    // 2. OR caller provides customer_email or customer_phone matching the order
+    const isOwner = (
+      (userId && Number(order.user_id) === Number(userId)) ||
+      (userEmail && String(order.customer_email).toLowerCase() === userEmail) ||
+      (providedEmail && String(order.customer_email).toLowerCase() === providedEmail) ||
+      (providedPhone && String(order.customer_phone).replace(/[\s-]/g, '') === providedPhone)
+    );
+
+    if (!isOwner) {
+      return next(createError.Forbidden("You are not authorized to cancel this order"));
+    }
+
+    // Only allow cancelling if pending / uncaptured
+    if (order.payment_status === 'captured' || order.order_status === 'delivered' || order.order_status === 'shipped') {
+      return next(createError.BadRequest("This order cannot be cancelled directly because payment is already confirmed or dispatched"));
+    }
+
+    const cleanReason = sanitizeText(reason, 200) || "Cancelled by customer";
+
     const [result] = await db.promise().query(
       `UPDATE orders 
        SET payment_status = 'failed', order_status = 'cancelled', payment_verified = 0 
        WHERE order_number = ? AND payment_status != 'captured'`,
-      [order_number]
+      [cleanOrderNumber]
     );
 
     return res.status(200).json({
@@ -744,12 +814,16 @@ exports.track_order = async (req, res, next) => {
   try {
     const { order_number, email, phone } = req.body;
 
-    if (!order_number || order_number.trim() === "") {
+    const cleanOrderNumber = sanitizeIdentifier(order_number, 50);
+    if (!cleanOrderNumber) {
       return next(createError.BadRequest("Order number is required"));
     }
 
-    if ((!email || email.trim() === "") && (!phone || phone.trim() === "")) {
-      return next(createError.BadRequest("Email or phone is required"));
+    const cleanEmail = validateEmail(email);
+    const cleanPhone = validatePhone(phone);
+
+    if (!cleanEmail && !cleanPhone) {
+      return next(createError.BadRequest("A valid email address or phone number is required to track order"));
     }
 
     // Build query based on whether email or phone is provided
@@ -757,14 +831,14 @@ exports.track_order = async (req, res, next) => {
                order_status, shipping_date, delivery_date, packed_at, created_at,
                total_amount, payment_status, payment_verified
                FROM orders WHERE order_number = ?`;
-    const params = [order_number];
+    const params = [cleanOrderNumber];
 
-    if (email && email.trim() !== "") {
-      sql += " AND customer_email = ?";
-      params.push(email.trim());
-    } else if (phone && phone.trim() !== "") {
+    if (cleanEmail) {
+      sql += " AND LOWER(customer_email) = ?";
+      params.push(cleanEmail);
+    } else if (cleanPhone) {
       sql += " AND customer_phone = ?";
-      params.push(phone.trim());
+      params.push(cleanPhone);
     }
 
     sql += " LIMIT 1";

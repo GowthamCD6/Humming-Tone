@@ -18,6 +18,10 @@ npm-debug.log*
 dist/
 build/
 Humming_Tone/dist/
+release-output/
+HummingTone/release-output/
+*.aab
+*.apk
 
 # System / IDE
 .DS_Store

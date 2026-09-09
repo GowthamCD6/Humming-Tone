@@ -211,7 +211,51 @@ export const ReturnService = {
 };
 
 export const CustomizeService = {
-  // Fetch customizer config (guitars, materials, perfumes, engravings)
+  // Fetch available plain t-shirt garments with front/back photos and base prices
+  fetchPlainTshirts: async () => {
+    try {
+      const response = await apiClient.get('/api/site-content/customize/plain-tshirts');
+      return response.data || { success: false, tshirts: [] };
+    } catch (error) {
+      console.warn('Error fetching plain t-shirts:', error.message);
+      return { success: false, tshirts: [] };
+    }
+  },
+
+  // Fetch preset artwork and motif designs catalog
+  fetchDesigns: async () => {
+    try {
+      const response = await apiClient.get('/api/site-content/customize/designs');
+      return response.data || { success: false, designs: [] };
+    } catch (error) {
+      console.warn('Error fetching customizer designs:', error.message);
+      return { success: false, designs: [] };
+    }
+  },
+
+  // Fetch available luxury fabric materials and weights
+  fetchMaterials: async () => {
+    try {
+      const response = await apiClient.get('/api/site-content/customize/materials');
+      return response.data || { success: false, materials: [] };
+    } catch (error) {
+      console.warn('Error fetching materials:', error.message);
+      return { success: false, materials: [] };
+    }
+  },
+
+  // Fetch apparel sizes and measurement charts
+  fetchSizes: async () => {
+    try {
+      const response = await apiClient.get('/api/site-content/customize/sizes');
+      return response.data || { success: false, sizes: [] };
+    } catch (error) {
+      console.warn('Error fetching sizes:', error.message);
+      return { success: false, sizes: [] };
+    }
+  },
+
+  // Fetch legacy customizer config
   fetchConfig: async () => {
     try {
       const response = await apiClient.get('/user/customize/config');

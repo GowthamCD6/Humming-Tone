@@ -182,6 +182,22 @@ export const CartScreen = ({ navigation }) => {
                       {item.name}
                     </Text>
 
+                    {/* Custom Atelier Badge if custom item */}
+                    {Boolean(item.is_custom || item.customDetails) && (
+                      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4, marginVertical: 3 }}>
+                        <View style={{ backgroundColor: '#704F38', paddingHorizontal: 6, paddingVertical: 2, borderRadius: 4 }}>
+                          <Text style={{ fontSize: 9, fontFamily: typography.fontSansBold, color: '#FFFFFF', letterSpacing: 0.5 }}>
+                            CUSTOM ATELIER
+                          </Text>
+                        </View>
+                        {Boolean(item.customDetails?.material?.name || item.custom_fabric) && (
+                          <Text style={{ fontSize: 10, color: '#7D726A', fontFamily: typography.fontSansMedium }} numberOfLines={1}>
+                            • {item.customDetails?.material?.name || item.custom_fabric}
+                          </Text>
+                        )}
+                      </View>
+                    )}
+
                     {/* Variant specs */}
                     <View style={styles.variantBadgesRow}>
                       <View style={styles.variantChip}>
@@ -192,6 +208,13 @@ export const CartScreen = ({ navigation }) => {
                       {Boolean(item.color) && (
                         <View style={styles.variantChip}>
                           <Text style={styles.variantChipText}>{item.color}</Text>
+                        </View>
+                      )}
+                      {Boolean(item.customDetails?.front?.text || item.customDetails?.front?.designName) && (
+                        <View style={[styles.variantChip, { backgroundColor: '#F5EFEB', borderColor: '#704F38' }]}>
+                          <Text style={[styles.variantChipText, { color: '#704F38' }]}>
+                            {item.customDetails?.front?.text ? `"${item.customDetails.front.text}"` : (item.customDetails?.front?.designName || 'Custom Front')}
+                          </Text>
                         </View>
                       )}
                     </View>

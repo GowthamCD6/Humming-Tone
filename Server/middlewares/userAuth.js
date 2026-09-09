@@ -43,4 +43,60 @@ const userAuth = (req, res, next) => {
   }
 };
 
-module.exports = userAuth;
+/**
+ * Optional authentication middleware.
+ * If a valid token is present, attaches req.user, req.userId, and req.userEmail.
+ * If no token is provided, continues normally without rejecting the request.
+ */
+const optionalUserAuth = (req, res, next) => {
+  try {
+    let token = req.cookies?.token;
+    if (!token && req.headers.authorization && req.headers.authorization.startsWith("Bearer ")) {
+      token = req.headers.authorization.split(" ")[1];
+    }
+
+    if (!token) {
+      req.user = null;
+      req.userId = null;
+      req.userEmail = null;
+      return next();
+    }
+
+    jwt.verify(token, JWT_SECRET, (err, decoded) => {
+      if (err || !decoded || (!decoded.id && !decoded.userId)) {
+        req.user = null;
+        req.userId = null;
+        req.userEmail = null;
+        return next();
+      }
+
+      const userId = decoded.id || decoded.userId;
+      db.query(
+        "SELECT id, name, email, phone FROM users WHERE id = ? LIMIT 1",
+        [userId],
+        (dbErr, result) => {
+          if (!dbErr && result && result.length > 0) {
+            req.user = result[0];
+            req.userId = result[0].id;
+            req.userEmail = result[0].email;
+          } else {
+            req.user = null;
+            req.userId = null;
+            req.userEmail = null;
+          }
+          next();
+        }
+      );
+    });
+  } catch (err) {
+    req.user = null;
+    req.userId = null;
+    req.userEmail = null;
+    next();
+  }
+};
+
+userAuth.userAuth = userAuth;
+userAuth.optionalUserAuth = optionalUserAuth;
+
+module.exports = userAuth;

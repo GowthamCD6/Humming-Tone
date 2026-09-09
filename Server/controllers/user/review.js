@@ -1,5 +1,6 @@
 const db = require("../../config/db");
 const createError = require("http-errors");
+const { sanitizeText, validateEmail } = require("../../utils/sanitize");
 
 /**
  * Fetch approved reviews for a specific product along with rating aggregation stats
@@ -90,12 +91,14 @@ exports.submitProductReview = (req, res, next) => {
       return next(createError.BadRequest("Invalid product ID"));
     }
 
-    if (!reviewer_name || reviewer_name.trim().length === 0) {
-      return next(createError.BadRequest("Name is required"));
+    const cleanName = sanitizeText(reviewer_name, 60);
+    if (!cleanName || cleanName.length < 2) {
+      return next(createError.BadRequest("Reviewer name is required (2-60 characters)"));
     }
 
-    if (!reviewer_email || !reviewer_email.includes("@")) {
-      return next(createError.BadRequest("Valid email address is required"));
+    const cleanEmail = validateEmail(reviewer_email);
+    if (!cleanEmail) {
+      return next(createError.BadRequest("A valid email address is required"));
     }
 
     const numRating = parseInt(rating, 10);
@@ -103,9 +106,12 @@ exports.submitProductReview = (req, res, next) => {
       return next(createError.BadRequest("Rating must be an integer between 1 and 5"));
     }
 
-    if (!comment || comment.trim().length < 5) {
+    const cleanComment = sanitizeText(comment, 1500);
+    if (!cleanComment || cleanComment.length < 5) {
       return next(createError.BadRequest("Review comment must be at least 5 characters long"));
     }
+
+    const cleanTitle = sanitizeText(title, 100) || null;
 
     // Verify product exists and is active
     const checkProductSql = `SELECT id FROM products WHERE id = ? LIMIT 1`;
@@ -121,11 +127,9 @@ exports.submitProductReview = (req, res, next) => {
         VALUES (?, ?, ?, ?, ?, ?, 'approved')
       `;
 
-      const safeTitle = title && title.trim() ? title.trim() : null;
-
       db.query(
         insertSql,
-        [productId, reviewer_name.trim(), reviewer_email.trim().toLowerCase(), numRating, safeTitle, comment.trim()],
+        [productId, cleanName, cleanEmail, numRating, cleanTitle, cleanComment],
         (insertErr, result) => {
           if (insertErr) return next(insertErr);
 
@@ -135,10 +139,10 @@ exports.submitProductReview = (req, res, next) => {
             review: {
               id: result.insertId,
               product_id: productId,
-              reviewer_name: reviewer_name.trim(),
+              reviewer_name: cleanName,
               rating: numRating,
-              title: safeTitle,
-              comment: comment.trim(),
+              title: cleanTitle,
+              comment: cleanComment,
               created_at: new Date().toISOString(),
             },
           });

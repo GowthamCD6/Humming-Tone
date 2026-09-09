@@ -10,18 +10,27 @@ const jwt = require('jsonwebtoken');
  */
 exports.fetch_notifications = async (req, res, next) => {
   try {
-    let userId = req.query.user_id ? Number(req.query.user_id) : null;
-    let userEmail = req.query.user_email ? String(req.query.user_email).trim().toLowerCase() : null;
+    let userId = null;
+    let userEmail = null;
 
-    // Also check Bearer token if provided
+    // Security: Only extract user identity from verified JWT token.
+    // Never trust client query parameters (?user_id=X) for private notification access.
+    let token = req.cookies?.token;
     const authHeader = req.headers['authorization'];
-    if (authHeader && authHeader.startsWith('Bearer ')) {
-      const token = authHeader.split(' ')[1];
+    if (!token && authHeader && authHeader.startsWith('Bearer ')) {
+      token = authHeader.split(' ')[1];
+    }
+
+    if (token) {
       try {
         const decoded = jwt.verify(token, process.env.JWT_SECRET || 'secret');
-        if (decoded?.id) userId = Number(decoded.id);
+        if (decoded?.id || decoded?.userId) userId = Number(decoded.id || decoded.userId);
         if (decoded?.email) userEmail = String(decoded.email).trim().toLowerCase();
-      } catch (tokenErr) {}
+      } catch (tokenErr) {
+        // Invalid or expired token: fall back to guest (public broadcast only)
+        userId = null;
+        userEmail = null;
+      }
     }
 
     let querySql = `
@@ -50,7 +59,7 @@ exports.fetch_notifications = async (req, res, next) => {
       querySql += filterClause;
       countSql += filterClause + ' AND n.is_read = 0';
     } else {
-      // Guest: only public broadcast notifications
+      // Guest / Unauthenticated: ONLY public broadcast notifications
       const filterClause = ` WHERE (n.user_id IS NULL AND (n.user_email IS NULL OR n.user_email = ''))`;
       querySql += filterClause;
       countSql += filterClause + ' AND n.is_read = 0';
@@ -78,23 +87,60 @@ exports.fetch_notifications = async (req, res, next) => {
  */
 exports.mark_as_read = async (req, res, next) => {
   try {
-    const { id, user_id, user_email } = req.body;
+    const { id } = req.body;
+
+    let userId = null;
+    let userEmail = null;
+
+    let token = req.cookies?.token;
+    const authHeader = req.headers['authorization'];
+    if (!token && authHeader && authHeader.startsWith('Bearer ')) {
+      token = authHeader.split(' ')[1];
+    }
+
+    if (token) {
+      try {
+        const decoded = jwt.verify(token, process.env.JWT_SECRET || 'secret');
+        if (decoded?.id || decoded?.userId) userId = Number(decoded.id || decoded.userId);
+        if (decoded?.email) userEmail = String(decoded.email).trim().toLowerCase();
+      } catch (e) {}
+    }
 
     if (id) {
-      await db.promise().query('UPDATE notifications SET is_read = 1 WHERE id = ?', [id]);
+      const numId = parseInt(id, 10);
+      if (!numId || isNaN(numId)) {
+        return next(createError.BadRequest('Invalid notification ID'));
+      }
+
+      // Ensure caller can only mark their own or public notifications
+      if (userId || userEmail) {
+        await db.promise().query(
+          `UPDATE notifications 
+           SET is_read = 1 
+           WHERE id = ? AND (user_id = ? OR LOWER(user_email) = ? OR (user_id IS NULL AND (user_email IS NULL OR user_email = '')))`,
+          [numId, userId || 0, userEmail || '']
+        );
+      } else {
+        await db.promise().query(
+          `UPDATE notifications 
+           SET is_read = 1 
+           WHERE id = ? AND (user_id IS NULL AND (user_email IS NULL OR user_email = ''))`,
+          [numId]
+        );
+      }
     } else {
       // Mark all as read for respective user / public
       let updateSql = 'UPDATE notifications SET is_read = 1 WHERE is_read = 0';
       const updateParams = [];
-      if (user_id || user_email) {
+      if (userId || userEmail) {
         const conds = [];
-        if (user_id) {
+        if (userId) {
           conds.push('user_id = ?');
-          updateParams.push(Number(user_id));
+          updateParams.push(userId);
         }
-        if (user_email) {
+        if (userEmail) {
           conds.push('LOWER(user_email) = ?');
-          updateParams.push(String(user_email).trim().toLowerCase());
+          updateParams.push(userEmail);
         }
         updateSql += ` AND ((${conds.join(' OR ')}) OR (user_id IS NULL AND (user_email IS NULL OR user_email = '')))`;
       } else {

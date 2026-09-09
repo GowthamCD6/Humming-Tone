@@ -438,7 +438,7 @@ const PrivacyPolicy = () => {
       {/* Main Content */}
       <main className="policy-main">
         <div className="policy-content">
-          
+
           <section className="policy-section section-1">
             <h2>Information We Collect</h2>
             <p>We collect information to provide better services to all our users. The types of information we collect include:</p>
