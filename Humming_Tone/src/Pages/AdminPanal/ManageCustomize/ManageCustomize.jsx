@@ -36,6 +36,135 @@ function Toast({ message, type, onClose }) {
   );
 }
 
+// Shimmer Skeleton Loading Components
+function GarmentSkeletonGrid({ count = 4 }) {
+  return (
+    <div className="mc-garment-grid">
+      {Array.from({ length: count }).map((_, i) => (
+        <div key={i} className="mc-garment-card mc-skeleton-card">
+          <div className="mc-garment-preview-duo">
+            <div className="mc-preview-slot">
+              <span className="mc-slot-tag mc-skeleton" style={{ width: 70, height: 14 }}></span>
+              <div className="mc-slot-img-wrap mc-skeleton mc-skeleton-img" style={{ height: 170 }}></div>
+            </div>
+            <div className="mc-preview-slot">
+              <span className="mc-slot-tag mc-skeleton" style={{ width: 70, height: 14 }}></span>
+              <div className="mc-slot-img-wrap mc-skeleton mc-skeleton-img" style={{ height: 170 }}></div>
+            </div>
+          </div>
+          <div className="mc-garment-footer">
+            <div className="mc-garment-meta">
+              <div className="mc-skeleton" style={{ width: 28, height: 28, borderRadius: '50%' }} />
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                <div className="mc-skeleton mc-skeleton-text" style={{ width: 110, height: 16 }} />
+                <div className="mc-skeleton mc-skeleton-text" style={{ width: 80, height: 12 }} />
+              </div>
+            </div>
+            <div className="mc-garment-actions">
+              <div className="mc-skeleton" style={{ width: 32, height: 32, borderRadius: 6 }} />
+              <div className="mc-skeleton" style={{ width: 32, height: 32, borderRadius: 6 }} />
+            </div>
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function DesignSkeletonGrid({ count = 8 }) {
+  return (
+    <div className="mc-designs-grid">
+      {Array.from({ length: count }).map((_, i) => (
+        <div key={i} className="mc-design-card mc-skeleton-card">
+          <div className="mc-design-thumb-wrap mc-skeleton mc-skeleton-img" style={{ height: 170 }} />
+          <div className="mc-design-card-content">
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
+              <div className="mc-skeleton mc-skeleton-text" style={{ width: 110, height: 16 }} />
+              <div className="mc-skeleton mc-skeleton-pill" style={{ width: 50, height: 20 }} />
+            </div>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <div className="mc-skeleton mc-skeleton-text" style={{ width: 60, height: 12 }} />
+              <div style={{ display: 'flex', gap: 6 }}>
+                <div className="mc-skeleton" style={{ width: 28, height: 28, borderRadius: 6 }} />
+                <div className="mc-skeleton" style={{ width: 28, height: 28, borderRadius: 6 }} />
+              </div>
+            </div>
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function MaterialSkeletonGrid({ count = 4 }) {
+  return (
+    <div className="mc-materials-grid">
+      {Array.from({ length: count }).map((_, i) => (
+        <div key={i} className="mc-material-card mc-skeleton-card">
+          <div className="mc-mat-header">
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+              <div className="mc-skeleton mc-skeleton-text" style={{ width: 130, height: 18 }} />
+              <div className="mc-skeleton mc-skeleton-pill" style={{ width: 70, height: 16 }} />
+            </div>
+            <div className="mc-skeleton mc-skeleton-pill" style={{ width: 60, height: 22 }} />
+          </div>
+          <div style={{ margin: '14px 0', display: 'flex', flexDirection: 'column', gap: 6 }}>
+            <div className="mc-skeleton mc-skeleton-text" style={{ width: '100%', height: 14 }} />
+            <div className="mc-skeleton mc-skeleton-text" style={{ width: '75%', height: 14 }} />
+          </div>
+          <div className="mc-mat-card-footer">
+            <div className="mc-skeleton mc-skeleton-pill" style={{ width: 85, height: 28 }} />
+            <div style={{ display: 'flex', gap: 8 }}>
+              <div className="mc-skeleton" style={{ width: 32, height: 32, borderRadius: 6 }} />
+              <div className="mc-skeleton" style={{ width: 32, height: 32, borderRadius: 6 }} />
+            </div>
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function SizeTableSkeleton({ count = 6 }) {
+  return (
+    <div className="mc-table-responsive">
+      <table className="mc-data-table">
+        <thead>
+          <tr>
+            <th>Size Code</th>
+            <th>Chest (Inches)</th>
+            <th>Body Length</th>
+            <th>Shoulder Width</th>
+            <th>Surcharge</th>
+            <th>Priority</th>
+            <th>Status</th>
+            <th style={{ textAlign: "right" }}>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {Array.from({ length: count }).map((_, i) => (
+            <tr key={i}>
+              <td><div className="mc-skeleton mc-skeleton-pill" style={{ width: 44, height: 26 }} /></td>
+              <td><div className="mc-skeleton mc-skeleton-text" style={{ width: 45, height: 16 }} /></td>
+              <td><div className="mc-skeleton mc-skeleton-text" style={{ width: 45, height: 16 }} /></td>
+              <td><div className="mc-skeleton mc-skeleton-text" style={{ width: 45, height: 16 }} /></td>
+              <td><div className="mc-skeleton mc-skeleton-pill" style={{ width: 80, height: 22 }} /></td>
+              <td><div className="mc-skeleton mc-skeleton-text" style={{ width: 30, height: 14 }} /></td>
+              <td><div className="mc-skeleton mc-skeleton-pill" style={{ width: 60, height: 24 }} /></td>
+              <td style={{ textAlign: "right" }}>
+                <div className="mc-table-actions">
+                  <div className="mc-skeleton" style={{ width: 28, height: 28, borderRadius: 6 }} />
+                  <div className="mc-skeleton" style={{ width: 28, height: 28, borderRadius: 6 }} />
+                </div>
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  );
+}
+
 // Modal Component for Plain T-Shirt Add & Edit
 function PlainTshirtModal({
   isOpen,
@@ -1316,10 +1445,10 @@ export default function ManageCustomize() {
         deleteModal.type === "tshirt"
           ? "Plain t-shirt deleted successfully!"
           : deleteModal.type === "design"
-          ? "Design artwork deleted successfully!"
-          : deleteModal.type === "material"
-          ? "Material deleted successfully!"
-          : "Size deleted successfully!"
+            ? "Design artwork deleted successfully!"
+            : deleteModal.type === "material"
+              ? "Material deleted successfully!"
+              : "Size deleted successfully!"
       );
 
       const deletedType = deleteModal.type;
@@ -1415,10 +1544,10 @@ export default function ManageCustomize() {
           deleteModal.type === "tshirt"
             ? "Delete Plain T-Shirt Color?"
             : deleteModal.type === "design"
-            ? "Delete Artwork / Design?"
-            : deleteModal.type === "material"
-            ? "Delete Fabric Material?"
-            : "Delete Apparel Size?"
+              ? "Delete Artwork / Design?"
+              : deleteModal.type === "material"
+                ? "Delete Fabric Material?"
+                : "Delete Apparel Size?"
         }
         itemName={
           deleteModal.type === "tshirt"
@@ -1429,10 +1558,10 @@ export default function ManageCustomize() {
           deleteModal.type === "tshirt"
             ? "This color will no longer appear in the customer studio."
             : deleteModal.type === "design"
-            ? "This design will no longer be available in the customer motifs library."
-            : deleteModal.type === "material"
-            ? "This fabric material will no longer appear in the customizer fabric selector."
-            : "This size option and its measurements will no longer appear in the studio."
+              ? "This design will no longer be available in the customer motifs library."
+              : deleteModal.type === "material"
+                ? "This fabric material will no longer appear in the customizer fabric selector."
+                : "This size option and its measurements will no longer appear in the studio."
         }
         isDeleting={isDeleting}
         onClose={() => setDeleteModal({ open: false, type: "tshirt", item: null })}
@@ -1554,10 +1683,7 @@ export default function ManageCustomize() {
 
           <div className="mc-card-body">
             {isLoadingTshirts ? (
-              <div className="mc-loading-state">
-                <div className="mc-spinner"></div>
-                <p>Loading plain t-shirt collection...</p>
-              </div>
+              <GarmentSkeletonGrid count={4} />
             ) : plainTshirts.length > 0 ? (
               <div className="mc-garment-grid">
                 {plainTshirts.map((tshirt) => (
@@ -1711,10 +1837,7 @@ export default function ManageCustomize() {
 
           <div className="mc-card-body">
             {isLoadingDesigns ? (
-              <div className="mc-loading-state">
-                <div className="mc-spinner"></div>
-                <p>Loading preset designs library...</p>
-              </div>
+              <DesignSkeletonGrid count={8} />
             ) : filteredDesigns.length > 0 ? (
               <div className="mc-designs-grid">
                 {filteredDesigns.map((design) => {
@@ -1835,10 +1958,7 @@ export default function ManageCustomize() {
 
           <div className="mc-card-body">
             {isLoadingMaterials ? (
-              <div className="mc-loading-state">
-                <div className="mc-spinner"></div>
-                <p>Loading fabric materials...</p>
-              </div>
+              <MaterialSkeletonGrid count={4} />
             ) : materials.length > 0 ? (
               <div className="mc-materials-grid">
                 {materials.map((mat) => {
@@ -1952,10 +2072,7 @@ export default function ManageCustomize() {
 
           <div className="mc-card-body">
             {isLoadingSizes ? (
-              <div className="mc-loading-state">
-                <div className="mc-spinner"></div>
-                <p>Loading size specifications...</p>
-              </div>
+              <SizeTableSkeleton count={6} />
             ) : sizes.length > 0 ? (
               <div className="mc-table-responsive">
                 <table className="mc-data-table">
