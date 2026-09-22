@@ -57,6 +57,16 @@ const OrderTracking = () => {
   const [customerOrders, setCustomerOrders] = useState([]);
   const [loadingHistory, setLoadingHistory] = useState(false);
 
+  // Return / Exchange modal state
+  const [showReturnModal, setShowReturnModal] = useState(false);
+  const [returnReason, setReturnReason] = useState("Size & Fit Issue");
+  const [returnType, setReturnType] = useState("Return");
+  const [returnDescription, setReturnDescription] = useState("");
+  const [returnItemId, setReturnItemId] = useState("");
+  const [returnSubmitting, setReturnSubmitting] = useState(false);
+  const [returnSuccessMsg, setReturnSuccessMsg] = useState("");
+  const [returnErrorMsg, setReturnErrorMsg] = useState("");
+
   const customerUser = (() => {
     try {
       return JSON.parse(localStorage.getItem("customerUser")) || null;
@@ -278,73 +288,114 @@ const OrderTracking = () => {
                           {ord.order_status?.replace(/_/g, ' ')}
                         </span>
                       </div>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', color: '#64748b', fontSize: '0.8rem' }}>
-                        <span>{formatDate(ord.created_at)}</span>
-                        <strong>₹{Number(ord.total_amount || 0).toFixed(2)}</strong>
-                      </div>
                     </div>
                   );
                 })}
               </div>
             </div>
           )}
+        </section>
 
-          <div className="ot-search-form">
+        {/* Search / Lookup Form */}
+        <section className="ot-form-card">
+          <form onSubmit={handleTrack} className="ot-form">
             <div className="ot-input-group">
-              <label className="ot-label">Order ID</label>
-              <input
-                type="text"
-                className="ot-input"
-                placeholder="e.g. ORD-1720512345678"
-                value={orderNumber}
-                onChange={(e) => setOrderNumber(e.target.value)}
-              />
+              <label htmlFor="orderNumber">Order Reference Number</label>
+              <div className="ot-input-wrapper">
+                <input
+                  id="orderNumber"
+                  type="text"
+                  placeholder="e.g. ORD-2026-XXXX or #1024"
+                  value={orderNumber}
+                  onChange={(e) => setOrderNumber(e.target.value)}
+                />
+              </div>
             </div>
 
             <div className="ot-input-group">
-              <label className="ot-label">Verify With</label>
-              <div className="ot-contact-row">
-                <div className="ot-toggle-group">
+              <div className="ot-label-row">
+                <label htmlFor="contactValue">
+                  {contactType === "email" ? "Registered Email Address" : "Registered Phone Number"}
+                </label>
+                <div className="ot-toggle-type">
                   <button
-                    className={`ot-toggle-btn ${contactType === "email" ? "ot-toggle-active" : ""}`}
-                    onClick={() => setContactType("email")}
+                    type="button"
+                    className={`ot-toggle-btn ${contactType === "email" ? "active" : ""}`}
+                    onClick={() => {
+                      setContactType("email");
+                      setContactValue("");
+                    }}
                   >
                     Email
                   </button>
                   <button
-                    className={`ot-toggle-btn ${contactType === "phone" ? "ot-toggle-active" : ""}`}
-                    onClick={() => setContactType("phone")}
+                    type="button"
+                    className={`ot-toggle-btn ${contactType === "phone" ? "active" : ""}`}
+                    onClick={() => {
+                      setContactType("phone");
+                      setContactValue("");
+                    }}
                   >
                     Phone
                   </button>
                 </div>
+              </div>
+
+              <div className="ot-input-wrapper">
                 <input
+                  id="contactValue"
                   type={contactType === "email" ? "email" : "tel"}
-                  className="ot-input ot-contact-input"
-                  placeholder={contactType === "email" ? "your@email.com" : "9876543210"}
+                  placeholder={contactType === "email" ? "e.g. patron@hummingtone.com" : "e.g. 9876543210"}
                   value={contactValue}
                   onChange={(e) => setContactValue(e.target.value)}
                 />
               </div>
             </div>
 
-            <button
-              className="ot-track-btn"
-              onClick={() => handleTrackOrder()}
-              disabled={loading}
-            >
-              {loading ? (
-                <span className="ot-btn-loading">Tracking...</span>
-              ) : (
-                <>
-                  <SearchIcon /> Track Order
-                </>
-              )}
+            <button type="submit" className="ot-submit-btn" disabled={loading}>
+              <SearchIcon />
+              {loading ? "Locating Order..." : "Track Order"}
             </button>
-          </div>
+          </form>
 
-          {error && <div className="ot-error">{error}</div>}
+          {error && <div className="ot-error-msg">{error}</div>}
         </section>
+
+        {/* Customer Order History */}
+        {customerOrders.length > 0 && (
+          <section className="ot-history-card">
+            <div className="ot-history-header">
+              <div className="ot-history-title-wrap">
+                <HistoryIcon />
+                <h3>Your Recent Orders</h3>
+              </div>
+            </div>
+
+            <div className="ot-history-list">
+              {customerOrders.map((histOrder) => (
+                <div
+                  key={histOrder.id || histOrder.order_number}
+                  className={`ot-history-item ${order?.order_number === histOrder.order_number ? "active" : ""}`}
+                  onClick={() => {
+                    setOrder(histOrder);
+                    setOrderNumber(histOrder.order_number);
+                  }}
+                >
+                  <div className="ot-hist-info">
+                    <strong>#{histOrder.order_number}</strong>
+                    <span>{formatDate(histOrder.created_at)}</span>
+                  </div>
+                  <div className="ot-hist-meta">
+                    <span className={`ot-status-badge ot-status-${histOrder.order_status}`}>
+                      {histOrder.order_status?.replace(/_/g, " ")}
+                    </span>
+                    <ArrowForwardIcon sx={{ fontSize: 16 }} />
+                  </div>
+                </div>
+              ))}
+            </div>
+          </section>
+        )}
 
         {/* Saved Orders */}
         {!order && myOrders.length > 0 && (
@@ -502,6 +553,22 @@ const OrderTracking = () => {
               </div>
             )}
 
+            {/* Return / Exchange Service Banner for Delivered Orders */}
+            {order.order_status === "delivered" && (
+              <div className="ot-return-banner">
+                <div className="ot-return-content">
+                  <h4>Need a Return or Exchange?</h4>
+                  <p>Enjoy our complimentary 7-day doorstep reverse pickup for unworn garments with intact tags.</p>
+                </div>
+                <button
+                  className="ot-return-btn"
+                  onClick={() => setShowReturnModal(true)}
+                >
+                  Request Return / Exchange
+                </button>
+              </div>
+            )}
+
             {/* Back button */}
             <div className="ot-result-actions">
               <button
@@ -526,6 +593,114 @@ const OrderTracking = () => {
           </section>
         )}
       </div>
+
+      {/* Return Request Modal */}
+      {showReturnModal && order && (
+        <div className="ot-modal-overlay" onClick={() => setShowReturnModal(false)}>
+          <div className="ot-modal-card" onClick={(e) => e.stopPropagation()}>
+            <div className="ot-modal-header">
+              <div>
+                <h3>Request Return / Exchange</h3>
+                <p>Order #{order.order_number}</p>
+              </div>
+              <button className="ot-modal-close" onClick={() => setShowReturnModal(false)}>
+                ✕
+              </button>
+            </div>
+
+            <form onSubmit={handleReturnSubmit} className="ot-modal-body">
+              {returnSuccessMsg && (
+                <div className="ot-modal-success">{returnSuccessMsg}</div>
+              )}
+              {returnErrorMsg && (
+                <div className="ot-modal-error">{returnErrorMsg}</div>
+              )}
+
+              <div className="ot-modal-group">
+                <label>Service Type</label>
+                <div className="ot-type-toggle">
+                  <button
+                    type="button"
+                    className={`ot-type-btn ${returnType === "Return" ? "active" : ""}`}
+                    onClick={() => setReturnType("Return")}
+                  >
+                    Refund Return
+                  </button>
+                  <button
+                    type="button"
+                    className={`ot-type-btn ${returnType === "Exchange" ? "active" : ""}`}
+                    onClick={() => setReturnType("Exchange")}
+                  >
+                    Size / Style Exchange
+                  </button>
+                </div>
+              </div>
+
+              {order.items && order.items.length > 1 && (
+                <div className="ot-modal-group">
+                  <label>Select Item to Return</label>
+                  <select
+                    value={returnItemId}
+                    onChange={(e) => setReturnItemId(e.target.value)}
+                    className="ot-modal-select"
+                  >
+                    <option value="">All Items in Order</option>
+                    {order.items.map((it) => (
+                      <option key={it.id} value={it.id}>
+                        {it.product_name} ({it.size || "Std"}, {it.color || "Std"})
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              )}
+
+              <div className="ot-modal-group">
+                <label>Reason for Request *</label>
+                <select
+                  value={returnReason}
+                  onChange={(e) => setReturnReason(e.target.value)}
+                  className="ot-modal-select"
+                  required
+                >
+                  <option value="Size & Fit Issue">Size & Fit Issue</option>
+                  <option value="Damaged / Defective Item">Damaged / Defective Item</option>
+                  <option value="Received Wrong Piece">Received Wrong Piece</option>
+                  <option value="Quality Not as Expected">Quality Not as Expected</option>
+                  <option value="Change of Preference">Change of Preference</option>
+                </select>
+              </div>
+
+              <div className="ot-modal-group">
+                <label>Additional Notes / Feedback</label>
+                <textarea
+                  rows={3}
+                  placeholder="Please describe why you would like to return or exchange this piece..."
+                  value={returnDescription}
+                  onChange={(e) => setReturnDescription(e.target.value)}
+                  className="ot-modal-textarea"
+                />
+              </div>
+
+              <div className="ot-modal-footer">
+                <button
+                  type="button"
+                  className="ot-btn-cancel"
+                  onClick={() => setShowReturnModal(false)}
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="ot-btn-submit"
+                  disabled={returnSubmitting}
+                >
+                  {returnSubmitting ? "Submitting..." : "Confirm & Schedule Pickup"}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
 
       <UserFooter />
     </>

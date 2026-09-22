@@ -18,8 +18,9 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '../components/Icons';
 import { colors, shadows } from '../theme/colors';
 import { typography, spacing } from '../theme/typography';
-import { Header } from '../components/Header';
 import { useCart } from '../context/CartContext';
+import { useWishlist } from '../context/WishlistContext';
+import { useNotifications } from '../context/NotificationContext';
 import { CustomizeService } from '../api/services';
 import { getImageUrl } from '../api/apiConfig';
 
@@ -106,6 +107,8 @@ const PRINT_FEE = 150; // Custom print fee per side
 export const CustomizeScreen = ({ navigation }) => {
   const insets = useSafeAreaInsets();
   const { addToCart, cartCount } = useCart();
+  const { wishlistCount } = useWishlist();
+  const { unreadCount } = useNotifications();
 
   // Loading state
   const [loading, setLoading] = useState(true);
@@ -435,31 +438,63 @@ export const CustomizeScreen = ({ navigation }) => {
     );
   }
 
+  // Proper safe area top & bottom tab bar clearance
+  const topSafePadding = Math.max(
+    (insets.top || 0) + 12,
+    (StatusBar.currentHeight || 0) + 12,
+    Platform.OS === 'android' ? 34 : 44
+  );
+  const bottomBarOffset = (Platform.OS === 'ios' ? Math.max(insets.bottom, 16) : 16) + 64 + 10;
+
   // Active garment image
   const activeGarmentImg = activeSide === 'front' ? selectedGarment.front_image : selectedGarment.back_image;
 
   return (
     <View style={styles.container}>
-      <StatusBar barStyle="dark-content" backgroundColor="#FAF8F5" />
-      <Header
-        title="Custom Apparel Studio"
-        rightComponent={
+      <StatusBar barStyle="dark-content" backgroundColor="#FAF8F5" translucent={true} />
+
+      {/* ── 1. LUXURY TOP APP BAR (Consistent with Explore & Home tabs) ── */}
+      <View style={[styles.topBar, { paddingTop: topSafePadding }]}>
+        <View>
+          <Text style={styles.headerTitle}>Custom Studio</Text>
+          <Text style={styles.headerSubtitle}>Bespoke Apparel & Artwork</Text>
+        </View>
+
+        <View style={styles.topActionsRow}>
           <TouchableOpacity
-            style={styles.cartIconBadgeBtn}
-            onPress={() => navigation.navigate('CartTab')}
+            style={styles.notifCircleBtn}
+            onPress={() => navigation.navigate('Wishlist')}
             activeOpacity={0.8}
           >
-            <Ionicons name="bag-handle-outline" size={20} color={colors.primary} />
-            {cartCount > 0 && (
-              <View style={styles.headerBadge}>
-                <Text style={styles.headerBadgeText}>{cartCount}</Text>
+            <Ionicons name="heart-outline" size={19} color="#1E1B18" />
+            {wishlistCount > 0 && (
+              <View style={[styles.topNotifBadge, { backgroundColor: '#6B4E37' }]}>
+                <Text style={styles.topNotifBadgeText}>{wishlistCount > 9 ? '9+' : wishlistCount}</Text>
               </View>
             )}
           </TouchableOpacity>
-        }
-      />
 
-      <ScrollView style={styles.scroll} showsVerticalScrollIndicator={false} bounces={false}>
+          <TouchableOpacity
+            style={styles.notifCircleBtn}
+            onPress={() => navigation.navigate('Notifications')}
+            activeOpacity={0.8}
+          >
+            <Ionicons name="notifications-outline" size={19} color="#1E1B18" />
+            {unreadCount > 0 && (
+              <View style={styles.topNotifBadge}>
+                <Text style={styles.topNotifBadgeText}>{unreadCount > 9 ? '9+' : unreadCount}</Text>
+              </View>
+            )}
+          </TouchableOpacity>
+        </View>
+      </View>
+
+      <ScrollView
+        style={styles.scroll}
+        contentContainerStyle={[styles.scrollContent, { paddingBottom: bottomBarOffset + 85 }]}
+        showsVerticalScrollIndicator={false}
+        bounces={false}
+      >
         {/* ── 1. STUDIO CANVAS PREVIEW CARD ── */}
         <View style={styles.canvasCard}>
           {/* Side Switcher Pills */}
@@ -1101,11 +1136,11 @@ export const CustomizeScreen = ({ navigation }) => {
           )}
         </View>
 
-        <View style={{ height: 120 }} />
+        <View style={{ height: 20 }} />
       </ScrollView>
 
-      {/* ── 4. STICKY BOTTOM CHECKOUT ACTION BAR ── */}
-      <View style={[styles.bottomActionBar, { paddingBottom: Math.max(insets.bottom + 12, 18) }]}>
+      {/* ── 4. FLOATING CHECKOUT ACTION BAR (Floats cleanly above Common Bottom Tab Dock) ── */}
+      <View style={[styles.bottomActionBar, { bottom: bottomBarOffset }]}>
         <TouchableOpacity
           style={styles.priceMetaBox}
           onPress={() => setShowBreakdownModal(true)}
@@ -1114,9 +1149,9 @@ export const CustomizeScreen = ({ navigation }) => {
           <Text style={styles.totalPriceLabel}>ESTIMATED TOTAL</Text>
           <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
             <Text style={styles.totalPriceValue}>₹{pricing.total.toLocaleString('en-IN')}</Text>
-            <Ionicons name="information-circle-outline" size={16} color={colors.primary} />
+            <Ionicons name="information-circle-outline" size={15} color={colors.primary} />
           </View>
-          <Text style={styles.breakdownLink}>Tap for breakdown</Text>
+          <Text style={styles.breakdownLink}>Price breakdown</Text>
         </TouchableOpacity>
 
         <TouchableOpacity
@@ -1129,7 +1164,7 @@ export const CustomizeScreen = ({ navigation }) => {
             <ActivityIndicator size="small" color="#FFFFFF" />
           ) : (
             <>
-              <Ionicons name="bag-add" size={18} color="#FFFFFF" />
+              <Ionicons name="bag-add" size={17} color="#FFFFFF" />
               <Text style={styles.addToBagBtnText}>ADD TO BAG</Text>
             </>
           )}
@@ -1277,6 +1312,65 @@ const styles = StyleSheet.create({
   },
   scroll: {
     flex: 1,
+  },
+  scrollContent: {
+    paddingBottom: 20,
+  },
+  topBar: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 20,
+    paddingBottom: 10,
+    backgroundColor: '#FAF8F5',
+  },
+  headerTitle: {
+    fontFamily: typography.fontSansBold,
+    fontSize: 20,
+    color: '#1E1B18',
+  },
+  headerSubtitle: {
+    fontFamily: typography.fontSans,
+    fontSize: 12,
+    color: '#8A7F75',
+    marginTop: 2,
+  },
+  topActionsRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  notifCircleBtn: {
+    width: 38,
+    height: 38,
+    borderRadius: 19,
+    backgroundColor: '#FFFFFF',
+    borderWidth: 1,
+    borderColor: '#ECE4DC',
+    alignItems: 'center',
+    justifyContent: 'center',
+    position: 'relative',
+    ...shadows.subtle,
+  },
+  topNotifBadge: {
+    position: 'absolute',
+    top: 4,
+    right: 4,
+    minWidth: 14,
+    height: 14,
+    borderRadius: 7,
+    backgroundColor: '#C53030',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: 2,
+    borderWidth: 1.2,
+    borderColor: '#FFFFFF',
+  },
+  topNotifBadgeText: {
+    fontFamily: typography.fontSansBold,
+    fontSize: 8.5,
+    color: '#FFFFFF',
+    lineHeight: 10,
   },
   cartIconBadgeBtn: {
     padding: 6,
@@ -1951,18 +2045,23 @@ const styles = StyleSheet.create({
   // ── Bottom Bar ──
   bottomActionBar: {
     position: 'absolute',
-    bottom: 0,
-    left: 0,
-    right: 0,
+    left: 16,
+    right: 16,
     backgroundColor: '#FFFFFF',
-    borderTopWidth: 1,
-    borderTopColor: colors.borderLight,
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: '#ECE4DC',
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingHorizontal: spacing.screenPadding,
-    paddingTop: 12,
-    ...shadows.bottomBar,
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    shadowColor: '#000000',
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.12,
+    shadowRadius: 10,
+    elevation: 8,
+    zIndex: 90,
   },
   priceMetaBox: {
     flex: 1,

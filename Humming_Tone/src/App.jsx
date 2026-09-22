@@ -59,6 +59,7 @@ import DataExport from './Pages/AdminPanal/DataExport/DataExport.jsx';
 import ManageNotifications from './Pages/AdminPanal/ManageNotifications/ManageNotifications.jsx';
 import ManageCustomize from './Pages/AdminPanal/ManageCustomize/ManageCustomize.jsx';
 import ManageCustomizeOrders from './Pages/AdminPanal/ManageCustomizeOrders/ManageCustomizeOrders.jsx';
+import ManageReturns from './Pages/AdminPanal/ManageReturns/ManageReturns.jsx';
 import axios from 'axios';
 
 import "./App.css";
@@ -254,6 +255,7 @@ export default function App() {
           <Route path="manage-products" element={<ManageProduct />} />
           <Route path="add-product" element={<AddProduct />} />
           <Route path="manage-orders" element={<ManageOrder />} />
+          <Route path="manage-returns" element={<ManageReturns />} />
           <Route path="order/:orderId" element={<OrderDetails />} />
           <Route path="customize-tshirts" element={<ManageCustomize />} />
           <Route path="customize-orders" element={<ManageCustomizeOrders />} />
