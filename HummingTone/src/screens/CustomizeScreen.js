@@ -82,12 +82,12 @@ const FALLBACK_SIZES = [
 
 // ── Luxury Font Selection ──
 const FONTS = [
-  { label: 'Inter (Modern)', value: 'Inter, sans-serif' },
-  { label: 'Playfair (Luxury Serif)', value: 'serif' },
-  { label: 'Montserrat (Clean)', value: 'sans-serif-medium' },
-  { label: 'Poppins (Soft)', value: 'sans-serif' },
-  { label: 'Courier (Monospace)', value: 'monospace' },
-  { label: 'Condensed (Bold)', value: 'sans-serif-condensed' },
+  { label: 'Inter Modern', sub: 'Clean & Minimal', value: 'Inter, sans-serif' },
+  { label: 'Playfair Luxury', sub: 'High Fashion Serif', value: 'serif' },
+  { label: 'Montserrat Medium', sub: 'Contemporary Geometric', value: 'sans-serif-medium' },
+  { label: 'Poppins Rounded', sub: 'Warm & Friendly', value: 'sans-serif' },
+  { label: 'Courier Monospace', sub: 'Industrial Atelier', value: 'monospace' },
+  { label: 'Condensed Bold', sub: 'Streetwear Display', value: 'sans-serif-condensed' },
 ];
 
 // ── Curated Text Colors ──
@@ -102,11 +102,20 @@ const TEXT_COLORS = [
   { name: 'Silver Slate', hex: '#94A3B8' },
 ];
 
+const STUDIO_STEPS = [
+  { id: 'garment', num: 1, title: 'Color', subtitle: 'Base Garment Shade', icon: 'color-palette-outline' },
+  { id: 'fabric', num: 2, title: 'Fabric', subtitle: 'Luxury Weight & Weave', icon: 'shirt-outline' },
+  { id: 'placement', num: 3, title: 'Placement', subtitle: 'Print Zone & Geometry', icon: 'move-outline' },
+  { id: 'motifs', num: 4, title: 'Artwork', subtitle: 'Curated Atelier Motifs', icon: 'sparkles-outline' },
+  { id: 'text', num: 5, title: 'Typography', subtitle: 'Monograms & Lettering', icon: 'text-outline' },
+  { id: 'size', num: 6, title: 'Sizing', subtitle: 'Tailored Fit & Quantity', icon: 'resize-outline' },
+];
+
 const PRINT_FEE = 150; // Custom print fee per side
 
 export const CustomizeScreen = ({ navigation }) => {
   const insets = useSafeAreaInsets();
-  const { addToCart, cartCount } = useCart();
+  const { addToCart } = useCart();
   const { wishlistCount } = useWishlist();
   const { unreadCount } = useNotifications();
 
@@ -133,8 +142,8 @@ export const CustomizeScreen = ({ navigation }) => {
   // Active View Side: 'front' | 'back'
   const [activeSide, setActiveSide] = useState('front');
 
-  // Active Tool Tab: 'garment' | 'motifs' | 'text' | 'placement' | 'fabric' | 'size'
-  const [activeTab, setActiveTab] = useState('motifs');
+  // Active Step Tab: 'garment' | 'fabric' | 'placement' | 'motifs' | 'text' | 'size'
+  const [activeTab, setActiveTab] = useState('garment');
 
   // Modals
   const [showBreakdownModal, setShowBreakdownModal] = useState(false);
@@ -143,7 +152,7 @@ export const CustomizeScreen = ({ navigation }) => {
 
   // Front Design State
   const [frontDesign, setFrontDesign] = useState({
-    placementMode: 'chest', // 'chest', 'center', 'full'
+    placementMode: 'chest', // 'chest' (Pocket), 'center', 'full'
     text: '',
     textColor: '#111827',
     fontFamily: FONTS[0].value,
@@ -320,18 +329,49 @@ export const CustomizeScreen = ({ navigation }) => {
     };
   }, [selectedGarment, selectedMaterial, frontDesign, backDesign, quantity]);
 
-  // Printable boundary label based on active side and placement mode
+  // Placement boundary label based on active side and placement mode
   const placementLabel = useMemo(() => {
     if (activeSide === 'front') {
       if (currentDesign.placementMode === 'chest') return 'LEFT CHEST (6 x 6 cm)';
       if (currentDesign.placementMode === 'center') return 'CENTER CHEST (14 x 14 cm)';
-      return 'FULL FRONT BODY (28 x 38 cm)';
+      return 'FULL TORSO (28 x 38 cm)';
     } else {
-      if (currentDesign.placementMode === 'upper') return 'UPPER BACK COLLAR (8 x 6 cm)';
+      if (currentDesign.placementMode === 'upper') return 'UPPER BACK (8 x 6 cm)';
       if (currentDesign.placementMode === 'center') return 'CENTER BACK (16 x 16 cm)';
       return 'FULL BACK ZONE (28 x 38 cm)';
     }
   }, [activeSide, currentDesign.placementMode]);
+
+  // Placement options list
+  const currentPlacementOptions = activeSide === 'front'
+    ? [
+        { id: 'chest', label: 'Left Chest (Pocket)', desc: 'Subtle monogram or minimal insignia on chest.' },
+        { id: 'center', label: 'Center Chest', desc: 'Balanced emblem centered across upper chest.' },
+        { id: 'full', label: 'Full Torso', desc: 'Prominent, high-impact statement across entire front.' },
+      ]
+    : [
+        { id: 'upper', label: 'Upper Back / Collar', desc: 'Refined brand signature below neckline.' },
+        { id: 'center', label: 'Center Back', desc: 'Mid-back focal emblem or typographic quote.' },
+        { id: 'full', label: 'Full Back Zone', desc: 'Expansive bespoke artwork across entire back.' },
+      ];
+
+  // Current Step Index Helper
+  const currentStepIndex = STUDIO_STEPS.findIndex((s) => s.id === activeTab);
+  const currentStep = STUDIO_STEPS[currentStepIndex >= 0 ? currentStepIndex : 0];
+
+  const handleNextStep = () => {
+    if (currentStepIndex < STUDIO_STEPS.length - 1) {
+      setActiveTab(STUDIO_STEPS[currentStepIndex + 1].id);
+    } else {
+      handleAddToCart();
+    }
+  };
+
+  const handlePrevStep = () => {
+    if (currentStepIndex > 0) {
+      setActiveTab(STUDIO_STEPS[currentStepIndex - 1].id);
+    }
+  };
 
   // Handle adding custom garment to bag
   const handleAddToCart = () => {
@@ -433,7 +473,7 @@ export const CustomizeScreen = ({ navigation }) => {
       <View style={styles.loadingContainer}>
         <StatusBar barStyle="dark-content" backgroundColor="#FAF8F5" />
         <ActivityIndicator size="large" color={colors.primary} />
-        <Text style={styles.loadingText}>INITIALIZING ATELIER STUDIO...</Text>
+        <Text style={styles.loadingText}>INITIALIZING VIRTUAL ATELIER STUDIO...</Text>
       </View>
     );
   }
@@ -453,11 +493,11 @@ export const CustomizeScreen = ({ navigation }) => {
     <View style={styles.container}>
       <StatusBar barStyle="dark-content" backgroundColor="#FAF8F5" translucent={true} />
 
-      {/* ── 1. LUXURY TOP APP BAR (Consistent with Explore & Home tabs) ── */}
+      {/* ── 1. LUXURY TOP APP BAR ── */}
       <View style={[styles.topBar, { paddingTop: topSafePadding }]}>
         <View>
           <Text style={styles.headerTitle}>Custom Studio</Text>
-          <Text style={styles.headerSubtitle}>Bespoke Apparel & Artwork</Text>
+          <Text style={styles.headerSubtitle}>Bespoke Apparel & Virtual Atelier</Text>
         </View>
 
         <View style={styles.topActionsRow}>
@@ -491,42 +531,69 @@ export const CustomizeScreen = ({ navigation }) => {
 
       <ScrollView
         style={styles.scroll}
-        contentContainerStyle={[styles.scrollContent, { paddingBottom: bottomBarOffset + 85 }]}
+        contentContainerStyle={[styles.scrollContent, { paddingBottom: bottomBarOffset + 95 }]}
         showsVerticalScrollIndicator={false}
         bounces={false}
       >
-        {/* ── 1. STUDIO CANVAS PREVIEW CARD ── */}
-        <View style={styles.canvasCard}>
-          {/* Side Switcher Pills */}
-          <View style={styles.sideSwitcherRow}>
-            <TouchableOpacity
-              style={[styles.sidePill, activeSide === 'front' && styles.sidePillActive]}
-              onPress={() => setActiveSide('front')}
-              activeOpacity={0.85}
-            >
-              <Text style={[styles.sidePillText, activeSide === 'front' && styles.sidePillTextActive]}>
-                FRONT VIEW
-              </Text>
-              {pricing.hasFront && <View style={styles.activeDot} />}
-            </TouchableOpacity>
+        {/* ── 2. VIRTUAL ENVIRONMENT STAGE CARD ── */}
+        <View style={styles.virtualStageCard}>
+          {/* Virtual Mode Header */}
+          <View style={styles.stageHeaderRow}>
+            <View style={styles.liveBadgePill}>
+              <View style={styles.livePulseDot} />
+              <Text style={styles.liveBadgeText}>VIRTUAL 2D STUDIO</Text>
+            </View>
 
-            <TouchableOpacity
-              style={[styles.sidePill, activeSide === 'back' && styles.sidePillActive]}
-              onPress={() => setActiveSide('back')}
-              activeOpacity={0.85}
-            >
-              <Text style={[styles.sidePillText, activeSide === 'back' && styles.sidePillTextActive]}>
-                BACK VIEW
-              </Text>
-              {pricing.hasBack && <View style={styles.activeDot} />}
-            </TouchableOpacity>
+            {/* Side Switcher Pills */}
+            <View style={styles.sideSwitcherPills}>
+              <TouchableOpacity
+                style={[styles.sidePill, activeSide === 'front' && styles.sidePillActive]}
+                onPress={() => setActiveSide('front')}
+                activeOpacity={0.85}
+              >
+                <Text style={[styles.sidePillText, activeSide === 'front' && styles.sidePillTextActive]}>
+                  FRONT
+                </Text>
+                {pricing.hasFront && <View style={styles.activeDot} />}
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={[styles.sidePill, activeSide === 'back' && styles.sidePillActive]}
+                onPress={() => setActiveSide('back')}
+                activeOpacity={0.85}
+              >
+                <Text style={[styles.sidePillText, activeSide === 'back' && styles.sidePillTextActive]}>
+                  BACK
+                </Text>
+                {pricing.hasBack && <View style={styles.activeDot} />}
+              </TouchableOpacity>
+            </View>
           </View>
 
-          {/* Garment Stage */}
+          {/* Quick Placement Zone Selector Bar */}
+          <View style={styles.quickPlacementRow}>
+            {currentPlacementOptions.map((p) => {
+              const isSel = currentDesign.placementMode === p.id;
+              return (
+                <TouchableOpacity
+                  key={p.id}
+                  style={[styles.quickPlacementBtn, isSel && styles.quickPlacementBtnActive]}
+                  onPress={() => setCurrentDesign({ placementMode: p.id })}
+                  activeOpacity={0.8}
+                >
+                  <Text style={[styles.quickPlacementBtnText, isSel && styles.quickPlacementBtnTextActive]}>
+                    {p.label}
+                  </Text>
+                </TouchableOpacity>
+              );
+            })}
+          </View>
+
+          {/* Garment Stage with Normalized 500:580 Aspect Ratio */}
           <View
             style={[
               styles.garmentStage,
-              { backgroundColor: isLightColor ? '#F5EFEB' : '#2A2521' },
+              { backgroundColor: isLightColor ? '#F4EDE6' : '#221D1A' },
             ]}
           >
             {/* Garment Photo or Styled Vector Silhouette */}
@@ -534,7 +601,7 @@ export const CustomizeScreen = ({ navigation }) => {
               <Image
                 source={{ uri: activeGarmentImg }}
                 style={styles.garmentPhoto}
-                resizeMode="contain"
+                resizeMode="cover"
               />
             ) : (
               <View
@@ -543,7 +610,6 @@ export const CustomizeScreen = ({ navigation }) => {
                   { backgroundColor: selectedGarment.hex, borderColor: isLightColor ? '#E2DCD5' : '#443C35' },
                 ]}
               >
-                {/* Silhouette collar indicator */}
                 <View
                   style={[
                     styles.collarArc,
@@ -553,145 +619,394 @@ export const CustomizeScreen = ({ navigation }) => {
               </View>
             )}
 
-            {/* Printable Frame Area Overlay */}
+            {/* Quick Canvas Floating Action Controls */}
+            <View style={styles.floatingCanvasControls}>
+              <TouchableOpacity
+                style={styles.floatingControlBtn}
+                onPress={() =>
+                  setCurrentDesign((p) => ({ scale: Math.max(0.6, Math.round(((p.scale || 1) - 0.1) * 10) / 10) }))
+                }
+                activeOpacity={0.8}
+              >
+                <Ionicons name="remove" size={16} color="#1E1B18" />
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={styles.floatingControlBtn}
+                onPress={() =>
+                  setCurrentDesign((p) => ({ scale: Math.min(1.8, Math.round(((p.scale || 1) + 0.1) * 10) / 10) }))
+                }
+                activeOpacity={0.8}
+              >
+                <Ionicons name="add" size={16} color="#1E1B18" />
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={[styles.floatingControlBtn, currentDesign.flipH && styles.floatingControlBtnActive]}
+                onPress={() => setCurrentDesign((p) => ({ flipH: !p.flipH }))}
+                activeOpacity={0.8}
+              >
+                <Ionicons name="swap-horizontal" size={16} color={currentDesign.flipH ? '#FFFFFF' : '#1E1B18'} />
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={styles.floatingControlBtn}
+                onPress={() =>
+                  setCurrentDesign({
+                    scale: 1,
+                    flipH: false,
+                    rotation: 0,
+                    posX: 0,
+                    posY: 0,
+                    textPosX: 0,
+                    textPosY: 0,
+                  })
+                }
+                activeOpacity={0.8}
+              >
+                <Ionicons name="refresh" size={15} color="#1E1B18" />
+              </TouchableOpacity>
+            </View>
+
+            {/* Printable Frame Area Overlay with Precise Torso Boundaries */}
             <View
               style={[
                 styles.printableFrame,
-                currentDesign.placementMode === 'chest' && styles.frameChest,
-                currentDesign.placementMode === 'center' && styles.frameCenter,
-                currentDesign.placementMode === 'full' && styles.frameFull,
-                currentDesign.placementMode === 'upper' && styles.frameUpper,
+                activeSide === 'front' && currentDesign.placementMode === 'chest' && styles.frameFrontChest,
+                activeSide === 'front' && currentDesign.placementMode === 'center' && styles.frameFrontCenter,
+                activeSide === 'front' && currentDesign.placementMode === 'full' && styles.frameFrontFull,
+                activeSide === 'back' && currentDesign.placementMode === 'upper' && styles.frameBackUpper,
+                activeSide === 'back' && currentDesign.placementMode === 'center' && styles.frameBackCenter,
+                activeSide === 'back' && currentDesign.placementMode === 'full' && styles.frameBackFull,
               ]}
             >
               <View style={styles.frameTag}>
-                <Text style={styles.frameTagText}>{placementLabel}</Text>
+                <Text style={styles.frameTagText} numberOfLines={1}>{placementLabel}</Text>
               </View>
 
-              {/* Layer 1: Motif / Artwork Image */}
-              {Boolean(currentDesign.imageUrl) && (
-                <View
-                  style={[
-                    styles.motifLayer,
-                    {
-                      transform: [
-                        { scale: currentDesign.scale || 1 },
-                        { scaleX: currentDesign.flipH ? -1 : 1 },
-                        { rotate: `${currentDesign.rotation || 0}deg` },
-                        { translateX: currentDesign.posX || 0 },
-                        { translateY: currentDesign.posY || 0 },
-                      ],
-                    },
-                  ]}
-                >
-                  <Image
-                    source={{ uri: currentDesign.imageUrl }}
-                    style={styles.motifImage}
-                    resizeMode="contain"
-                  />
-                </View>
-              )}
-
-              {/* Layer 2: Custom Text */}
-              {Boolean(currentDesign.text && currentDesign.text.trim()) && (
-                <View
-                  style={[
-                    styles.textLayer,
-                    {
-                      transform: [
-                        { translateX: currentDesign.textPosX || 0 },
-                        { translateY: currentDesign.textPosY || 0 },
-                      ],
-                    },
-                  ]}
-                >
-                  <Text
-                    style={{
-                      fontFamily: currentDesign.fontFamily || 'Inter, sans-serif',
-                      fontSize: currentDesign.fontSize || 16,
-                      fontWeight: currentDesign.isBold ? 'bold' : 'normal',
-                      fontStyle: currentDesign.isItalic ? 'italic' : 'normal',
-                      letterSpacing: currentDesign.letterSpacing || 1,
-                      color: resolvedTextColor,
-                      textAlign: 'center',
-                      textShadowColor: 'rgba(0,0,0,0.25)',
-                      textShadowOffset: { width: 0, height: 1 },
-                      textShadowRadius: 2,
-                    }}
+              {/* Design Content Container */}
+              <View style={styles.frameInnerContent}>
+                {/* Layer 1: Motif / Artwork Image */}
+                {Boolean(currentDesign.imageUrl) && (
+                  <View
+                    style={[
+                      styles.motifLayer,
+                      {
+                        transform: [
+                          { scale: currentDesign.scale || 1 },
+                          { scaleX: currentDesign.flipH ? -1 : 1 },
+                          { rotate: `${currentDesign.rotation || 0}deg` },
+                          { translateX: currentDesign.posX || 0 },
+                          { translateY: currentDesign.posY || 0 },
+                        ],
+                      },
+                    ]}
                   >
-                    {currentDesign.text}
-                  </Text>
-                </View>
-              )}
-            </View>
-          </View>
+                    <Image
+                      source={{ uri: currentDesign.imageUrl }}
+                      style={[
+                        styles.motifImage,
+                        (currentDesign.placementMode === 'chest' || currentDesign.placementMode === 'upper') && styles.motifImageSmall,
+                        currentDesign.placementMode === 'center' && styles.motifImageMedium,
+                        currentDesign.placementMode === 'full' && styles.motifImageLarge,
+                      ]}
+                      resizeMode="contain"
+                    />
+                  </View>
+                )}
 
-          {/* Garment Quick Meta */}
-          <View style={styles.canvasFooter}>
-            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
-              <View style={[styles.swatchMini, { backgroundColor: selectedGarment.hex }]} />
-              <Text style={styles.canvasGarmentName}>{selectedGarment.name} T-Shirt</Text>
+                {/* Layer 2: Custom Text */}
+                {Boolean(currentDesign.text && currentDesign.text.trim()) && (
+                  <View
+                    style={[
+                      styles.textLayer,
+                      {
+                        transform: [
+                          { translateX: currentDesign.textPosX || 0 },
+                          { translateY: currentDesign.textPosY || 0 },
+                        ],
+                      },
+                    ]}
+                  >
+                    <Text
+                      numberOfLines={2}
+                      style={{
+                        fontFamily: currentDesign.fontFamily || 'Inter, sans-serif',
+                        fontSize: (currentDesign.placementMode === 'chest' || currentDesign.placementMode === 'upper')
+                          ? Math.min(currentDesign.fontSize || 16, 11)
+                          : Math.min(currentDesign.fontSize || 16, 14),
+                        fontWeight: currentDesign.isBold ? 'bold' : 'normal',
+                        fontStyle: currentDesign.isItalic ? 'italic' : 'normal',
+                        letterSpacing: currentDesign.letterSpacing || 1,
+                        color: resolvedTextColor,
+                        textAlign: 'center',
+                        textShadowColor: 'rgba(0,0,0,0.35)',
+                        textShadowOffset: { width: 0, height: 1 },
+                        textShadowRadius: 2,
+                      }}
+                    >
+                      {currentDesign.text}
+                    </Text>
+                  </View>
+                )}
+              </View>
             </View>
-            <Text style={styles.canvasGarmentPrice}>From ₹{selectedGarment.base_price}</Text>
+
+            {/* Bottom Floating Live Garment Specs Tag */}
+            <View style={styles.floatingGarmentSpecsTag}>
+              <View style={[styles.swatchMini, { backgroundColor: selectedGarment.hex }]} />
+              <Text style={styles.floatingSpecsText} numberOfLines={1}>
+                {selectedGarment.name} • {selectedMaterial.fabric_weight || '180 GSM'} • Size {selectedSize}
+              </Text>
+            </View>
           </View>
         </View>
 
-        {/* ── 2. STUDIO NAVIGATION TOOL TABS ── */}
-        <ScrollView
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          contentContainerStyle={styles.tabsScroll}
-        >
-          {[
-            { id: 'motifs', label: 'ARTWORK', icon: 'sparkles-outline' },
-            { id: 'text', label: 'TYPOGRAPHY', icon: 'text-outline' },
-            { id: 'placement', label: 'PLACEMENT', icon: 'move-outline' },
-            { id: 'garment', label: 'COLOR', icon: 'color-palette-outline' },
-            { id: 'fabric', label: 'FABRIC', icon: 'shirt-outline' },
-            { id: 'size', label: 'SIZING', icon: 'resize-outline' },
-          ].map((tab) => {
-            const isActive = activeTab === tab.id;
-            return (
-              <TouchableOpacity
-                key={tab.id}
-                style={[styles.tabBtn, isActive && styles.tabBtnActive]}
-                onPress={() => setActiveTab(tab.id)}
-                activeOpacity={0.8}
-              >
-                <Ionicons
-                  name={tab.icon}
-                  size={15}
-                  color={isActive ? '#FFFFFF' : colors.textSecondary}
-                />
-                <Text style={[styles.tabBtnText, isActive && styles.tabBtnTextActive]}>
-                  {tab.label}
-                </Text>
-              </TouchableOpacity>
-            );
-          })}
-        </ScrollView>
+        {/* ── 3. ATELIER STEP WORKFLOW BAR (Steps 1 to 6) ── */}
+        <View style={styles.stepWorkflowContainer}>
+          <View style={styles.stepProgressMetaRow}>
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+              <View style={styles.stepNumberCircle}>
+                <Text style={styles.stepNumberCircleText}>{currentStep.num}</Text>
+              </View>
+              <View>
+                <Text style={styles.stepTitleMain}>STEP {currentStep.num}: {currentStep.title.toUpperCase()}</Text>
+                <Text style={styles.stepSubtitleMain}>{currentStep.subtitle}</Text>
+              </View>
+            </View>
+            <Text style={styles.stepCountText}>{currentStep.num} / 6</Text>
+          </View>
 
-        {/* ── 3. DYNAMIC TOOL PANEL ── */}
+          {/* Stepper Navigation Pills Bar */}
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={styles.stepWorkflowScroll}
+          >
+            {STUDIO_STEPS.map((step) => {
+              const isActive = activeTab === step.id;
+              const isPassed = step.num < currentStep.num;
+              return (
+                <TouchableOpacity
+                  key={step.id}
+                  style={[
+                    styles.workflowStepPill,
+                    isActive && styles.workflowStepPillActive,
+                    isPassed && styles.workflowStepPillPassed,
+                  ]}
+                  onPress={() => setActiveTab(step.id)}
+                  activeOpacity={0.8}
+                >
+                  <Ionicons
+                    name={isPassed ? 'checkmark-circle' : step.icon}
+                    size={14}
+                    color={isActive ? '#FFFFFF' : isPassed ? colors.primary : colors.textSecondary}
+                  />
+                  <Text
+                    style={[
+                      styles.workflowStepPillText,
+                      isActive && styles.workflowStepPillTextActive,
+                      isPassed && styles.workflowStepPillTextPassed,
+                    ]}
+                  >
+                    {step.num}. {step.title}
+                  </Text>
+                </TouchableOpacity>
+              );
+            })}
+          </ScrollView>
+        </View>
+
+        {/* ── 4. DYNAMIC TOOL PANEL ── */}
         <View style={styles.toolPanel}>
-          {/* TAB: MOTIFS & ARTWORK */}
+          {/* ──────── STEP 1: GARMENT COLOR ──────── */}
+          {activeTab === 'garment' && (
+            <View>
+              <Text style={styles.panelSectionHeading}>Select Base Garment Color</Text>
+              <Text style={styles.panelSectionSub}>All plain t-shirts are tailored from ethically sourced organic cotton.</Text>
+
+              <View style={styles.garmentsGrid2Col}>
+                {garments.map((g) => {
+                  const isSel = selectedGarment.id === g.id;
+                  return (
+                    <TouchableOpacity
+                      key={g.id}
+                      style={[styles.garmentTile, isSel && styles.garmentTileActive]}
+                      onPress={() => setSelectedGarment(g)}
+                      activeOpacity={0.8}
+                    >
+                      <View style={[styles.tileSwatch, { backgroundColor: g.hex }, g.hex === '#FFFFFF' && styles.whiteBorder]}>
+                        {isSel && (
+                          <Ionicons
+                            name="checkmark"
+                            size={16}
+                            color={g.hex === '#FFFFFF' ? '#111827' : '#FFFFFF'}
+                          />
+                        )}
+                      </View>
+                      <View style={{ flex: 1 }}>
+                        <Text style={[styles.tileName, isSel && styles.tileNameActive]} numberOfLines={1}>
+                          {g.name}
+                        </Text>
+                        <Text style={styles.tilePrice}>₹{g.base_price}</Text>
+                      </View>
+                    </TouchableOpacity>
+                  );
+                })}
+              </View>
+            </View>
+          )}
+
+          {/* ──────── STEP 2: FABRIC & MATERIALS ──────── */}
+          {activeTab === 'fabric' && (
+            <View>
+              <Text style={styles.panelSectionHeading}>Select Luxury Fabric & Weave</Text>
+              <Text style={styles.panelSectionSub}>Bespoke textile specifications tailored to your hand feel & structure preference.</Text>
+
+              <View style={styles.materialsStack}>
+                {materials.map((mat) => {
+                  const isSel = selectedMaterial.id === mat.id;
+                  return (
+                    <TouchableOpacity
+                      key={mat.id}
+                      style={[styles.materialCardLuxury, isSel && styles.materialCardLuxuryActive]}
+                      onPress={() => setSelectedMaterial(mat)}
+                      activeOpacity={0.85}
+                    >
+                      <View style={styles.materialHeaderRow}>
+                        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, flex: 1 }}>
+                          <Ionicons
+                            name={isSel ? 'radio-button-on' : 'radio-button-off'}
+                            size={19}
+                            color={isSel ? colors.primary : colors.textMuted}
+                          />
+                          <Text style={[styles.materialCardTitle, isSel && styles.materialCardTitleActive]}>
+                            {mat.name}
+                          </Text>
+                        </View>
+                        <View style={[styles.gsmPill, isSel && styles.gsmPillActive]}>
+                          <Text style={[styles.gsmPillText, isSel && styles.gsmPillTextActive]}>
+                            {mat.fabric_weight || '180 GSM'}
+                          </Text>
+                        </View>
+                      </View>
+                      <Text style={styles.materialCardDesc}>{mat.description}</Text>
+                      <Text style={styles.materialCardPrice}>
+                        {mat.price_adjustment && Number(mat.price_adjustment) > 0
+                          ? `+₹${mat.price_adjustment} Upgrade`
+                          : 'Included in Base Price'}
+                      </Text>
+                    </TouchableOpacity>
+                  );
+                })}
+              </View>
+            </View>
+          )}
+
+          {/* ──────── STEP 3: PLACEMENT & TRANSFORMS ──────── */}
+          {activeTab === 'placement' && (
+            <View>
+              <Text style={styles.panelSectionHeading}>Print Zone Selection ({activeSide.toUpperCase()} VIEW)</Text>
+              <Text style={styles.panelSectionSub}>Choose exact placement area for artwork or monogram positioning.</Text>
+
+              <View style={styles.placementCardsStack}>
+                {currentPlacementOptions.map((p) => {
+                  const isSel = currentDesign.placementMode === p.id;
+                  return (
+                    <TouchableOpacity
+                      key={p.id}
+                      style={[styles.placementOptionCard, isSel && styles.placementOptionCardActive]}
+                      onPress={() => setCurrentDesign({ placementMode: p.id })}
+                      activeOpacity={0.8}
+                    >
+                      <View style={styles.placementOptionHeader}>
+                        <Ionicons
+                          name={isSel ? 'radio-button-on' : 'radio-button-off'}
+                          size={18}
+                          color={isSel ? colors.primary : colors.textMuted}
+                        />
+                        <Text style={[styles.placementOptionTitle, isSel && styles.placementOptionTitleActive]}>
+                          {p.label}
+                        </Text>
+                      </View>
+                      <Text style={styles.placementOptionDesc}>{p.desc}</Text>
+                    </TouchableOpacity>
+                  );
+                })}
+              </View>
+
+              <Text style={styles.subSectionTitle}>ARTWORK GEOMETRY & ORIENTATION</Text>
+              <View style={styles.transformActionGrid}>
+                <TouchableOpacity
+                  style={styles.transformGridBtn}
+                  onPress={() =>
+                    setCurrentDesign((p) => ({ scale: Math.max(0.6, Math.round(((p.scale || 1) - 0.1) * 10) / 10) }))
+                  }
+                >
+                  <Ionicons name="remove-circle-outline" size={17} color={colors.primary} />
+                  <Text style={styles.transformGridBtnText}>Zoom Out</Text>
+                </TouchableOpacity>
+
+                <TouchableOpacity
+                  style={styles.transformGridBtn}
+                  onPress={() =>
+                    setCurrentDesign((p) => ({ scale: Math.min(1.8, Math.round(((p.scale || 1) + 0.1) * 10) / 10) }))
+                  }
+                >
+                  <Ionicons name="add-circle-outline" size={17} color={colors.primary} />
+                  <Text style={styles.transformGridBtnText}>Zoom In</Text>
+                </TouchableOpacity>
+
+                <TouchableOpacity
+                  style={[styles.transformGridBtn, currentDesign.flipH && styles.transformGridBtnActive]}
+                  onPress={() => setCurrentDesign((p) => ({ flipH: !p.flipH }))}
+                >
+                  <Ionicons name="swap-horizontal" size={17} color={currentDesign.flipH ? '#FFFFFF' : colors.primary} />
+                  <Text style={[styles.transformGridBtnText, currentDesign.flipH && { color: '#FFFFFF' }]}>Flip H</Text>
+                </TouchableOpacity>
+
+                <TouchableOpacity
+                  style={styles.transformGridBtn}
+                  onPress={() =>
+                    setCurrentDesign({
+                      scale: 1,
+                      flipH: false,
+                      rotation: 0,
+                      posX: 0,
+                      posY: 0,
+                      textPosX: 0,
+                      textPosY: 0,
+                    })
+                  }
+                >
+                  <Ionicons name="refresh" size={17} color={colors.textSecondary} />
+                  <Text style={[styles.transformGridBtnText, { color: colors.textSecondary }]}>Reset</Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+          )}
+
+          {/* ──────── STEP 4: MOTIFS & ARTWORK ──────── */}
           {activeTab === 'motifs' && (
             <View>
               <View style={styles.panelHeaderRow}>
-                <Text style={styles.panelTitle}>CURATED MOTIF ATELIER</Text>
+                <Text style={styles.panelSectionHeading}>Curated Motif Atelier</Text>
                 {Boolean(currentDesign.imageUrl) && (
                   <TouchableOpacity
                     onPress={() => setCurrentDesign({ imageUrl: null, designName: null, designPrice: 0 })}
                   >
-                    <Text style={styles.clearBtnText}>Remove Motif</Text>
+                    <Text style={styles.clearActionText}>Remove Motif</Text>
                   </TouchableOpacity>
                 )}
               </View>
+              <Text style={styles.panelSectionSub}>Choose handcrafted graphic emblems or apply your custom artwork link.</Text>
 
               {/* Search Bar */}
               <View style={styles.searchBar}>
                 <Ionicons name="search-outline" size={16} color={colors.textMuted} />
                 <TextInput
                   style={styles.searchInput}
-                  placeholder="Search motifs (e.g. Anime, Vintage, Tiger)..."
+                  placeholder="Search motifs (e.g. Streetwear, Anime, Vintage)..."
                   placeholderTextColor={colors.textMuted}
                   value={motifSearch}
                   onChangeText={setMotifSearch}
@@ -704,29 +1019,29 @@ export const CustomizeScreen = ({ navigation }) => {
               </View>
 
               {/* Category Pills */}
-              <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.subPillsScroll}>
+              <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.categoryPillsScroll}>
                 {motifCategories.map((cat) => {
                   const isSel = selectedMotifCategory === cat;
                   return (
                     <TouchableOpacity
                       key={cat}
-                      style={[styles.subPill, isSel && styles.subPillActive]}
+                      style={[styles.categoryPill, isSel && styles.categoryPillActive]}
                       onPress={() => setSelectedMotifCategory(cat)}
                     >
-                      <Text style={[styles.subPillText, isSel && styles.subPillTextActive]}>{cat}</Text>
+                      <Text style={[styles.categoryPillText, isSel && styles.categoryPillTextActive]}>{cat}</Text>
                     </TouchableOpacity>
                   );
                 })}
               </ScrollView>
 
               {/* Motifs Grid */}
-              <View style={styles.motifsGrid}>
+              <View style={styles.motifsGrid3Col}>
                 {filteredMotifs.map((motif) => {
                   const isSelected = currentDesign.imageUrl === motif.image_url;
                   return (
                     <TouchableOpacity
                       key={motif.id}
-                      style={[styles.motifCard, isSelected && styles.motifCardActive]}
+                      style={[styles.motifTile, isSelected && styles.motifTileActive]}
                       onPress={() =>
                         setCurrentDesign({
                           imageUrl: motif.image_url,
@@ -736,11 +1051,11 @@ export const CustomizeScreen = ({ navigation }) => {
                       }
                       activeOpacity={0.8}
                     >
-                      <Image source={{ uri: motif.image_url }} style={styles.motifThumb} resizeMode="contain" />
-                      <Text style={styles.motifName} numberOfLines={1}>
+                      <Image source={{ uri: motif.image_url }} style={styles.motifTileImg} resizeMode="contain" />
+                      <Text style={styles.motifTileName} numberOfLines={1}>
                         {motif.name}
                       </Text>
-                      <Text style={styles.motifFee}>
+                      <Text style={styles.motifTilePrice}>
                         {motif.price && Number(motif.price) > 0 ? `+₹${motif.price}` : 'Free Motif'}
                       </Text>
                     </TouchableOpacity>
@@ -748,13 +1063,13 @@ export const CustomizeScreen = ({ navigation }) => {
                 })}
               </View>
 
-              {/* Custom Image URL Input */}
-              <View style={styles.customUploadBox}>
-                <Text style={styles.customUploadTitle}>OR USE YOUR OWN ARTWORK LINK</Text>
+              {/* Custom Image URL Upload Card */}
+              <View style={styles.customUrlCard}>
+                <Text style={styles.customUrlCardTitle}>CUSTOM ARTWORK LINK</Text>
                 <View style={styles.urlInputRow}>
                   <TextInput
-                    style={styles.urlInput}
-                    placeholder="Paste Cloudinary or web image URL..."
+                    style={styles.urlTextInput}
+                    placeholder="Paste direct PNG / JPG image URL..."
                     placeholderTextColor={colors.textMuted}
                     value={customImageUrlInput}
                     onChangeText={setCustomImageUrlInput}
@@ -779,48 +1094,52 @@ export const CustomizeScreen = ({ navigation }) => {
             </View>
           )}
 
-          {/* TAB: TYPOGRAPHY & MONOGRAM */}
+          {/* ──────── STEP 5: TYPOGRAPHY & MONOGRAM ──────── */}
           {activeTab === 'text' && (
             <View>
               <View style={styles.panelHeaderRow}>
-                <Text style={styles.panelTitle}>CUSTOM MONOGRAM & TEXT</Text>
+                <Text style={styles.panelSectionHeading}>Custom Monogram & Typography</Text>
                 {Boolean(currentDesign.text) && (
                   <TouchableOpacity onPress={() => setCurrentDesign({ text: '' })}>
-                    <Text style={styles.clearBtnText}>Clear Text</Text>
+                    <Text style={styles.clearActionText}>Clear Text</Text>
                   </TouchableOpacity>
                 )}
               </View>
+              <Text style={styles.panelSectionSub}>Add your personal quote, monogram, or bespoke phrase.</Text>
 
               {/* Text Input */}
               <TextInput
-                style={styles.textInput}
-                placeholder="Type your name, quote, or coordinates..."
+                style={styles.monogramInput}
+                placeholder="Type your bespoke monogram or quote..."
                 placeholderTextColor={colors.textMuted}
                 value={currentDesign.text}
                 onChangeText={(text) => setCurrentDesign({ text })}
                 maxLength={45}
               />
 
-              {/* Font Selector */}
-              <Text style={styles.fieldSectionLabel}>SELECT FONT FAMILY</Text>
-              <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.subPillsScroll}>
+              {/* Visual Font Style Cards */}
+              <Text style={styles.subSectionTitle}>SELECT FONT STYLE</Text>
+              <View style={styles.fontsGrid2Col}>
                 {FONTS.map((f) => {
                   const isSel = currentDesign.fontFamily === f.value;
                   return (
                     <TouchableOpacity
-                      key={f.value}
-                      style={[styles.subPill, isSel && styles.subPillActive]}
+                      key={f.label}
+                      style={[styles.fontTile, isSel && styles.fontTileActive]}
                       onPress={() => setCurrentDesign({ fontFamily: f.value })}
+                      activeOpacity={0.8}
                     >
-                      <Text style={[styles.subPillText, isSel && styles.subPillTextActive]}>{f.label}</Text>
+                      <Text style={[styles.fontSampleText, { fontFamily: f.value }]}>Aa Bb Cc</Text>
+                      <Text style={[styles.fontTileName, isSel && styles.fontTileNameActive]}>{f.label}</Text>
+                      <Text style={styles.fontTileSub}>{f.sub}</Text>
                     </TouchableOpacity>
                   );
                 })}
-              </ScrollView>
+              </View>
 
-              {/* Text Colors */}
-              <Text style={styles.fieldSectionLabel}>TEXT COLOR</Text>
-              <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.colorPaletteScroll}>
+              {/* Text Color Swatches Palette */}
+              <Text style={styles.subSectionTitle}>TEXT COLOR PALETTE</Text>
+              <View style={styles.textColorGrid}>
                 {TEXT_COLORS.map((tc) => {
                   const isSel = currentDesign.textColor === tc.hex;
                   return (
@@ -845,266 +1164,92 @@ export const CustomizeScreen = ({ navigation }) => {
                     </TouchableOpacity>
                   );
                 })}
-              </ScrollView>
+              </View>
 
-              {/* Font Format: Size, Bold, Italic */}
-              <Text style={styles.fieldSectionLabel}>STYLING & POSITION NUDGE</Text>
-              <View style={styles.formatRow}>
+              {/* Font Format: Size, Bold, Italic & Nudge Pad */}
+              <Text style={styles.subSectionTitle}>STYLING & POSITION NUDGE</Text>
+              <View style={styles.typographyToolbarRow}>
                 <TouchableOpacity
-                  style={[styles.formatBtn, currentDesign.isBold && styles.formatBtnActive]}
+                  style={[styles.styleBtn, currentDesign.isBold && styles.styleBtnActive]}
                   onPress={() => setCurrentDesign((p) => ({ isBold: !p.isBold }))}
                 >
-                  <Text style={[styles.formatBtnText, currentDesign.isBold && styles.formatBtnTextActive, { fontWeight: 'bold' }]}>
+                  <Text style={[styles.styleBtnText, currentDesign.isBold && styles.styleBtnTextActive, { fontWeight: 'bold' }]}>
                     B
                   </Text>
                 </TouchableOpacity>
 
                 <TouchableOpacity
-                  style={[styles.formatBtn, currentDesign.isItalic && styles.formatBtnActive]}
+                  style={[styles.styleBtn, currentDesign.isItalic && styles.styleBtnActive]}
                   onPress={() => setCurrentDesign((p) => ({ isItalic: !p.isItalic }))}
                 >
-                  <Text style={[styles.formatBtnText, currentDesign.isItalic && styles.formatBtnTextActive, { fontStyle: 'italic' }]}>
+                  <Text style={[styles.styleBtnText, currentDesign.isItalic && styles.styleBtnTextActive, { fontStyle: 'italic' }]}>
                     I
                   </Text>
                 </TouchableOpacity>
 
-                <View style={styles.fontSizeControls}>
+                <View style={styles.fontSizeStepper}>
                   <TouchableOpacity
                     style={styles.stepBtn}
                     onPress={() => setCurrentDesign((p) => ({ fontSize: Math.max(10, (p.fontSize || 16) - 2) }))}
                   >
-                    <Ionicons name="remove" size={16} color={colors.textPrimary} />
+                    <Ionicons name="remove" size={15} color={colors.textPrimary} />
                   </TouchableOpacity>
-                  <Text style={styles.stepValue}>{currentDesign.fontSize || 16} pt</Text>
+                  <Text style={styles.fontSizeValue}>{currentDesign.fontSize || 16} pt</Text>
                   <TouchableOpacity
                     style={styles.stepBtn}
                     onPress={() => setCurrentDesign((p) => ({ fontSize: Math.min(32, (p.fontSize || 16) + 2) }))}
                   >
-                    <Ionicons name="add" size={16} color={colors.textPrimary} />
+                    <Ionicons name="add" size={15} color={colors.textPrimary} />
                   </TouchableOpacity>
                 </View>
 
-                {/* Nudge Arrows */}
+                {/* 4-Way Directional Nudge Pad */}
                 <View style={styles.nudgePad}>
                   <TouchableOpacity style={styles.nudgeBtn} onPress={() => handleNudge(0, -6)}>
-                    <Ionicons name="arrow-up" size={14} color={colors.textPrimary} />
+                    <Ionicons name="arrow-up" size={13} color={colors.textPrimary} />
                   </TouchableOpacity>
                   <View style={{ flexDirection: 'row', gap: 4 }}>
                     <TouchableOpacity style={styles.nudgeBtn} onPress={() => handleNudge(-6, 0)}>
-                      <Ionicons name="arrow-back" size={14} color={colors.textPrimary} />
+                      <Ionicons name="arrow-back" size={13} color={colors.textPrimary} />
                     </TouchableOpacity>
                     <TouchableOpacity style={styles.nudgeBtn} onPress={() => handleNudge(6, 0)}>
-                      <Ionicons name="arrow-forward" size={14} color={colors.textPrimary} />
+                      <Ionicons name="arrow-forward" size={13} color={colors.textPrimary} />
                     </TouchableOpacity>
                   </View>
                   <TouchableOpacity style={styles.nudgeBtn} onPress={() => handleNudge(0, 6)}>
-                    <Ionicons name="arrow-down" size={14} color={colors.textPrimary} />
+                    <Ionicons name="arrow-down" size={13} color={colors.textPrimary} />
                   </TouchableOpacity>
                 </View>
               </View>
             </View>
           )}
 
-          {/* TAB: PLACEMENT & TRANSFORMS */}
-          {activeTab === 'placement' && (
-            <View>
-              <Text style={styles.panelTitle}>PRINT ZONE & TRANSFORMS</Text>
-
-              <Text style={styles.fieldSectionLabel}>SELECT PRINT ZONE</Text>
-              <View style={styles.placementPillsRow}>
-                {activeSide === 'front'
-                  ? [
-                      { id: 'chest', label: 'Left Chest Pocket' },
-                      { id: 'center', label: 'Center Chest' },
-                      { id: 'full', label: 'Full Front Zone' },
-                    ].map((p) => {
-                      const isSel = currentDesign.placementMode === p.id;
-                      return (
-                        <TouchableOpacity
-                          key={p.id}
-                          style={[styles.placementPill, isSel && styles.placementPillActive]}
-                          onPress={() => setCurrentDesign({ placementMode: p.id })}
-                        >
-                          <Ionicons
-                            name={isSel ? 'radio-button-on' : 'radio-button-off'}
-                            size={16}
-                            color={isSel ? colors.primary : colors.textMuted}
-                          />
-                          <Text style={[styles.placementPillText, isSel && styles.placementPillTextActive]}>
-                            {p.label}
-                          </Text>
-                        </TouchableOpacity>
-                      );
-                    })
-                  : [
-                      { id: 'upper', label: 'Upper Back Neck' },
-                      { id: 'center', label: 'Center Back' },
-                      { id: 'full', label: 'Full Back Zone' },
-                    ].map((p) => {
-                      const isSel = currentDesign.placementMode === p.id;
-                      return (
-                        <TouchableOpacity
-                          key={p.id}
-                          style={[styles.placementPill, isSel && styles.placementPillActive]}
-                          onPress={() => setCurrentDesign({ placementMode: p.id })}
-                        >
-                          <Ionicons
-                            name={isSel ? 'radio-button-on' : 'radio-button-off'}
-                            size={16}
-                            color={isSel ? colors.primary : colors.textMuted}
-                          />
-                          <Text style={[styles.placementPillText, isSel && styles.placementPillTextActive]}>
-                            {p.label}
-                          </Text>
-                        </TouchableOpacity>
-                      );
-                    })}
-              </View>
-
-              {/* Transform Buttons */}
-              <Text style={styles.fieldSectionLabel}>ARTWORK SCALE & ORIENTATION</Text>
-              <View style={styles.transformActionsRow}>
-                <TouchableOpacity
-                  style={styles.transformActionBtn}
-                  onPress={() =>
-                    setCurrentDesign((p) => ({ scale: Math.max(0.6, Math.round(((p.scale || 1) - 0.1) * 10) / 10) }))
-                  }
-                >
-                  <Ionicons name="remove-circle-outline" size={18} color={colors.primary} />
-                  <Text style={styles.transformActionText}>Zoom -</Text>
-                </TouchableOpacity>
-
-                <TouchableOpacity
-                  style={styles.transformActionBtn}
-                  onPress={() =>
-                    setCurrentDesign((p) => ({ scale: Math.min(1.8, Math.round(((p.scale || 1) + 0.1) * 10) / 10) }))
-                  }
-                >
-                  <Ionicons name="add-circle-outline" size={18} color={colors.primary} />
-                  <Text style={styles.transformActionText}>Zoom +</Text>
-                </TouchableOpacity>
-
-                <TouchableOpacity
-                  style={[styles.transformActionBtn, currentDesign.flipH && styles.transformActionBtnActive]}
-                  onPress={() => setCurrentDesign((p) => ({ flipH: !p.flipH }))}
-                >
-                  <Ionicons name="swap-horizontal" size={18} color={currentDesign.flipH ? '#FFFFFF' : colors.primary} />
-                  <Text style={[styles.transformActionText, currentDesign.flipH && { color: '#FFFFFF' }]}>Flip H</Text>
-                </TouchableOpacity>
-
-                <TouchableOpacity
-                  style={styles.transformActionBtn}
-                  onPress={() =>
-                    setCurrentDesign({
-                      scale: 1,
-                      flipH: false,
-                      rotation: 0,
-                      posX: 0,
-                      posY: 0,
-                      textPosX: 0,
-                      textPosY: 0,
-                    })
-                  }
-                >
-                  <Ionicons name="refresh" size={18} color={colors.textSecondary} />
-                  <Text style={[styles.transformActionText, { color: colors.textSecondary }]}>Reset</Text>
-                </TouchableOpacity>
-              </View>
-            </View>
-          )}
-
-          {/* TAB: GARMENT COLOR */}
-          {activeTab === 'garment' && (
-            <View>
-              <Text style={styles.panelTitle}>SELECT BASE GARMENT COLOR</Text>
-              <View style={styles.garmentsGrid}>
-                {garments.map((g) => {
-                  const isSel = selectedGarment.id === g.id;
-                  return (
-                    <TouchableOpacity
-                      key={g.id}
-                      style={[styles.garmentCard, isSel && styles.garmentCardActive]}
-                      onPress={() => setSelectedGarment(g)}
-                      activeOpacity={0.8}
-                    >
-                      <View style={[styles.swatchLarge, { backgroundColor: g.hex }, g.hex === '#FFFFFF' && styles.whiteBorder]} />
-                      <Text style={[styles.garmentCardName, isSel && styles.garmentCardNameActive]}>
-                        {g.name}
-                      </Text>
-                      <Text style={styles.garmentCardPrice}>₹{g.base_price}</Text>
-                    </TouchableOpacity>
-                  );
-                })}
-              </View>
-            </View>
-          )}
-
-          {/* TAB: FABRIC & MATERIALS */}
-          {activeTab === 'fabric' && (
-            <View>
-              <Text style={styles.panelTitle}>LUXURY FABRIC SPECIFICATIONS</Text>
-              <View style={styles.materialsStack}>
-                {materials.map((mat) => {
-                  const isSel = selectedMaterial.id === mat.id;
-                  return (
-                    <TouchableOpacity
-                      key={mat.id}
-                      style={[styles.materialItemCard, isSel && styles.materialItemCardActive]}
-                      onPress={() => setSelectedMaterial(mat)}
-                      activeOpacity={0.85}
-                    >
-                      <View style={styles.materialHeader}>
-                        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, flex: 1 }}>
-                          <Ionicons
-                            name={isSel ? 'radio-button-on' : 'radio-button-off'}
-                            size={18}
-                            color={isSel ? colors.primary : colors.textMuted}
-                          />
-                          <Text style={[styles.materialTitle, isSel && styles.materialTitleActive]}>
-                            {mat.name}
-                          </Text>
-                        </View>
-                        <View style={styles.gsmBadge}>
-                          <Text style={styles.gsmBadgeText}>{mat.fabric_weight || '180 GSM'}</Text>
-                        </View>
-                      </View>
-                      <Text style={styles.materialDescription}>{mat.description}</Text>
-                      <Text style={styles.materialPriceAdd}>
-                        {mat.price_adjustment && Number(mat.price_adjustment) > 0
-                          ? `+₹${mat.price_adjustment} Upgrade`
-                          : 'Included in Base Price'}
-                      </Text>
-                    </TouchableOpacity>
-                  );
-                })}
-              </View>
-            </View>
-          )}
-
-          {/* TAB: SIZING */}
+          {/* ──────── STEP 6: SIZING & FINAL OVERVIEW ──────── */}
           {activeTab === 'size' && (
             <View>
               <View style={styles.panelHeaderRow}>
-                <Text style={styles.panelTitle}>SELECT APPAREL SIZE</Text>
+                <Text style={styles.panelSectionHeading}>Select Apparel Size & Quantity</Text>
                 <TouchableOpacity onPress={() => setShowSizeGuideModal(true)}>
-                  <Text style={styles.clearBtnText}>Size Guide Chart</Text>
+                  <Text style={styles.clearActionText}>Size Guide Chart</Text>
                 </TouchableOpacity>
               </View>
+              <Text style={styles.panelSectionSub}>Crafted to authentic Indian & Global luxury tailored fit standards.</Text>
 
-              <View style={styles.sizesRow}>
+              {/* Sizes Row */}
+              <View style={styles.sizesGrid}>
                 {sizes.map((s) => {
                   const isSel = selectedSize === s.name;
                   return (
                     <TouchableOpacity
                       key={s.id || s.name}
-                      style={[styles.sizePill, isSel && styles.sizePillActive]}
+                      style={[styles.sizeTile, isSel && styles.sizeTileActive]}
                       onPress={() => setSelectedSize(s.name)}
                     >
-                      <Text style={[styles.sizePillText, isSel && styles.sizePillTextActive]}>
+                      <Text style={[styles.sizeTileName, isSel && styles.sizeTileNameActive]}>
                         {s.name}
                       </Text>
                       {Boolean(s.chest) && (
-                        <Text style={[styles.sizeSubText, isSel && styles.sizeSubTextActive]}>
+                        <Text style={[styles.sizeTileChest, isSel && styles.sizeTileChestActive]}>
                           {s.chest}
                         </Text>
                       )}
@@ -1114,32 +1259,88 @@ export const CustomizeScreen = ({ navigation }) => {
               </View>
 
               {/* Quantity Stepper */}
-              <View style={styles.qtySection}>
-                <Text style={styles.fieldSectionLabel}>PIECES QUANTITY</Text>
-                <View style={styles.stepperRow}>
+              <View style={styles.quantitySection}>
+                <Text style={styles.subSectionTitle}>QUANTITY OF BESPOKE PIECES</Text>
+                <View style={styles.qtyStepperRow}>
                   <TouchableOpacity
-                    style={styles.qtyBtn}
+                    style={styles.qtyActionBtn}
                     onPress={() => setQuantity((q) => Math.max(1, q - 1))}
                   >
                     <Ionicons name="remove" size={18} color={colors.textPrimary} />
                   </TouchableOpacity>
-                  <Text style={styles.qtyValue}>{quantity}</Text>
+                  <Text style={styles.qtyCountValue}>{quantity}</Text>
                   <TouchableOpacity
-                    style={styles.qtyBtn}
+                    style={styles.qtyActionBtn}
                     onPress={() => setQuantity((q) => Math.min(20, q + 1))}
                   >
                     <Ionicons name="add" size={18} color={colors.textPrimary} />
                   </TouchableOpacity>
                 </View>
               </View>
+
+              {/* Final Custom Garment Overview Card */}
+              <View style={styles.orderSummaryCard}>
+                <Text style={styles.orderSummaryTitle}>GARMENT SPECIFICATIONS SUMMARY</Text>
+                <View style={styles.summaryLine}>
+                  <Text style={styles.summaryLabel}>Base Garment</Text>
+                  <Text style={styles.summaryVal}>{selectedGarment.name} (₹{selectedGarment.base_price})</Text>
+                </View>
+                <View style={styles.summaryLine}>
+                  <Text style={styles.summaryLabel}>Fabric & GSM</Text>
+                  <Text style={styles.summaryVal}>{selectedMaterial.name} ({selectedMaterial.fabric_weight || '180 GSM'})</Text>
+                </View>
+                <View style={styles.summaryLine}>
+                  <Text style={styles.summaryLabel}>Front Customization</Text>
+                  <Text style={styles.summaryVal}>{pricing.hasFront ? `Active (${frontDesign.placementMode})` : 'Plain Front'}</Text>
+                </View>
+                <View style={styles.summaryLine}>
+                  <Text style={styles.summaryLabel}>Back Customization</Text>
+                  <Text style={styles.summaryVal}>{pricing.hasBack ? `Active (${backDesign.placementMode})` : 'Plain Back'}</Text>
+                </View>
+                <View style={[styles.summaryLine, { borderTopWidth: 1, borderTopColor: colors.borderLight, paddingTop: 6, marginTop: 4 }]}>
+                  <Text style={[styles.summaryLabel, { fontWeight: 'bold' }]}>Unit Price</Text>
+                  <Text style={[styles.summaryVal, { fontWeight: 'bold', color: colors.primary }]}>₹{pricing.unitPrice}</Text>
+                </View>
+              </View>
             </View>
           )}
+
+          {/* Step Navigation Bottom Row */}
+          <View style={styles.stepNavigationRow}>
+            {currentStepIndex > 0 && (
+              <TouchableOpacity
+                style={styles.stepPrevButton}
+                onPress={handlePrevStep}
+                activeOpacity={0.85}
+              >
+                <Ionicons name="arrow-back" size={16} color={colors.textPrimary} />
+                <Text style={styles.stepPrevButtonText}>Back</Text>
+              </TouchableOpacity>
+            )}
+
+            <TouchableOpacity
+              style={styles.stepNextButton}
+              onPress={handleNextStep}
+              activeOpacity={0.85}
+            >
+              <Text style={styles.stepNextButtonText}>
+                {currentStepIndex === STUDIO_STEPS.length - 1
+                  ? `Add To Bag (₹${pricing.total.toLocaleString('en-IN')})`
+                  : `Next: ${STUDIO_STEPS[currentStepIndex + 1].title}`}
+              </Text>
+              <Ionicons
+                name={currentStepIndex === STUDIO_STEPS.length - 1 ? 'bag-check' : 'arrow-forward'}
+                size={16}
+                color="#FFFFFF"
+              />
+            </TouchableOpacity>
+          </View>
         </View>
 
         <View style={{ height: 20 }} />
       </ScrollView>
 
-      {/* ── 4. FLOATING CHECKOUT ACTION BAR (Floats cleanly above Common Bottom Tab Dock) ── */}
+      {/* ── 5. FLOATING CHECKOUT ACTION BAR ── */}
       <View style={[styles.bottomActionBar, { bottom: bottomBarOffset }]}>
         <TouchableOpacity
           style={styles.priceMetaBox}
@@ -1171,7 +1372,7 @@ export const CustomizeScreen = ({ navigation }) => {
         </TouchableOpacity>
       </View>
 
-      {/* ── 5. PRICE BREAKDOWN MODAL ── */}
+      {/* ── 6. PRICE BREAKDOWN MODAL ── */}
       <Modal
         visible={showBreakdownModal}
         transparent
@@ -1195,21 +1396,21 @@ export const CustomizeScreen = ({ navigation }) => {
 
               {pricing.fabricExtra > 0 && (
                 <View style={styles.breakdownRow}>
-                  <Text style={styles.breakdownLabel}>Fabric: {selectedMaterial.name}</Text>
+                  <Text style={styles.breakdownLabel}>Fabric Upgrade: {selectedMaterial.name}</Text>
                   <Text style={styles.breakdownVal}>+₹{pricing.fabricExtra}</Text>
                 </View>
               )}
 
               {pricing.frontFee > 0 && (
                 <View style={styles.breakdownRow}>
-                  <Text style={styles.breakdownLabel}>Front Customization ({frontDesign.placementMode})</Text>
+                  <Text style={styles.breakdownLabel}>Front Print ({frontDesign.placementMode})</Text>
                   <Text style={styles.breakdownVal}>+₹{pricing.frontFee}</Text>
                 </View>
               )}
 
               {pricing.backFee > 0 && (
                 <View style={styles.breakdownRow}>
-                  <Text style={styles.breakdownLabel}>Back Customization ({backDesign.placementMode})</Text>
+                  <Text style={styles.breakdownLabel}>Back Print ({backDesign.placementMode})</Text>
                   <Text style={styles.breakdownVal}>+₹{pricing.backFee}</Text>
                 </View>
               )}
@@ -1240,7 +1441,7 @@ export const CustomizeScreen = ({ navigation }) => {
         </View>
       </Modal>
 
-      {/* ── 6. SIZE GUIDE MODAL ── */}
+      {/* ── 7. SIZE GUIDE MODAL ── */}
       <Modal
         visible={showSizeGuideModal}
         transparent
@@ -1372,61 +1573,65 @@ const styles = StyleSheet.create({
     color: '#FFFFFF',
     lineHeight: 10,
   },
-  cartIconBadgeBtn: {
-    padding: 6,
-    position: 'relative',
-  },
-  headerBadge: {
-    position: 'absolute',
-    top: 2,
-    right: 2,
-    backgroundColor: '#E11D48',
-    borderRadius: 8,
-    minWidth: 16,
-    height: 16,
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingHorizontal: 3,
-  },
-  headerBadgeText: {
-    fontSize: 9,
-    fontFamily: typography.fontSansBold,
-    color: '#FFFFFF',
-  },
 
-  // ── Canvas Card ──
-  canvasCard: {
+  // ── 2. VIRTUAL STAGE CARD ──
+  virtualStageCard: {
     margin: spacing.screenPadding,
     backgroundColor: '#FFFFFF',
-    borderRadius: 16,
+    borderRadius: 20,
     borderWidth: 1,
-    borderColor: colors.borderLight,
+    borderColor: '#ECE4DC',
     padding: spacing.md,
     ...shadows.card,
   },
-  sideSwitcherRow: {
+  stageHeaderRow: {
     flexDirection: 'row',
-    alignSelf: 'center',
-    backgroundColor: '#F5EFEB',
-    borderRadius: 24,
-    padding: 4,
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 10,
+  },
+  liveBadgePill: {
+    flexDirection: 'row',
+    alignItems: 'center',
     gap: 6,
-    marginBottom: spacing.sm,
+    backgroundColor: '#F5EFEB',
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderRadius: 20,
+  },
+  livePulseDot: {
+    width: 7,
+    height: 7,
+    borderRadius: 3.5,
+    backgroundColor: '#10B981',
+  },
+  liveBadgeText: {
+    fontSize: 9.5,
+    fontFamily: typography.fontSansBold,
+    color: colors.textPrimary,
+    letterSpacing: 0.8,
+  },
+  sideSwitcherPills: {
+    flexDirection: 'row',
+    backgroundColor: '#F5EFEB',
+    borderRadius: 20,
+    padding: 3,
+    gap: 4,
   },
   sidePill: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 6,
-    paddingHorizontal: 16,
-    paddingVertical: 7,
-    borderRadius: 20,
+    gap: 5,
+    paddingHorizontal: 14,
+    paddingVertical: 6,
+    borderRadius: 16,
   },
   sidePillActive: {
     backgroundColor: colors.primary,
   },
   sidePillText: {
     fontFamily: typography.fontSansMedium,
-    fontSize: 11,
+    fontSize: 10.5,
     letterSpacing: 0.8,
     color: colors.textSecondary,
   },
@@ -1435,14 +1640,44 @@ const styles = StyleSheet.create({
     fontFamily: typography.fontSansBold,
   },
   activeDot: {
-    width: 6,
-    height: 6,
-    borderRadius: 3,
+    width: 5,
+    height: 5,
+    borderRadius: 2.5,
     backgroundColor: '#10B981',
   },
+  quickPlacementRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 6,
+    marginBottom: spacing.sm,
+  },
+  quickPlacementBtn: {
+    paddingHorizontal: 11,
+    paddingVertical: 5,
+    borderRadius: 14,
+    backgroundColor: '#FAF8F5',
+    borderWidth: 1,
+    borderColor: '#ECE4DC',
+  },
+  quickPlacementBtnActive: {
+    backgroundColor: '#F5EFEB',
+    borderColor: colors.primary,
+  },
+  quickPlacementBtnText: {
+    fontSize: 10,
+    fontFamily: typography.fontSansMedium,
+    color: colors.textSecondary,
+  },
+  quickPlacementBtnTextActive: {
+    fontFamily: typography.fontSansBold,
+    color: colors.primary,
+  },
   garmentStage: {
-    height: 310,
-    borderRadius: 12,
+    width: '100%',
+    aspectRatio: 500 / 580,
+    maxHeight: 380,
+    borderRadius: 14,
     alignItems: 'center',
     justifyContent: 'center',
     position: 'relative',
@@ -1467,36 +1702,78 @@ const styles = StyleSheet.create({
     borderBottomRightRadius: 30,
     marginTop: -2,
   },
+  floatingCanvasControls: {
+    position: 'absolute',
+    top: 10,
+    right: 10,
+    flexDirection: 'column',
+    gap: 6,
+    zIndex: 30,
+  },
+  floatingControlBtn: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: 'rgba(255, 255, 255, 0.92)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    shadowColor: '#000000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.12,
+    shadowRadius: 4,
+    elevation: 3,
+    borderWidth: 1,
+    borderColor: 'rgba(0,0,0,0.06)',
+  },
+  floatingControlBtnActive: {
+    backgroundColor: colors.primary,
+  },
   printableFrame: {
     position: 'absolute',
     borderWidth: 1.5,
     borderStyle: 'dashed',
-    borderColor: 'rgba(112, 79, 56, 0.75)',
-    backgroundColor: 'rgba(112, 79, 56, 0.05)',
-    borderRadius: 8,
+    borderColor: 'rgba(112, 79, 56, 0.85)',
+    backgroundColor: 'rgba(112, 79, 56, 0.08)',
+    borderRadius: 6,
     alignItems: 'center',
     justifyContent: 'center',
+    zIndex: 10,
   },
-  frameChest: {
-    top: 75,
-    left: 60,
-    width: 80,
-    height: 80,
+  frameFrontChest: {
+    top: '38%',
+    left: '36.5%',
+    width: '13%',
+    height: '12%',
   },
-  frameCenter: {
-    top: 75,
-    width: 120,
-    height: 120,
+  frameFrontCenter: {
+    top: '39%',
+    left: '42%',
+    width: '16%',
+    height: '13%',
   },
-  frameFull: {
-    top: 60,
-    width: 160,
-    height: 190,
+  frameFrontFull: {
+    top: '38%',
+    left: '34%',
+    width: '32%',
+    height: '34%',
   },
-  frameUpper: {
-    top: 45,
-    width: 90,
-    height: 70,
+  frameBackUpper: {
+    top: '33.5%',
+    left: '42%',
+    width: '16%',
+    height: '11%',
+  },
+  frameBackCenter: {
+    top: '39%',
+    left: '37%',
+    width: '26%',
+    height: '23%',
+  },
+  frameBackFull: {
+    top: '36.5%',
+    left: '34%',
+    width: '32%',
+    height: '34%',
   },
   frameTag: {
     position: 'absolute',
@@ -1505,6 +1782,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 6,
     paddingVertical: 2,
     borderRadius: 3,
+    zIndex: 20,
   },
   frameTagText: {
     fontSize: 7.5,
@@ -1512,116 +1790,374 @@ const styles = StyleSheet.create({
     color: '#FFFFFF',
     letterSpacing: 0.5,
   },
+  frameInnerContent: {
+    width: '100%',
+    height: '100%',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
   motifLayer: {
     alignItems: 'center',
     justifyContent: 'center',
   },
   motifImage: {
-    width: 65,
-    height: 65,
+    width: 60,
+    height: 60,
+  },
+  motifImageSmall: {
+    width: 36,
+    height: 36,
+  },
+  motifImageMedium: {
+    width: 52,
+    height: 52,
+  },
+  motifImageLarge: {
+    width: 80,
+    height: 80,
   },
   textLayer: {
-    marginTop: 4,
+    marginTop: 2,
     alignItems: 'center',
     justifyContent: 'center',
+    maxWidth: '96%',
   },
-  canvasFooter: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingTop: spacing.sm,
-    borderTopWidth: 1,
-    borderTopColor: colors.borderLight,
-    marginTop: spacing.sm,
-  },
-  swatchMini: {
-    width: 14,
-    height: 14,
-    borderRadius: 7,
-    borderWidth: 1,
-    borderColor: 'rgba(0,0,0,0.1)',
-  },
-  canvasGarmentName: {
-    fontFamily: typography.fontSansBold,
-    fontSize: 12,
-    color: colors.textPrimary,
-  },
-  canvasGarmentPrice: {
-    fontFamily: typography.fontSansBold,
-    fontSize: 12,
-    color: colors.primary,
-  },
-
-  // ── Tabs ──
-  tabsScroll: {
-    paddingHorizontal: spacing.screenPadding,
-    gap: 8,
-    paddingBottom: 4,
-  },
-  tabBtn: {
+  floatingGarmentSpecsTag: {
+    position: 'absolute',
+    bottom: 8,
+    left: 8,
+    right: 8,
     flexDirection: 'row',
     alignItems: 'center',
     gap: 6,
-    paddingHorizontal: 14,
-    paddingVertical: 9,
-    borderRadius: 20,
-    backgroundColor: '#FFFFFF',
+    backgroundColor: 'rgba(255, 255, 255, 0.88)',
+    borderRadius: 8,
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+  },
+  swatchMini: {
+    width: 12,
+    height: 12,
+    borderRadius: 6,
     borderWidth: 1,
-    borderColor: colors.borderLight,
+    borderColor: 'rgba(0,0,0,0.15)',
   },
-  tabBtnActive: {
-    backgroundColor: colors.primary,
-    borderColor: colors.primary,
-  },
-  tabBtnText: {
+  floatingSpecsText: {
     fontFamily: typography.fontSansMedium,
-    fontSize: 11,
-    color: colors.textSecondary,
-    letterSpacing: 0.5,
-  },
-  tabBtnTextActive: {
-    color: '#FFFFFF',
-    fontFamily: typography.fontSansBold,
+    fontSize: 10.5,
+    color: colors.textPrimary,
+    flex: 1,
   },
 
-  // ── Tool Panel ──
-  toolPanel: {
-    margin: spacing.screenPadding,
-    marginTop: spacing.md,
+  // ── 3. ATELIER STEP WORKFLOW BAR ──
+  stepWorkflowContainer: {
+    marginHorizontal: spacing.screenPadding,
+    marginBottom: spacing.xs,
     backgroundColor: '#FFFFFF',
     borderRadius: 16,
     borderWidth: 1,
-    borderColor: colors.borderLight,
+    borderColor: '#ECE4DC',
+    padding: 12,
+    ...shadows.subtle,
+  },
+  stepProgressMetaRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 10,
+  },
+  stepNumberCircle: {
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+    backgroundColor: colors.primary,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  stepNumberCircleText: {
+    color: '#FFFFFF',
+    fontFamily: typography.fontSansBold,
+    fontSize: 11,
+  },
+  stepTitleMain: {
+    fontFamily: typography.fontSansBold,
+    fontSize: 12,
+    color: colors.textPrimary,
+    letterSpacing: 0.5,
+  },
+  stepSubtitleMain: {
+    fontFamily: typography.fontSans,
+    fontSize: 10.5,
+    color: colors.textSecondary,
+  },
+  stepCountText: {
+    fontFamily: typography.fontSansBold,
+    fontSize: 11,
+    color: colors.primary,
+    backgroundColor: '#F5EFEB',
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: 10,
+  },
+  stepWorkflowScroll: {
+    gap: 8,
+  },
+  workflowStepPill: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 5,
+    paddingHorizontal: 12,
+    paddingVertical: 7,
+    borderRadius: 18,
+    backgroundColor: '#FAF8F5',
+    borderWidth: 1,
+    borderColor: '#ECE4DC',
+  },
+  workflowStepPillActive: {
+    backgroundColor: colors.primary,
+    borderColor: colors.primary,
+  },
+  workflowStepPillPassed: {
+    backgroundColor: '#F5EFEB',
+    borderColor: '#E2DCD5',
+  },
+  workflowStepPillText: {
+    fontSize: 11,
+    fontFamily: typography.fontSansMedium,
+    color: colors.textSecondary,
+  },
+  workflowStepPillTextActive: {
+    color: '#FFFFFF',
+    fontFamily: typography.fontSansBold,
+  },
+  workflowStepPillTextPassed: {
+    color: colors.textPrimary,
+    fontFamily: typography.fontSansMedium,
+  },
+
+  // ── 4. DYNAMIC TOOL PANEL ──
+  toolPanel: {
+    margin: spacing.screenPadding,
+    marginTop: spacing.sm,
+    backgroundColor: '#FFFFFF',
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: '#ECE4DC',
     padding: spacing.md,
     ...shadows.card,
+  },
+  panelSectionHeading: {
+    fontFamily: typography.fontSansBold,
+    fontSize: 14,
+    color: colors.textPrimary,
+  },
+  panelSectionSub: {
+    fontFamily: typography.fontSans,
+    fontSize: 11.5,
+    color: colors.textSecondary,
+    marginTop: 2,
+    marginBottom: spacing.md,
+  },
+  subSectionTitle: {
+    fontSize: 10,
+    fontFamily: typography.fontSansBold,
+    letterSpacing: 0.8,
+    color: colors.textSecondary,
+    marginTop: spacing.md,
+    marginBottom: 8,
   },
   panelHeaderRow: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    marginBottom: spacing.sm,
   },
-  panelTitle: {
-    fontFamily: typography.fontSansBold,
-    fontSize: 11.5,
-    letterSpacing: 1,
-    color: colors.textPrimary,
-    marginBottom: spacing.xs,
-  },
-  clearBtnText: {
+  clearActionText: {
     fontFamily: typography.fontSansBold,
     fontSize: 11,
     color: '#E11D48',
   },
+
+  // Step 1: Color grid (2 columns)
+  garmentsGrid2Col: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 10,
+  },
+  garmentTile: {
+    width: (SCREEN_WIDTH - 64 - 10) / 2,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+    backgroundColor: '#FAF8F5',
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: '#ECE4DC',
+    padding: 10,
+  },
+  garmentTileActive: {
+    backgroundColor: '#FFFFFF',
+    borderColor: colors.primary,
+    borderWidth: 2,
+    ...shadows.subtle,
+  },
+  tileSwatch: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  tileName: {
+    fontFamily: typography.fontSansBold,
+    fontSize: 11.5,
+    color: colors.textPrimary,
+  },
+  tileNameActive: {
+    color: colors.primary,
+  },
+  tilePrice: {
+    fontFamily: typography.fontSansMedium,
+    fontSize: 10.5,
+    color: colors.textSecondary,
+    marginTop: 1,
+  },
+
+  // Step 2: Fabric cards
+  materialsStack: {
+    gap: 10,
+  },
+  materialCardLuxury: {
+    padding: spacing.md,
+    backgroundColor: '#FAF8F5',
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: '#ECE4DC',
+  },
+  materialCardLuxuryActive: {
+    backgroundColor: '#FFFFFF',
+    borderColor: colors.primary,
+    borderWidth: 1.5,
+    ...shadows.subtle,
+  },
+  materialHeaderRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 4,
+  },
+  materialCardTitle: {
+    fontFamily: typography.fontSansBold,
+    fontSize: 12.5,
+    color: colors.textPrimary,
+  },
+  materialCardTitleActive: {
+    color: colors.primary,
+  },
+  gsmPill: {
+    backgroundColor: '#ECE4DC',
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: 6,
+  },
+  gsmPillActive: {
+    backgroundColor: colors.primary,
+  },
+  gsmPillText: {
+    fontSize: 9.5,
+    fontFamily: typography.fontSansBold,
+    color: colors.textPrimary,
+  },
+  gsmPillTextActive: {
+    color: '#FFFFFF',
+  },
+  materialCardDesc: {
+    fontSize: 11,
+    fontFamily: typography.fontSans,
+    color: colors.textSecondary,
+    lineHeight: 16,
+    marginVertical: 4,
+  },
+  materialCardPrice: {
+    fontSize: 11,
+    fontFamily: typography.fontSansBold,
+    color: colors.primary,
+    marginTop: 2,
+  },
+
+  // Step 3: Placement cards
+  placementCardsStack: {
+    gap: 8,
+  },
+  placementOptionCard: {
+    padding: 12,
+    backgroundColor: '#FAF8F5',
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: '#ECE4DC',
+  },
+  placementOptionCardActive: {
+    backgroundColor: '#FFFFFF',
+    borderColor: colors.primary,
+    borderWidth: 1.5,
+  },
+  placementOptionHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    marginBottom: 3,
+  },
+  placementOptionTitle: {
+    fontSize: 12,
+    fontFamily: typography.fontSansBold,
+    color: colors.textPrimary,
+  },
+  placementOptionTitleActive: {
+    color: colors.primary,
+  },
+  placementOptionDesc: {
+    fontSize: 10.5,
+    fontFamily: typography.fontSans,
+    color: colors.textSecondary,
+    marginLeft: 26,
+  },
+  transformActionGrid: {
+    flexDirection: 'row',
+    gap: 8,
+  },
+  transformGridBtn: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 4,
+    paddingVertical: 10,
+    borderRadius: 8,
+    backgroundColor: '#FAF8F5',
+    borderWidth: 1,
+    borderColor: '#ECE4DC',
+  },
+  transformGridBtnActive: {
+    backgroundColor: colors.primary,
+    borderColor: colors.primary,
+  },
+  transformGridBtnText: {
+    fontSize: 10.5,
+    fontFamily: typography.fontSansBold,
+    color: colors.primary,
+  },
+
+  // Step 4: Motifs
   searchBar: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 8,
-    backgroundColor: '#F5EFEB',
-    borderRadius: 8,
-    paddingHorizontal: 10,
+    backgroundColor: '#FAF8F5',
+    borderRadius: 10,
+    paddingHorizontal: 12,
     paddingVertical: 8,
     marginBottom: spacing.sm,
+    borderWidth: 1,
+    borderColor: '#ECE4DC',
   },
   searchInput: {
     flex: 1,
@@ -1630,74 +2166,74 @@ const styles = StyleSheet.create({
     color: colors.textPrimary,
     padding: 0,
   },
-  subPillsScroll: {
-    gap: 8,
+  categoryPillsScroll: {
+    gap: 6,
     paddingBottom: spacing.sm,
   },
-  subPill: {
+  categoryPill: {
     paddingHorizontal: 12,
     paddingVertical: 6,
     borderRadius: 16,
-    backgroundColor: '#F5EFEB',
+    backgroundColor: '#FAF8F5',
     borderWidth: 1,
-    borderColor: colors.borderLight,
+    borderColor: '#ECE4DC',
   },
-  subPillActive: {
+  categoryPillActive: {
     backgroundColor: colors.primary,
     borderColor: colors.primary,
   },
-  subPillText: {
-    fontSize: 11,
+  categoryPillText: {
+    fontSize: 10.5,
     fontFamily: typography.fontSansMedium,
     color: colors.textSecondary,
   },
-  subPillTextActive: {
+  categoryPillTextActive: {
     color: '#FFFFFF',
     fontFamily: typography.fontSansBold,
   },
-  motifsGrid: {
+  motifsGrid3Col: {
     flexDirection: 'row',
     flexWrap: 'wrap',
     gap: 8,
   },
-  motifCard: {
-    width: (SCREEN_WIDTH - 64) / 3,
+  motifTile: {
+    width: (SCREEN_WIDTH - 64 - 16) / 3,
     backgroundColor: '#FAF8F5',
     borderRadius: 10,
     borderWidth: 1,
-    borderColor: colors.borderLight,
-    padding: 6,
+    borderColor: '#ECE4DC',
+    padding: 8,
     alignItems: 'center',
   },
-  motifCardActive: {
+  motifTileActive: {
     borderColor: colors.primary,
     borderWidth: 2,
-    backgroundColor: '#F5EFEB',
+    backgroundColor: '#FFFFFF',
   },
-  motifThumb: {
-    width: 60,
-    height: 60,
+  motifTileImg: {
+    width: 56,
+    height: 56,
     marginBottom: 4,
   },
-  motifName: {
+  motifTileName: {
     fontSize: 10,
     fontFamily: typography.fontSansBold,
     color: colors.textPrimary,
     textAlign: 'center',
   },
-  motifFee: {
+  motifTilePrice: {
     fontSize: 9,
     fontFamily: typography.fontSansMedium,
     color: colors.primary,
     marginTop: 2,
   },
-  customUploadBox: {
+  customUrlCard: {
     marginTop: spacing.md,
     paddingTop: spacing.md,
     borderTopWidth: 1,
-    borderTopColor: colors.borderLight,
+    borderTopColor: '#ECE4DC',
   },
-  customUploadTitle: {
+  customUrlCardTitle: {
     fontSize: 10,
     fontFamily: typography.fontSansBold,
     letterSpacing: 0.8,
@@ -1708,15 +2244,17 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     gap: 8,
   },
-  urlInput: {
+  urlTextInput: {
     flex: 1,
-    backgroundColor: '#F5EFEB',
+    backgroundColor: '#FAF8F5',
     borderRadius: 8,
     paddingHorizontal: 10,
     paddingVertical: 8,
     fontSize: 11,
     fontFamily: typography.fontSans,
     color: colors.textPrimary,
+    borderWidth: 1,
+    borderColor: '#ECE4DC',
   },
   applyUrlBtn: {
     backgroundColor: colors.primary,
@@ -1730,30 +2268,60 @@ const styles = StyleSheet.create({
     fontSize: 11,
   },
 
-  // ── Typography ──
-  textInput: {
-    backgroundColor: '#F5EFEB',
-    borderRadius: 8,
+  // Step 5: Typography
+  monogramInput: {
+    backgroundColor: '#FAF8F5',
+    borderRadius: 10,
     borderWidth: 1,
-    borderColor: colors.borderLight,
+    borderColor: '#ECE4DC',
     paddingHorizontal: 12,
     paddingVertical: 10,
     fontSize: 13,
     fontFamily: typography.fontSans,
     color: colors.textPrimary,
-    marginBottom: spacing.md,
+    marginBottom: spacing.xs,
   },
-  fieldSectionLabel: {
-    fontSize: 10,
+  fontsGrid2Col: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 8,
+  },
+  fontTile: {
+    width: (SCREEN_WIDTH - 64 - 8) / 2,
+    backgroundColor: '#FAF8F5',
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: '#ECE4DC',
+    padding: 10,
+  },
+  fontTileActive: {
+    backgroundColor: '#FFFFFF',
+    borderColor: colors.primary,
+    borderWidth: 1.5,
+  },
+  fontSampleText: {
+    fontSize: 14,
+    color: colors.textPrimary,
+    marginBottom: 4,
+  },
+  fontTileName: {
+    fontSize: 11,
     fontFamily: typography.fontSansBold,
-    letterSpacing: 0.8,
-    color: colors.textSecondary,
-    marginBottom: 6,
-    marginTop: 4,
+    color: colors.textPrimary,
   },
-  colorPaletteScroll: {
+  fontTileNameActive: {
+    color: colors.primary,
+  },
+  fontTileSub: {
+    fontSize: 9.5,
+    fontFamily: typography.fontSans,
+    color: colors.textSecondary,
+    marginTop: 1,
+  },
+  textColorGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
     gap: 10,
-    paddingBottom: spacing.md,
   },
   textColorCircle: {
     width: 32,
@@ -1771,47 +2339,47 @@ const styles = StyleSheet.create({
     borderColor: colors.primary,
     transform: [{ scale: 1.15 }],
   },
-  formatRow: {
+  typographyToolbarRow: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 8,
     flexWrap: 'wrap',
   },
-  formatBtn: {
+  styleBtn: {
     width: 36,
     height: 36,
     borderRadius: 8,
-    backgroundColor: '#F5EFEB',
+    backgroundColor: '#FAF8F5',
     borderWidth: 1,
-    borderColor: colors.borderLight,
+    borderColor: '#ECE4DC',
     alignItems: 'center',
     justifyContent: 'center',
   },
-  formatBtnActive: {
+  styleBtnActive: {
     backgroundColor: colors.primary,
     borderColor: colors.primary,
   },
-  formatBtnText: {
+  styleBtnText: {
     fontSize: 14,
     color: colors.textPrimary,
   },
-  formatBtnTextActive: {
+  styleBtnTextActive: {
     color: '#FFFFFF',
   },
-  fontSizeControls: {
+  fontSizeStepper: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#F5EFEB',
+    backgroundColor: '#FAF8F5',
     borderRadius: 8,
     borderWidth: 1,
-    borderColor: colors.borderLight,
+    borderColor: '#ECE4DC',
     paddingHorizontal: 4,
     height: 36,
   },
   stepBtn: {
     padding: 6,
   },
-  stepValue: {
+  fontSizeValue: {
     fontSize: 11,
     fontFamily: typography.fontSansBold,
     color: colors.textPrimary,
@@ -1819,230 +2387,155 @@ const styles = StyleSheet.create({
   },
   nudgePad: {
     alignItems: 'center',
-    backgroundColor: '#F5EFEB',
+    backgroundColor: '#FAF8F5',
     padding: 4,
     borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#ECE4DC',
     marginLeft: 'auto',
   },
   nudgeBtn: {
-    padding: 4,
+    padding: 3,
   },
 
-  // ── Placement ──
-  placementPillsRow: {
-    gap: 8,
-    marginBottom: spacing.md,
-  },
-  placementPill: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 10,
-    padding: 10,
-    borderRadius: 8,
-    backgroundColor: '#F5EFEB',
-    borderWidth: 1,
-    borderColor: colors.borderLight,
-  },
-  placementPillActive: {
-    backgroundColor: '#FFFFFF',
-    borderColor: colors.primary,
-  },
-  placementPillText: {
-    fontSize: 12,
-    fontFamily: typography.fontSansMedium,
-    color: colors.textPrimary,
-  },
-  placementPillTextActive: {
-    fontFamily: typography.fontSansBold,
-    color: colors.primary,
-  },
-  transformActionsRow: {
-    flexDirection: 'row',
-    gap: 8,
-  },
-  transformActionBtn: {
-    flex: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 4,
-    paddingVertical: 10,
-    borderRadius: 8,
-    backgroundColor: '#F5EFEB',
-    borderWidth: 1,
-    borderColor: colors.borderLight,
-  },
-  transformActionBtnActive: {
-    backgroundColor: colors.primary,
-    borderColor: colors.primary,
-  },
-  transformActionText: {
-    fontSize: 11,
-    fontFamily: typography.fontSansBold,
-    color: colors.primary,
-  },
-
-  // ── Garments ──
-  garmentsGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 8,
-  },
-  garmentCard: {
-    width: (SCREEN_WIDTH - 64) / 3,
-    backgroundColor: '#F5EFEB',
-    borderRadius: 10,
-    borderWidth: 1,
-    borderColor: colors.borderLight,
-    padding: 10,
-    alignItems: 'center',
-  },
-  garmentCardActive: {
-    borderColor: colors.primary,
-    borderWidth: 2,
-    backgroundColor: '#FFFFFF',
-  },
-  swatchLarge: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    marginBottom: 6,
-  },
-  garmentCardName: {
-    fontSize: 11,
-    fontFamily: typography.fontSansBold,
-    color: colors.textPrimary,
-    textAlign: 'center',
-  },
-  garmentCardNameActive: {
-    color: colors.primary,
-  },
-  garmentCardPrice: {
-    fontSize: 10,
-    fontFamily: typography.fontSansMedium,
-    color: colors.textSecondary,
-    marginTop: 2,
-  },
-
-  // ── Materials ──
-  materialsStack: {
-    gap: 8,
-  },
-  materialItemCard: {
-    padding: spacing.md,
-    backgroundColor: '#F5EFEB',
-    borderRadius: 10,
-    borderWidth: 1,
-    borderColor: colors.borderLight,
-  },
-  materialItemCardActive: {
-    borderColor: colors.primary,
-    backgroundColor: '#FFFFFF',
-  },
-  materialHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    marginBottom: 4,
-  },
-  materialTitle: {
-    fontFamily: typography.fontSansBold,
-    fontSize: 12.5,
-    color: colors.textPrimary,
-  },
-  materialTitleActive: {
-    color: colors.primary,
-  },
-  gsmBadge: {
-    backgroundColor: colors.primary,
-    paddingHorizontal: 6,
-    paddingVertical: 2,
-    borderRadius: 4,
-  },
-  gsmBadgeText: {
-    fontSize: 9,
-    fontFamily: typography.fontSansBold,
-    color: '#FFFFFF',
-  },
-  materialDescription: {
-    fontSize: 11,
-    fontFamily: typography.fontSans,
-    color: colors.textSecondary,
-    lineHeight: 16,
-    marginVertical: 4,
-  },
-  materialPriceAdd: {
-    fontSize: 11,
-    fontFamily: typography.fontSansBold,
-    color: colors.primary,
-    marginTop: 2,
-  },
-
-  // ── Sizes ──
-  sizesRow: {
+  // Step 6: Sizing
+  sizesGrid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
     gap: 8,
     marginBottom: spacing.md,
   },
-  sizePill: {
-    width: (SCREEN_WIDTH - 64) / 4,
+  sizeTile: {
+    width: (SCREEN_WIDTH - 64 - 24) / 4,
     paddingVertical: 10,
     borderRadius: 8,
-    backgroundColor: '#F5EFEB',
+    backgroundColor: '#FAF8F5',
     borderWidth: 1,
-    borderColor: colors.borderLight,
+    borderColor: '#ECE4DC',
     alignItems: 'center',
   },
-  sizePillActive: {
+  sizeTileActive: {
     backgroundColor: colors.primary,
     borderColor: colors.primary,
   },
-  sizePillText: {
+  sizeTileName: {
     fontFamily: typography.fontSansBold,
     fontSize: 13,
     color: colors.textPrimary,
   },
-  sizePillTextActive: {
+  sizeTileNameActive: {
     color: '#FFFFFF',
   },
-  sizeSubText: {
+  sizeTileChest: {
     fontSize: 9,
     fontFamily: typography.fontSans,
     color: colors.textMuted,
     marginTop: 2,
   },
-  sizeSubTextActive: {
+  sizeTileChestActive: {
     color: '#FFFFFF',
     opacity: 0.85,
   },
-  qtySection: {
-    marginTop: spacing.sm,
+  quantitySection: {
+    marginBottom: spacing.md,
   },
-  stepperRow: {
+  qtyStepperRow: {
     flexDirection: 'row',
     alignItems: 'center',
     alignSelf: 'flex-start',
-    backgroundColor: '#F5EFEB',
+    backgroundColor: '#FAF8F5',
     borderRadius: 8,
     borderWidth: 1,
-    borderColor: colors.borderLight,
+    borderColor: '#ECE4DC',
     paddingHorizontal: 6,
     paddingVertical: 4,
     gap: 12,
   },
-  qtyBtn: {
+  qtyActionBtn: {
     padding: 6,
   },
-  qtyValue: {
+  qtyCountValue: {
     fontFamily: typography.fontSansBold,
     fontSize: 14,
     color: colors.textPrimary,
     minWidth: 20,
     textAlign: 'center',
   },
+  orderSummaryCard: {
+    backgroundColor: '#FAF8F5',
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: '#ECE4DC',
+    padding: 12,
+    gap: 6,
+  },
+  orderSummaryTitle: {
+    fontFamily: typography.fontSansBold,
+    fontSize: 9.5,
+    letterSpacing: 0.8,
+    color: colors.textSecondary,
+    marginBottom: 4,
+  },
+  summaryLine: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  summaryLabel: {
+    fontSize: 11,
+    fontFamily: typography.fontSans,
+    color: colors.textSecondary,
+  },
+  summaryVal: {
+    fontSize: 11,
+    fontFamily: typography.fontSansMedium,
+    color: colors.textPrimary,
+  },
 
-  // ── Bottom Bar ──
+  // Step Navigation Bottom Row
+  stepNavigationRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    marginTop: spacing.lg,
+    paddingTop: spacing.md,
+    borderTopWidth: 1,
+    borderTopColor: '#ECE4DC',
+  },
+  stepPrevButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    backgroundColor: '#FAF8F5',
+    borderRadius: 10,
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    borderWidth: 1,
+    borderColor: '#ECE4DC',
+  },
+  stepPrevButtonText: {
+    fontFamily: typography.fontSansBold,
+    fontSize: 12,
+    color: colors.textPrimary,
+  },
+  stepNextButton: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 6,
+    backgroundColor: colors.primary,
+    borderRadius: 10,
+    paddingVertical: 12,
+  },
+  stepNextButtonText: {
+    fontFamily: typography.fontSansBold,
+    fontSize: 12,
+    color: '#FFFFFF',
+    letterSpacing: 0.5,
+  },
+
+  // ── 5. FLOATING CHECKOUT ACTION BAR ──
   bottomActionBar: {
     position: 'absolute',
     left: 16,
@@ -2101,7 +2594,7 @@ const styles = StyleSheet.create({
     color: '#FFFFFF',
   },
 
-  // ── Modals ──
+  // ── 6. MODALS ──
   modalBackdrop: {
     flex: 1,
     backgroundColor: 'rgba(31, 26, 23, 0.65)',
@@ -2172,8 +2665,6 @@ const styles = StyleSheet.create({
     color: '#FFFFFF',
     letterSpacing: 0.8,
   },
-
-  // ── Size Guide Table ──
   sizeGuideDesc: {
     fontSize: 12,
     fontFamily: typography.fontSans,
