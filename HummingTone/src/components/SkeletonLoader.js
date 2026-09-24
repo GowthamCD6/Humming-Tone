@@ -151,6 +151,75 @@ export const SkeletonCustomizer = () => (
   </View>
 );
 
+/**
+ * Skeleton Loader for Profile / Account Screen
+ */
+export const SkeletonProfile = () => (
+  <View style={styles.profileContainer}>
+    {/* 1. Header Shimmer */}
+    <View style={styles.profileHeaderSkeleton}>
+      <View>
+        <SkeletonShimmer style={styles.profileTitleSkeleton} />
+        <SkeletonShimmer style={styles.profileSubSkeleton} />
+      </View>
+      <View style={styles.profileHeaderBtns}>
+        <SkeletonShimmer style={styles.profileStatusPillSkeleton} />
+        <SkeletonShimmer style={styles.headerCircleBtn} />
+      </View>
+    </View>
+
+    {/* 2. Hero Member Card Shimmer */}
+    <View style={styles.profileMemberCardSkeleton}>
+      <View style={styles.profileAvatarRowSkeleton}>
+        <SkeletonShimmer style={styles.profileAvatarCircleSkeleton} />
+        <View style={{ flex: 1, gap: 6 }}>
+          <SkeletonShimmer style={styles.profileTierPillSkeleton} />
+          <SkeletonShimmer style={styles.profileNameLineSkeleton} />
+          <SkeletonShimmer style={styles.profileEmailLineSkeleton} />
+        </View>
+      </View>
+      <View style={styles.profileStatsRowSkeleton}>
+        <View style={styles.profileStatColSkeleton}>
+          <SkeletonShimmer style={styles.profileStatNumberSkeleton} />
+          <SkeletonShimmer style={styles.profileStatLabelSkeleton} />
+        </View>
+        <View style={styles.profileStatColSkeleton}>
+          <SkeletonShimmer style={styles.profileStatNumberSkeleton} />
+          <SkeletonShimmer style={styles.profileStatLabelSkeleton} />
+        </View>
+        <View style={styles.profileStatColSkeleton}>
+          <SkeletonShimmer style={styles.profileStatNumberSkeleton} />
+          <SkeletonShimmer style={styles.profileStatLabelSkeleton} />
+        </View>
+      </View>
+    </View>
+
+    {/* 3. Quick Actions 2x2 Grid Shimmer */}
+    <View style={styles.profileQuickGridSkeleton}>
+      {Array.from({ length: 4 }).map((_, i) => (
+        <View key={i} style={styles.profileQuickTileSkeleton}>
+          <SkeletonShimmer style={styles.profileTileIconSkeleton} />
+          <SkeletonShimmer style={styles.profileTileLabelSkeleton} />
+          <SkeletonShimmer style={styles.profileTileSubSkeleton} />
+        </View>
+      ))}
+    </View>
+
+    {/* 4. Menu Settings List Shimmer */}
+    <View style={styles.profileMenuListSkeleton}>
+      {Array.from({ length: 4 }).map((_, i) => (
+        <View key={i} style={styles.profileMenuRowSkeleton}>
+          <SkeletonShimmer style={styles.profileMenuIconSkeleton} />
+          <View style={{ flex: 1, gap: 4 }}>
+            <SkeletonShimmer style={styles.profileMenuTitleSkeleton} />
+            <SkeletonShimmer style={styles.profileMenuDescSkeleton} />
+          </View>
+        </View>
+      ))}
+    </View>
+  </View>
+);
+
 const styles = StyleSheet.create({
   grid: {
     flexDirection: 'row',
@@ -440,6 +509,170 @@ const styles = StyleSheet.create({
   tilePriceSkeleton: {
     width: 32,
     height: 9,
+    borderRadius: 3,
+    backgroundColor: '#F0EBE3',
+  },
+
+  // Profile Screen Skeleton
+  profileContainer: {
+    flex: 1,
+    backgroundColor: '#FAF8F5',
+    paddingHorizontal: 18,
+    paddingTop: 14,
+  },
+  profileHeaderSkeleton: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 18,
+  },
+  profileTitleSkeleton: {
+    width: 120,
+    height: 22,
+    borderRadius: 6,
+    backgroundColor: '#EAE4DC',
+    marginBottom: 4,
+  },
+  profileSubSkeleton: {
+    width: 180,
+    height: 12,
+    borderRadius: 4,
+    backgroundColor: '#F0EBE3',
+  },
+  profileHeaderBtns: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  profileStatusPillSkeleton: {
+    width: 72,
+    height: 24,
+    borderRadius: 12,
+    backgroundColor: '#EFEAE2',
+  },
+  profileMemberCardSkeleton: {
+    backgroundColor: '#1E1B18',
+    borderRadius: 20,
+    padding: 20,
+    marginBottom: 20,
+  },
+  profileAvatarRowSkeleton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 14,
+    marginBottom: 18,
+  },
+  profileAvatarCircleSkeleton: {
+    width: 58,
+    height: 58,
+    borderRadius: 29,
+    backgroundColor: '#35302C',
+  },
+  profileTierPillSkeleton: {
+    width: 110,
+    height: 16,
+    borderRadius: 8,
+    backgroundColor: '#35302C',
+  },
+  profileNameLineSkeleton: {
+    width: 130,
+    height: 18,
+    borderRadius: 4,
+    backgroundColor: '#423B36',
+  },
+  profileEmailLineSkeleton: {
+    width: 160,
+    height: 12,
+    borderRadius: 4,
+    backgroundColor: '#35302C',
+  },
+  profileStatsRowSkeleton: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    borderTopWidth: 1,
+    borderTopColor: '#2D2824',
+    paddingTop: 14,
+  },
+  profileStatColSkeleton: {
+    alignItems: 'center',
+    gap: 4,
+  },
+  profileStatNumberSkeleton: {
+    width: 32,
+    height: 16,
+    borderRadius: 4,
+    backgroundColor: '#3D3631',
+  },
+  profileStatLabelSkeleton: {
+    width: 60,
+    height: 9,
+    borderRadius: 3,
+    backgroundColor: '#2D2824',
+  },
+  profileQuickGridSkeleton: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'space-between',
+    gap: 10,
+    marginBottom: 20,
+  },
+  profileQuickTileSkeleton: {
+    width: (width - 36 - 10) / 2,
+    backgroundColor: '#FFFFFF',
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: '#ECE4DC',
+    padding: 14,
+    gap: 8,
+  },
+  profileTileIconSkeleton: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: '#EAE4DC',
+  },
+  profileTileLabelSkeleton: {
+    width: 80,
+    height: 13,
+    borderRadius: 4,
+    backgroundColor: '#EAE4DC',
+  },
+  profileTileSubSkeleton: {
+    width: 100,
+    height: 10,
+    borderRadius: 3,
+    backgroundColor: '#F0EBE3',
+  },
+  profileMenuListSkeleton: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 18,
+    borderWidth: 1,
+    borderColor: '#ECE4DC',
+    padding: 12,
+    gap: 12,
+    marginBottom: 30,
+  },
+  profileMenuRowSkeleton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    paddingVertical: 4,
+  },
+  profileMenuIconSkeleton: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: '#F0EBE3',
+  },
+  profileMenuTitleSkeleton: {
+    width: 120,
+    height: 13,
+    borderRadius: 4,
+    backgroundColor: '#EAE4DC',
+  },
+  profileMenuDescSkeleton: {
+    width: 160,
+    height: 10,
     borderRadius: 3,
     backgroundColor: '#F0EBE3',
   },

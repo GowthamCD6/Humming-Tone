@@ -71,29 +71,12 @@ export const CategoryProductsScreen = ({ route, navigation }) => {
   const fetchProductList = async () => {
     try {
       setLoading(true);
-      let data = [];
-      if (initFilterType === 'featured') {
-        data = await ProductService.fetchFeaturedProducts();
-        if (!data || data.length === 0) {
-          const all = await ProductService.fetchProducts({});
-          data = all.filter((p) => p.is_featured);
-          if (data.length === 0) data = all;
-        }
-      } else if (initFilterType === 'new_arrivals') {
-        data = await ProductService.fetchNewArrivals();
-        if (!data || data.length === 0) {
-          data = await ProductService.fetchProducts({});
-        }
-      } else {
-        const params = {};
-        if (selectedGender && selectedGender !== 'All') {
-          params.gender = selectedGender.toLowerCase();
-        }
-        if (selectedCategory) {
-          params.category = selectedCategory;
-        }
-        data = await ProductService.fetchProducts(params);
+      // Fetch full active catalog so client-side and category filters work with full fidelity
+      const params = {};
+      if (selectedGender && selectedGender !== 'All') {
+        params.gender = selectedGender.toLowerCase();
       }
+      const data = await ProductService.fetchProducts(params);
       setProducts(data || []);
     } catch (e) {
       console.warn('Error fetching category products:', e);
@@ -105,7 +88,7 @@ export const CategoryProductsScreen = ({ route, navigation }) => {
 
   useEffect(() => {
     fetchProductList();
-  }, [selectedGender, selectedCategory]);
+  }, [selectedGender]);
 
   const onRefresh = () => {
     setRefreshing(true);
@@ -115,6 +98,20 @@ export const CategoryProductsScreen = ({ route, navigation }) => {
   // Client-side filtering & sorting
   const filteredProducts = useMemo(() => {
     let list = [...products];
+
+    // Gender filter
+    if (selectedGender && selectedGender !== 'All') {
+      const targetGender = selectedGender.toLowerCase();
+      list = list.filter((p) => {
+        if (!p.gender) return true;
+        const g = p.gender.toLowerCase();
+        return (
+          g === targetGender ||
+          (targetGender === 'baby' && (g === 'babies' || g === 'baby')) ||
+          (targetGender === 'children' && (g === 'kids' || g === 'child' || g === 'children'))
+        );
+      });
+    }
 
     // Search query
     if (searchQuery.trim()) {
@@ -132,11 +129,18 @@ export const CategoryProductsScreen = ({ route, navigation }) => {
 
     // Category filter
     if (selectedCategory) {
-      const c = selectedCategory.toLowerCase();
+      const c = selectedCategory.toLowerCase().trim();
       list = list.filter((p) => {
         const prodCat = (p.category || p.category_name || '').toLowerCase();
         const prodSub = (p.subcategory || '').toLowerCase();
-        return prodCat === c || prodCat.includes(c) || prodSub === c || prodSub.includes(c);
+        const prodName = (p.name || '').toLowerCase();
+        return (
+          prodCat === c ||
+          prodCat.includes(c) ||
+          prodSub === c ||
+          prodSub.includes(c) ||
+          prodName.includes(c)
+        );
       });
     }
 
@@ -161,9 +165,9 @@ export const CategoryProductsScreen = ({ route, navigation }) => {
 
     // Sorting
     if (selectedSort === 'price_asc') {
-      list.sort((a, b) => (a.price || 0) - (b.price || 0));
+      list.sort((a, b) => (Number(a.price) || 0) - (Number(b.price) || 0));
     } else if (selectedSort === 'price_desc') {
-      list.sort((a, b) => (b.price || 0) - (a.price || 0));
+      list.sort((a, b) => (Number(b.price) || 0) - (Number(a.price) || 0));
     } else if (selectedSort === 'popular') {
       list.sort((a, b) => (b.is_featured ? 1 : 0) - (a.is_featured ? 1 : 0));
     } else {
@@ -171,36 +175,48 @@ export const CategoryProductsScreen = ({ route, navigation }) => {
     }
 
     return list;
-  }, [products, searchQuery, selectedCategory, selectedPrice, selectedRating, selectedSort]);
+  }, [products, selectedGender, searchQuery, selectedCategory, selectedPrice, selectedRating, selectedSort]);
 
   // Active filter count (excluding default page gender)
   const activeFiltersCount = useMemo(() => {
     let count = 0;
+    if (selectedCategory) count++;
+    if (selectedGender && selectedGender !== 'All' && selectedGender !== initGender) count++;
     if (selectedPrice && selectedPrice !== 'all') count++;
     if (selectedRating != null) count++;
     if (searchQuery.trim()) count++;
     return count;
-  }, [selectedPrice, selectedRating, searchQuery]);
+  }, [selectedCategory, selectedGender, initGender, selectedPrice, selectedRating, searchQuery]);
 
   const clearAllFilters = () => {
     setSelectedCategory(null);
+    setSelectedGender(initGender || 'All');
     setSelectedPrice('all');
     setSelectedRating(null);
     setSelectedSort('newest');
     setSearchQuery('');
   };
 
-  // Subcategories available for active gender
+  // Subcategories available for active gender and loaded products
   const availableSubcategories = useMemo(() => {
+    const catSet = new Set();
     if (selectedGender && selectedGender !== 'All') {
-      return genderCategories[selectedGender] || genderCategories[selectedGender.toLowerCase()] || [];
+      const defined = genderCategories[selectedGender] || genderCategories[selectedGender.toLowerCase()] || [];
+      if (Array.isArray(defined)) defined.forEach((c) => catSet.add(c));
+    } else {
+      Object.values(genderCategories).forEach((arr) => {
+        if (Array.isArray(arr)) arr.forEach((c) => catSet.add(c));
+      });
     }
-    const allCats = new Set();
-    Object.values(genderCategories).forEach((arr) => {
-      if (Array.isArray(arr)) arr.forEach((c) => allCats.add(c));
+
+    // Include categories from loaded products
+    products.forEach((p) => {
+      if (p.category && p.category.trim()) catSet.add(p.category.trim());
+      if (p.subcategory && p.subcategory.trim()) catSet.add(p.subcategory.trim());
     });
-    return Array.from(allCats);
-  }, [selectedGender, genderCategories]);
+
+    return Array.from(catSet).filter(Boolean);
+  }, [selectedGender, genderCategories, products]);
 
   return (
     <View style={styles.container}>
@@ -442,7 +458,26 @@ export const CategoryProductsScreen = ({ route, navigation }) => {
               </TouchableOpacity>
             </View>
 
-            <ScrollView showsVerticalScrollIndicator={false} style={{ maxHeight: 380 }}>
+            <ScrollView showsVerticalScrollIndicator={false} style={{ maxHeight: 420 }}>
+              {/* Gender Section */}
+              <Text style={styles.modalSectionTitle}>COLLECTION / GENDER</Text>
+              <View style={styles.modalPillsWrap}>
+                {['All', 'Men', 'Women', 'Children', 'Baby', 'Sports'].map((g) => {
+                  const isSelected = (selectedGender || 'All').toLowerCase() === g.toLowerCase();
+                  return (
+                    <TouchableOpacity
+                      key={g}
+                      style={[styles.modalPill, isSelected && styles.modalPillActive]}
+                      onPress={() => setSelectedGender(g)}
+                    >
+                      <Text style={[styles.modalPillText, isSelected && styles.modalPillTextActive]}>
+                        {g === 'All' ? 'All Genders' : g}
+                      </Text>
+                    </TouchableOpacity>
+                  );
+                })}
+              </View>
+
               {/* Category Pills */}
               {availableSubcategories.length > 0 && (
                 <>
@@ -488,6 +523,25 @@ export const CategoryProductsScreen = ({ route, navigation }) => {
                     >
                       <Text style={[styles.modalPillText, isSelected && styles.modalPillTextActive]}>
                         {price.label}
+                      </Text>
+                    </TouchableOpacity>
+                  );
+                })}
+              </View>
+
+              {/* Sort By Section */}
+              <Text style={styles.modalSectionTitle}>SORT BY</Text>
+              <View style={styles.modalPillsWrap}>
+                {SORT_OPTIONS.map((opt) => {
+                  const isSelected = selectedSort === opt.id;
+                  return (
+                    <TouchableOpacity
+                      key={opt.id}
+                      style={[styles.modalPill, isSelected && styles.modalPillActive]}
+                      onPress={() => setSelectedSort(opt.id)}
+                    >
+                      <Text style={[styles.modalPillText, isSelected && styles.modalPillTextActive]}>
+                        {opt.label}
                       </Text>
                     </TouchableOpacity>
                   );

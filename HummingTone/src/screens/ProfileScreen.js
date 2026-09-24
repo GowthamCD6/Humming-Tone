@@ -11,6 +11,7 @@ import {
   Image,
   StatusBar,
   Linking,
+  RefreshControl,
 } from 'react-native';
 import { Ionicons } from '../components/Icons';
 import { colors, shadows } from '../theme/colors';
@@ -21,20 +22,29 @@ import { useWishlist } from '../context/WishlistContext';
 import { useCart } from '../context/CartContext';
 import { useNotifications } from '../context/NotificationContext';
 import { performGoogleSignIn } from '../services/googleAuth';
+import { SkeletonProfile } from '../components/SkeletonLoader';
 
 export const ProfileScreen = ({ navigation }) => {
   const insets = useSafeAreaInsets();
-  const { user, isAuthenticated, login, logout, updateProfile } = useAuth();
+  const { user, isAuthenticated, login, logout, updateProfile, loading: authLoading } = useAuth();
   const isMember = Boolean(isAuthenticated && user && user.email !== 'guest@hummingtone.com');
   const { wishlistCount } = useWishlist();
   const { unreadCount } = useNotifications();
   const [googleLoading, setGoogleLoading] = useState(false);
+  const [refreshing, setRefreshing] = useState(false);
   const [editModalVisible, setEditModalVisible] = useState(false);
   const [editForm, setEditForm] = useState({
     name: user?.name || '',
     phone: user?.phone || '',
     email: user?.email || '',
   });
+
+  const onRefresh = async () => {
+    setRefreshing(true);
+    setTimeout(() => {
+      setRefreshing(false);
+    }, 600);
+  };
 
   const handleGoogleLogin = async () => {
     setGoogleLoading(true);
@@ -101,57 +111,81 @@ export const ProfileScreen = ({ navigation }) => {
     .toUpperCase();
 
   const topPadding = Math.max(
-    (insets.top || 0) + 10,
-    (StatusBar.currentHeight || 0) + 10,
-    Platform.OS === 'android' ? 32 : 44
+    (insets.top || 0) + 14,
+    (StatusBar.currentHeight || 0) + 14,
+    32
   );
 
   return (
     <View style={styles.container}>
-      <StatusBar barStyle="dark-content" backgroundColor="#FAF8F5" translucent={true} />
+      <StatusBar barStyle="dark-content" backgroundColor="#FFFFFF" />
 
-      {/* ── 1. LUXURY TOP APP BAR ── */}
-      <View style={[styles.topBar, { paddingTop: topPadding }]}>
-        <View style={styles.brandTitleWrap}>
-          <Image
-            source={require('../assets/title-logo.png')}
-            style={styles.headerTitleLogo}
-            resizeMode="contain"
-          />
-          <Text style={styles.brandSub}>MY ATELIER & ACCOUNT</Text>
+      {/* ── 1. PROPER PROFILE & ATELIER ACCOUNT HEADER ── */}
+      <View style={[styles.topLocationBar, { paddingTop: topPadding }]}>
+        <View style={styles.welcomeContainer}>
+          <Text style={styles.profileHeaderTag}>
+            {isMember ? 'ATELIER PATRON' : 'GUEST ATELIER'}
+          </Text>
+          <View style={styles.welcomeUserRow}>
+            <Text style={styles.welcomeUserName} numberOfLines={1}>
+              My Profile
+            </Text>
+          </View>
         </View>
 
-        <View style={styles.topBarRight}>
+        <View style={styles.topActionsRow}>
+          {/* Active Status Badge Pill */}
+          <View style={[styles.statusBadgePill, { backgroundColor: isMember ? '#F0F9F4' : '#F5F2EC', borderColor: isMember ? '#D1E7DD' : '#E8E1D8' }]}>
+            <View style={[styles.statusDot, { backgroundColor: isMember ? '#38A169' : '#A3998F' }]} />
+            <Text style={[styles.statusBadgeText, { color: isMember ? '#276749' : '#716962' }]}>
+              {isMember ? 'MEMBER' : 'GUEST'}
+            </Text>
+          </View>
+
+          {/* Saved Wishlist Button */}
           <TouchableOpacity
-            style={styles.notifCircleBtn}
-            onPress={() => navigation.navigate('Notifications')}
+            style={styles.headerIconBtn}
+            onPress={() => navigation.navigate('Wishlist')}
             activeOpacity={0.8}
           >
-            <Ionicons name="notifications-outline" size={19} color="#1E1B18" />
-            {unreadCount > 0 && (
-              <View style={styles.topNotifBadge}>
-                {unreadCount > 1 ? (
-                  <Text style={styles.topNotifBadgeText}>{unreadCount > 9 ? '9+' : unreadCount}</Text>
-                ) : null}
+            <Ionicons name="heart-outline" size={20} color={colors.textPrimary} />
+            {wishlistCount > 0 && (
+              <View style={[styles.badgePill, { backgroundColor: '#6B4E37' }]}>
+                <Text style={styles.badgePillText}>{wishlistCount > 9 ? '9+' : wishlistCount}</Text>
               </View>
             )}
           </TouchableOpacity>
 
-          <View style={styles.statusPill}>
-            <View style={[styles.statusDot, { backgroundColor: isMember ? '#38A169' : '#A3998F' }]} />
-            <Text style={styles.statusPillText}>{isMember ? 'MEMBER' : 'GUEST'}</Text>
-          </View>
+          {/* Notifications Button */}
+          <TouchableOpacity
+            style={styles.headerIconBtn}
+            onPress={() => navigation.navigate('Notifications')}
+            activeOpacity={0.8}
+          >
+            <Ionicons name="notifications-outline" size={20} color={colors.textPrimary} />
+            {unreadCount > 0 && (
+              <View style={styles.badgePill}>
+                <Text style={styles.badgePillText}>{unreadCount > 9 ? '9+' : unreadCount}</Text>
+              </View>
+            )}
+          </TouchableOpacity>
         </View>
       </View>
 
-      <ScrollView
-        style={styles.scroll}
-        contentContainerStyle={[
-          styles.scrollContent,
-          { paddingBottom: Math.max((insets.bottom || 0) + 95, 115) },
-        ]}
-        showsVerticalScrollIndicator={false}
-      >
+      {authLoading ? (
+        <SkeletonProfile />
+      ) : (
+        <ScrollView
+          style={styles.scroll}
+          contentContainerStyle={[
+            styles.scrollContent,
+            { paddingBottom: Math.max((insets.bottom || 0) + 95, 115) },
+          ]}
+          showsVerticalScrollIndicator={false}
+          refreshControl={
+            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#6B4E37" />
+          }
+        >
         {/* ── 2. HERO IDENTITY CARD ── */}
         {isMember ? (
           <View style={styles.memberCard}>
@@ -412,6 +446,7 @@ export const ProfileScreen = ({ navigation }) => {
           <Text style={styles.footerVersion}>Version 2.4.0 • Built with Pride</Text>
         </View>
       </ScrollView>
+      )}
 
       {/* ── 8. EDIT PROFILE BOTTOM SHEET MODAL ── */}
       <Modal
@@ -489,46 +524,67 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#FAF8F5',
   },
-  topBar: {
+  topLocationBar: {
     flexDirection: 'row',
-    alignItems: 'center',
     justifyContent: 'space-between',
+    alignItems: 'center',
     paddingHorizontal: 20,
     paddingBottom: 14,
-    backgroundColor: '#FAF8F5',
+    backgroundColor: '#FFFFFF',
     borderBottomWidth: 1,
-    borderBottomColor: '#EAE4DC',
+    borderBottomColor: '#F0EBE4',
   },
-  brandTitleWrap: {
-    justifyContent: 'center',
+  welcomeContainer: {
+    flex: 1,
+    paddingRight: 10,
   },
-  headerTitleLogo: {
-    width: 140,
-    height: 24,
+  profileHeaderTag: {
+    fontFamily: typography.fontSansBold,
+    fontSize: 10.5,
+    color: '#8A7F75',
+    letterSpacing: 1.1,
     marginBottom: 2,
   },
-  brandTitle: {
-    fontFamily: typography.fontSansBold,
-    fontSize: 17,
-    letterSpacing: 2.2,
-    color: '#1E1B18',
+  welcomeUserRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
   },
-  brandSub: {
-    fontFamily: typography.fontSansBold,
-    fontSize: 9,
-    letterSpacing: 1.2,
-    color: '#8A7F75',
+  welcomeUserName: {
+    fontFamily: typography.fontSans,
+    fontSize: 21,
+    fontWeight: typography.weightBold,
+    color: colors.textPrimary,
+    letterSpacing: -0.3,
   },
-  topBarRight: {
+  topActionsRow: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 8,
   },
-  notifCircleBtn: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    backgroundColor: '#FFFFFF',
+  statusBadgePill: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 9,
+    paddingVertical: 5,
+    borderRadius: 14,
+    borderWidth: 1,
+    gap: 5,
+  },
+  statusDot: {
+    width: 6,
+    height: 6,
+    borderRadius: 3,
+  },
+  statusBadgeText: {
+    fontFamily: typography.fontSansBold,
+    fontSize: 9.5,
+    letterSpacing: 0.8,
+  },
+  headerIconBtn: {
+    width: 38,
+    height: 38,
+    borderRadius: 19,
+    backgroundColor: '#FAF8F5',
     borderWidth: 1,
     borderColor: '#ECE4DC',
     alignItems: 'center',
@@ -536,45 +592,25 @@ const styles = StyleSheet.create({
     position: 'relative',
     ...shadows.subtle,
   },
-  topNotifBadge: {
+  badgePill: {
     position: 'absolute',
     top: 4,
     right: 4,
-    minWidth: 14,
-    height: 14,
-    borderRadius: 7,
+    minWidth: 15,
+    height: 15,
+    borderRadius: 7.5,
     backgroundColor: '#C53030',
     alignItems: 'center',
     justifyContent: 'center',
-    paddingHorizontal: 2,
+    paddingHorizontal: 2.5,
     borderWidth: 1.2,
     borderColor: '#FFFFFF',
   },
-  topNotifBadgeText: {
+  badgePillText: {
     fontFamily: typography.fontSansBold,
     fontSize: 8.5,
     color: '#FFFFFF',
     lineHeight: 10,
-  },
-  statusPill: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#EFEAE2',
-    paddingHorizontal: 10,
-    paddingVertical: 4.5,
-    borderRadius: 12,
-    gap: 6,
-  },
-  statusDot: {
-    width: 6,
-    height: 6,
-    borderRadius: 3,
-  },
-  statusPillText: {
-    fontFamily: typography.fontSansBold,
-    fontSize: 10,
-    letterSpacing: 1,
-    color: '#1E1B18',
   },
   scroll: {
     flex: 1,
