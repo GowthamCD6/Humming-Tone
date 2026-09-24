@@ -26,7 +26,11 @@ export const AppNavigator = () => {
         initialRouteName="Splash"
         screenOptions={{
           headerShown: false,
-          animation: 'fade',
+          animation: 'slide_from_right',
+          gestureEnabled: true,
+          gestureDirection: 'horizontal',
+          fullScreenGestureEnabled: true,
+          animationDuration: 280,
         }}
       >
         <Stack.Screen

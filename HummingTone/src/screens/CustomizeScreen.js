@@ -23,6 +23,7 @@ import { useWishlist } from '../context/WishlistContext';
 import { useNotifications } from '../context/NotificationContext';
 import { CustomizeService } from '../api/services';
 import { getImageUrl } from '../api/apiConfig';
+import { SkeletonCustomizer } from '../components/SkeletonLoader';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
@@ -256,9 +257,15 @@ export const CustomizeScreen = ({ navigation }) => {
   const currentDesign = activeSide === 'front' ? frontDesign : backDesign;
   const setCurrentDesign = (updater) => {
     if (activeSide === 'front') {
-      setFrontDesign((prev) => (typeof updater === 'function' ? updater(prev) : { ...prev, ...updater }));
+      setFrontDesign((prev) => {
+        const next = typeof updater === 'function' ? updater(prev) : updater;
+        return { ...prev, ...next };
+      });
     } else {
-      setBackDesign((prev) => (typeof updater === 'function' ? updater(prev) : { ...prev, ...updater }));
+      setBackDesign((prev) => {
+        const next = typeof updater === 'function' ? updater(prev) : updater;
+        return { ...prev, ...next };
+      });
     }
   };
 
@@ -470,10 +477,9 @@ export const CustomizeScreen = ({ navigation }) => {
 
   if (loading) {
     return (
-      <View style={styles.loadingContainer}>
-        <StatusBar barStyle="dark-content" backgroundColor="#FAF8F5" />
-        <ActivityIndicator size="large" color={colors.primary} />
-        <Text style={styles.loadingText}>INITIALIZING VIRTUAL ATELIER STUDIO...</Text>
+      <View style={[styles.container, { paddingTop: Math.max((insets.top || 0) + 12, (StatusBar.currentHeight || 0) + 12, Platform.OS === 'android' ? 34 : 44) }]}>
+        <StatusBar barStyle="dark-content" backgroundColor="#FAF8F5" translucent={true} />
+        <SkeletonCustomizer />
       </View>
     );
   }
@@ -624,7 +630,10 @@ export const CustomizeScreen = ({ navigation }) => {
               <TouchableOpacity
                 style={styles.floatingControlBtn}
                 onPress={() =>
-                  setCurrentDesign((p) => ({ scale: Math.max(0.6, Math.round(((p.scale || 1) - 0.1) * 10) / 10) }))
+                  setCurrentDesign((p) => ({
+                    ...p,
+                    scale: Math.max(0.5, Math.round(((p?.scale || 1) - 0.1) * 10) / 10),
+                  }))
                 }
                 activeOpacity={0.8}
               >
@@ -634,7 +643,10 @@ export const CustomizeScreen = ({ navigation }) => {
               <TouchableOpacity
                 style={styles.floatingControlBtn}
                 onPress={() =>
-                  setCurrentDesign((p) => ({ scale: Math.min(1.8, Math.round(((p.scale || 1) + 0.1) * 10) / 10) }))
+                  setCurrentDesign((p) => ({
+                    ...p,
+                    scale: Math.min(2.0, Math.round(((p?.scale || 1) + 0.1) * 10) / 10),
+                  }))
                 }
                 activeOpacity={0.8}
               >
@@ -643,7 +655,7 @@ export const CustomizeScreen = ({ navigation }) => {
 
               <TouchableOpacity
                 style={[styles.floatingControlBtn, currentDesign.flipH && styles.floatingControlBtnActive]}
-                onPress={() => setCurrentDesign((p) => ({ flipH: !p.flipH }))}
+                onPress={() => setCurrentDesign((p) => ({ ...p, flipH: !p?.flipH }))}
                 activeOpacity={0.8}
               >
                 <Ionicons name="swap-horizontal" size={16} color={currentDesign.flipH ? '#FFFFFF' : '#1E1B18'} />
@@ -680,10 +692,6 @@ export const CustomizeScreen = ({ navigation }) => {
                 activeSide === 'back' && currentDesign.placementMode === 'full' && styles.frameBackFull,
               ]}
             >
-              <View style={styles.frameTag}>
-                <Text style={styles.frameTagText} numberOfLines={1}>{placementLabel}</Text>
-              </View>
-
               {/* Design Content Container */}
               <View style={styles.frameInnerContent}>
                 {/* Layer 1: Motif / Artwork Image */}
@@ -825,31 +833,29 @@ export const CustomizeScreen = ({ navigation }) => {
               <Text style={styles.panelSectionHeading}>Select Base Garment Color</Text>
               <Text style={styles.panelSectionSub}>All plain t-shirts are tailored from ethically sourced organic cotton.</Text>
 
-              <View style={styles.garmentsGrid2Col}>
+              <View style={styles.garmentsGrid3Col}>
                 {garments.map((g) => {
                   const isSel = selectedGarment.id === g.id;
                   return (
                     <TouchableOpacity
                       key={g.id}
-                      style={[styles.garmentTile, isSel && styles.garmentTileActive]}
+                      style={[styles.garmentTile3Col, isSel && styles.garmentTile3ColActive]}
                       onPress={() => setSelectedGarment(g)}
                       activeOpacity={0.8}
                     >
-                      <View style={[styles.tileSwatch, { backgroundColor: g.hex }, g.hex === '#FFFFFF' && styles.whiteBorder]}>
+                      <View style={[styles.tileSwatch3Col, { backgroundColor: g.hex }, g.hex === '#FFFFFF' && styles.whiteBorder]}>
                         {isSel && (
                           <Ionicons
                             name="checkmark"
-                            size={16}
+                            size={14}
                             color={g.hex === '#FFFFFF' ? '#111827' : '#FFFFFF'}
                           />
                         )}
                       </View>
-                      <View style={{ flex: 1 }}>
-                        <Text style={[styles.tileName, isSel && styles.tileNameActive]} numberOfLines={1}>
-                          {g.name}
-                        </Text>
-                        <Text style={styles.tilePrice}>₹{g.base_price}</Text>
-                      </View>
+                      <Text style={[styles.tileName3Col, isSel && styles.tileName3ColActive]} numberOfLines={1}>
+                        {g.name}
+                      </Text>
+                      <Text style={styles.tilePrice3Col}>₹{g.base_price}</Text>
                     </TouchableOpacity>
                   );
                 })}
@@ -940,7 +946,10 @@ export const CustomizeScreen = ({ navigation }) => {
                 <TouchableOpacity
                   style={styles.transformGridBtn}
                   onPress={() =>
-                    setCurrentDesign((p) => ({ scale: Math.max(0.6, Math.round(((p.scale || 1) - 0.1) * 10) / 10) }))
+                    setCurrentDesign((p) => ({
+                      ...p,
+                      scale: Math.max(0.5, Math.round(((p?.scale || 1) - 0.1) * 10) / 10),
+                    }))
                   }
                 >
                   <Ionicons name="remove-circle-outline" size={17} color={colors.primary} />
@@ -950,7 +959,10 @@ export const CustomizeScreen = ({ navigation }) => {
                 <TouchableOpacity
                   style={styles.transformGridBtn}
                   onPress={() =>
-                    setCurrentDesign((p) => ({ scale: Math.min(1.8, Math.round(((p.scale || 1) + 0.1) * 10) / 10) }))
+                    setCurrentDesign((p) => ({
+                      ...p,
+                      scale: Math.min(2.0, Math.round(((p?.scale || 1) + 0.1) * 10) / 10),
+                    }))
                   }
                 >
                   <Ionicons name="add-circle-outline" size={17} color={colors.primary} />
@@ -959,7 +971,7 @@ export const CustomizeScreen = ({ navigation }) => {
 
                 <TouchableOpacity
                   style={[styles.transformGridBtn, currentDesign.flipH && styles.transformGridBtnActive]}
-                  onPress={() => setCurrentDesign((p) => ({ flipH: !p.flipH }))}
+                  onPress={() => setCurrentDesign((p) => ({ ...p, flipH: !p?.flipH }))}
                 >
                   <Ionicons name="swap-horizontal" size={17} color={currentDesign.flipH ? '#FFFFFF' : colors.primary} />
                   <Text style={[styles.transformGridBtnText, currentDesign.flipH && { color: '#FFFFFF' }]}>Flip H</Text>
@@ -1061,35 +1073,6 @@ export const CustomizeScreen = ({ navigation }) => {
                     </TouchableOpacity>
                   );
                 })}
-              </View>
-
-              {/* Custom Image URL Upload Card */}
-              <View style={styles.customUrlCard}>
-                <Text style={styles.customUrlCardTitle}>CUSTOM ARTWORK LINK</Text>
-                <View style={styles.urlInputRow}>
-                  <TextInput
-                    style={styles.urlTextInput}
-                    placeholder="Paste direct PNG / JPG image URL..."
-                    placeholderTextColor={colors.textMuted}
-                    value={customImageUrlInput}
-                    onChangeText={setCustomImageUrlInput}
-                  />
-                  <TouchableOpacity
-                    style={styles.applyUrlBtn}
-                    onPress={() => {
-                      if (customImageUrlInput.trim()) {
-                        setCurrentDesign({
-                          imageUrl: customImageUrlInput.trim(),
-                          designName: 'Custom Artwork',
-                          designPrice: 0,
-                        });
-                        setCustomImageUrlInput('');
-                      }
-                    }}
-                  >
-                    <Text style={styles.applyUrlBtnText}>Apply</Text>
-                  </TouchableOpacity>
-                </View>
               </View>
             </View>
           )}
@@ -1738,33 +1721,34 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     zIndex: 10,
+    overflow: 'hidden',
   },
   frameFrontChest: {
-    top: '38%',
-    left: '36.5%',
+    top: '37%',
+    left: '32%',
     width: '13%',
     height: '12%',
   },
   frameFrontCenter: {
-    top: '39%',
-    left: '42%',
-    width: '16%',
-    height: '13%',
+    top: '38%',
+    left: '41%',
+    width: '18%',
+    height: '14%',
   },
   frameFrontFull: {
-    top: '38%',
+    top: '36.5%',
     left: '34%',
     width: '32%',
-    height: '34%',
+    height: '35%',
   },
   frameBackUpper: {
     top: '33.5%',
-    left: '42%',
-    width: '16%',
+    left: '41%',
+    width: '18%',
     height: '11%',
   },
   frameBackCenter: {
-    top: '39%',
+    top: '38.5%',
     left: '37%',
     width: '26%',
     height: '23%',
@@ -1773,7 +1757,7 @@ const styles = StyleSheet.create({
     top: '36.5%',
     left: '34%',
     width: '32%',
-    height: '34%',
+    height: '35%',
   },
   frameTag: {
     position: 'absolute',
@@ -1795,26 +1779,29 @@ const styles = StyleSheet.create({
     height: '100%',
     alignItems: 'center',
     justifyContent: 'center',
+    overflow: 'hidden',
   },
   motifLayer: {
+    width: '100%',
+    height: '100%',
     alignItems: 'center',
     justifyContent: 'center',
   },
   motifImage: {
-    width: 60,
-    height: 60,
+    width: '85%',
+    height: '85%',
   },
   motifImageSmall: {
-    width: 36,
-    height: 36,
+    width: '85%',
+    height: '85%',
   },
   motifImageMedium: {
-    width: 52,
-    height: 52,
+    width: '88%',
+    height: '88%',
   },
   motifImageLarge: {
-    width: 80,
-    height: 80,
+    width: '92%',
+    height: '92%',
   },
   textLayer: {
     marginTop: 2,
@@ -1977,22 +1964,48 @@ const styles = StyleSheet.create({
     color: '#E11D48',
   },
 
-  // Step 1: Color grid (2 columns)
+  // Step 1: Color grid (3 columns)
+  garmentsGrid3Col: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 8,
+  },
   garmentsGrid2Col: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    gap: 10,
+    gap: 8,
   },
-  garmentTile: {
-    width: (SCREEN_WIDTH - 64 - 10) / 2,
-    flexDirection: 'row',
+  garmentTile3Col: {
+    width: Math.floor((SCREEN_WIDTH - 84) / 3),
+    flexDirection: 'column',
     alignItems: 'center',
-    gap: 10,
+    justifyContent: 'center',
     backgroundColor: '#FAF8F5',
     borderRadius: 12,
     borderWidth: 1,
     borderColor: '#ECE4DC',
-    padding: 10,
+    paddingVertical: 10,
+    paddingHorizontal: 4,
+    gap: 4,
+  },
+  garmentTile3ColActive: {
+    backgroundColor: '#FFFFFF',
+    borderColor: colors.primary,
+    borderWidth: 2,
+    ...shadows.subtle,
+  },
+  garmentTile: {
+    width: Math.floor((SCREEN_WIDTH - 84) / 3),
+    flexDirection: 'column',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#FAF8F5',
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: '#ECE4DC',
+    paddingVertical: 10,
+    paddingHorizontal: 4,
+    gap: 4,
   },
   garmentTileActive: {
     backgroundColor: '#FFFFFF',
@@ -2000,26 +2013,50 @@ const styles = StyleSheet.create({
     borderWidth: 2,
     ...shadows.subtle,
   },
-  tileSwatch: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
+  tileSwatch3Col: {
+    width: 28,
+    height: 28,
+    borderRadius: 14,
     alignItems: 'center',
     justifyContent: 'center',
+    borderWidth: 1,
+    borderColor: 'rgba(0,0,0,0.08)',
+  },
+  tileSwatch: {
+    width: 28,
+    height: 28,
+    borderRadius: 14,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 1,
+    borderColor: 'rgba(0,0,0,0.08)',
+  },
+  tileName3Col: {
+    fontFamily: typography.fontSansBold,
+    fontSize: 11,
+    color: colors.textPrimary,
+    textAlign: 'center',
   },
   tileName: {
     fontFamily: typography.fontSansBold,
-    fontSize: 11.5,
+    fontSize: 11,
     color: colors.textPrimary,
+    textAlign: 'center',
   },
   tileNameActive: {
     color: colors.primary,
   },
+  tilePrice3Col: {
+    fontFamily: typography.fontSansMedium,
+    fontSize: 10,
+    color: colors.textSecondary,
+    textAlign: 'center',
+  },
   tilePrice: {
     fontFamily: typography.fontSansMedium,
-    fontSize: 10.5,
+    fontSize: 10,
     color: colors.textSecondary,
-    marginTop: 1,
+    textAlign: 'center',
   },
 
   // Step 2: Fabric cards
@@ -2197,13 +2234,14 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   motifTile: {
-    width: (SCREEN_WIDTH - 64 - 16) / 3,
+    width: Math.floor((SCREEN_WIDTH - 84) / 3),
     backgroundColor: '#FAF8F5',
     borderRadius: 10,
     borderWidth: 1,
     borderColor: '#ECE4DC',
-    padding: 8,
+    padding: 6,
     alignItems: 'center',
+    justifyContent: 'center',
   },
   motifTileActive: {
     borderColor: colors.primary,
@@ -2211,21 +2249,21 @@ const styles = StyleSheet.create({
     backgroundColor: '#FFFFFF',
   },
   motifTileImg: {
-    width: 56,
-    height: 56,
+    width: 44,
+    height: 44,
     marginBottom: 4,
   },
   motifTileName: {
-    fontSize: 10,
+    fontSize: 9.5,
     fontFamily: typography.fontSansBold,
     color: colors.textPrimary,
     textAlign: 'center',
   },
   motifTilePrice: {
-    fontSize: 9,
+    fontSize: 8.5,
     fontFamily: typography.fontSansMedium,
     color: colors.primary,
-    marginTop: 2,
+    marginTop: 1,
   },
   customUrlCard: {
     marginTop: spacing.md,
@@ -2402,17 +2440,18 @@ const styles = StyleSheet.create({
   sizesGrid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    gap: 8,
+    gap: 6,
     marginBottom: spacing.md,
   },
   sizeTile: {
-    width: (SCREEN_WIDTH - 64 - 24) / 4,
+    width: Math.floor((SCREEN_WIDTH - 86) / 4),
     paddingVertical: 10,
     borderRadius: 8,
     backgroundColor: '#FAF8F5',
     borderWidth: 1,
     borderColor: '#ECE4DC',
     alignItems: 'center',
+    justifyContent: 'center',
   },
   sizeTileActive: {
     backgroundColor: colors.primary,

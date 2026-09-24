@@ -722,14 +722,17 @@ const styles = StyleSheet.create({
     height: '100%',
   },
 
-  /* ── PRICE PILLS ── */
+  /* ── PRICE PILLS (3 per row) ── */
   pricePill: {
-    paddingHorizontal: 14,
-    paddingVertical: 8,
-    borderRadius: 16,
+    width: (width - 40 - 16) / 3,
+    paddingHorizontal: 6,
+    paddingVertical: 10,
+    borderRadius: 12,
     backgroundColor: '#FFFFFF',
     borderWidth: 1,
     borderColor: '#EAE4DC',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   pricePillActive: {
     backgroundColor: '#FAF5EE',
@@ -737,8 +740,9 @@ const styles = StyleSheet.create({
   },
   pricePillText: {
     fontFamily: typography.fontSans,
-    fontSize: 12.5,
+    fontSize: 11.5,
     color: '#5C544E',
+    textAlign: 'center',
   },
   pricePillTextActive: {
     fontFamily: typography.fontSansBold,

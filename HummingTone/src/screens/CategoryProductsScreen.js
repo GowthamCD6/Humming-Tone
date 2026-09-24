@@ -49,6 +49,7 @@ export const CategoryProductsScreen = ({ route, navigation }) => {
     sortBy: initSort = 'newest',
     priceRange: initPrice = 'all',
     minRating: initRating = null,
+    filterType: initFilterType = null,
   } = route.params || {};
 
   const [products, setProducts] = useState([]);
@@ -70,14 +71,29 @@ export const CategoryProductsScreen = ({ route, navigation }) => {
   const fetchProductList = async () => {
     try {
       setLoading(true);
-      const params = {};
-      if (selectedGender && selectedGender !== 'All') {
-        params.gender = selectedGender.toLowerCase();
+      let data = [];
+      if (initFilterType === 'featured') {
+        data = await ProductService.fetchFeaturedProducts();
+        if (!data || data.length === 0) {
+          const all = await ProductService.fetchProducts({});
+          data = all.filter((p) => p.is_featured);
+          if (data.length === 0) data = all;
+        }
+      } else if (initFilterType === 'new_arrivals') {
+        data = await ProductService.fetchNewArrivals();
+        if (!data || data.length === 0) {
+          data = await ProductService.fetchProducts({});
+        }
+      } else {
+        const params = {};
+        if (selectedGender && selectedGender !== 'All') {
+          params.gender = selectedGender.toLowerCase();
+        }
+        if (selectedCategory) {
+          params.category = selectedCategory;
+        }
+        data = await ProductService.fetchProducts(params);
       }
-      if (selectedCategory) {
-        params.category = selectedCategory;
-      }
-      const data = await ProductService.fetchProducts(params);
       setProducts(data || []);
     } catch (e) {
       console.warn('Error fetching category products:', e);
@@ -784,12 +800,15 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   modalPill: {
-    paddingHorizontal: 14,
-    paddingVertical: 8,
-    borderRadius: 18,
+    width: (width - 40 - 16) / 3,
+    paddingHorizontal: 6,
+    paddingVertical: 10,
+    borderRadius: 12,
     backgroundColor: '#FFFFFF',
     borderWidth: 1,
     borderColor: '#EAE4DC',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   modalPillActive: {
     backgroundColor: '#6B4E37',
@@ -797,8 +816,9 @@ const styles = StyleSheet.create({
   },
   modalPillText: {
     fontFamily: typography.fontSansBold,
-    fontSize: 12.5,
+    fontSize: 11.5,
     color: '#5C544E',
+    textAlign: 'center',
   },
   modalPillTextActive: {
     color: '#FFFFFF',

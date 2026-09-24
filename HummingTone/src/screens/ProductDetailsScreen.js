@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   View,
   Text,
@@ -26,6 +26,7 @@ import { ProductService } from '../api/services';
 import { GoogleAuthModal } from '../components/GoogleAuthModal';
 
 const { width } = Dimensions.get('window');
+const GALLERY_WIDTH = width - 32;
 
 export const ProductDetailsScreen = ({ route, navigation }) => {
   const insets = useSafeAreaInsets();
@@ -39,6 +40,8 @@ export const ProductDetailsScreen = ({ route, navigation }) => {
   const [isExpandedDesc, setIsExpandedDesc] = useState(false);
   const [quantity, setQuantity] = useState(1);
   const [showGoogleModal, setShowGoogleModal] = useState(false);
+
+  const galleryScrollRef = useRef(null);
 
   // Reviews State
   const [reviews, setReviews] = useState([]);
@@ -297,27 +300,73 @@ export const ProductDetailsScreen = ({ route, navigation }) => {
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
       >
-        {/* ── 2. MAIN GALLERY VIEWER ── */}
+        {/* ── 2. MAIN GALLERY VIEWER (HORIZONTAL SLIDING CAROUSEL) ── */}
         <View style={styles.mainImageWrap}>
-          <Image
-            source={{ uri: galleryImages[selectedImageIndex] || product.image }}
-            style={styles.mainImage}
-            resizeMode="cover"
-          />
+          <ScrollView
+            ref={galleryScrollRef}
+            horizontal
+            pagingEnabled
+            showsHorizontalScrollIndicator={false}
+            nestedScrollEnabled={true}
+            decelerationRate="fast"
+            snapToInterval={GALLERY_WIDTH}
+            snapToAlignment="center"
+            onMomentumScrollEnd={(e) => {
+              const offsetX = e.nativeEvent.contentOffset.x;
+              const idx = Math.round(offsetX / GALLERY_WIDTH);
+              if (idx >= 0 && idx < galleryImages.length) {
+                setSelectedImageIndex(idx);
+              }
+            }}
+            onScroll={(e) => {
+              const offsetX = e.nativeEvent.contentOffset.x;
+              const idx = Math.round(offsetX / GALLERY_WIDTH);
+              if (idx >= 0 && idx < galleryImages.length && idx !== selectedImageIndex) {
+                setSelectedImageIndex(idx);
+              }
+            }}
+            scrollEventThrottle={16}
+            style={styles.galleryScroll}
+          >
+            {galleryImages.map((img, idx) => (
+              <View key={idx} style={styles.slideItemWrap}>
+                <Image
+                  source={{ uri: img || product.image }}
+                  style={styles.mainImage}
+                  resizeMode="cover"
+                />
+              </View>
+            ))}
+          </ScrollView>
 
           {/* Discount Badge on Image */}
           {hasDiscount && (
-            <View style={styles.imageDiscountBadge}>
+            <View style={styles.imageDiscountBadge} pointerEvents="none">
               <Text style={styles.imageDiscountText}>{discountPercent}% OFF</Text>
             </View>
           )}
 
           {/* Image Counter Badge */}
           {galleryImages.length > 1 && (
-            <View style={styles.imageCounterBadge}>
+            <View style={styles.imageCounterBadge} pointerEvents="none">
               <Text style={styles.imageCounterText}>
                 {selectedImageIndex + 1} / {galleryImages.length}
               </Text>
+            </View>
+          )}
+
+          {/* Gallery Dots Indicator */}
+          {galleryImages.length > 1 && (
+            <View style={styles.galleryDotsRow} pointerEvents="none">
+              {galleryImages.map((_, idx) => (
+                <View
+                  key={idx}
+                  style={[
+                    styles.galleryDot,
+                    selectedImageIndex === idx && styles.galleryDotActive,
+                  ]}
+                />
+              ))}
             </View>
           )}
         </View>
@@ -336,7 +385,13 @@ export const ProductDetailsScreen = ({ route, navigation }) => {
                   styles.thumbnailWrap,
                   selectedImageIndex === idx && styles.thumbnailWrapActive,
                 ]}
-                onPress={() => setSelectedImageIndex(idx)}
+                onPress={() => {
+                  setSelectedImageIndex(idx);
+                  galleryScrollRef.current?.scrollTo({
+                    x: idx * GALLERY_WIDTH,
+                    animated: true,
+                  });
+                }}
                 activeOpacity={0.8}
               >
                 <Image source={{ uri: img }} style={styles.thumbnailImg} resizeMode="cover" />
@@ -972,17 +1027,47 @@ const styles = StyleSheet.create({
     paddingBottom: 10,
   },
   mainImageWrap: {
-    width: width - 32,
-    height: (width - 32) * 1.12,
+    width: GALLERY_WIDTH,
+    height: GALLERY_WIDTH * 1.12,
     marginHorizontal: 16,
     borderRadius: 20,
     overflow: 'hidden',
     backgroundColor: '#EDE7E0',
     position: 'relative',
   },
+  galleryScroll: {
+    width: GALLERY_WIDTH,
+    height: '100%',
+  },
+  slideItemWrap: {
+    width: GALLERY_WIDTH,
+    height: '100%',
+  },
   mainImage: {
     width: '100%',
     height: '100%',
+  },
+  galleryDotsRow: {
+    position: 'absolute',
+    bottom: 12,
+    left: 0,
+    right: 0,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 6,
+  },
+  galleryDot: {
+    width: 6,
+    height: 6,
+    borderRadius: 3,
+    backgroundColor: 'rgba(255, 255, 255, 0.55)',
+  },
+  galleryDotActive: {
+    width: 18,
+    height: 6,
+    borderRadius: 3,
+    backgroundColor: '#FFFFFF',
   },
   imageDiscountBadge: {
     position: 'absolute',

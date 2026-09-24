@@ -296,6 +296,16 @@ export const HomeScreen = ({ navigation }) => {
                   onPress={() => {
                     if (banner.routeType === 'tab') {
                       navigation.navigate('MainTabs', { screen: banner.tabScreen });
+                    } else if (banner.id === 'new-arrivals') {
+                      navigation.navigate('CategoryProducts', {
+                        title: 'New Arrivals',
+                        filterType: 'new_arrivals',
+                      });
+                    } else if (banner.id === 'featured-products') {
+                      navigation.navigate('CategoryProducts', {
+                        title: 'Featured Pieces',
+                        filterType: 'featured',
+                      });
                     } else {
                       navigation.navigate('CategoryProducts', { title: banner.routeTitle, gender: banner.gender });
                     }
@@ -362,7 +372,14 @@ export const HomeScreen = ({ navigation }) => {
         {/* ── 5. FEATURED PRODUCTS SECTION ── */}
         <View style={styles.sectionHeaderRow}>
           <Text style={styles.sectionTitleBold}>Featured Products</Text>
-          <TouchableOpacity onPress={() => navigation.navigate('MainTabs', { screen: 'ExploreTab' })}>
+          <TouchableOpacity
+            onPress={() =>
+              navigation.navigate('CategoryProducts', {
+                title: 'Featured Products',
+                filterType: 'featured',
+              })
+            }
+          >
             <Text style={styles.seeAllText}>See All</Text>
           </TouchableOpacity>
         </View>
@@ -384,7 +401,14 @@ export const HomeScreen = ({ navigation }) => {
         {/* ── 6. NEW ARRIVALS SECTION ── */}
         <View style={[styles.sectionHeaderRow, { marginTop: 14 }]}>
           <Text style={styles.sectionTitleBold}>New Arrivals</Text>
-          <TouchableOpacity onPress={() => navigation.navigate('MainTabs', { screen: 'ExploreTab' })}>
+          <TouchableOpacity
+            onPress={() =>
+              navigation.navigate('CategoryProducts', {
+                title: 'New Arrivals',
+                filterType: 'new_arrivals',
+              })
+            }
+          >
             <Text style={styles.seeAllText}>See All</Text>
           </TouchableOpacity>
         </View>

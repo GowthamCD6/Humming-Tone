@@ -86,6 +86,71 @@ export const SkeletonCategoryCircles = ({ count = 4 }) => (
   </View>
 );
 
+/**
+ * Skeleton Loader for Customizer / Virtual Atelier Studio
+ */
+export const SkeletonCustomizer = () => (
+  <View style={styles.customizerContainer}>
+    {/* 1. Header Bar */}
+    <View style={styles.customizerHeaderRow}>
+      <View>
+        <SkeletonShimmer style={styles.headerTitleLine} />
+        <SkeletonShimmer style={styles.headerSubLine} />
+      </View>
+      <View style={styles.headerBtnsRow}>
+        <SkeletonShimmer style={styles.headerCircleBtn} />
+        <SkeletonShimmer style={styles.headerCircleBtn} />
+      </View>
+    </View>
+
+    {/* 2. Virtual Stage Card */}
+    <View style={styles.stageCardSkeleton}>
+      <View style={styles.stageHeaderSkeleton}>
+        <SkeletonShimmer style={styles.stagePillSkeleton} />
+        <SkeletonShimmer style={styles.sideSwitcherSkeleton} />
+      </View>
+      <View style={styles.quickPlacementSkeletonRow}>
+        <SkeletonShimmer style={styles.quickPillSkeleton} />
+        <SkeletonShimmer style={styles.quickPillSkeleton} />
+        <SkeletonShimmer style={styles.quickPillSkeleton} />
+      </View>
+      <View style={styles.garmentBoxSkeleton}>
+        <SkeletonShimmer style={styles.garmentSilhouetteSkeleton} />
+      </View>
+      <SkeletonShimmer style={styles.stageFooterSkeleton} />
+    </View>
+
+    {/* 3. Stepper Workflow Bar */}
+    <View style={styles.stepperBarSkeleton}>
+      <View style={styles.stepperMetaSkeleton}>
+        <SkeletonShimmer style={styles.stepperCircleSkeleton} />
+        <SkeletonShimmer style={styles.stepperTitleSkeleton} />
+      </View>
+      <View style={styles.stepperPillsRow}>
+        <SkeletonShimmer style={styles.stepperPill} />
+        <SkeletonShimmer style={styles.stepperPill} />
+        <SkeletonShimmer style={styles.stepperPill} />
+        <SkeletonShimmer style={styles.stepperPill} />
+      </View>
+    </View>
+
+    {/* 4. Tool Panel Card */}
+    <View style={styles.toolPanelSkeleton}>
+      <SkeletonShimmer style={styles.panelTitleSkeleton} />
+      <SkeletonShimmer style={styles.panelSubSkeleton} />
+      <View style={styles.panel3ColGrid}>
+        {Array.from({ length: 6 }).map((_, i) => (
+          <View key={i} style={styles.tile3ColSkeleton}>
+            <SkeletonShimmer style={styles.tileSwatchSkeleton} />
+            <SkeletonShimmer style={styles.tileNameSkeleton} />
+            <SkeletonShimmer style={styles.tilePriceSkeleton} />
+          </View>
+        ))}
+      </View>
+    </View>
+  </View>
+);
+
 const styles = StyleSheet.create({
   grid: {
     flexDirection: 'row',
@@ -182,5 +247,200 @@ const styles = StyleSheet.create({
     height: 10,
     borderRadius: 3,
     backgroundColor: '#EAE4DC',
+  },
+
+  // Customizer Studio Skeleton
+  customizerContainer: {
+    flex: 1,
+    backgroundColor: '#FAF8F5',
+  },
+  customizerHeaderRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 20,
+    paddingTop: 16,
+    paddingBottom: 10,
+  },
+  headerTitleLine: {
+    width: 140,
+    height: 20,
+    backgroundColor: '#EAE4DC',
+    borderRadius: 6,
+    marginBottom: 5,
+  },
+  headerSubLine: {
+    width: 190,
+    height: 12,
+    backgroundColor: '#F0EBE3',
+    borderRadius: 4,
+  },
+  headerBtnsRow: {
+    flexDirection: 'row',
+    gap: 8,
+  },
+  headerCircleBtn: {
+    width: 38,
+    height: 38,
+    borderRadius: 19,
+    backgroundColor: '#ECE4DC',
+  },
+  stageCardSkeleton: {
+    marginHorizontal: 16,
+    marginVertical: 10,
+    backgroundColor: '#FFFFFF',
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: '#ECE4DC',
+    padding: 14,
+  },
+  stageHeaderSkeleton: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 10,
+  },
+  stagePillSkeleton: {
+    width: 120,
+    height: 24,
+    borderRadius: 12,
+    backgroundColor: '#F0EBE3',
+  },
+  sideSwitcherSkeleton: {
+    width: 110,
+    height: 26,
+    borderRadius: 13,
+    backgroundColor: '#F0EBE3',
+  },
+  quickPlacementSkeletonRow: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    gap: 8,
+    marginBottom: 12,
+  },
+  quickPillSkeleton: {
+    width: 80,
+    height: 22,
+    borderRadius: 11,
+    backgroundColor: '#F5EFEB',
+  },
+  garmentBoxSkeleton: {
+    width: '100%',
+    aspectRatio: 500 / 580,
+    maxHeight: 340,
+    backgroundColor: '#F4EDE6',
+    borderRadius: 14,
+    alignItems: 'center',
+    justifyContent: 'center',
+    overflow: 'hidden',
+  },
+  garmentSilhouetteSkeleton: {
+    width: '55%',
+    height: '75%',
+    backgroundColor: '#EAE4DC',
+    borderRadius: 16,
+  },
+  stageFooterSkeleton: {
+    width: '100%',
+    height: 24,
+    borderRadius: 8,
+    backgroundColor: '#F5EFEB',
+    marginTop: 10,
+  },
+  stepperBarSkeleton: {
+    marginHorizontal: 16,
+    marginBottom: 10,
+    backgroundColor: '#FFFFFF',
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: '#ECE4DC',
+    padding: 12,
+  },
+  stepperMetaSkeleton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    marginBottom: 10,
+  },
+  stepperCircleSkeleton: {
+    width: 22,
+    height: 22,
+    borderRadius: 11,
+    backgroundColor: '#ECE4DC',
+  },
+  stepperTitleSkeleton: {
+    width: 130,
+    height: 14,
+    borderRadius: 4,
+    backgroundColor: '#ECE4DC',
+  },
+  stepperPillsRow: {
+    flexDirection: 'row',
+    gap: 8,
+  },
+  stepperPill: {
+    width: 76,
+    height: 28,
+    borderRadius: 14,
+    backgroundColor: '#FAF8F5',
+    borderWidth: 1,
+    borderColor: '#ECE4DC',
+  },
+  toolPanelSkeleton: {
+    marginHorizontal: 16,
+    backgroundColor: '#FFFFFF',
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: '#ECE4DC',
+    padding: 16,
+    marginBottom: 20,
+  },
+  panelTitleSkeleton: {
+    width: 160,
+    height: 16,
+    borderRadius: 4,
+    backgroundColor: '#EAE4DC',
+    marginBottom: 6,
+  },
+  panelSubSkeleton: {
+    width: 220,
+    height: 12,
+    borderRadius: 4,
+    backgroundColor: '#F0EBE3',
+    marginBottom: 16,
+  },
+  panel3ColGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'space-between',
+    gap: 8,
+  },
+  tile3ColSkeleton: {
+    width: (width - 64 - 16) / 3,
+    backgroundColor: '#FAF8F5',
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: '#ECE4DC',
+    paddingVertical: 12,
+    alignItems: 'center',
+    gap: 6,
+  },
+  tileSwatchSkeleton: {
+    width: 28,
+    height: 28,
+    borderRadius: 14,
+    backgroundColor: '#ECE4DC',
+  },
+  tileNameSkeleton: {
+    width: 44,
+    height: 10,
+    borderRadius: 3,
+    backgroundColor: '#ECE4DC',
+  },
+  tilePriceSkeleton: {
+    width: 32,
+    height: 9,
+    borderRadius: 3,
+    backgroundColor: '#F0EBE3',
   },
 });

@@ -12,8 +12,39 @@ import { ExploreScreen } from '../screens/ExploreScreen';
 import { CustomizeScreen } from '../screens/CustomizeScreen';
 import { CartScreen } from '../screens/CartScreen';
 import { ProfileScreen } from '../screens/ProfileScreen';
+import { SwipeableTabScreen } from '../components/SwipeableTabScreen';
 
 const Tab = createBottomTabNavigator();
+
+const WrappedHomeScreen = (props) => (
+  <SwipeableTabScreen routeName="HomeTab" navigation={props.navigation}>
+    <HomeScreen {...props} />
+  </SwipeableTabScreen>
+);
+
+const WrappedExploreScreen = (props) => (
+  <SwipeableTabScreen routeName="ExploreTab" navigation={props.navigation}>
+    <ExploreScreen {...props} />
+  </SwipeableTabScreen>
+);
+
+const WrappedCustomizeScreen = (props) => (
+  <SwipeableTabScreen routeName="CustomizeTab" navigation={props.navigation}>
+    <CustomizeScreen {...props} />
+  </SwipeableTabScreen>
+);
+
+const WrappedCartScreen = (props) => (
+  <SwipeableTabScreen routeName="CartTab" navigation={props.navigation}>
+    <CartScreen {...props} />
+  </SwipeableTabScreen>
+);
+
+const WrappedProfileScreen = (props) => (
+  <SwipeableTabScreen routeName="ProfileTab" navigation={props.navigation}>
+    <ProfileScreen {...props} />
+  </SwipeableTabScreen>
+);
 
 const CustomTabBar = ({ state, descriptors, navigation }) => {
   const { cartCount } = useCart();
@@ -101,13 +132,14 @@ export const BottomTabNavigator = () => {
       tabBar={(props) => <CustomTabBar {...props} />}
       screenOptions={{
         headerShown: false,
+        animation: 'shift',
       }}
     >
-      <Tab.Screen name="HomeTab" component={HomeScreen} />
-      <Tab.Screen name="ExploreTab" component={ExploreScreen} />
-      <Tab.Screen name="CustomizeTab" component={CustomizeScreen} />
-      <Tab.Screen name="CartTab" component={CartScreen} />
-      <Tab.Screen name="ProfileTab" component={ProfileScreen} />
+      <Tab.Screen name="HomeTab" component={WrappedHomeScreen} />
+      <Tab.Screen name="ExploreTab" component={WrappedExploreScreen} />
+      <Tab.Screen name="CustomizeTab" component={WrappedCustomizeScreen} />
+      <Tab.Screen name="CartTab" component={WrappedCartScreen} />
+      <Tab.Screen name="ProfileTab" component={WrappedProfileScreen} />
     </Tab.Navigator>
   );
 };

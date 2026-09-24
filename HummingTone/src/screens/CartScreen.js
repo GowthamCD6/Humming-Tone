@@ -18,6 +18,8 @@ import { shadows } from '../theme/colors';
 import { typography } from '../theme/typography';
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
+import { useWishlist } from '../context/WishlistContext';
+import { useNotifications } from '../context/NotificationContext';
 import { GoogleAuthModal } from '../components/GoogleAuthModal';
 
 export const CartScreen = ({ navigation }) => {
@@ -36,6 +38,8 @@ export const CartScreen = ({ navigation }) => {
     removeCoupon,
   } = useCart();
   const { user, isAuthenticated } = useAuth();
+  const { wishlistCount } = useWishlist();
+  const { unreadCount } = useNotifications();
 
   const [promoCodeInput, setPromoCodeInput] = useState('');
   const [couponError, setCouponError] = useState('');
@@ -118,16 +122,44 @@ export const CartScreen = ({ navigation }) => {
           </View>
         </View>
 
-        {cartItems.length > 0 && (
+        <View style={styles.topActionsRow}>
+          {cartItems.length > 0 && (
+            <TouchableOpacity
+              style={styles.clearBagBtn}
+              onPress={handleClearBag}
+              activeOpacity={0.75}
+            >
+              <Ionicons name="trash-outline" size={15} color="#6B4E37" />
+              <Text style={styles.clearBagText}>Clear</Text>
+            </TouchableOpacity>
+          )}
+
           <TouchableOpacity
-            style={styles.clearBagBtn}
-            onPress={handleClearBag}
-            activeOpacity={0.75}
+            style={styles.notifCircleBtn}
+            onPress={() => navigation.navigate('Wishlist')}
+            activeOpacity={0.8}
           >
-            <Ionicons name="trash-outline" size={16} color="#6B4E37" />
-            <Text style={styles.clearBagText}>Clear</Text>
+            <Ionicons name="heart-outline" size={19} color="#1E1B18" />
+            {wishlistCount > 0 && (
+              <View style={[styles.topNotifBadge, { backgroundColor: '#6B4E37' }]}>
+                <Text style={styles.topNotifBadgeText}>{wishlistCount > 9 ? '9+' : wishlistCount}</Text>
+              </View>
+            )}
           </TouchableOpacity>
-        )}
+
+          <TouchableOpacity
+            style={styles.notifCircleBtn}
+            onPress={() => navigation.navigate('Notifications')}
+            activeOpacity={0.8}
+          >
+            <Ionicons name="notifications-outline" size={19} color="#1E1B18" />
+            {unreadCount > 0 && (
+              <View style={styles.topNotifBadge}>
+                <Text style={styles.topNotifBadgeText}>{unreadCount > 9 ? '9+' : unreadCount}</Text>
+              </View>
+            )}
+          </TouchableOpacity>
+        </View>
       </View>
 
       {cartItems.length === 0 ? (
@@ -456,6 +488,43 @@ const styles = StyleSheet.create({
     fontFamily: typography.fontSansBold,
     fontSize: 12,
     color: '#6B4E37',
+  },
+  topActionsRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  notifCircleBtn: {
+    width: 38,
+    height: 38,
+    borderRadius: 19,
+    backgroundColor: '#FFFFFF',
+    borderWidth: 1,
+    borderColor: '#ECE4DC',
+    alignItems: 'center',
+    justifyContent: 'center',
+    position: 'relative',
+    ...shadows.subtle,
+  },
+  topNotifBadge: {
+    position: 'absolute',
+    top: 4,
+    right: 4,
+    minWidth: 14,
+    height: 14,
+    borderRadius: 7,
+    backgroundColor: '#C53030',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: 2,
+    borderWidth: 1.2,
+    borderColor: '#FFFFFF',
+  },
+  topNotifBadgeText: {
+    fontFamily: typography.fontSansBold,
+    fontSize: 8.5,
+    color: '#FFFFFF',
+    lineHeight: 10,
   },
 
   /* ── EMPTY STATE ── */
