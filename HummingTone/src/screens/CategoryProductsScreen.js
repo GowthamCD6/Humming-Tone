@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import {
   View,
   Text,
@@ -68,7 +68,7 @@ export const CategoryProductsScreen = ({ route, navigation }) => {
   const [showFilterModal, setShowFilterModal] = useState(false);
   const [showSortDropdown, setShowSortDropdown] = useState(false);
 
-  const fetchProductList = async () => {
+  const fetchProductList = useCallback(async () => {
     try {
       setLoading(true);
       // Fetch full active catalog so client-side and category filters work with full fidelity
@@ -84,11 +84,11 @@ export const CategoryProductsScreen = ({ route, navigation }) => {
       setLoading(false);
       setRefreshing(false);
     }
-  };
+  }, [selectedGender]);
 
   useEffect(() => {
     fetchProductList();
-  }, [selectedGender]);
+  }, [fetchProductList]);
 
   const onRefresh = () => {
     setRefreshing(true);

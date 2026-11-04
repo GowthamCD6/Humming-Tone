@@ -179,7 +179,7 @@ export const ProfileScreen = ({ navigation }) => {
           style={styles.scroll}
           contentContainerStyle={[
             styles.scrollContent,
-            { paddingBottom: Math.max((insets.bottom || 0) + 95, 115) },
+            { paddingBottom: Math.max((insets.bottom || 0) + 110, 130) },
           ]}
           showsVerticalScrollIndicator={false}
           refreshControl={

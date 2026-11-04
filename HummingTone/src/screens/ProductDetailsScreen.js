@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import {
   View,
   Text,
@@ -30,7 +30,7 @@ const GALLERY_WIDTH = width - 32;
 
 export const ProductDetailsScreen = ({ route, navigation }) => {
   const insets = useSafeAreaInsets();
-  const { user, isAuthenticated } = useAuth();
+  const { user } = useAuth();
   const { productId, initialProduct } = route.params || {};
   
   const [product, setProduct] = useState(initialProduct || null);
@@ -66,7 +66,7 @@ export const ProductDetailsScreen = ({ route, navigation }) => {
 
   const targetId = productId || initialProduct?.id;
 
-  const fetchDetails = async () => {
+  const fetchDetails = useCallback(async () => {
     if (targetId) {
       try {
         setLoading(true);
@@ -83,9 +83,9 @@ export const ProductDetailsScreen = ({ route, navigation }) => {
         setLoading(false);
       }
     }
-  };
+  }, [targetId]);
 
-  const fetchReviews = async () => {
+  const fetchReviews = useCallback(async () => {
     if (targetId) {
       try {
         setLoadingReviews(true);
@@ -102,18 +102,18 @@ export const ProductDetailsScreen = ({ route, navigation }) => {
         setLoadingReviews(false);
       }
     }
-  };
+  }, [targetId]);
 
   useEffect(() => {
     fetchDetails();
     fetchReviews();
-  }, [targetId]);
+  }, [fetchDetails, fetchReviews]);
 
   useEffect(() => {
     if (product && Array.isArray(product.variants) && product.variants.length > 0 && !selectedVariant) {
       setSelectedVariant(product.variants[0]);
     }
-  }, [product]);
+  }, [product, selectedVariant]);
 
   if (loading && !product) {
     return (
@@ -175,27 +175,26 @@ export const ProductDetailsScreen = ({ route, navigation }) => {
   };
 
   const handleBuyNow = () => {
+    if (!product) return;
+
     if (isOutOfStock) {
       Alert.alert('Out of Stock', 'This size is currently sold out. Please choose another size.');
       return;
     }
 
-    const sizeToUse = selectedVariant?.size || 'Standard';
+    const sizeToUse = selectedVariant?.size || (product.variants && product.variants[0]?.size) || (product.sizes && product.sizes[0]) || 'Standard';
     const directItem = {
       product_id: product.id,
-      quantity,
+      id: product.id,
+      quantity: quantity || 1,
       size: sizeToUse,
       color: product.color || 'Default',
-      price: selectedVariant?.price || product.price,
-      name: product.name,
-      image: selectedImage || (product.images && product.images[0]?.image_path) || null,
+      price: Number(selectedVariant?.price != null ? selectedVariant.price : (product.price || 0)),
+      name: product.name || 'Bespoke Garment',
+      image: (product.images && product.images[selectedImageIndex]?.image_path) || (product.images && product.images[0]?.image_path) || product.image || null,
     };
 
-    if (!isAuthenticated || !user || user?.email === 'guest@hummingtone.com') {
-      setShowGoogleModal(true);
-    } else {
-      navigation.navigate('Checkout', { buyNowItem: directItem });
-    }
+    navigation.navigate('Checkout', { buyNowItem: directItem });
   };
 
   const handleReviewSubmit = async () => {
@@ -779,11 +778,11 @@ export const ProductDetailsScreen = ({ route, navigation }) => {
         </View>
 
         {/* Bottom spacer with comfortable clearance */}
-        <View style={{ height: 80 }} />
+        <View style={{ height: Math.max((insets.bottom || 0) + 85, 96) }} />
       </ScrollView>
 
       {/* ── 10. STICKY BOTTOM ACTION BAR ── */}
-      <View style={[styles.bottomStickyBar, { paddingBottom: Math.max(insets.bottom, 12) }]}>
+      <View style={[styles.bottomStickyBar, { paddingBottom: Math.max((insets.bottom || 0) + 6, 16) }]}>
         <View style={styles.bottomPriceWrap}>
           <Text style={styles.totalPriceLabel}>Total Price</Text>
           <Text style={styles.totalPriceValue}>₹{currentPrice.toLocaleString('en-IN')}</Text>

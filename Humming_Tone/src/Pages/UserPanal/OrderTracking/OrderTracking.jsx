@@ -81,9 +81,13 @@ const OrderTracking = () => {
       if (!customerUser?.email && !customerUser?.id) return;
       setLoadingHistory(true);
       try {
+        const token = localStorage.getItem("userToken");
+        const headers = { "Content-Type": "application/json" };
+        if (token) headers["Authorization"] = `Bearer ${token}`;
+
         const res = await fetch(`${API_BASE_URL}/user/my_orders`, {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
+          headers,
           body: JSON.stringify({
             email: customerUser.email,
             user_id: customerUser.id || undefined,
@@ -165,6 +169,57 @@ const OrderTracking = () => {
       setLoading(false);
     }
   }, [orderNumber, contactType, contactValue]);
+
+  const handleTrack = (e) => {
+    if (e && e.preventDefault) e.preventDefault();
+    handleTrackOrder();
+  };
+
+  const handleReturnSubmit = async (e) => {
+    if (e && e.preventDefault) e.preventDefault();
+    if (!order) return;
+    setReturnSubmitting(true);
+    setReturnSuccessMsg("");
+    setReturnErrorMsg("");
+
+    try {
+      const token = localStorage.getItem("userToken");
+      const headers = { "Content-Type": "application/json" };
+      if (token) headers["Authorization"] = `Bearer ${token}`;
+
+      const res = await fetch(`${API_BASE_URL}/user/return_request`, {
+        method: "POST",
+        headers,
+        body: JSON.stringify({
+          order_id: order.id,
+          order_number: order.order_number,
+          order_item_id: returnItemId || undefined,
+          return_type: returnType,
+          return_reason: `${returnType}: ${returnReason}`,
+          return_description: returnDescription.trim() || `Customer requested ${returnType.toLowerCase()} for order #${order.order_number}`,
+          email: customerUser?.email || order.customer_email,
+          phone: customerUser?.phone || order.customer_phone,
+        }),
+      });
+
+      const data = await res.json();
+      if (res.ok && (data.success || data.status === "success" || data.message)) {
+        setReturnSuccessMsg(data.message || "Your return request has been submitted successfully!");
+        setTimeout(() => {
+          setShowReturnModal(false);
+          setReturnSuccessMsg("");
+          setReturnDescription("");
+        }, 2200);
+      } else {
+        setReturnErrorMsg(data.message || data.error || "Failed to submit return request. Please try again.");
+      }
+    } catch (err) {
+      console.error("Return submit error:", err);
+      setReturnErrorMsg("Network error. Please try again later.");
+    } finally {
+      setReturnSubmitting(false);
+    }
+  };
 
   // Auto-track on mount if navigated with state OR if saved tracking credentials exist
   useEffect(() => {

@@ -1,6 +1,6 @@
 import React from 'react';
 import { StatusBar, StyleSheet, View } from 'react-native';
-import { SafeAreaProvider } from 'react-native-safe-area-context';
+import { SafeAreaProvider, initialWindowMetrics } from 'react-native-safe-area-context';
 import { AuthProvider } from './src/context/AuthContext';
 import { SiteContentProvider } from './src/context/SiteContentContext';
 import { CartProvider } from './src/context/CartContext';
@@ -11,7 +11,7 @@ import { colors } from './src/theme/colors';
 
 export default function App(): React.JSX.Element {
   return (
-    <SafeAreaProvider>
+    <SafeAreaProvider initialMetrics={initialWindowMetrics}>
       <View style={styles.root}>
         <StatusBar barStyle="dark-content" />
         <AuthProvider>

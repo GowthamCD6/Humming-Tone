@@ -50,11 +50,11 @@ export const CartScreen = ({ navigation }) => {
   const calculatedTotal = Math.max(0, discountedSubtotal);
 
   const handleProceedCheckout = () => {
-    if (!isAuthenticated || !user || user?.email === 'guest@hummingtone.com') {
-      setShowGoogleModal(true);
-    } else {
-      navigation.navigate('Checkout');
+    if (!cartItems || cartItems.length === 0) {
+      Alert.alert('Empty Bag', 'Please add items to your shopping bag before proceeding.');
+      return;
     }
+    navigation.navigate('Checkout');
   };
 
   const handleApplyCoupon = async (codeToApply) => {
@@ -187,7 +187,7 @@ export const CartScreen = ({ navigation }) => {
           style={styles.scroll}
           contentContainerStyle={[
             styles.scrollContent,
-            { paddingBottom: Math.max((insets.bottom || 0) + 95, 115) },
+            { paddingBottom: Math.max((insets.bottom || 0) + 110, 130) },
           ]}
           showsVerticalScrollIndicator={false}
         >

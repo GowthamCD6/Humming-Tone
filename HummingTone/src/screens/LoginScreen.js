@@ -10,6 +10,7 @@ import {
   Platform,
   StatusBar,
   Image,
+  ActivityIndicator,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '../components/Icons';

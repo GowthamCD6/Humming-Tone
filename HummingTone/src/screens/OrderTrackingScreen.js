@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   View,
   Text,
@@ -41,7 +41,7 @@ export const OrderTrackingScreen = ({ navigation, route }) => {
     Platform.OS === 'android' ? 32 : 44
   );
 
-  const fetchTracking = async (idToTrack) => {
+  const fetchTracking = useCallback(async (idToTrack) => {
     const q = (idToTrack || orderQuery).trim();
     if (!q) {
       Alert.alert('Missing Input', 'Please enter your Order Reference ID or registered phone number.');
@@ -64,13 +64,13 @@ export const OrderTrackingScreen = ({ navigation, route }) => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [orderQuery]);
 
   useEffect(() => {
     if (initialOrderId) {
       fetchTracking(initialOrderId);
     }
-  }, [initialOrderId]);
+  }, [initialOrderId, fetchTracking]);
 
   const getActiveStepIndex = (status = 'placed') => {
     const s = String(status).toLowerCase();
@@ -122,7 +122,7 @@ export const OrderTrackingScreen = ({ navigation, route }) => {
         style={styles.scroll}
         contentContainerStyle={[
           styles.scrollContent,
-          { paddingBottom: Math.max((insets.bottom || 0) + 30, 40) },
+          { paddingBottom: Math.max((insets.bottom || 0) + 36, 48) },
         ]}
         showsVerticalScrollIndicator={false}
       >

@@ -1,11 +1,13 @@
 import React from 'react';
 import { View, Text, StyleSheet, ScrollView } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '../components/Icons';
 import { colors } from '../theme/colors';
 import { typography, spacing } from '../theme/typography';
 import { Button } from '../components/Button';
 
 export const PaymentFailureScreen = ({ route, navigation }) => {
+  const insets = useSafeAreaInsets();
   const {
     orderId = '',
     reason = 'Payment was cancelled or could not be completed.',
@@ -14,7 +16,16 @@ export const PaymentFailureScreen = ({ route, navigation }) => {
 
   return (
     <View style={styles.container}>
-      <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
+      <ScrollView
+        contentContainerStyle={[
+          styles.scrollContent,
+          {
+            paddingTop: Math.max((insets.top || 0) + 40, 60),
+            paddingBottom: Math.max((insets.bottom || 0) + 32, 44),
+          },
+        ]}
+        showsVerticalScrollIndicator={false}
+      >
         {/* Failure Icon */}
         <View style={styles.iconCircle}>
           <Ionicons name="close" size={44} color="#FFFFFF" />

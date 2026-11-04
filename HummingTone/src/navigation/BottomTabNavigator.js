@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useCallback } from 'react';
 import {
   View,
   StyleSheet,
@@ -44,6 +44,15 @@ export const BottomTabNavigator = ({ navigation, route }) => {
   const pagerRef = useRef(null);
   const scrollX = useRef(new Animated.Value(0)).current;
 
+  const goToTab = useCallback((index) => {
+    if (index === activeTab) return;
+    setActiveTab(index);
+    pagerRef.current?.scrollTo({
+      x: index * SCREEN_WIDTH,
+      animated: true,
+    });
+  }, [activeTab]);
+
   // Handle external navigation requests into specific tabs (e.g. { screen: 'CartTab' })
   useEffect(() => {
     const targetScreen = route.params?.screen;
@@ -53,16 +62,7 @@ export const BottomTabNavigator = ({ navigation, route }) => {
         goToTab(targetIndex);
       }
     }
-  }, [route.params?.screen, route.params]);
-
-  const goToTab = (index) => {
-    if (index === activeTab) return;
-    setActiveTab(index);
-    pagerRef.current?.scrollTo({
-      x: index * SCREEN_WIDTH,
-      animated: true,
-    });
-  };
+  }, [route.params?.screen, activeTab, goToTab]);
 
   const onScrollEnd = (e) => {
     const offsetX = e.nativeEvent.contentOffset.x;
@@ -149,7 +149,7 @@ export const BottomTabNavigator = ({ navigation, route }) => {
       <View
         style={[
           styles.tabBarContainer,
-          { bottom: Platform.OS === 'ios' ? Math.max(insets.bottom, 16) : 16 },
+          { bottom: Math.max((insets.bottom || 0) + (insets.bottom > 0 ? 6 : 0), 16) },
         ]}
         pointerEvents="box-none"
       >

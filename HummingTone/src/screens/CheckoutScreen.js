@@ -20,11 +20,36 @@ import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
 import { OrderService } from '../api/services';
 
-export const CheckoutScreen = ({ navigation }) => {
+export const CheckoutScreen = ({ navigation, route }) => {
   const insets = useSafeAreaInsets();
-  const { cartItems, finalTotal, subtotal, discountAmount, gstAmount, shippingFee, clearCart } = useCart();
+  const buyNowItem = route?.params?.buyNowItem;
+  const isBuyNow = Boolean(buyNowItem);
+  const { cartItems, finalTotal: cartFinalTotal, subtotal: cartSubtotal, discountAmount: cartDiscountAmount, gstAmount: cartGstAmount, shippingFee: cartShippingFee, clearCart } = useCart();
   const { user, isAuthenticated } = useAuth();
   const [showGoogleModal, setShowGoogleModal] = useState(false);
+
+  // Active items calculation (Buy Now vs General Cart)
+  const activeItems = isBuyNow
+    ? (Array.isArray(buyNowItem) ? buyNowItem : [buyNowItem])
+    : cartItems;
+
+  const activeSubtotal = isBuyNow
+    ? activeItems.reduce((acc, it) => acc + (Number(it.price || 0) * (Number(it.quantity || 1))), 0)
+    : cartSubtotal;
+
+  const activeShippingFee = isBuyNow
+    ? (activeSubtotal >= 999 || activeSubtotal === 0 ? 0 : 99)
+    : cartShippingFee;
+
+  const activeGstAmount = isBuyNow
+    ? Math.round(activeSubtotal * 0.05)
+    : cartGstAmount;
+
+  const activeDiscountAmount = isBuyNow ? 0 : cartDiscountAmount;
+
+  const activeFinalTotal = isBuyNow
+    ? Math.round(activeSubtotal + activeGstAmount + activeShippingFee)
+    : cartFinalTotal;
 
   // Form State
   const [name, setName] = useState(user?.name || '');
@@ -47,17 +72,28 @@ export const CheckoutScreen = ({ navigation }) => {
   }, [user]);
 
   const handlePlaceOrder = async () => {
-    if (!isAuthenticated || !user || user.email === 'guest@hummingtone.com') {
-      Alert.alert(
-        'Google Sign-In Required',
-        'Please sign in with your Google account to proceed with checkout.'
-      );
-      setShowGoogleModal(true);
+    if (!name.trim()) {
+      Alert.alert('Name Required', 'Please provide your full name for delivery.');
       return;
     }
-
-    if (!name.trim() || !phone.trim() || !address.trim() || !city.trim() || !pincode.trim()) {
-      Alert.alert('Incomplete Address', 'Please provide your full delivery address and contact number.');
+    if (!email.trim() || !email.includes('@') || email.toLowerCase().includes('guest@')) {
+      Alert.alert('Email Required', 'Please enter a valid email address to receive order updates and live tracking.');
+      return;
+    }
+    if (!phone.trim() || phone.trim().length < 7) {
+      Alert.alert('Phone Required', 'Please provide a valid contact phone number (at least 7 digits).');
+      return;
+    }
+    if (!address.trim() || address.trim().length < 5) {
+      Alert.alert('Address Required', 'Please provide your complete delivery street address.');
+      return;
+    }
+    if (!city.trim()) {
+      Alert.alert('City Required', 'Please enter your city.');
+      return;
+    }
+    if (!pincode.trim()) {
+      Alert.alert('Pincode Required', 'Please enter your postal / pincode.');
       return;
     }
 
@@ -73,21 +109,21 @@ export const CheckoutScreen = ({ navigation }) => {
         pincode: pincode.trim(),
         order_instructions: notes.trim(),
         payment_method: paymentMethod,
-        items: cartItems.map((item) => ({
+        items: activeItems.map((item) => ({
           product_id: item.product_id || item.id,
           product_name: item.name || item.product_name || 'Bespoke Garment',
           name: item.name || item.product_name || 'Bespoke Garment',
           price: Number(item.price || 0),
           unit_price: Number(item.price || 0),
-          quantity: item.quantity,
+          quantity: item.quantity || 1,
           size: item.size || 'M',
           color: item.color || null,
           is_custom: Boolean(item.is_custom || item.customDetails),
           customDetails: item.customDetails || null,
           custom_preview_image: item.custom_preview_image || item.image || null,
         })),
-        discount_amount: discountAmount,
-        shipping: shippingFee,
+        discount_amount: activeDiscountAmount,
+        shipping: activeShippingFee,
         user_id: user?.id,
       };
 
@@ -137,12 +173,14 @@ export const CheckoutScreen = ({ navigation }) => {
             console.warn('Backend payment verification notice:', verErr);
           }
 
-          clearCart();
+          if (!isBuyNow) {
+            clearCart();
+          }
 
           navigation.replace('OrderSuccess', {
             orderId: orderData.order_number,
             customerName: name,
-            totalAmount: finalTotal,
+            totalAmount: activeFinalTotal,
             shippingAddress: `${address}, ${city}, ${state} - ${pincode}`,
             paymentId: paymentData.razorpay_payment_id,
           });
@@ -172,7 +210,7 @@ export const CheckoutScreen = ({ navigation }) => {
           navigation.navigate('PaymentFailure', {
             orderId: orderData?.order_number || '',
             reason: parsedReason,
-            totalAmount: finalTotal,
+            totalAmount: activeFinalTotal,
           });
         });
 
@@ -204,7 +242,7 @@ export const CheckoutScreen = ({ navigation }) => {
 
           <View style={styles.inputRow}>
             <View style={{ flex: 1 }}>
-              <Text style={styles.inputLabel}>EMAIL ADDRESS</Text>
+              <Text style={styles.inputLabel}>EMAIL ADDRESS *</Text>
               <TextInput
                 style={styles.input}
                 placeholder="john@example.com"
@@ -276,34 +314,34 @@ export const CheckoutScreen = ({ navigation }) => {
 
         {/* Items Summary Preview */}
         <View style={styles.section}>
-          <Text style={styles.sectionHeading}>2. ORDER SUMMARY ({cartItems.length} items)</Text>
-          {cartItems.map((item) => (
-            <View key={item.cartItemId} style={styles.previewItem}>
+          <Text style={styles.sectionHeading}>2. ORDER SUMMARY ({activeItems.length} items)</Text>
+          {activeItems.map((item, idx) => (
+            <View key={item.cartItemId || idx} style={styles.previewItem}>
               <Text style={styles.previewName} numberOfLines={1}>
-                {item.quantity}x {item.name} ({item.size})
+                {item.quantity || 1}x {item.name} ({item.size})
               </Text>
               <Text style={styles.previewPrice}>
-                ₹{((item.price || 0) * item.quantity).toLocaleString('en-IN')}
+                ₹{((item.price || 0) * (item.quantity || 1)).toLocaleString('en-IN')}
               </Text>
             </View>
           ))}
           <View style={styles.summaryTotalRow}>
             <Text style={styles.finalTotalLabel}>Grand Total</Text>
-            <Text style={styles.finalTotalValue}>₹{finalTotal.toLocaleString('en-IN')}</Text>
+            <Text style={styles.finalTotalValue}>₹{activeFinalTotal.toLocaleString('en-IN')}</Text>
           </View>
         </View>
 
-        <View style={{ height: 120 }} />
+        <View style={{ height: Math.max((insets.bottom || 0) + 115, 130) }} />
       </ScrollView>
 
       {/* Sticky Bottom Confirmation Bar */}
-      <View style={[styles.bottomBar, { paddingBottom: Math.max(insets.bottom, 12) }]}>
+      <View style={[styles.bottomBar, { paddingBottom: Math.max((insets.bottom || 0) + 6, 16) }]}>
         <View style={styles.secureBadge}>
           <Ionicons name="shield-checkmark" size={13} color="#2E7D32" />
           <Text style={styles.secureBadgeText}>100% Encrypted & Secure Razorpay Payment</Text>
         </View>
         <Button
-          title={`PAY ₹${finalTotal.toLocaleString('en-IN')}`}
+          title={`PAY ₹${activeFinalTotal.toLocaleString('en-IN')}`}
           onPress={handlePlaceOrder}
           loading={submitting}
           style={styles.payBtnBlack}

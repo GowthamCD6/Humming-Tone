@@ -490,7 +490,7 @@ export const CustomizeScreen = ({ navigation }) => {
     (StatusBar.currentHeight || 0) + 12,
     Platform.OS === 'android' ? 34 : 44
   );
-  const bottomBarOffset = (Platform.OS === 'ios' ? Math.max(insets.bottom, 16) : 16) + 64 + 10;
+  const bottomBarOffset = Math.max((insets.bottom || 0) + (insets.bottom > 0 ? 6 : 0), 16) + 64 + 10;
 
   // Active garment image
   const activeGarmentImg = activeSide === 'front' ? selectedGarment.front_image : selectedGarment.back_image;

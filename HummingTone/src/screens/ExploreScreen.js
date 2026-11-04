@@ -135,7 +135,7 @@ export const ExploreScreen = ({ navigation }) => {
   useFocusEffect(
     useCallback(() => {
       refreshSiteContent();
-    }, [])
+    }, [refreshSiteContent])
   );
 
   const onRefresh = async () => {
@@ -258,7 +258,7 @@ export const ExploreScreen = ({ navigation }) => {
         style={styles.scroll}
         contentContainerStyle={[
           styles.scrollContent,
-          { paddingBottom: Math.max((insets.bottom || 0) + 65, 75) },
+          { paddingBottom: Math.max((insets.bottom || 0) + 95, 115) },
         ]}
         showsVerticalScrollIndicator={false}
         refreshControl={

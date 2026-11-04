@@ -201,7 +201,9 @@ const UserTab = () => {
           prev.map((n) => (n.id === notif.id ? { ...n, is_read: 1 } : n))
         );
         setUnreadNotificationCount((prev) => Math.max(0, prev - 1));
-      } catch (e) {}
+      } catch (_err) {
+        // Silently catch read state network errors
+      }
     }
     setNotificationOpen(false);
     if (notif.product_id) {

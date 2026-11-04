@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo, useRef } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import AddToCartModal from "../Prodect-Details/Product-Buying modal/AddToCartModal";
 import AuthModal from "../../../components/AuthModal/AuthModal";
 import { API_BASE_URL } from "../../../utils/apiConfig";
@@ -147,7 +147,9 @@ const PlainTShirt2D = ({
     if (e.target && e.target.setPointerCapture) {
       try {
         e.target.setPointerCapture(e.pointerId);
-      } catch {}
+      } catch (_err) {
+        // Pointer capture unsupported or unattached
+      }
     }
   };
 
@@ -197,7 +199,9 @@ const PlainTShirt2D = ({
       if (e.target && e.target.releasePointerCapture) {
         try {
           e.target.releasePointerCapture(dragStartRef.current.pointerId);
-        } catch {}
+        } catch (_err) {
+          // Pointer release unsupported or unattached
+        }
       }
       dragStartRef.current = null;
       setIsDragging(false);
@@ -636,8 +640,36 @@ const Customize = () => {
   // Apparel Sizes from backend
   const [availableSizes, setAvailableSizes] = useState(FALLBACK_SIZES);
 
-  // Active side: 'front' or 'back'
-  const [activeSide, setActiveSide] = useState("front");
+  // Active side: 'front' or 'back' (synchronized with browser history & query param)
+  const [searchParams, setSearchParams] = useSearchParams();
+  const sideFromUrl = searchParams.get("side") === "back" ? "back" : "front";
+  const [activeSide, setActiveSideState] = useState(sideFromUrl);
+
+  // Synchronize state when browser Back or Forward button is pressed
+  useEffect(() => {
+    const s = searchParams.get("side") === "back" ? "back" : "front";
+    if (s !== activeSide) {
+      setActiveSideState(s);
+    }
+  }, [searchParams, activeSide]);
+
+  // Updating activeSide pushes history entry so browser back button cleanly returns to Front View
+  const setActiveSide = (newSide) => {
+    const target = newSide === "back" ? "back" : "front";
+    setActiveSideState(target);
+    setSearchParams(
+      (prev) => {
+        const next = new URLSearchParams(prev);
+        if (target === "back") {
+          next.set("side", "back");
+        } else {
+          next.delete("side");
+        }
+        return next;
+      },
+      { replace: false }
+    );
+  };
 
   // Product size & quantity
   const [selectedSize, setSelectedSize] = useState("M");
@@ -1311,19 +1343,39 @@ const Customize = () => {
                     <p className="skeleton-text">Loading garment studio...</p>
                   </div>
                 ) : (
-                  <PlainTShirt2D
-                    color={selectedColor?.hex || "#FFFFFF"}
-                    side={activeSide}
-                    tshirtImage={
-                      activeSide === "front"
-                        ? selectedColor?.front_image
-                        : selectedColor?.back_image
-                    }
-                    design={currentDesign}
-                    printableAreaVisible={showPrintBorder}
-                    onUpdateDesign={updateCurrentDesign}
-                    isDraggable={true}
-                  />
+                  <>
+                    {/* Active Side Visual Watermark Badge */}
+                    <div className="canvas-side-indicator-tag">
+                      <span className="indicator-pulse-dot" />
+                      <span>{activeSide === "front" ? "FRONT VIEW" : "BACK VIEW"}</span>
+                    </div>
+
+                    {/* Quick Flip Garment Action Button */}
+                    <button
+                      type="button"
+                      className="canvas-quick-flip-btn"
+                      onClick={() => setActiveSide(activeSide === "front" ? "back" : "front")}
+                      title={activeSide === "front" ? "Flip to Back Side" : "Flip to Front Side"}
+                      aria-label="Flip garment view"
+                    >
+                      <RotateCcw size={14} className="flip-icon-spin" />
+                      <span>{activeSide === "front" ? "Flip to Back View" : "Flip to Front View"}</span>
+                    </button>
+
+                    <PlainTShirt2D
+                      color={selectedColor?.hex || "#FFFFFF"}
+                      side={activeSide}
+                      tshirtImage={
+                        activeSide === "front"
+                          ? selectedColor?.front_image
+                          : selectedColor?.back_image
+                      }
+                      design={currentDesign}
+                      printableAreaVisible={showPrintBorder}
+                      onUpdateDesign={updateCurrentDesign}
+                      isDraggable={true}
+                    />
+                  </>
                 )}
               </div>
 
@@ -1555,12 +1607,40 @@ const Customize = () => {
           </div>
 
           {/* Section 3: Customization Studio (Front / Back Tools) */}
-          <div className="studio-panel-card">
+          <div className="studio-panel-card section-customization-studio">
             <div className="panel-card-header">
               <div className="section-title-with-pill">
-                <h3 className="panel-section-title">
-                  3. Customize {activeSide.toUpperCase()} Side
-                </h3>
+                <div className="section-title-with-switcher">
+                  <h3 className="panel-section-title">
+                    3. Customize {activeSide.toUpperCase()} Side
+                  </h3>
+                  <div className="section-embedded-side-switcher">
+                    <button
+                      type="button"
+                      className={`sec-side-btn ${activeSide === "front" ? "active" : ""}`}
+                      onClick={() => setActiveSide("front")}
+                      aria-label="Customize Front Side"
+                    >
+                      <span className="sec-side-dot"></span>
+                      <span>Front Side</span>
+                      {hasCustomFront && <span className="sec-side-custom-badge">✓ Designed</span>}
+                    </button>
+                    <button
+                      type="button"
+                      className={`sec-side-btn ${activeSide === "back" ? "active" : ""}`}
+                      onClick={() => setActiveSide("back")}
+                      aria-label="Customize Back Side"
+                    >
+                      <span className="sec-side-dot"></span>
+                      <span>Back Side</span>
+                      {hasCustomBack ? (
+                        <span className="sec-side-custom-badge">✓ Designed</span>
+                      ) : (
+                        <span className="sec-side-blank-badge">+₹99 Print</span>
+                      )}
+                    </button>
+                  </div>
+                </div>
                 <div className="side-current-cost-pill">
                   {activeSide === "front" ? (
                     hasCustomFront ? (
@@ -1912,6 +1992,53 @@ const Customize = () => {
                     </div>
                   )}
                 </div>
+              )}
+            </div>
+
+            {/* Section 3 Flip Side Action Banner */}
+            <div className="section-flip-side-banner">
+              {activeSide === "front" ? (
+                <button
+                  type="button"
+                  className="flip-side-cta-btn front-to-back"
+                  onClick={() => {
+                    setActiveSide("back");
+                    const stageEl = document.querySelector(".studio-stage-column");
+                    if (stageEl && window.innerWidth < 1024) {
+                      stageEl.scrollIntoView({ behavior: "smooth", block: "start" });
+                    }
+                  }}
+                >
+                  <div className="cta-btn-text">
+                    <span className="cta-btn-primary">Ready to Design the Back Side?</span>
+                    <span className="cta-btn-sub">Flip garment to add upper collar, center, or full back graphics</span>
+                  </div>
+                  <div className="cta-btn-action-pill">
+                    <span>Turn to Back View</span>
+                    <ArrowRight size={16} />
+                  </div>
+                </button>
+              ) : (
+                <button
+                  type="button"
+                  className="flip-side-cta-btn back-to-front"
+                  onClick={() => {
+                    setActiveSide("front");
+                    const stageEl = document.querySelector(".studio-stage-column");
+                    if (stageEl && window.innerWidth < 1024) {
+                      stageEl.scrollIntoView({ behavior: "smooth", block: "start" });
+                    }
+                  }}
+                >
+                  <div className="cta-btn-action-pill">
+                    <ArrowRight size={16} style={{ transform: "rotate(180deg)" }} />
+                    <span>Return to Front View</span>
+                  </div>
+                  <div className="cta-btn-text">
+                    <span className="cta-btn-primary">Review or Edit Front Side</span>
+                    <span className="cta-btn-sub">Switch view back to check your front chest / torso design</span>
+                  </div>
+                </button>
               )}
             </div>
           </div>

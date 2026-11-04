@@ -179,11 +179,13 @@ export const SplashScreen = ({ navigation }) => {
 
     const tEnd = setTimeout(handleComplete, 2700);
 
+    const activeLoops = loopsRef.current;
     return () => {
       clearTimeout(tEnd);
       progressWidth.removeListener(listenerId);
-      loopsRef.current.forEach((loop) => loop.stop());
+      activeLoops.forEach((loop) => loop.stop());
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const handleComplete = () => {

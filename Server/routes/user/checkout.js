@@ -10,6 +10,6 @@ router.post("/api/payment/webhook", checkout.web_hook);
 router.post("/user/get_payment_status", checkout.verify_payment);
 router.post("/user/cancel_order", optionalUserAuth, checkout.cancel_order);
 router.post("/user/track_order", checkout.track_order);
-router.post("/user/my_orders", userAuth, checkout.fetch_my_orders);
+router.post("/user/my_orders", optionalUserAuth, checkout.fetch_my_orders);
 
 module.exports = router;

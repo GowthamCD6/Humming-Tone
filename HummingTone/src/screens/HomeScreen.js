@@ -110,7 +110,7 @@ export const HomeScreen = ({ navigation }) => {
     return () => clearInterval(slideInterval);
   }, []);
 
-  const loadData = async () => {
+  const loadData = useCallback(async () => {
     try {
       const [featured, arrivals] = await Promise.all([
         ProductService.fetchFeaturedProducts(),
@@ -125,18 +125,18 @@ export const HomeScreen = ({ navigation }) => {
       setLoadingNewArrivals(false);
       setRefreshing(false);
     }
-  };
+  }, []);
 
   useEffect(() => {
     loadData();
-  }, []);
+  }, [loadData]);
 
   // Auto-refresh latest products & site categories whenever user focuses Home tab
   useFocusEffect(
     useCallback(() => {
       loadData();
       refreshSiteContent();
-    }, [])
+    }, [loadData, refreshSiteContent])
   );
 
   const onRefresh = () => {
@@ -209,7 +209,7 @@ export const HomeScreen = ({ navigation }) => {
 
       <ScrollView
         style={styles.scroll}
-        contentContainerStyle={[styles.scrollContent, { paddingBottom: Math.max(insets.bottom + 80, 90) }]}
+        contentContainerStyle={[styles.scrollContent, { paddingBottom: Math.max((insets.bottom || 0) + 95, 115) }]}
         showsVerticalScrollIndicator={false}
         refreshControl={
           <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.primary} />

@@ -1,17 +1,28 @@
 import React from 'react';
 import { View, Text, StyleSheet, ScrollView } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '../components/Icons';
 import { colors } from '../theme/colors';
 import { typography, spacing } from '../theme/typography';
 import { Button } from '../components/Button';
 
 export const OrderSuccessScreen = ({ route, navigation }) => {
+  const insets = useSafeAreaInsets();
   const { orderId = 'HT-849201', customerName = 'Patron', totalAmount = 0, shippingAddress = '' } =
     route.params || {};
 
   return (
     <View style={styles.container}>
-      <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
+      <ScrollView
+        contentContainerStyle={[
+          styles.scrollContent,
+          {
+            paddingTop: Math.max((insets.top || 0) + 40, 60),
+            paddingBottom: Math.max((insets.bottom || 0) + 32, 44),
+          },
+        ]}
+        showsVerticalScrollIndicator={false}
+      >
         {/* Success Icon */}
         <View style={styles.iconCircle}>
           <Ionicons name="checkmark" size={44} color={colors.textInverse} />

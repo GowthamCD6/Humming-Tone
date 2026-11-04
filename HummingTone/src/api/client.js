@@ -90,10 +90,18 @@ if (__DEV__) {
   discoverWorkingHost().catch(() => {});
 }
 
-// Request Interceptor: Ensure latest active baseURL is applied
+// Request Interceptor: Ensure latest active baseURL & auth token are applied
 apiClient.interceptors.request.use(
   async (config) => {
     config.baseURL = getApiBaseUrl();
+    try {
+      const token = await AsyncStorage.getItem('@hummingtone_token_v1');
+      if (token) {
+        config.headers.Authorization = `Bearer ${token}`;
+      }
+    } catch (_e) {
+      // Ignore storage read error
+    }
     return config;
   },
   (error) => Promise.reject(error)

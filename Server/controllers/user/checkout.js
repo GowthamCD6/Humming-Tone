@@ -890,8 +890,8 @@ exports.track_order = async (req, res, next) => {
  */
 exports.fetch_my_orders = async (req, res, next) => {
   try {
-    const userId = req.userId || req.user?.id;
-    const userEmail = req.userEmail || req.user?.email;
+    const userId = req.userId || req.user?.id || req.body?.user_id;
+    const userEmail = (req.userEmail || req.user?.email || req.body?.email || '').trim().toLowerCase();
 
     if (!userId && !userEmail) {
       return next(createError.Unauthorized("Authentication required to view order history"));
