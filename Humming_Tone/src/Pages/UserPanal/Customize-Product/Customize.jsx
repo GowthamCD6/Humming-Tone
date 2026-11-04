@@ -605,12 +605,101 @@ const TEXT_COLORS = [
   { name: "Silver Slate", hex: "#94A3B8" },
 ];
 
-// Clean fallback garments without static photos of humans
+// Verified fallback plain t-shirts with realistic front and back garment images
 const FALLBACK_GARMENTS = [
-  { id: "white", name: "Pure White", hex: "#FFFFFF", base_price: 699, front_image: null, back_image: null },
-  { id: "black", name: "Jet Black", hex: "#18181B", base_price: 699, front_image: null, back_image: null },
-  { id: "navy", name: "Navy Blue", hex: "#1E293B", base_price: 749, front_image: null, back_image: null },
-  { id: "gray", name: "Heather Gray", hex: "#94A3B8", base_price: 699, front_image: null, back_image: null },
+  {
+    id: 1,
+    name: "Pure White",
+    hex: "#FFFFFF",
+    base_price: 699,
+    front_image: "https://res.cloudinary.com/agoiw3rz/image/upload/v1788883030/hummingtone/plain-tshirts/mbkodjzdkxb1jzwdrjaq.jpg",
+    back_image: "https://res.cloudinary.com/agoiw3rz/image/upload/v1788676780/hummingtone/plain-tshirts/odzdmoueowkbb99phqmj.jpg",
+  },
+  {
+    id: 5,
+    name: "Pure Black",
+    hex: "#18181B",
+    base_price: 699,
+    front_image: "https://res.cloudinary.com/agoiw3rz/image/upload/v1788678927/hummingtone/plain-tshirts/vfwrbu7fzdtv5gkb12vn.jpg",
+    back_image: "https://res.cloudinary.com/agoiw3rz/image/upload/v1788683289/hummingtone/plain-tshirts/fd0679gb8qzsx2rkx21m.jpg",
+  },
+  {
+    id: 6,
+    name: "Pure Red",
+    hex: "#EF4444",
+    base_price: 699,
+    front_image: "https://res.cloudinary.com/agoiw3rz/image/upload/v1788678980/hummingtone/plain-tshirts/bzq3okzxf40xhz6ahmej.jpg",
+    back_image: "https://res.cloudinary.com/agoiw3rz/image/upload/v1788678981/hummingtone/plain-tshirts/rfu4xp5s2yyb4jfps2lx.jpg",
+  },
+  {
+    id: "navy",
+    name: "Navy Blue",
+    hex: "#1E293B",
+    base_price: 749,
+    front_image: "https://images.unsplash.com/photo-1576566588028-4147f3842f27?auto=format&fit=crop&w=800&q=80",
+    back_image: "https://images.unsplash.com/photo-1618354691438-25bc04584c23?auto=format&fit=crop&w=800&q=80",
+  },
+  {
+    id: "gray",
+    name: "Heather Gray",
+    hex: "#94A3B8",
+    base_price: 699,
+    front_image: "https://images.unsplash.com/photo-1581655353564-df123a1eb820?auto=format&fit=crop&w=800&q=80",
+    back_image: "https://images.unsplash.com/photo-1562157873-818bc0726f68?auto=format&fit=crop&w=800&q=80",
+  },
+];
+
+// Verified preset artwork motifs from catalog
+const FALLBACK_DESIGNS = [
+  {
+    id: 30001,
+    name: "Hell And Devil",
+    category: "Streetwear",
+    price: 0,
+    image_url: "https://res.cloudinary.com/agoiw3rz/image/upload/v1788841029/hummingtone/customize-designs/a7h15okllg8avoq6ruyw.png",
+  },
+  {
+    id: 30002,
+    name: "Mask Monster",
+    category: "Streetwear",
+    price: 0,
+    image_url: "https://res.cloudinary.com/agoiw3rz/image/upload/v1788843000/hummingtone/customize-designs/ffbdeujxahjfkww0q4gx.png",
+  },
+  {
+    id: 30003,
+    name: "ripeer",
+    category: "Vintage & Retro",
+    price: 0,
+    image_url: "https://res.cloudinary.com/agoiw3rz/image/upload/v1788843135/hummingtone/customize-designs/fovtaalf0aesfvfdqzgb.png",
+  },
+  {
+    id: 30004,
+    name: "tatoo man",
+    category: "Streetwear",
+    price: 0,
+    image_url: "https://res.cloudinary.com/agoiw3rz/image/upload/v1788843170/hummingtone/customize-designs/rcjcpzhiavkcadphlp2m.png",
+  },
+  {
+    id: 30005,
+    name: "Darkness",
+    category: "Anime & Pop",
+    price: 0,
+    image_url: "https://res.cloudinary.com/agoiw3rz/image/upload/v1788843223/hummingtone/customize-designs/nabsfyh9etpplfvwydh7.png",
+  },
+  {
+    id: 30006,
+    name: "Skeleton man",
+    category: "Streetwear",
+    price: 0,
+    image_url: "https://res.cloudinary.com/agoiw3rz/image/upload/v1788843277/hummingtone/customize-designs/hqv99ei4tfrfznqaawda.png",
+  },
+  {
+    id: 30007,
+    name: "Bimboo",
+    category: "Streetwear",
+    price: 0,
+    image_url: "https://res.cloudinary.com/agoiw3rz/image/upload/v1788843360/hummingtone/customize-designs/dobwvq8imeb9n2k7ndak.png",
+  },
 ];
 
 const PRINT_FEE = 150; // Custom design print fee per side
@@ -619,15 +708,15 @@ const Customize = () => {
   const navigate = useNavigate();
   const fileInputRef = useRef(null);
 
-  // Initial loading state - prevents static image flicker
-  const [isLoading, setIsLoading] = useState(true);
+  // Initial loading state - starts false so instant fallback renders immediately
+  const [isLoading, setIsLoading] = useState(false);
 
-  // Available plain t-shirt garments
-  const [availableColors, setAvailableColors] = useState([]);
-  const [selectedColor, setSelectedColor] = useState(null);
+  // Available plain t-shirt garments (initialized with rich fallbacks so never empty/blank)
+  const [availableColors, setAvailableColors] = useState(FALLBACK_GARMENTS);
+  const [selectedColor, setSelectedColor] = useState(FALLBACK_GARMENTS[0]);
 
-  // Preset Artwork / Designs from backend
-  const [presetDesigns, setPresetDesigns] = useState([]);
+  // Preset Artwork / Designs from backend (initialized with verified catalog)
+  const [presetDesigns, setPresetDesigns] = useState(FALLBACK_DESIGNS);
   const [isLoadingDesigns, setIsLoadingDesigns] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState("ALL");
   const [motifSearch, setMotifSearch] = useState("");
@@ -640,36 +729,9 @@ const Customize = () => {
   // Apparel Sizes from backend
   const [availableSizes, setAvailableSizes] = useState(FALLBACK_SIZES);
 
-  // Active side: 'front' or 'back' (synchronized with browser history & query param)
-  const [searchParams, setSearchParams] = useSearchParams();
-  const sideFromUrl = searchParams.get("side") === "back" ? "back" : "front";
-  const [activeSide, setActiveSideState] = useState(sideFromUrl);
-
-  // Synchronize state when browser Back or Forward button is pressed
-  useEffect(() => {
-    const s = searchParams.get("side") === "back" ? "back" : "front";
-    if (s !== activeSide) {
-      setActiveSideState(s);
-    }
-  }, [searchParams, activeSide]);
-
-  // Updating activeSide pushes history entry so browser back button cleanly returns to Front View
-  const setActiveSide = (newSide) => {
-    const target = newSide === "back" ? "back" : "front";
-    setActiveSideState(target);
-    setSearchParams(
-      (prev) => {
-        const next = new URLSearchParams(prev);
-        if (target === "back") {
-          next.set("side", "back");
-        } else {
-          next.delete("side");
-        }
-        return next;
-      },
-      { replace: false }
-    );
-  };
+  // Active side: 'front' or 'back' (pure component state to keep front/back view switching clean & robust)
+  const [searchParams] = useSearchParams();
+  const [activeSide, setActiveSide] = useState(() => (searchParams.get("side") === "back" ? "back" : "front"));
 
   // Product size & quantity
   const [selectedSize, setSelectedSize] = useState("M");
@@ -752,18 +814,23 @@ const Customize = () => {
               base_price: Number(t.base_price || 699),
             }));
             setAvailableColors(garments);
-            setSelectedColor(garments[0]);
+            setSelectedColor((prev) => {
+              if (prev) {
+                const match = garments.find((g) => g.id === prev.id || g.name === prev.name);
+                if (match) return match;
+              }
+              return garments[0];
+            });
           } else {
-            // Fallback to pure vector mockups if no garments added by admin
             setAvailableColors(FALLBACK_GARMENTS);
-            setSelectedColor(FALLBACK_GARMENTS[0]);
+            setSelectedColor((prev) => prev || FALLBACK_GARMENTS[0]);
           }
         }
       } catch (err) {
-        console.warn("Could not load plain t-shirts from API, using clean vector garments:", err);
+        console.warn("Could not load plain t-shirts from API, using fallback garments:", err);
         if (isMounted) {
           setAvailableColors(FALLBACK_GARMENTS);
-          setSelectedColor(FALLBACK_GARMENTS[0]);
+          setSelectedColor((prev) => prev || FALLBACK_GARMENTS[0]);
         }
       } finally {
         if (isMounted) {
@@ -787,11 +854,11 @@ const Customize = () => {
         setIsLoadingDesigns(true);
         const res = await fetch(`${API_BASE_URL}/api/site-content/customize/designs`);
         const data = await res.json();
-        if (isMounted && data && data.success && Array.isArray(data.designs)) {
+        if (isMounted && data && data.success && Array.isArray(data.designs) && data.designs.length > 0) {
           setPresetDesigns(data.designs);
         }
       } catch (err) {
-        console.warn("Could not load preset designs:", err);
+        console.warn("Could not load preset designs, retaining verified motifs:", err);
       } finally {
         if (isMounted) {
           setIsLoadingDesigns(false);
@@ -965,6 +1032,9 @@ const Customize = () => {
       userUploadUrl: null,
       isUserUpload: false,
     });
+    if (activeSide === "back" && !backDesign.text?.trim()) {
+      setBackDesign((prev) => ({ ...prev, isBackBlank: true }));
+    }
   };
 
   const resetActiveSide = () => {
@@ -984,6 +1054,9 @@ const Customize = () => {
       userUploadUrl: null,
       isUserUpload: false,
     });
+    if (activeSide === "back") {
+      setBackDesign((prev) => ({ ...prev, isBackBlank: true }));
+    }
   };
 
   // Alignment Helper actions
@@ -1636,7 +1709,7 @@ const Customize = () => {
                       {hasCustomBack ? (
                         <span className="sec-side-custom-badge">✓ Designed</span>
                       ) : (
-                        <span className="sec-side-blank-badge">+₹99 Print</span>
+                        <span className="sec-side-blank-badge">+₹{PRINT_FEE} Print</span>
                       )}
                     </button>
                   </div>
