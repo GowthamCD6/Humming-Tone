@@ -13,6 +13,7 @@ import {
   ActivityIndicator,
   Dimensions,
   Platform,
+  Keyboard,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '../components/Icons';
@@ -29,13 +30,99 @@ const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
 // ── Fallback Garments with Front and Back ──
 const FALLBACK_GARMENTS = [
-  { id: 1, name: 'Pure White', hex: '#FFFFFF', base_price: 699, front_image: null, back_image: null },
-  { id: 2, name: 'Jet Black', hex: '#18181B', base_price: 699, front_image: null, back_image: null },
-  { id: 3, name: 'Navy Blue', hex: '#1E293B', base_price: 749, front_image: null, back_image: null },
-  { id: 4, name: 'Heather Gray', hex: '#94A3B8', base_price: 699, front_image: null, back_image: null },
-  { id: 5, name: 'Sand Beige', hex: '#D7C4A5', base_price: 749, front_image: null, back_image: null },
-  { id: 6, name: 'Olive Green', hex: '#3F6212', base_price: 749, front_image: null, back_image: null },
-  { id: 7, name: 'Crimson Red', hex: '#E11D48', base_price: 749, front_image: null, back_image: null },
+  {
+    id: 1,
+    name: 'Pure White',
+    hex: '#FFFFFF',
+    base_price: 699,
+    front_image: 'https://res.cloudinary.com/agoiw3rz/image/upload/v1788883030/hummingtone/plain-tshirts/mbkodjzdkxb1jzwdrjaq.jpg',
+    back_image: 'https://res.cloudinary.com/agoiw3rz/image/upload/v1788676780/hummingtone/plain-tshirts/odzdmoueowkbb99phqmj.jpg',
+  },
+  {
+    id: 5,
+    name: 'Pure Black',
+    hex: '#18181B',
+    base_price: 699,
+    front_image: 'https://res.cloudinary.com/agoiw3rz/image/upload/v1788678927/hummingtone/plain-tshirts/vfwrbu7fzdtv5gkb12vn.jpg',
+    back_image: 'https://res.cloudinary.com/agoiw3rz/image/upload/v1788683289/hummingtone/plain-tshirts/fd0679gb8qzsx2rkx21m.jpg',
+  },
+  {
+    id: 6,
+    name: 'Pure Red',
+    hex: '#EF4444',
+    base_price: 699,
+    front_image: 'https://res.cloudinary.com/agoiw3rz/image/upload/v1788678980/hummingtone/plain-tshirts/bzq3okzxf40xhz6ahmej.jpg',
+    back_image: 'https://res.cloudinary.com/agoiw3rz/image/upload/v1788678981/hummingtone/plain-tshirts/rfu4xp5s2yyb4jfps2lx.jpg',
+  },
+  {
+    id: 'navy',
+    name: 'Navy Blue',
+    hex: '#1E293B',
+    base_price: 749,
+    front_image: 'https://images.unsplash.com/photo-1576566588028-4147f3842f27?auto=format&fit=crop&w=800&q=80',
+    back_image: 'https://images.unsplash.com/photo-1618354691438-25bc04584c23?auto=format&fit=crop&w=800&q=80',
+  },
+  {
+    id: 'gray',
+    name: 'Heather Gray',
+    hex: '#94A3B8',
+    base_price: 699,
+    front_image: 'https://images.unsplash.com/photo-1581655353564-df123a1eb820?auto=format&fit=crop&w=800&q=80',
+    back_image: 'https://images.unsplash.com/photo-1562157873-818bc0726f68?auto=format&fit=crop&w=800&q=80',
+  },
+];
+
+// ── Verified Preset Artwork Motifs ──
+const FALLBACK_DESIGNS = [
+  {
+    id: 30001,
+    name: 'Hell And Devil',
+    category: 'Streetwear',
+    price: 0,
+    image_url: 'https://res.cloudinary.com/agoiw3rz/image/upload/v1788841029/hummingtone/customize-designs/a7h15okllg8avoq6ruyw.png',
+  },
+  {
+    id: 30002,
+    name: 'Mask Monster',
+    category: 'Streetwear',
+    price: 0,
+    image_url: 'https://res.cloudinary.com/agoiw3rz/image/upload/v1788843000/hummingtone/customize-designs/ffbdeujxahjfkww0q4gx.png',
+  },
+  {
+    id: 30003,
+    name: 'ripeer',
+    category: 'Vintage & Retro',
+    price: 0,
+    image_url: 'https://res.cloudinary.com/agoiw3rz/image/upload/v1788843135/hummingtone/customize-designs/fovtaalf0aesfvfdqzgb.png',
+  },
+  {
+    id: 30004,
+    name: 'tatoo man',
+    category: 'Streetwear',
+    price: 0,
+    image_url: 'https://res.cloudinary.com/agoiw3rz/image/upload/v1788843170/hummingtone/customize-designs/rcjcpzhiavkcadphlp2m.png',
+  },
+  {
+    id: 30005,
+    name: 'Darkness',
+    category: 'Anime & Pop',
+    price: 0,
+    image_url: 'https://res.cloudinary.com/agoiw3rz/image/upload/v1788843223/hummingtone/customize-designs/nabsfyh9etpplfvwydh7.png',
+  },
+  {
+    id: 30006,
+    name: 'Skeleton man',
+    category: 'Streetwear',
+    price: 0,
+    image_url: 'https://res.cloudinary.com/agoiw3rz/image/upload/v1788843277/hummingtone/customize-designs/hqv99ei4tfrfznqaawda.png',
+  },
+  {
+    id: 30007,
+    name: 'Bimboo',
+    category: 'Streetwear',
+    price: 0,
+    image_url: 'https://res.cloudinary.com/agoiw3rz/image/upload/v1788843360/hummingtone/customize-designs/dobwvq8imeb9n2k7ndak.png',
+  },
 ];
 
 // ── Fallback Materials ──
@@ -128,7 +215,7 @@ export const CustomizeScreen = ({ navigation }) => {
   const [selectedGarment, setSelectedGarment] = useState(FALLBACK_GARMENTS[0]);
 
   // Preset Motifs
-  const [presetDesigns, setPresetDesigns] = useState([]);
+  const [presetDesigns, setPresetDesigns] = useState(FALLBACK_DESIGNS);
   const [selectedMotifCategory, setSelectedMotifCategory] = useState('ALL');
   const [motifSearch, setMotifSearch] = useState('');
   const [customImageUrlInput, setCustomImageUrlInput] = useState('');
@@ -226,8 +313,10 @@ export const CustomizeScreen = ({ navigation }) => {
         }
 
         // 2. Preset Designs
-        if (designsRes.status === 'fulfilled' && designsRes.value?.success && Array.isArray(designsRes.value.designs)) {
+        if (designsRes.status === 'fulfilled' && designsRes.value?.success && Array.isArray(designsRes.value.designs) && designsRes.value.designs.length > 0) {
           setPresetDesigns(designsRes.value.designs);
+        } else {
+          setPresetDesigns(FALLBACK_DESIGNS);
         }
 
         // 3. Materials
@@ -554,7 +643,10 @@ export const CustomizeScreen = ({ navigation }) => {
             <View style={styles.sideSwitcherPills}>
               <TouchableOpacity
                 style={[styles.sidePill, activeSide === 'front' && styles.sidePillActive]}
-                onPress={() => setActiveSide('front')}
+                onPress={() => {
+                  Keyboard.dismiss();
+                  setActiveSide('front');
+                }}
                 activeOpacity={0.85}
               >
                 <Text style={[styles.sidePillText, activeSide === 'front' && styles.sidePillTextActive]}>
@@ -565,7 +657,10 @@ export const CustomizeScreen = ({ navigation }) => {
 
               <TouchableOpacity
                 style={[styles.sidePill, activeSide === 'back' && styles.sidePillActive]}
-                onPress={() => setActiveSide('back')}
+                onPress={() => {
+                  Keyboard.dismiss();
+                  setActiveSide('back');
+                }}
                 activeOpacity={0.85}
               >
                 <Text style={[styles.sidePillText, activeSide === 'back' && styles.sidePillTextActive]}>

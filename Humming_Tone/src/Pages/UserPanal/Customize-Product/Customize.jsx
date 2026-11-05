@@ -56,9 +56,11 @@ const PlainTShirt2D = ({
   const [isDragging, setIsDragging] = useState(false);
   const dragStartRef = useRef(null);
 
-  // Reset imgError when tshirtImage or side changes
+  // Reset imgError and drag state when tshirtImage or side changes
   useEffect(() => {
     setImgError(false);
+    setIsDragging(false);
+    dragStartRef.current = null;
   }, [tshirtImage, side]);
 
   const placementMode = side === "back"
@@ -1302,7 +1304,11 @@ const Customize = () => {
                 <button
                   type="button"
                   className={`side-toggle-pill ${activeSide === "front" ? "active" : ""}`}
-                  onClick={() => setActiveSide("front")}
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    setActiveSide("front");
+                  }}
                 >
                   <span className="pill-dot"></span>
                   <span className="pill-name">Front View</span>
@@ -1311,7 +1317,11 @@ const Customize = () => {
                 <button
                   type="button"
                   className={`side-toggle-pill ${activeSide === "back" ? "active" : ""}`}
-                  onClick={() => setActiveSide("back")}
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    setActiveSide("back");
+                  }}
                 >
                   <span className="pill-dot"></span>
                   <span className="pill-name">Back View</span>
@@ -1427,7 +1437,11 @@ const Customize = () => {
                     <button
                       type="button"
                       className="canvas-quick-flip-btn"
-                      onClick={() => setActiveSide(activeSide === "front" ? "back" : "front")}
+                      onClick={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        setActiveSide(activeSide === "front" ? "back" : "front");
+                      }}
                       title={activeSide === "front" ? "Flip to Back Side" : "Flip to Front Side"}
                       aria-label="Flip garment view"
                     >
@@ -1691,7 +1705,11 @@ const Customize = () => {
                     <button
                       type="button"
                       className={`sec-side-btn ${activeSide === "front" ? "active" : ""}`}
-                      onClick={() => setActiveSide("front")}
+                      onClick={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        setActiveSide("front");
+                      }}
                       aria-label="Customize Front Side"
                     >
                       <span className="sec-side-dot"></span>
@@ -1701,7 +1719,11 @@ const Customize = () => {
                     <button
                       type="button"
                       className={`sec-side-btn ${activeSide === "back" ? "active" : ""}`}
-                      onClick={() => setActiveSide("back")}
+                      onClick={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        setActiveSide("back");
+                      }}
                       aria-label="Customize Back Side"
                     >
                       <span className="sec-side-dot"></span>

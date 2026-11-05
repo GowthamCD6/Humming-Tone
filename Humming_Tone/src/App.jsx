@@ -237,6 +237,12 @@ export default function App() {
           element={<Navigate to="/admin/dashboard" replace />}
         />
 
+        {/* Redirect direct /customize path to nested user customize route */}
+        <Route
+          path="/customize"
+          element={<Navigate to="/usertab/customize" replace />}
+        />
+
         {/* ADMIN NESTED ROUTES */}
         <Route
           path="/admin"
@@ -317,11 +323,7 @@ export default function App() {
           />
           <Route
             path="customize"
-            element={
-              <GenderGuard genderName="Customize">
-                <CustomizePage />
-              </GenderGuard>
-            }
+            element={<CustomizePage />}
           />
           <Route path="cart" element={<CartPage />} />
           <Route path="product/:id" element={<ProductDetail />} />

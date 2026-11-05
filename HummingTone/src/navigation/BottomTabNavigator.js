@@ -105,19 +105,36 @@ export const BottomTabNavigator = ({ navigation, route }) => {
     extrapolate: 'clamp',
   });
 
+  // Ensure pager stays strictly locked on activeTab across layout and keyboard changes
+  useEffect(() => {
+    pagerRef.current?.scrollTo({
+      x: activeTab * SCREEN_WIDTH,
+      animated: false,
+    });
+  }, [activeTab]);
+
+  const handlePagerLayout = () => {
+    pagerRef.current?.scrollTo({
+      x: activeTab * SCREEN_WIDTH,
+      animated: false,
+    });
+  };
+
   return (
     <View style={styles.container}>
-      {/* Real-time Continuous Horizontal Sheet Pager (Finger Swiping Supported) */}
+      {/* Real-time Continuous Horizontal Sheet Pager (Controlled via bottom dock tabs) */}
       <Animated.ScrollView
         ref={pagerRef}
         horizontal
         pagingEnabled
+        scrollEnabled={false}
         showsHorizontalScrollIndicator={false}
         bounces={false}
         overScrollMode="never"
         decelerationRate="fast"
         scrollEventThrottle={16}
         directionalLockEnabled={true}
+        onLayout={handlePagerLayout}
         onScroll={Animated.event(
           [{ nativeEvent: { contentOffset: { x: scrollX } } }],
           { useNativeDriver: false }
