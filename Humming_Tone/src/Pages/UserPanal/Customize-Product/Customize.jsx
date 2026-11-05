@@ -1303,12 +1303,18 @@ const Customize = () => {
               <div className="side-toggle-group">
                 <button
                   type="button"
+                  id="side-toggle-front-btn"
                   className={`side-toggle-pill ${activeSide === "front" ? "active" : ""}`}
                   onClick={(e) => {
                     e.preventDefault();
                     e.stopPropagation();
+                    if (document.activeElement && typeof document.activeElement.blur === "function") {
+                      document.activeElement.blur();
+                    }
                     setActiveSide("front");
                   }}
+                  aria-pressed={activeSide === "front"}
+                  title="Switch to Front View"
                 >
                   <span className="pill-dot"></span>
                   <span className="pill-name">Front View</span>
@@ -1316,12 +1322,18 @@ const Customize = () => {
                 </button>
                 <button
                   type="button"
+                  id="side-toggle-back-btn"
                   className={`side-toggle-pill ${activeSide === "back" ? "active" : ""}`}
                   onClick={(e) => {
                     e.preventDefault();
                     e.stopPropagation();
+                    if (document.activeElement && typeof document.activeElement.blur === "function") {
+                      document.activeElement.blur();
+                    }
                     setActiveSide("back");
                   }}
+                  aria-pressed={activeSide === "back"}
+                  title="Switch to Back View"
                 >
                   <span className="pill-dot"></span>
                   <span className="pill-name">Back View</span>
@@ -1440,6 +1452,9 @@ const Customize = () => {
                       onClick={(e) => {
                         e.preventDefault();
                         e.stopPropagation();
+                        if (document.activeElement && typeof document.activeElement.blur === "function") {
+                          document.activeElement.blur();
+                        }
                         setActiveSide(activeSide === "front" ? "back" : "front");
                       }}
                       title={activeSide === "front" ? "Flip to Back Side" : "Flip to Front Side"}
@@ -1708,6 +1723,9 @@ const Customize = () => {
                       onClick={(e) => {
                         e.preventDefault();
                         e.stopPropagation();
+                        if (document.activeElement && typeof document.activeElement.blur === "function") {
+                          document.activeElement.blur();
+                        }
                         setActiveSide("front");
                       }}
                       aria-label="Customize Front Side"
@@ -1722,6 +1740,9 @@ const Customize = () => {
                       onClick={(e) => {
                         e.preventDefault();
                         e.stopPropagation();
+                        if (document.activeElement && typeof document.activeElement.blur === "function") {
+                          document.activeElement.blur();
+                        }
                         setActiveSide("back");
                       }}
                       aria-label="Customize Back Side"
@@ -1798,6 +1819,12 @@ const Customize = () => {
                       value={currentDesign.text}
                       maxLength={36}
                       onChange={(e) => updateCurrentDesign({ text: e.target.value })}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter") {
+                          e.preventDefault();
+                          e.target.blur();
+                        }
+                      }}
                     />
                     <div className="text-drag-hint">
                       <Move size={12} /> Drag & reposition text directly on the t-shirt
@@ -2096,7 +2123,12 @@ const Customize = () => {
                 <button
                   type="button"
                   className="flip-side-cta-btn front-to-back"
-                  onClick={() => {
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    if (document.activeElement && typeof document.activeElement.blur === "function") {
+                      document.activeElement.blur();
+                    }
                     setActiveSide("back");
                     const stageEl = document.querySelector(".studio-stage-column");
                     if (stageEl && window.innerWidth < 1024) {
@@ -2117,7 +2149,12 @@ const Customize = () => {
                 <button
                   type="button"
                   className="flip-side-cta-btn back-to-front"
-                  onClick={() => {
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    if (document.activeElement && typeof document.activeElement.blur === "function") {
+                      document.activeElement.blur();
+                    }
                     setActiveSide("front");
                     const stageEl = document.querySelector(".studio-stage-column");
                     if (stageEl && window.innerWidth < 1024) {
