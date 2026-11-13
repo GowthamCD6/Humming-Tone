@@ -17,6 +17,11 @@ export const typography = {
     android: 'sans-serif-medium',
     default: 'sans-serif',
   }),
+  fontSansBold: Platform.select({
+    ios: 'System',
+    android: 'sans-serif',
+    default: 'sans-serif',
+  }),
   
   // Font Sizes
   sizeHero: 32,

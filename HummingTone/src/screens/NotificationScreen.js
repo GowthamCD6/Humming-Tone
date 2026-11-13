@@ -19,6 +19,10 @@ import { colors, shadows } from '../theme/colors';
 import { typography, spacing } from '../theme/typography';
 import { useNotifications } from '../context/NotificationContext';
 
+if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental) {
+  UIManager.setLayoutAnimationEnabledExperimental(true);
+}
+
 const TYPE_FILTERS = [
   { id: 'all', label: 'All Updates' },
   { id: 'orders', label: 'Orders' },

@@ -812,26 +812,27 @@ exports.cancel_order = async (req, res, next) => {
 
 exports.track_order = async (req, res, next) => {
   try {
-    const { order_number, email, phone } = req.body;
+    const { order_number, orderId, email, phone } = req.body;
+    const rawOrderNum = order_number || orderId;
 
-    const cleanOrderNumber = sanitizeIdentifier(order_number, 50);
-    if (!cleanOrderNumber) {
-      return next(createError.BadRequest("Order number is required"));
-    }
-
+    const cleanOrderNumber = sanitizeIdentifier(rawOrderNum, 50);
     const cleanEmail = validateEmail(email);
     const cleanPhone = validatePhone(phone);
 
-    if (!cleanEmail && !cleanPhone) {
-      return next(createError.BadRequest("A valid email address or phone number is required to track order"));
+    if (!cleanOrderNumber && !cleanEmail && !cleanPhone) {
+      return next(createError.BadRequest("Order number or contact details (email/phone) are required to track order"));
     }
 
-    // Build query based on whether email or phone is provided
     let sql = `SELECT id, order_number, customer_name, customer_email, customer_phone,
                order_status, shipping_date, delivery_date, packed_at, created_at,
-               total_amount, payment_status, payment_verified
-               FROM orders WHERE order_number = ?`;
-    const params = [cleanOrderNumber];
+               total_amount, payment_status, payment_verified, customer_address, city, state, pincode
+               FROM orders WHERE 1=1`;
+    const params = [];
+
+    if (cleanOrderNumber) {
+      sql += " AND (order_number = ? OR id = ?)";
+      params.push(cleanOrderNumber, cleanOrderNumber);
+    }
 
     if (cleanEmail) {
       sql += " AND LOWER(customer_email) = ?";
@@ -841,14 +842,14 @@ exports.track_order = async (req, res, next) => {
       params.push(cleanPhone);
     }
 
-    sql += " LIMIT 1";
+    sql += " ORDER BY id DESC LIMIT 1";
 
     const [orderRows] = await db.promise().query(sql, params);
 
     if (!orderRows || orderRows.length === 0) {
       return res.status(404).json({
         success: false,
-        message: "No order found. Please check your Order ID and Email/Phone."
+        message: "No order found. Please check your Order ID and contact details."
       });
     }
 
@@ -856,25 +857,41 @@ exports.track_order = async (req, res, next) => {
 
     // Fetch order items
     const [items] = await db.promise().query(
-      `SELECT oi.product_name, oi.product_price, oi.quantity, oi.size, oi.color
+      `SELECT oi.product_name, oi.product_price, oi.quantity, oi.size, oi.color, oi.custom_details
        FROM order_items oi WHERE oi.order_id = ?`,
       [order.id]
     );
 
+    const fullAddress = [order.customer_address, order.city, order.state, order.pincode].filter(Boolean).join(", ");
+
     res.status(200).json({
       success: true,
       order: {
+        id: order.id,
         order_number: order.order_number,
+        order_id: order.order_number,
         customer_name: order.customer_name,
+        customer_phone: order.customer_phone,
+        customer_email: order.customer_email,
+        shipping_address: fullAddress,
+        status: order.order_status,
         order_status: order.order_status,
         shipping_date: order.shipping_date,
         delivery_date: order.delivery_date,
         packed_at: order.packed_at,
         created_at: order.created_at,
         total_amount: order.total_amount,
+        total: order.total_amount,
         payment_status: order.payment_status,
         payment_verified: order.payment_verified,
-        items
+        items: items.map(item => ({
+          name: item.product_name,
+          price: item.product_price,
+          quantity: item.quantity,
+          size: item.size,
+          color: item.color,
+          custom_details: item.custom_details,
+        }))
       }
     });
 

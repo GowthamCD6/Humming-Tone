@@ -38,7 +38,11 @@ export const LoginScreen = ({ navigation }) => {
       const res = await performGoogleSignIn();
       if (res.success && res.user) {
         await login(res.user, res.token);
-        navigation.goBack();
+        if (navigation.canGoBack()) {
+          navigation.goBack();
+        } else {
+          navigation.navigate('MainTabs', { screen: 'ProfileTab' });
+        }
       } else if (!res.cancelled && res.message) {
         setError(res.message);
       }
@@ -66,7 +70,11 @@ export const LoginScreen = ({ navigation }) => {
         },
         'customer-token-' + Date.now()
       );
-      navigation.goBack();
+      if (navigation.canGoBack()) {
+        navigation.goBack();
+      } else {
+        navigation.navigate('MainTabs', { screen: 'ProfileTab' });
+      }
     } catch (e) {
       setError('Unable to sign in. Please try again.');
     } finally {

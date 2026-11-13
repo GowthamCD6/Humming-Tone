@@ -166,12 +166,28 @@ export const OrderService = {
     return response.data;
   },
 
-  // Track customer order
-  trackOrder: async (identifier) => {
-    const response = await apiClient.post('/user/track_order', {
-      orderId: identifier,
-      phone: identifier,
-    });
+  // Track customer order (supports string identifier or structured query object)
+  trackOrder: async (identifierOrPayload) => {
+    let payload = {};
+    if (typeof identifierOrPayload === 'object' && identifierOrPayload !== null) {
+      payload = {
+        order_number: identifierOrPayload.order_number || identifierOrPayload.orderId || '',
+        orderId: identifierOrPayload.order_number || identifierOrPayload.orderId || '',
+        email: identifierOrPayload.email || undefined,
+        phone: identifierOrPayload.phone || undefined,
+      };
+    } else {
+      const q = String(identifierOrPayload || '').trim();
+      const isEmail = q.includes('@');
+      const isNumeric = /^[0-9+ ]{7,15}$/.test(q);
+      payload = {
+        order_number: q,
+        orderId: q,
+        email: isEmail ? q : undefined,
+        phone: isNumeric ? q : undefined,
+      };
+    }
+    const response = await apiClient.post('/user/track_order', payload);
     return response.data;
   },
 

@@ -80,10 +80,10 @@ export const OrderTrackingScreen = ({ navigation, route }) => {
     return 0;
   };
 
-  const activeIndex = orderData ? getActiveStepIndex(orderData.status) : 0;
+  const activeIndex = orderData ? getActiveStepIndex(orderData.status || orderData.order_status) : 0;
 
   const openWhatsApp = () => {
-    const ref = orderData?.order_id || orderData?.id || orderQuery;
+    const ref = orderData?.order_number || orderData?.order_id || orderData?.id || orderQuery;
     const msg = encodeURIComponent(`Hello Humming Tone Concierge, I need assistance with Order #${ref}.`);
     Linking.openURL(`https://wa.me/919876543210?text=${msg}`).catch(() => {
       navigation.navigate('Support');
@@ -184,7 +184,7 @@ export const OrderTrackingScreen = ({ navigation, route }) => {
             <View style={styles.statusHeaderCard}>
               <View style={styles.statusHeaderLeft}>
                 <Text style={styles.refSub}>ORDER REFERENCE</Text>
-                <Text style={styles.refNumber}>#{orderData.order_id || orderData.id || orderQuery}</Text>
+                <Text style={styles.refNumber}>#{orderData.order_number || orderData.order_id || orderData.id || orderQuery}</Text>
                 <Text style={styles.placedDate}>
                   {orderData.created_at
                     ? new Date(orderData.created_at).toLocaleDateString('en-US', {
@@ -203,7 +203,7 @@ export const OrderTrackingScreen = ({ navigation, route }) => {
                   color="#D4AF37"
                 />
                 <Text style={styles.statusBadgeText}>
-                  {(orderData.status || 'PROCESSING').toUpperCase()}
+                  {(orderData.status || orderData.order_status || 'PROCESSING').toUpperCase()}
                 </Text>
               </View>
             </View>

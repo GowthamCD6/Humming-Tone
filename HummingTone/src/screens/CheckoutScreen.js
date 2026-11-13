@@ -48,7 +48,7 @@ export const CheckoutScreen = ({ navigation, route }) => {
   const activeDiscountAmount = isBuyNow ? 0 : cartDiscountAmount;
 
   const activeFinalTotal = isBuyNow
-    ? Math.round(activeSubtotal + activeGstAmount + activeShippingFee)
+    ? Math.round(activeSubtotal + activeShippingFee)
     : cartFinalTotal;
 
   // Form State

@@ -183,6 +183,10 @@ export const ProductDetailsScreen = ({ route, navigation }) => {
     }
 
     const sizeToUse = selectedVariant?.size || (product.variants && product.variants[0]?.size) || (product.sizes && product.sizes[0]) || 'Standard';
+    const selectedImg = (typeof galleryImages?.[selectedImageIndex] === 'string'
+      ? galleryImages[selectedImageIndex]
+      : galleryImages?.[selectedImageIndex]?.image_path) || product.image || null;
+
     const directItem = {
       product_id: product.id,
       id: product.id,
@@ -191,7 +195,7 @@ export const ProductDetailsScreen = ({ route, navigation }) => {
       color: product.color || 'Default',
       price: Number(selectedVariant?.price != null ? selectedVariant.price : (product.price || 0)),
       name: product.name || 'Bespoke Garment',
-      image: (product.images && product.images[selectedImageIndex]?.image_path) || (product.images && product.images[0]?.image_path) || product.image || null,
+      image: selectedImg,
     };
 
     navigation.navigate('Checkout', { buyNowItem: directItem });
@@ -520,6 +524,35 @@ export const ProductDetailsScreen = ({ route, navigation }) => {
             </View>
           ) : null}
 
+          {/* ── 4b. QUANTITY SELECTOR ── */}
+          <View style={styles.quantitySection}>
+            <View style={styles.sectionHeaderBetween}>
+              <Text style={styles.sectionSmallTitle}>SELECT QUANTITY</Text>
+              <Text style={styles.qtyTotalNotice}>
+                {quantity} {quantity === 1 ? 'piece' : 'pieces'} • ₹{(currentPrice * quantity).toLocaleString('en-IN')}
+              </Text>
+            </View>
+            <View style={styles.quantityStepperWrap}>
+              <TouchableOpacity
+                style={[styles.stepperActionBtn, quantity <= 1 && styles.stepperActionBtnDisabled]}
+                onPress={() => setQuantity((q) => Math.max(1, q - 1))}
+                disabled={quantity <= 1 || isOutOfStock}
+                activeOpacity={0.7}
+              >
+                <Ionicons name="remove" size={16} color={quantity <= 1 ? '#A3998F' : '#1E1B18'} />
+              </TouchableOpacity>
+              <Text style={styles.stepperValueText}>{quantity}</Text>
+              <TouchableOpacity
+                style={[styles.stepperActionBtn, (quantity >= currentStock || isOutOfStock) && styles.stepperActionBtnDisabled]}
+                onPress={() => setQuantity((q) => Math.min(Math.max(1, currentStock), q + 1))}
+                disabled={quantity >= currentStock || isOutOfStock}
+                activeOpacity={0.7}
+              >
+                <Ionicons name="add" size={16} color={quantity >= currentStock ? '#A3998F' : '#1E1B18'} />
+              </TouchableOpacity>
+            </View>
+          </View>
+
           {/* ── 5. COLOR & MATERIAL HIGHLIGHT ── */}
           {(product.color || product.material || product.gender) && (
             <View style={styles.highlightPillRow}>
@@ -785,7 +818,7 @@ export const ProductDetailsScreen = ({ route, navigation }) => {
       <View style={[styles.bottomStickyBar, { paddingBottom: Math.max((insets.bottom || 0) + 6, 16) }]}>
         <View style={styles.bottomPriceWrap}>
           <Text style={styles.totalPriceLabel}>Total Price</Text>
-          <Text style={styles.totalPriceValue}>₹{currentPrice.toLocaleString('en-IN')}</Text>
+          <Text style={styles.totalPriceValue}>₹{(currentPrice * quantity).toLocaleString('en-IN')}</Text>
         </View>
 
         <View style={styles.bottomActionButtonsRow}>
@@ -1326,6 +1359,43 @@ const styles = StyleSheet.create({
   },
   sizePriceSubActive: {
     color: '#D4AF37',
+  },
+  quantitySection: {
+    marginVertical: 12,
+  },
+  qtyTotalNotice: {
+    fontFamily: typography.fontSans,
+    fontSize: 11.5,
+    color: '#6B4E37',
+    fontWeight: '600',
+  },
+  quantityStepperWrap: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#FFFFFF',
+    borderWidth: 1,
+    borderColor: '#EAE4DC',
+    borderRadius: 12,
+    alignSelf: 'flex-start',
+    marginTop: 8,
+    overflow: 'hidden',
+  },
+  stepperActionBtn: {
+    width: 42,
+    height: 38,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#FAF8F5',
+  },
+  stepperActionBtnDisabled: {
+    opacity: 0.45,
+  },
+  stepperValueText: {
+    fontFamily: typography.fontSansBold,
+    fontSize: 15,
+    color: '#1E1B18',
+    minWidth: 44,
+    textAlign: 'center',
   },
   highlightPillRow: {
     flexDirection: 'row',

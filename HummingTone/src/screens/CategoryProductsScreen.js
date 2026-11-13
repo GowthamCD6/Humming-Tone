@@ -71,12 +71,18 @@ export const CategoryProductsScreen = ({ route, navigation }) => {
   const fetchProductList = useCallback(async () => {
     try {
       setLoading(true);
-      // Fetch full active catalog so client-side and category filters work with full fidelity
-      const params = {};
-      if (selectedGender && selectedGender !== 'All') {
-        params.gender = selectedGender.toLowerCase();
+      let data = [];
+      if (initFilterType === 'featured') {
+        data = await ProductService.fetchFeaturedProducts();
+      } else if (initFilterType === 'new_arrivals') {
+        data = await ProductService.fetchNewArrivals();
+      } else {
+        const params = {};
+        if (selectedGender && selectedGender !== 'All') {
+          params.gender = selectedGender.toLowerCase();
+        }
+        data = await ProductService.fetchProducts(params);
       }
-      const data = await ProductService.fetchProducts(params);
       setProducts(data || []);
     } catch (e) {
       console.warn('Error fetching category products:', e);
@@ -84,7 +90,7 @@ export const CategoryProductsScreen = ({ route, navigation }) => {
       setLoading(false);
       setRefreshing(false);
     }
-  }, [selectedGender]);
+  }, [selectedGender, initFilterType]);
 
   useEffect(() => {
     fetchProductList();

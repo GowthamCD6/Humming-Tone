@@ -51,9 +51,11 @@ export const SplashScreen = ({ navigation }) => {
   const loopsRef = useRef([]);
 
   useEffect(() => {
+    let isMounted = true;
+
     // Tick the numeric counter off the same driver as the progress line.
     const listenerId = progressWidth.addListener(({ value }) => {
-      setProgressPct(Math.round(value));
+      if (isMounted) setProgressPct(Math.round(value));
     });
 
     // 1 — Frame settles first: corner mark + season label. Quiet, not competing for attention.
@@ -96,6 +98,7 @@ export const SplashScreen = ({ navigation }) => {
         }),
       ]),
     ]).start(() => {
+      if (!isMounted) return;
       // One unhurried light sweep across the mark — a single pass, not a loop. Restraint reads as intentional.
       Animated.timing(shimmerX, {
         toValue: 1,
@@ -177,10 +180,13 @@ export const SplashScreen = ({ navigation }) => {
       useNativeDriver: false,
     }).start();
 
-    const tEnd = setTimeout(handleComplete, 2700);
+    const tEnd = setTimeout(() => {
+      if (isMounted) handleComplete();
+    }, 2700);
 
     const activeLoops = loopsRef.current;
     return () => {
+      isMounted = false;
       clearTimeout(tEnd);
       progressWidth.removeListener(listenerId);
       activeLoops.forEach((loop) => loop.stop());
@@ -206,7 +212,7 @@ export const SplashScreen = ({ navigation }) => {
         useNativeDriver: true,
       }),
     ]).start(() => {
-      navigation.reset({
+      navigation?.reset?.({
         index: 0,
         routes: [{ name: 'MainTabs' }],
       });

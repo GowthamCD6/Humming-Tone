@@ -170,12 +170,12 @@ const FALLBACK_SIZES = [
 
 // ── Luxury Font Selection ──
 const FONTS = [
-  { label: 'Inter Modern', sub: 'Clean & Minimal', value: 'Inter, sans-serif' },
-  { label: 'Playfair Luxury', sub: 'High Fashion Serif', value: 'serif' },
-  { label: 'Montserrat Medium', sub: 'Contemporary Geometric', value: 'sans-serif-medium' },
-  { label: 'Poppins Rounded', sub: 'Warm & Friendly', value: 'sans-serif' },
+  { label: 'Inter Modern', sub: 'Clean & Minimal', value: typography.fontSans },
+  { label: 'Playfair Luxury', sub: 'High Fashion Serif', value: typography.fontSerif },
+  { label: 'Montserrat Medium', sub: 'Contemporary Geometric', value: typography.fontSansMedium || 'sans-serif-medium' },
+  { label: 'Poppins Rounded', sub: 'Warm & Friendly', value: typography.fontSans },
   { label: 'Courier Monospace', sub: 'Industrial Atelier', value: 'monospace' },
-  { label: 'Condensed Bold', sub: 'Streetwear Display', value: 'sans-serif-condensed' },
+  { label: 'Condensed Bold', sub: 'Streetwear Display', value: Platform.OS === 'android' ? 'sans-serif-condensed' : typography.fontSans },
 ];
 
 // ── Curated Text Colors ──
@@ -834,7 +834,7 @@ export const CustomizeScreen = ({ navigation }) => {
                     <Text
                       numberOfLines={2}
                       style={{
-                        fontFamily: currentDesign.fontFamily || 'Inter, sans-serif',
+                        fontFamily: currentDesign.fontFamily || typography.fontSans,
                         fontSize: (currentDesign.placementMode === 'chest' || currentDesign.placementMode === 'upper')
                           ? Math.min(currentDesign.fontSize || 16, 11)
                           : Math.min(currentDesign.fontSize || 16, 14),
