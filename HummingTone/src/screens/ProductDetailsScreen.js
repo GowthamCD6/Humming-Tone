@@ -30,7 +30,8 @@ const GALLERY_WIDTH = width - 32;
 
 export const ProductDetailsScreen = ({ route, navigation }) => {
   const insets = useSafeAreaInsets();
-  const { user } = useAuth();
+  const { user, isAuthenticated } = useAuth();
+  const isMember = Boolean(isAuthenticated && user && user.email && user.email !== 'guest@hummingtone.com' && !user.email.includes('guest@'));
   const { productId, initialProduct } = route.params || {};
   
   const [product, setProduct] = useState(initialProduct || null);
@@ -174,14 +175,7 @@ export const ProductDetailsScreen = ({ route, navigation }) => {
     );
   };
 
-  const handleBuyNow = () => {
-    if (!product) return;
-
-    if (isOutOfStock) {
-      Alert.alert('Out of Stock', 'This size is currently sold out. Please choose another size.');
-      return;
-    }
-
+  const proceedToCheckoutDirect = () => {
     const sizeToUse = selectedVariant?.size || (product.variants && product.variants[0]?.size) || (product.sizes && product.sizes[0]) || 'Standard';
     const selectedImg = (typeof galleryImages?.[selectedImageIndex] === 'string'
       ? galleryImages[selectedImageIndex]
@@ -199,6 +193,22 @@ export const ProductDetailsScreen = ({ route, navigation }) => {
     };
 
     navigation.navigate('Checkout', { buyNowItem: directItem });
+  };
+
+  const handleBuyNow = () => {
+    if (!product) return;
+
+    if (isOutOfStock) {
+      Alert.alert('Out of Stock', 'This size is currently sold out. Please choose another size.');
+      return;
+    }
+
+    if (!isMember) {
+      setShowGoogleModal(true);
+      return;
+    }
+
+    proceedToCheckoutDirect();
   };
 
   const handleReviewSubmit = async () => {
@@ -974,9 +984,9 @@ export const ProductDetailsScreen = ({ route, navigation }) => {
         onClose={() => setShowGoogleModal(false)}
         onSuccess={() => {
           setShowGoogleModal(false);
-          navigation.navigate('Checkout');
+          proceedToCheckoutDirect();
         }}
-        title="Sign In to Complete Purchase"
+        title="Sign In with Google to Complete Purchase"
         subtitle="Sign in with your Google account to auto-fill delivery details, track orders, and secure express checkout."
       />
     </View>

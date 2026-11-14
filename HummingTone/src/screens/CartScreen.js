@@ -38,6 +38,7 @@ export const CartScreen = ({ navigation }) => {
     removeCoupon,
   } = useCart();
   const { user, isAuthenticated } = useAuth();
+  const isMember = Boolean(isAuthenticated && user && user.email && user.email !== 'guest@hummingtone.com' && !user.email.includes('guest@'));
   const { wishlistCount } = useWishlist();
   const { unreadCount } = useNotifications();
 
@@ -52,6 +53,10 @@ export const CartScreen = ({ navigation }) => {
   const handleProceedCheckout = () => {
     if (!cartItems || cartItems.length === 0) {
       Alert.alert('Empty Bag', 'Please add items to your shopping bag before proceeding.');
+      return;
+    }
+    if (!isMember) {
+      setShowGoogleModal(true);
       return;
     }
     navigation.navigate('Checkout');

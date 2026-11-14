@@ -25,8 +25,9 @@ export const CheckoutScreen = ({ navigation, route }) => {
   const buyNowItem = route?.params?.buyNowItem;
   const isBuyNow = Boolean(buyNowItem);
   const { cartItems, finalTotal: cartFinalTotal, subtotal: cartSubtotal, discountAmount: cartDiscountAmount, gstAmount: cartGstAmount, shippingFee: cartShippingFee, clearCart } = useCart();
-  const { user, isAuthenticated } = useAuth();
-  const [showGoogleModal, setShowGoogleModal] = useState(false);
+  const { user, isAuthenticated, updateProfile } = useAuth();
+  const isMember = Boolean(isAuthenticated && user && user.email && user.email !== 'guest@hummingtone.com' && !user.email.includes('guest@'));
+  const [showGoogleModal, setShowGoogleModal] = useState(!isMember);
 
   // Active items calculation (Buy Now vs General Cart)
   const activeItems = isBuyNow
@@ -37,9 +38,7 @@ export const CheckoutScreen = ({ navigation, route }) => {
     ? activeItems.reduce((acc, it) => acc + (Number(it.price || 0) * (Number(it.quantity || 1))), 0)
     : cartSubtotal;
 
-  const activeShippingFee = isBuyNow
-    ? (activeSubtotal >= 999 || activeSubtotal === 0 ? 0 : 99)
-    : cartShippingFee;
+  const activeShippingFee = cartShippingFee || 0;
 
   const activeGstAmount = isBuyNow
     ? Math.round(activeSubtotal * 0.05)
@@ -55,23 +54,33 @@ export const CheckoutScreen = ({ navigation, route }) => {
   const [name, setName] = useState(user?.name || '');
   const [email, setEmail] = useState(user?.email || '');
   const [phone, setPhone] = useState(user?.phone || '');
-  const [address, setAddress] = useState('');
-  const [city, setCity] = useState('');
-  const [state, setState] = useState('');
-  const [pincode, setPincode] = useState('');
+  const [address, setAddress] = useState(user?.address || '');
+  const [city, setCity] = useState(user?.city || '');
+  const [state, setState] = useState(user?.state || '');
+  const [pincode, setPincode] = useState(user?.pincode || '');
   const [notes, setNotes] = useState('');
   const [paymentMethod, setPaymentMethod] = useState('online'); // 'online' | 'cod'
   const [submitting, setSubmitting] = useState(false);
 
   React.useEffect(() => {
-    if (user && user.email !== 'guest@hummingtone.com') {
+    if (isMember) {
       if (user.name) setName(user.name);
       if (user.email) setEmail(user.email);
       if (user.phone) setPhone(user.phone);
+      if (user.address) setAddress(user.address);
+      if (user.city) setCity(user.city);
+      if (user.state) setState(user.state);
+      if (user.pincode) setPincode(user.pincode);
+    } else {
+      setShowGoogleModal(true);
     }
-  }, [user]);
+  }, [user, isMember]);
 
   const handlePlaceOrder = async () => {
+    if (!isMember) {
+      setShowGoogleModal(true);
+      return;
+    }
     if (!name.trim()) {
       Alert.alert('Name Required', 'Please provide your full name for delivery.');
       return;
@@ -129,6 +138,19 @@ export const CheckoutScreen = ({ navigation, route }) => {
 
       const res = await OrderService.createOrder(orderPayload);
       const orderData = res?.data || res;
+
+      // Persist customer profile details locally and to state
+      if (updateProfile) {
+        updateProfile({
+          name: name.trim(),
+          email: email.trim(),
+          phone: phone.trim(),
+          address: address.trim(),
+          city: city.trim(),
+          state: state.trim() || 'Tamil Nadu',
+          pincode: pincode.trim(),
+        });
+      }
 
       if (!orderData || !orderData.razorpay_order_id) {
         throw new Error(res?.message || 'Failed to initialize payment gateway.');
@@ -359,6 +381,10 @@ export const CheckoutScreen = ({ navigation, route }) => {
             if (loggedUser.name) setName(loggedUser.name);
             if (loggedUser.email) setEmail(loggedUser.email);
             if (loggedUser.phone) setPhone(loggedUser.phone);
+            if (loggedUser.address) setAddress(loggedUser.address);
+            if (loggedUser.city) setCity(loggedUser.city);
+            if (loggedUser.state) setState(loggedUser.state);
+            if (loggedUser.pincode) setPincode(loggedUser.pincode);
           }
         }}
         title="Sign In with Google to Complete Order"

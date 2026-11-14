@@ -127,7 +127,7 @@ export const BottomTabNavigator = ({ navigation, route }) => {
         ref={pagerRef}
         horizontal
         pagingEnabled
-        scrollEnabled={false}
+        scrollEnabled={true}
         showsHorizontalScrollIndicator={false}
         bounces={false}
         overScrollMode="never"
